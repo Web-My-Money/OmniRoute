@@ -24,25 +24,31 @@
 #   sed -n '/^# ── Common base/,/^CMD \["node", "dev\/run-standalone.mjs"\]/p' Dockerfile > Dockerfile.railway
 # and re-adding this header comment.
 #
-# Cache mounts had every custom `id=...` STRIPPED for Railway compatibility, and must
-# stay that way after every re-sync from upstream's `Dockerfile`. Railway's Dockerfile
-# builder rejects upstream's plain `--mount=type=cache,id=<name>,...` syntax outright
-# with "dockerfile invalid: ... is missing the cacheKey prefix from its id". Railway's
-# own docs (https://docs.railway.com/builds/dockerfiles#cache-mounts) say the format is
-# `id=s/<service id>-<target path>` — but BOTH an arbitrary descriptive id
-# (`s/omniroute-apt-cache`) AND an id following their example shape exactly
-# (`s/omniroute-/var/cache/apt`, i.e. a placeholder prefix + the real target path) were
-# rejected with the identical error against a real throwaway-service build. Railway
-# appears to require the literal real id of whichever specific service is doing the
-# build, which this file cannot hardcode: it builds from GitHub Actions, throwaway
-# verification services, AND the live production service, each with a different
-# Railway service id. Dropping `id=` entirely (BuildKit then keys the cache by
-# `target=` implicitly) sidesteps Railway's custom-id validation altogether and
-# verified successfully against a real throwaway-service build. The only cost is that
-# this specific Dockerfile no longer explicitly shares a named cache with another
-# Dockerfile that happened to reuse the same id string on purpose — not a concern here,
-# since the two `apt-cache`/`apt-lists` mounts (in the `base` and `builder` stages)
-# still share a cache with each other by virtue of using the same `target=` path.
+# Cache mount ids below are hardcoded to the LIVE PRODUCTION `omniroute` service's real
+# Railway service id (c1a15bab-c913-4ee7-b676-1a2a1d46967c) and must be re-applied after
+# every re-sync from upstream's `Dockerfile`. Three shapes were tried against real
+# Railway builds before landing here, all against the same "dockerfile invalid: ...
+# is missing the cacheKey prefix from its id" family of error:
+#   1. Plain `id=<name>` (upstream's original) — rejected outright.
+#   2. `id=s/<name>-<name>` (Railway's docs format, https://docs.railway.com/builds/
+#      dockerfiles#cache-mounts, but with an arbitrary descriptive placeholder instead
+#      of a real service id) — rejected with the identical error.
+#   3. `id=s/<placeholder>-<real target path>` (placeholder prefix + the literal target
+#      path, matching Railway's own docs example shape exactly) — still rejected.
+#   4. Dropping `id=` entirely (anonymous cache mount, BuildKit keys by `target=`
+#      implicitly) — Railway rejects this too: "is missing an id argument" (id is
+#      mandatory, not optional, on Railway's builder).
+#   5. `id=s/<the-real-Railway-service-id>-<target path>` — the ONLY shape that built
+#      successfully, confirmed against two separate real Railway builds (once using a
+#      throwaway verification service's own id while building on that service, once
+#      using the live production service's id while building on the SAME throwaway
+#      service — i.e. Railway validates that this is A real registered service id in
+#      the workspace, not necessarily that it matches whichever service is currently
+#      building). Since this file is Railway's target regardless of which service
+#      happens to be testing it, hardcode the production service's id permanently
+#      rather than the id of whatever throwaway service most recently verified a build.
+# If the production `omniroute` service is ever deleted and recreated (new service id),
+# these six ids need updating to match.
 
 # ── Common base with runtime deps ──────────────────────────────────────────
 FROM node:26-trixie-slim AS base
@@ -54,8 +60,8 @@ WORKDIR /app
 # that already have a fix published in trixie. CVEs without an upstream fix yet
 # (local-only TOCTOU, etc.) remain until the distro patches them and the image
 # is rebuilt; none are reachable from the proxy's request surface at runtime.
-RUN --mount=type=cache,id=s/f6e54077-6a45-47a1-b17d-0e07c9f94bf7-/var/cache/apt,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,id=s/f6e54077-6a45-47a1-b17d-0e07c9f94bf7-/var/lib/apt/lists,target=/var/lib/apt/lists,sharing=locked \
+RUN --mount=type=cache,id=s/c1a15bab-c913-4ee7-b676-1a2a1d46967c-/var/cache/apt,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,id=s/c1a15bab-c913-4ee7-b676-1a2a1d46967c-/var/lib/apt/lists,target=/var/lib/apt/lists,sharing=locked \
   apt-get update \
   && apt-get upgrade -y \
   && apt-get install -y --no-install-recommends libsecret-1-0 ca-certificates \
@@ -75,8 +81,8 @@ FROM base AS builder
 
 # Build tools for native module compilation
 # apt-get update needed here because base's rm -rf clears the shared cache
-RUN --mount=type=cache,id=s/f6e54077-6a45-47a1-b17d-0e07c9f94bf7-/var/cache/apt,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,id=s/f6e54077-6a45-47a1-b17d-0e07c9f94bf7-/var/lib/apt/lists,target=/var/lib/apt/lists,sharing=locked \
+RUN --mount=type=cache,id=s/c1a15bab-c913-4ee7-b676-1a2a1d46967c-/var/cache/apt,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,id=s/c1a15bab-c913-4ee7-b676-1a2a1d46967c-/var/lib/apt/lists,target=/var/lib/apt/lists,sharing=locked \
   apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ \
   && rm -rf /var/lib/apt/lists/*
@@ -122,7 +128,7 @@ RUN test -f package-lock.json \
 # in production (TlsClientUnavailableError, #7802). Run it explicitly here so
 # a broken/rate-limited fetch fails the BUILD loudly instead of shipping a
 # broken image.
-RUN --mount=type=cache,id=s/f6e54077-6a45-47a1-b17d-0e07c9f94bf7-/root/.npm,target=/root/.npm \
+RUN --mount=type=cache,id=s/c1a15bab-c913-4ee7-b676-1a2a1d46967c-/root/.npm,target=/root/.npm \
   npm ci --no-audit --no-fund --legacy-peer-deps --ignore-scripts \
   && (cd node_modules/better-sqlite3 \
       && node /usr/local/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js rebuild) \
@@ -164,7 +170,7 @@ ARG OMNIROUTE_BUILD_MEMORY_MB=4096
 ENV NODE_OPTIONS="--max-old-space-size=${OMNIROUTE_BUILD_MEMORY_MB}"
 
 COPY . ./
-RUN --mount=type=cache,id=s/f6e54077-6a45-47a1-b17d-0e07c9f94bf7-/app/.build/next/cache,target=/app/.build/next/cache \
+RUN --mount=type=cache,id=s/c1a15bab-c913-4ee7-b676-1a2a1d46967c-/app/.build/next/cache,target=/app/.build/next/cache \
   mkdir -p /app/data && npm run build
 
 # ── Runner base ────────────────────────────────────────────────────────────
