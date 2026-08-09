@@ -24,24 +24,25 @@
 #   sed -n '/^# ── Common base/,/^CMD \["node", "dev\/run-standalone.mjs"\]/p' Dockerfile > Dockerfile.railway
 # and re-adding this header comment.
 #
-# Cache mount IDs are also Railway-specific and must be re-applied after every
-# re-sync: Railway's Dockerfile builder rejects upstream's plain
-# `--mount=type=cache,id=<name>,...` syntax outright with "dockerfile invalid:
-# ... is missing the cacheKey prefix from its id". Railway's docs
-# (https://docs.railway.com/builds/dockerfiles#cache-mounts) give the format
-# `id=s/<service id>-<target path>` — an arbitrary descriptive id after the
-# `s/` prefix (e.g. `s/omniroute-apt-cache`) is NOT accepted; confirmed by a
-# real throwaway-service build failing with that shape. The id's suffix must
-# be the mount's actual `target=` path. We use the literal, service-agnostic
-# prefix `s/omniroute-` (not one specific Railway service's real id) followed
-# by the target path, since this file builds from GitHub Actions, throwaway
-# verification services, AND the live production service, and this prefix
-# shape built successfully against a real throwaway service regardless of
-# which service was actually building it. If upstream's Dockerfile ever
-# changes a cache mount's `target=`, update BOTH the `target=` and the
-# matching `id=s/omniroute-<same path>` together so the two mounts pointing
-# at the same target (e.g. the apt caches shared between the `base` and
-# `builder` stages) still share one id.
+# Cache mounts had every custom `id=...` STRIPPED for Railway compatibility, and must
+# stay that way after every re-sync from upstream's `Dockerfile`. Railway's Dockerfile
+# builder rejects upstream's plain `--mount=type=cache,id=<name>,...` syntax outright
+# with "dockerfile invalid: ... is missing the cacheKey prefix from its id". Railway's
+# own docs (https://docs.railway.com/builds/dockerfiles#cache-mounts) say the format is
+# `id=s/<service id>-<target path>` — but BOTH an arbitrary descriptive id
+# (`s/omniroute-apt-cache`) AND an id following their example shape exactly
+# (`s/omniroute-/var/cache/apt`, i.e. a placeholder prefix + the real target path) were
+# rejected with the identical error against a real throwaway-service build. Railway
+# appears to require the literal real id of whichever specific service is doing the
+# build, which this file cannot hardcode: it builds from GitHub Actions, throwaway
+# verification services, AND the live production service, each with a different
+# Railway service id. Dropping `id=` entirely (BuildKit then keys the cache by
+# `target=` implicitly) sidesteps Railway's custom-id validation altogether and
+# verified successfully against a real throwaway-service build. The only cost is that
+# this specific Dockerfile no longer explicitly shares a named cache with another
+# Dockerfile that happened to reuse the same id string on purpose — not a concern here,
+# since the two `apt-cache`/`apt-lists` mounts (in the `base` and `builder` stages)
+# still share a cache with each other by virtue of using the same `target=` path.
 
 # ── Common base with runtime deps ──────────────────────────────────────────
 FROM node:26-trixie-slim AS base
@@ -53,8 +54,8 @@ WORKDIR /app
 # that already have a fix published in trixie. CVEs without an upstream fix yet
 # (local-only TOCTOU, etc.) remain until the distro patches them and the image
 # is rebuilt; none are reachable from the proxy's request surface at runtime.
-RUN --mount=type=cache,id=s/omniroute-/var/cache/apt,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,id=s/omniroute-/var/lib/apt/lists,target=/var/lib/apt/lists,sharing=locked \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
   apt-get update \
   && apt-get upgrade -y \
   && apt-get install -y --no-install-recommends libsecret-1-0 ca-certificates \
@@ -74,8 +75,8 @@ FROM base AS builder
 
 # Build tools for native module compilation
 # apt-get update needed here because base's rm -rf clears the shared cache
-RUN --mount=type=cache,id=s/omniroute-/var/cache/apt,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,id=s/omniroute-/var/lib/apt/lists,target=/var/lib/apt/lists,sharing=locked \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
   apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ \
   && rm -rf /var/lib/apt/lists/*
@@ -121,7 +122,7 @@ RUN test -f package-lock.json \
 # in production (TlsClientUnavailableError, #7802). Run it explicitly here so
 # a broken/rate-limited fetch fails the BUILD loudly instead of shipping a
 # broken image.
-RUN --mount=type=cache,id=s/omniroute-/root/.npm,target=/root/.npm \
+RUN --mount=type=cache,target=/root/.npm \
   npm ci --no-audit --no-fund --legacy-peer-deps --ignore-scripts \
   && (cd node_modules/better-sqlite3 \
       && node /usr/local/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js rebuild) \
@@ -163,7 +164,7 @@ ARG OMNIROUTE_BUILD_MEMORY_MB=4096
 ENV NODE_OPTIONS="--max-old-space-size=${OMNIROUTE_BUILD_MEMORY_MB}"
 
 COPY . ./
-RUN --mount=type=cache,id=s/omniroute-/app/.build/next/cache,target=/app/.build/next/cache \
+RUN --mount=type=cache,target=/app/.build/next/cache \
   mkdir -p /app/data && npm run build
 
 # ── Runner base ────────────────────────────────────────────────────────────
