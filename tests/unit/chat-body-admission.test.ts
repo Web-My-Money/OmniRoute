@@ -135,10 +135,21 @@ test("tool-schema property names contribute to the conservative token estimate",
   if (result.admit) result.lease?.release();
 });
 
-test("non-ASCII strings use a conservative UTF-8 token estimate", () => {
+test("non-ASCII MESSAGE content uses a realistic (not flat 1/char) token estimate", () => {
+  // WMM fork, 2026-08-09: non-ASCII characters in actual message content are weighted
+  // at 0.5 tokens/char (was a flat 1/char for any non-ASCII codepoint, message or
+  // schema alike) — see chatBodyAdmission.ts's `estimateStructureTokens` doc comment.
+  // The flat 1/char rate, applied uniformly to tool-schema description/enum text too,
+  // was misclassifying ordinary tool-schema-heavy requests as heavy in production
+  // (chat_admission_busy/structure_limit 503s on requests far under the real token
+  // threshold). Message content still counts meaningfully at the new rate — 200 chars
+  // * 0.5 = 100 tokens, still >= heavyTokens(100) — it just isn't quadruple-counted
+  // versus the ASCII rate anymore. See "non-ASCII text in tool descriptions does not
+  // false-flag heavy" in chat-admission-structure-false-positives.test.ts for the
+  // schema-text side of this change.
   const controller = new ChatAdmissionController(1);
   const result = admitChatStructure(
-    { messages: [{ role: "user", content: "漢".repeat(100) }] },
+    { messages: [{ role: "user", content: "漢".repeat(200) }] },
     null,
     { controller, maxMessages: 10, heavyMessages: 10, heavyTools: 10, heavyTokens: 100 }
   );

@@ -23,6 +23,23 @@
 # re-sync this file by re-running:
 #   sed -n '/^# ── Common base/,/^CMD \["node", "dev\/run-standalone.mjs"\]/p' Dockerfile > Dockerfile.railway
 # and re-adding this header comment.
+#
+# Cache mount IDs are also Railway-specific and must be re-applied after every
+# re-sync: Railway's Dockerfile builder rejects upstream's plain
+# `--mount=type=cache,id=<name>,...` syntax outright with "dockerfile invalid:
+# ... is missing the cacheKey prefix from its id" — Railway requires cache
+# mount ids to carry an `s/`-prefixed key (see
+# https://docs.railway.com/builds/dockerfiles#cache-mounts, format
+# `id=s/<service id>-<target path>`). We use the literal, service-agnostic
+# prefix `s/omniroute-<name>` rather than embedding one specific Railway
+# service's real id, since this file builds from GitHub Actions, throwaway
+# verification services, AND the live production service — Railway's
+# validator only checks for the `s/`-prefixed shape, not that it matches the
+# id of whichever service is actually building it (confirmed by a real
+# throwaway-service build with this exact prefix). If upstream's Dockerfile
+# ever changes a cache mount's `target=`, keep the corresponding `s/omniroute-*`
+# id in sync so the two mounts pointing at the same target (e.g. the apt
+# caches shared between the `base` and `builder` stages) still share one id.
 
 # ── Common base with runtime deps ──────────────────────────────────────────
 FROM node:26-trixie-slim AS base
@@ -34,8 +51,8 @@ WORKDIR /app
 # that already have a fix published in trixie. CVEs without an upstream fix yet
 # (local-only TOCTOU, etc.) remain until the distro patches them and the image
 # is rebuilt; none are reachable from the proxy's request surface at runtime.
-RUN --mount=type=cache,id=apt-cache,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,id=apt-lists,target=/var/lib/apt/lists,sharing=locked \
+RUN --mount=type=cache,id=s/omniroute-apt-cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,id=s/omniroute-apt-lists,target=/var/lib/apt/lists,sharing=locked \
   apt-get update \
   && apt-get upgrade -y \
   && apt-get install -y --no-install-recommends libsecret-1-0 ca-certificates \
@@ -55,8 +72,8 @@ FROM base AS builder
 
 # Build tools for native module compilation
 # apt-get update needed here because base's rm -rf clears the shared cache
-RUN --mount=type=cache,id=apt-cache,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,id=apt-lists,target=/var/lib/apt/lists,sharing=locked \
+RUN --mount=type=cache,id=s/omniroute-apt-cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,id=s/omniroute-apt-lists,target=/var/lib/apt/lists,sharing=locked \
   apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ \
   && rm -rf /var/lib/apt/lists/*
@@ -102,7 +119,7 @@ RUN test -f package-lock.json \
 # in production (TlsClientUnavailableError, #7802). Run it explicitly here so
 # a broken/rate-limited fetch fails the BUILD loudly instead of shipping a
 # broken image.
-RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
+RUN --mount=type=cache,id=s/omniroute-npm-cache,target=/root/.npm \
   npm ci --no-audit --no-fund --legacy-peer-deps --ignore-scripts \
   && (cd node_modules/better-sqlite3 \
       && node /usr/local/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js rebuild) \
@@ -144,7 +161,7 @@ ARG OMNIROUTE_BUILD_MEMORY_MB=4096
 ENV NODE_OPTIONS="--max-old-space-size=${OMNIROUTE_BUILD_MEMORY_MB}"
 
 COPY . ./
-RUN --mount=type=cache,id=next-cache,target=/app/.build/next/cache \
+RUN --mount=type=cache,id=s/omniroute-next-cache,target=/app/.build/next/cache \
   mkdir -p /app/data && npm run build
 
 # ── Runner base ────────────────────────────────────────────────────────────
