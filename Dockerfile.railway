@@ -54,8 +54,8 @@ WORKDIR /app
 # that already have a fix published in trixie. CVEs without an upstream fix yet
 # (local-only TOCTOU, etc.) remain until the distro patches them and the image
 # is rebuilt; none are reachable from the proxy's request surface at runtime.
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+RUN --mount=type=cache,id=s/f6e54077-6a45-47a1-b17d-0e07c9f94bf7-/var/cache/apt,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,id=s/f6e54077-6a45-47a1-b17d-0e07c9f94bf7-/var/lib/apt/lists,target=/var/lib/apt/lists,sharing=locked \
   apt-get update \
   && apt-get upgrade -y \
   && apt-get install -y --no-install-recommends libsecret-1-0 ca-certificates \
@@ -75,8 +75,8 @@ FROM base AS builder
 
 # Build tools for native module compilation
 # apt-get update needed here because base's rm -rf clears the shared cache
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+RUN --mount=type=cache,id=s/f6e54077-6a45-47a1-b17d-0e07c9f94bf7-/var/cache/apt,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,id=s/f6e54077-6a45-47a1-b17d-0e07c9f94bf7-/var/lib/apt/lists,target=/var/lib/apt/lists,sharing=locked \
   apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ \
   && rm -rf /var/lib/apt/lists/*
@@ -122,7 +122,7 @@ RUN test -f package-lock.json \
 # in production (TlsClientUnavailableError, #7802). Run it explicitly here so
 # a broken/rate-limited fetch fails the BUILD loudly instead of shipping a
 # broken image.
-RUN --mount=type=cache,target=/root/.npm \
+RUN --mount=type=cache,id=s/f6e54077-6a45-47a1-b17d-0e07c9f94bf7-/root/.npm,target=/root/.npm \
   npm ci --no-audit --no-fund --legacy-peer-deps --ignore-scripts \
   && (cd node_modules/better-sqlite3 \
       && node /usr/local/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js rebuild) \
@@ -164,7 +164,7 @@ ARG OMNIROUTE_BUILD_MEMORY_MB=4096
 ENV NODE_OPTIONS="--max-old-space-size=${OMNIROUTE_BUILD_MEMORY_MB}"
 
 COPY . ./
-RUN --mount=type=cache,target=/app/.build/next/cache \
+RUN --mount=type=cache,id=s/f6e54077-6a45-47a1-b17d-0e07c9f94bf7-/app/.build/next/cache,target=/app/.build/next/cache \
   mkdir -p /app/data && npm run build
 
 # ── Runner base ────────────────────────────────────────────────────────────
