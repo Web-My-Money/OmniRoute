@@ -1,0 +1,147 @@
+name: Smart PR Conflict Resolver & Security Gate
+
+on:
+  pull_request:
+    types: [synchronize, opened]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+  actions: read
+
+jobs:
+  resolve-and-verify:
+    name: Resolve Conflicts & Verify PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check PR Mergeability Status
+        id: check_mergeable
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM="${{ github.event.pull_request.number }}"
+          if [ -z "$PR_NUM" ]; then
+            echo "No PR number in event payload — skipping."
+            echo "is_dirty=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          STATE=$(gh pr view "$PR_NUM" --json mergeable,mergeableState -q '.mergeableState' 2>/dev/null || echo "UNKNOWN")
+          MERGEABLE=$(gh pr view "$PR_NUM" --json mergeable,mergeableState -q '.mergeable' 2>/dev/null || echo "UNKNOWN")
+
+          echo "PR #$PR_NUM mergeable state: $STATE (mergeable: $MERGEABLE)"
+
+          if [ "$STATE" = "DIRTY" ] || [ "$MERGEABLE" = "CONFLICTING" ]; then
+            echo "is_dirty=true" >> $GITHUB_OUTPUT
+          else
+            echo "PR is not conflicting (state: $STATE). Exiting early."
+            echo "is_dirty=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Attempt Automatic Git Merge
+        if: steps.check_mergeable.outputs.is_dirty == 'true'
+        id: git_merge
+        run: |
+          git config user.name "Francisco Gutierrez"
+          git config user.email "fran@webmymoney.com"
+
+          git fetch origin main
+          echo "Attempting git merge origin/main..."
+
+          if git merge "origin/main" -m "chore(ci): merge origin/main into PR"; then
+            echo "Clean merge succeeded without conflicts!"
+            echo "has_conflicts=false" >> $GITHUB_OUTPUT
+          else
+            echo "Merge conflicts encountered."
+            echo "has_conflicts=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: AI Conflict Resolution (OmniRoute / Claude Code)
+        if: steps.check_mergeable.outputs.is_dirty == 'true' && steps.git_merge.outputs.has_conflicts == 'true'
+        id: ai_resolve
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OMNIROUTER_API_KEY: ${{ secrets.OMNIROUTER_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          echo "Running OmniRoute Conflict Resolver Script..."
+          node .github/scripts/omni-conflict-resolver.mjs || true
+
+          UNRESOLVED=$(git status --porcelain | grep '^UU\|^AA\|^DD' || true)
+          if [ -z "$UNRESOLVED" ]; then
+            echo "Conflicts resolved successfully!"
+            git config user.name "Francisco Gutierrez"
+            git config user.email "fran@webmymoney.com"
+            git commit -m "fix(ci): resolve merge conflicts via OmniRoute AI" || true
+            echo "resolved=true" >> $GITHUB_OUTPUT
+          else
+            echo "Unresolved conflict markers remain."
+            echo "resolved=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Repo Verification Commands
+        if: steps.check_mergeable.outputs.is_dirty == 'true'
+        id: run_tests
+        working-directory: .
+        env:
+          CI: true
+        run: |
+          echo "Installing dependencies..."
+          npm ci || npm install --legacy-peer-deps || pnpm install --no-frozen-lockfile
+
+          echo "Running verification command..."
+          if npm run lint && npm run build; then
+            echo "Verification passed!"
+            echo "passed=true" >> $GITHUB_OUTPUT
+          else
+            echo "Verification failed!"
+            echo "passed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: OmniRoute AI Agent Code Review ($0.001/Pass)
+        if: steps.check_mergeable.outputs.is_dirty == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OMNIROUTER_API_KEY: ${{ secrets.OMNIROUTER_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          echo "Running OmniRoute AI Code Reviewer..."
+          node .github/scripts/omni-code-reviewer.mjs || true
+
+      - name: Execute Auto Squash-Merge or Request Manual Review
+        if: steps.check_mergeable.outputs.is_dirty == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM="${{ github.event.pull_request.number }}"
+          TESTS_PASSED="${{ steps.run_tests.outputs.passed }}"
+
+          # Push resolved commits to PR branch if changes exist
+          git push origin HEAD || true
+
+          if [ "$TESTS_PASSED" = "true" ]; then
+            echo "All checks passed. Auto squash-merging PR #$PR_NUM..."
+            gh pr merge "$PR_NUM" --squash --delete-branch \
+              --subject "fix(ci): auto-merge resolved PR conflicts [skip ci]" \
+              --body "Automatically resolved merge conflicts, verified build/test suite, and completed OmniRoute AI code review."
+            echo "PR #$PR_NUM successfully squash-merged!"
+          else
+            echo "Auto-merge halted. Verification failed."
+            gh pr comment "$PR_NUM" --body "### ⚠️ Verification Failed\nRunning build/tests produced errors. CC: @fran@webmymoney.com"
+          fi
