@@ -1,4 +1,5 @@
 import { isAuthRequired, isDashboardSessionAuthenticated } from "@/shared/utils/apiAuth";
+import { isRequireApiKeyEnabled } from "@/shared/utils/featureFlags";
 import { extractApiKey } from "@/sse/services/auth";
 
 // Request-scoped catalog helpers: API-key auth gating for `/v1/models` and Codex
@@ -14,7 +15,7 @@ export async function getModelCatalogAuthRejection(
   settings: Record<string, any>,
   headers: Record<string, string>
 ): Promise<Response | null> {
-  if (settings.requireAuthForModels !== true || !(await isAuthRequired(request))) return null;
+  if (!(await isAuthRequired(request)) && !isRequireApiKeyEnabled()) return null;
 
   const apiKey = extractApiKey(request);
   if (apiKey) {
