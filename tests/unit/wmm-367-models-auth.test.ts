@@ -31,28 +31,28 @@ test.after(async () => {
   fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
 });
 
-test("WMM-367: GET /v1/models requires auth and rejects unauthenticated callers with 401", async () => {
+test("WMM-367: GET /v1/models requires auth and rejects unauthenticated callers with 403", async () => {
   await settingsDb.updateSettings({
     requireLogin: true,
     password: "hashed-password",
   });
 
-  // 1. Unauthenticated request without Authorization header -> 401
+  // 1. Unauthenticated request without Authorization header -> 403
   const unauthRes = await v1ModelsCatalog.getUnifiedModelsResponse(
     new Request("http://localhost/api/v1/models")
   );
-  assert.equal(unauthRes.status, 401);
+  assert.equal(unauthRes.status, 403);
   const unauthBody = (await unauthRes.json()) as any;
   assert.equal(unauthBody.error.code, "invalid_api_key");
   assert.match(unauthBody.error.message, /Authentication required/i);
 
-  // 2. Request with invalid Bearer API key -> 401
+  // 2. Request with invalid Bearer API key -> 403
   const invalidRes = await v1ModelsCatalog.getUnifiedModelsResponse(
     new Request("http://localhost/api/v1/models", {
       headers: { authorization: "Bearer invalid-api-key" },
     })
   );
-  assert.equal(invalidRes.status, 401);
+  assert.equal(invalidRes.status, 403);
   const invalidBody = (await invalidRes.json()) as any;
   assert.equal(invalidBody.error.code, "invalid_api_key");
   assert.match(invalidBody.error.message, /Invalid API key/i);

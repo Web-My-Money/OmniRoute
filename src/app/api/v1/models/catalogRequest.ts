@@ -29,7 +29,7 @@ export async function getModelCatalogAuthRejection(
         },
       },
       {
-        status: 401,
+        status: 403,
         headers,
       }
     );
@@ -46,7 +46,7 @@ export async function getModelCatalogAuthRejection(
       },
     },
     {
-      status: 401,
+      status: 403,
       headers,
     }
   );

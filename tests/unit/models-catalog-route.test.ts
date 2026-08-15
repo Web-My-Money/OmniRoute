@@ -88,7 +88,7 @@ test("v1 models catalog requires auth when the route is protected and login is e
   );
   const body = (await response.json()) as any;
 
-  assert.equal(response.status, 401);
+  assert.equal(response.status, 403);
   assert.equal(body.error.code, "invalid_api_key");
   assert.match(body.error.message, /Authentication required/i);
 });
@@ -147,7 +147,7 @@ test("v1 models catalog does NOT accept API keys supplied via query string (#330
     new Request(`http://localhost/api/v1/models?token=${encodeURIComponent(key.key)}`)
   );
 
-  assert.equal(response.status, 401);
+  assert.equal(response.status, 403);
 });
 
 test("v1 models catalog accepts API keys embedded in vscode path aliases when auth is required", async () => {
