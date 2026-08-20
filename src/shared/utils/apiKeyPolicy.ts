@@ -247,10 +247,18 @@ async function isComboAllowedForKey(
   modelStr: string
 ): Promise<{ allowed: boolean; comboName: string | null }> {
   const comboName = await resolveRequestedComboName(modelStr);
-  if (!comboName) return { allowed: true, comboName: null };
+  // Virtual auto/* combos are not persisted in the combos table, so
+  // resolveRequestedComboName returns null for them. Treat the model
+  // string itself as the combo name so allowedCombos actually gates them.
+  // Without this, a key with allowedCombos=[GdogCode] could still use
+  // auto/best-coding — a silent privilege bypass.
+  const effectiveComboName = comboName ?? (modelStr.startsWith("auto/") ? modelStr : null);
+  if (!effectiveComboName) return { allowed: true, comboName: null };
 
-  const allowed = allowedCombos.some((rule) => matchesComboAccessRule(comboName, modelStr, rule));
-  return { allowed, comboName };
+  const allowed = allowedCombos.some((rule) =>
+    matchesComboAccessRule(effectiveComboName, modelStr, rule)
+  );
+  return { allowed, comboName: effectiveComboName };
 }
 
 function quotaPolicyResponse(message: string, code: string): Response {

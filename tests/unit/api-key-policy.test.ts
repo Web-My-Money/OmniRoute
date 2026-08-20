@@ -607,6 +607,34 @@ test("enforceApiKeyPolicy enforces combo allowlists separately from model allowl
   assert.equal(mapped.rejection, null);
 });
 
+test("enforceApiKeyPolicy blocks auto/* virtual combos not in allowedCombos (bypass fix)", async () => {
+  // Regression: auto/* virtual combos are not persisted in the combos table,
+  // so resolveRequestedComboName returned null and isComboAllowedForKey
+  // defaulted to allowed=true, bypassing the allowedCombos check entirely.
+  const namedOnlyKey = await createKeyWithPolicy({
+    allowedCombos: ["GdogCode", "GdogHeavy"],
+  });
+  const policy = await loadPolicy("auto-combo-bypass");
+
+  // auto/best-coding is NOT in allowedCombos → must be blocked
+  const blocked = await policy.enforceApiKeyPolicy(
+    makePolicyRequest(namedOnlyKey.key),
+    "auto/best-coding"
+  );
+  assert.equal(blocked.rejection?.status, 403);
+  assert.match(
+    await readErrorMessage(blocked.rejection),
+    /Combo "auto\/best-coding" is not allowed/
+  );
+
+  // auto/coding is also NOT in allowedCombos → must be blocked
+  const blocked2 = await policy.enforceApiKeyPolicy(
+    makePolicyRequest(namedOnlyKey.key),
+    "auto/coding"
+  );
+  assert.equal(blocked2.rejection?.status, 403);
+});
+
 test("enforceApiKeyPolicy applies configured throttle delay", async () => {
   const delayedKey = await createKeyWithPolicy({ throttleDelayMs: 25 });
   const policy = await loadPolicy("throttle-delay");
