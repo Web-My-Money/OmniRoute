@@ -219,6 +219,16 @@ ENV OMNIROUTE_MIGRATIONS_DIR=/app/migrations
 # it explicitly. The HEALTHCHECK CMD references it as `node healthcheck.mjs`.
 COPY --from=builder /app/scripts/dev/healthcheck.mjs ./healthcheck.mjs
 
+# Pre-bake Playwright Chromium so the container does not re-download it on every start.
+# The runtime start command has a conditional fallback install, but the image ships the browser.
+ENV PLAYWRIGHT_BROWSERS_PATH=/app/.playwright-browsers
+RUN mkdir -p /app/.playwright-browsers && \
+    cd /tmp && rm -rf pwfetch && mkdir pwfetch && cd pwfetch && \
+    npm pack playwright-core@1.62.0 --silent && \
+    tar -xzf playwright-core-1.62.0.tgz && \
+    cp -fv package/browsers.json /app/node_modules/playwright/node_modules/playwright-core/browsers.json && \
+    node package/cli.js install chromium
+
 # Hand /app over to the baked-in `node` non-root user (UID/GID 1000) so the
 # runtime process never holds root privileges. The chown happens after all
 # COPYs so it covers files originally owned by root in the builder stage.
