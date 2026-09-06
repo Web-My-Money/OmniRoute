@@ -128,14 +128,27 @@ RUN test -f package-lock.json \
 # in production (TlsClientUnavailableError, #7802). Run it explicitly here so
 # a broken/rate-limited fetch fails the BUILD loudly instead of shipping a
 # broken image.
+# Pin the tls-client release. Upstream RENAMED its assets: v1.15.1 published both
+# `tls-client-linux-ubuntu-amd64-1.15.1.so` and `tls-client-xgo-1.15.1-linux-amd64.so`,
+# but v1.16.0 ships only the `-xgo-` form. tls-client-node@0.2.0 builds the name as
+# `tls-client-linux-ubuntu-amd64-<ver>.so` and hard-fails when it is absent, so once
+# v1.16.0 became `/releases/latest` every build died on
+#   No release asset found for tls-client-linux-ubuntu-amd64-1.16.0.so
+#
+# That is what broke omniroute deploys from 2026-08-28 on - nine consecutive FAILED
+# builds, while the last good image kept serving so nothing surfaced it. The guard
+# below blamed GitHub rate-limiting; it was an asset rename. Pinning to the last
+# release carrying the expected name is the minimal fix and matches the binary in
+# the last good image. Revisit when tls-client-node learns the `-xgo-` naming.
+ARG TLS_CLIENT_VERSION=1.15.1
 RUN --mount=type=cache,id=s/c1a15bab-c913-4ee7-b676-1a2a1d46967c-/root/.npm,target=/root/.npm \
   npm ci --no-audit --no-fund --legacy-peer-deps --ignore-scripts \
   && (cd node_modules/better-sqlite3 \
       && node /usr/local/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js rebuild) \
   && node -e "require('better-sqlite3')(':memory:').close()" \
-  && node node_modules/tls-client-node/scripts/postinstall.js \
+  && TLS_CLIENT_VERSION="${TLS_CLIENT_VERSION}" node node_modules/tls-client-node/scripts/postinstall.js \
   && (test -n "$(find node_modules/tls-client-node/bin -mindepth 1 -print -quit 2>/dev/null)" \
-      || (echo "tls-client-node native binary missing after postinstall — GitHub API fetch likely rate-limited or failed (#7802)" >&2 && exit 1))
+      || (echo "tls-client-node native binary missing after postinstall (TLS_CLIENT_VERSION=${TLS_CLIENT_VERSION}) - see the ARG note above" >&2 && exit 1))
 
 # Build with Turbopack (stable in Next 16, the repo default). The v3.8.27-era
 # TurbopackInternalError panic ("entered unreachable code: there must be a path to a
