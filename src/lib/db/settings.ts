@@ -296,10 +296,7 @@ export async function updateSettings(
   );
   const tx = db.transaction(() => {
     const currentRevision = readSettingsRevision(db);
-    if (
-      options?.expectedRevision !== undefined &&
-      options.expectedRevision !== currentRevision
-    ) {
+    if (options?.expectedRevision !== undefined && options.expectedRevision !== currentRevision) {
       throw new SettingsRevisionConflictError(currentRevision);
     }
     for (const [key, value] of Object.entries(updates)) {
@@ -657,7 +654,7 @@ export async function resolveProxyForConnection(
     // proxy assignment completely inert). Fall back to the legacy in-memory
     // combos map for any pre-existing legacy data.
     if (connectionProvider && connectionProxyEnabled) {
-      const combos = db.prepare("SELECT id, data FROM combos").all();
+      const combos = db.prepare("SELECT id, data FROM combos LIMIT 5000").all();
       for (const comboRow of combos) {
         const comboRecord = toRecord(comboRow);
         const comboId = typeof comboRecord.id === "string" ? comboRecord.id : null;

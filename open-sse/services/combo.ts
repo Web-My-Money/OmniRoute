@@ -316,7 +316,7 @@ export async function buildAutoCandidates(
     historicalLatencyStats = await getModelLatencyStats({
       windowHours: 24,
       minSamples: 3,
-      maxRows: 10000,
+      maxRows: 1_000,
     });
   } catch {
     // keep empty stats — auto-combo will use runtime + bootstrap signals
