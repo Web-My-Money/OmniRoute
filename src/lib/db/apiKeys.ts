@@ -155,7 +155,6 @@ interface ApiKeysDbLike {
 }
 
 interface ApiKeysStatements {
-  getAllKeys: StatementLike<ApiKeyRow>;
   getKeyById: StatementLike<ApiKeyRow>;
   validateKey: StatementLike<JsonRecord>;
   getKeyMetadata: StatementLike<ApiKeyRow>;
@@ -205,7 +204,6 @@ const MAX_CACHE_SIZE = 1000;
 const _modelPermissionCache = new Map<string, { allowed: boolean; timestamp: number }>();
 
 // Prepared statements cache
-let _stmtGetAllKeys: ApiKeysStatements["getAllKeys"] | null = null;
 let _stmtGetKeyById: ApiKeysStatements["getKeyById"] | null = null;
 let _stmtValidateKey: ApiKeysStatements["validateKey"] | null = null;
 let _stmtGetKeyMetadata: ApiKeysStatements["getKeyMetadata"] | null = null;
@@ -276,6 +274,7 @@ function markApiKeyUsed(db: ApiKeysDbLike, id: unknown, now: number): void {
     lastUsedAt: new Date(now).toISOString(),
   });
   _lastUsedUpdateCache.set(id, now);
+  evictIfNeeded(_lastUsedUpdateCache);
 }
 
 /**
@@ -395,7 +394,6 @@ function getPreparedStatements(db: ApiKeysDbLike): ApiKeysStatements {
   ensureApiKeysColumns(db);
 
   if (
-    !_stmtGetAllKeys ||
     !_stmtGetKeyById ||
     !_stmtValidateKey ||
     !_stmtGetKeyMetadata ||
@@ -404,7 +402,6 @@ function getPreparedStatements(db: ApiKeysDbLike): ApiKeysStatements {
     _stmtDb !== db
   ) {
     _stmtDb = db;
-    _stmtGetAllKeys = db.prepare<ApiKeyRow>("SELECT * FROM api_keys ORDER BY created_at");
     _stmtGetKeyById = db.prepare<ApiKeyRow>("SELECT * FROM api_keys WHERE id = ?");
     _stmtValidateKey = db.prepare<JsonRecord>(
       "SELECT id, expires_at, revoked_at, is_active, is_banned FROM api_keys WHERE key = ? OR key_hash = ?"
@@ -419,7 +416,6 @@ function getPreparedStatements(db: ApiKeysDbLike): ApiKeysStatements {
   }
 
   if (
-    !_stmtGetAllKeys ||
     !_stmtGetKeyById ||
     !_stmtValidateKey ||
     !_stmtGetKeyMetadata ||
@@ -430,7 +426,6 @@ function getPreparedStatements(db: ApiKeysDbLike): ApiKeysStatements {
   }
 
   return {
-    getAllKeys: _stmtGetAllKeys,
     getKeyById: _stmtGetKeyById,
     validateKey: _stmtValidateKey,
     getKeyMetadata: _stmtGetKeyMetadata,
@@ -439,6 +434,11 @@ function getPreparedStatements(db: ApiKeysDbLike): ApiKeysStatements {
   };
 }
 
+// Safety bound for callers that don't paginate (hot paths like usageStats
+// read the whole table). Backup/sync callers that genuinely need every row
+// pass an explicit limit.
+const DEFAULT_API_KEYS_LIMIT = 1_000;
+
 export async function getApiKeys(limit?: number, offset?: number) {
   const db = getDbInstance() as ApiKeysDbLike;
   let rows: ApiKeyRow[];
@@ -446,8 +446,8 @@ export async function getApiKeys(limit?: number, offset?: number) {
     const sql = "SELECT * FROM api_keys ORDER BY created_at LIMIT ? OFFSET ?";
     rows = db.prepare(sql).all(limit, offset ?? 0) as ApiKeyRow[];
   } else {
-    const stmt = getPreparedStatements(db);
-    rows = stmt.getAllKeys.all();
+    const sql = "SELECT * FROM api_keys ORDER BY created_at LIMIT ? OFFSET ?";
+    rows = db.prepare(sql).all(DEFAULT_API_KEYS_LIMIT, 0) as ApiKeyRow[];
   }
   return rows.map((row) => {
     const camelRow = toRecord(rowToCamel(row)) as ApiKeyView;
@@ -1498,7 +1498,6 @@ export async function isModelAllowedForKey(
  * so they must be cleared when the connection is reset.
  */
 function clearPreparedStatementCache() {
-  _stmtGetAllKeys = null;
   _stmtGetKeyById = null;
   _stmtValidateKey = null;
   _stmtGetKeyMetadata = null;

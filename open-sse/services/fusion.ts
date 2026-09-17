@@ -72,8 +72,7 @@ export function extractPanelText(json: unknown): string {
   // Gemini (parts carry .text without a type discriminator)
   const candidates = j.candidates as Array<Record<string, unknown>> | undefined;
   const parts = (candidates?.[0]?.content as Record<string, unknown> | undefined)?.parts as
-    | Array<{ text?: unknown }>
-    | undefined;
+    Array<{ text?: unknown }> | undefined;
   if (Array.isArray(parts)) {
     const t = parts.map((p) => (typeof p?.text === "string" ? p.text : "")).join("");
     if (t.trim()) return t;
@@ -108,10 +107,7 @@ export function appendUserTurn(body: Body, text: string): Body {
   } else if (Array.isArray(body.input)) {
     next.input = [...(body.input as unknown[]), { role: "user", content: text }];
   } else if (Array.isArray(body.contents)) {
-    next.contents = [
-      ...(body.contents as unknown[]),
-      { role: "user", parts: [{ text }] },
-    ];
+    next.contents = [...(body.contents as unknown[]), { role: "user", parts: [{ text }] }];
   } else {
     next.messages = [{ role: "user", content: text }];
   }
@@ -122,8 +118,14 @@ export function appendUserTurn(body: Body, text: string): Body {
  * Build the judge directive. Sources are anonymized ("Source N") so the judge
  * weighs substance, not the reputation of a model brand.
  */
+const MAX_PANEL_TEXT = 32_000;
+const MAX_JUDGE_PROMPT = 200_000;
 export function buildJudgePrompt(answers: Array<{ text: string }>): string {
   const panel = answers.map((a, i) => `[Source ${i + 1}]\n${a.text}`).join("\n\n");
+  const bounded =
+    panel.length > MAX_JUDGE_PROMPT
+      ? panel.slice(0, MAX_JUDGE_PROMPT) + "\n... (truncated)"
+      : panel;
 
   return [
     `You are the JUDGE in a model-fusion panel. ${answers.length} expert models independently answered the user's most recent request. Their responses are below, anonymized by source.`,
@@ -137,7 +139,7 @@ export function buildJudgePrompt(answers: Array<{ text: string }>): string {
     "Then write the best possible final answer — more complete and correct than any single response, and than the panel as a whole — with no filler.",
     "",
     "=== PANEL RESPONSES ===",
-    panel,
+    bounded,
     "=== END PANEL RESPONSES ===",
     "",
     "Now write the final answer to the user's original request.",
@@ -159,10 +161,7 @@ export function isToolBearingRequest(body: Body): boolean {
 type Sentinel = { __timeout?: true; __error?: unknown };
 
 // Resolve a Response (or sentinel) within ms; the loser keeps running but is ignored.
-function withTimeout(
-  promise: Promise<Response>,
-  ms: number
-): Promise<Response | Sentinel> {
+function withTimeout(promise: Promise<Response>, ms: number): Promise<Response | Sentinel> {
   return new Promise((resolve) => {
     const t = setTimeout(() => resolve({ __timeout: true }), ms);
     Promise.resolve(promise)
@@ -365,7 +364,10 @@ export async function handleFusionChat({
     }
     try {
       const json = await resp.clone().json();
-      const text = extractPanelText(json);
+      let text = extractPanelText(json);
+      if (text.length > MAX_PANEL_TEXT) {
+        text = text.slice(0, MAX_PANEL_TEXT) + "\n... (truncated)";
+      }
       if (text) {
         answers.push({ model, text });
         log.info("FUSION", `Panel ${model} ok (${text.length} chars)`);
@@ -399,10 +401,7 @@ export async function handleFusionChat({
     // synthesizing from a single source through itself would be redundant —
     // answer directly with the lone survivor (issue #6454).
     if (!hasExplicitJudge) {
-      log.info(
-        "FUSION",
-        `Only ${answers[0].model} succeeded — answering directly (no fusion)`
-      );
+      log.info("FUSION", `Only ${answers[0].model} succeeded — answering directly (no fusion)`);
       return handleSingleModel(body, answers[0].model);
     }
     // An explicit judgeModel IS configured: honor it even with a single

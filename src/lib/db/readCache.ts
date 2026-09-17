@@ -102,9 +102,7 @@ export async function getCachedPricing(): Promise<Record<string, unknown>> {
 export async function getCachedProviderConnections(
   filter?: Record<string, unknown>
 ): Promise<unknown[]> {
-  const cacheKey = filter && Object.keys(filter).length > 0
-    ? JSON.stringify(filter)
-    : "all";
+  const cacheKey = filter && Object.keys(filter).length > 0 ? JSON.stringify(filter) : "all";
 
   const cached = connectionsCache.get(cacheKey);
   if (cached) return cached;
@@ -123,7 +121,13 @@ const rawConnectionsCache = new TTLCache<unknown[]>(CONNECTIONS_TTL_MS, 500);
  * for lazy decryption — used by the auth selection hot path where 10k+
  * connections are filtered to find the winner but only 1 row needs
  * credential decryption.
+ *
+ * The fill is bounded at 10,000 rows: auth selection needs the full set, so
+ * the cap is a blowup guard, not pagination — well above any realistic
+ * provider_connections table, but it stops an unbounded read from OOMing
+ * the process if the table ever grows pathologically.
  */
+const RAW_CONNECTIONS_CACHE_LIMIT = 10_000;
 export async function getCachedRawProviderConnections(
   filter?: Record<string, unknown>
 ): Promise<unknown[]> {
@@ -131,12 +135,15 @@ export async function getCachedRawProviderConnections(
   const cached = rawConnectionsCache.get(key);
   if (cached !== undefined) return cached;
   const { getRawProviderConnections } = await import("./providers");
-  const rows = await getRawProviderConnections(filter);
+  const rows = await getRawProviderConnections(filter, RAW_CONNECTIONS_CACHE_LIMIT);
   rawConnectionsCache.set(key, rows);
   return rows;
 }
 
-const connectionByIdCache = new TTLCache<Record<string, unknown> | null>(CONNECTIONS_TTL_MS, 10_000);
+const connectionByIdCache = new TTLCache<Record<string, unknown> | null>(
+  CONNECTIONS_TTL_MS,
+  10_000
+);
 const nodesCache = new TTLCache<(Record<string, unknown> | null)[]>(CONNECTIONS_TTL_MS);
 
 /**
