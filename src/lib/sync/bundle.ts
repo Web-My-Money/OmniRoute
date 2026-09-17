@@ -198,7 +198,10 @@ export async function buildConfigSyncBundle(): Promise<ConfigSyncBundle> {
     getCachedProviderNodes(),
     getModelAliases(),
     getCombos(),
-    getApiKeys(),
+    // Explicit limit: getApiKeys' 1,000-row safety bound is for hot-path
+    // callers. A sync bundle must carry every key or a restore silently
+    // loses them.
+    getApiKeys(1_000_000),
     getReasoningRoutingRules(),
   ]);
 

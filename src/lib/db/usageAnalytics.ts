@@ -834,9 +834,20 @@ export function getProviderDailyUsageRows(
  * Returns all rows from `usage_history` for backup export.
  * Only called when `?includeHistory=true` is explicitly requested.
  */
-export function getAllUsageHistory(): Record<string, unknown>[] {
+export function getAllUsageHistory(limit?: number, offset = 0): Record<string, unknown>[] {
   const db = getDbInstance();
-  return db.prepare("SELECT * FROM usage_history").all() as Record<string, unknown>[];
+  // No default cap: this feeds the JSON backup export, where silently
+  // truncating rows would produce a corrupt backup. limit/offset exist for
+  // callers that page; the export intentionally asks for everything.
+  if (limit === undefined) {
+    return db.prepare("SELECT * FROM usage_history ORDER BY timestamp DESC").all() as Record<
+      string,
+      unknown
+    >[];
+  }
+  return db
+    .prepare("SELECT * FROM usage_history ORDER BY timestamp DESC LIMIT @limit OFFSET @offset")
+    .all({ limit, offset }) as Record<string, unknown>[];
 }
 
 /**
