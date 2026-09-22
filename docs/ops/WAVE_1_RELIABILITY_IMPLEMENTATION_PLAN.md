@@ -1,3 +1,8 @@
+---
+title: Wave 1 Reliability and Cost Correctness Implementation Plan
+description: Task-by-task plan for retention cleanup, FTS maintenance, and Verify Runner diagnostics.
+---
+
 # Wave 1 Reliability and Cost Correctness Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

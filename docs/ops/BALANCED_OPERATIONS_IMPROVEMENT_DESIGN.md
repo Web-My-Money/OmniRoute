@@ -1,3 +1,8 @@
+---
+title: Balanced Operations Improvement Design
+description: Staged reliability, visibility, usability, and performance design for WMM OmniRoute operations.
+---
+
 # Balanced Operations Improvement Design
 
 Date: 2026-09-22
