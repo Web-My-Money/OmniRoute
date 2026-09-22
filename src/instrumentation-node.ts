@@ -457,6 +457,18 @@ export async function registerNodejs(): Promise<void> {
     console.warn("[STARTUP] Could not start credential health scheduler:", msg);
   }
 
+  // Retention cleanup scheduler (6h sweep + VACUUM on deletes). Lives here for the
+  // same reason as the credential-health sweep above — src/server-init.ts is unused.
+  // Without it, usage_history/proxy_logs/etc. grow unboundedly (observed: 865MB DB,
+  // multi-GB RSS/page-cache on the host).
+  try {
+    const { startCleanupScheduler } = await import("@/lib/db/cleanup");
+    startCleanupScheduler();
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn("[STARTUP] Could not start db cleanup scheduler:", msg);
+  }
+
   try {
     const { initAuditLog, cleanupExpiredLogs } = await import("@/lib/compliance/index");
     initAuditLog();
