@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { opaqueJoin } from "@/lib/opaquePath";
+import { opaqueJoin, probeUpForSubpath } from "@/lib/opaquePath";
 import os from "node:os";
 import crypto from "node:crypto";
 import { detectCommandType } from "./commandDetector.ts";
@@ -51,26 +51,14 @@ interface RtkFilterLoadOptions {
 }
 
 function getModuleDir(): string {
-  // Statically scoped probe first: path.join(process.cwd(), <literal>) lets
-  // the bundler's file tracer narrow the pattern to this subfolder instead
-  // of unioning the whole project (per the NFT warning's own guidance).
-  const scopedProbe = path.join(process.cwd(), "open-sse", "services", "compression");
-  if (fs.existsSync(scopedProbe)) return process.cwd();
-
   const anchors = [process.cwd()];
   const argv1 = process.argv[1];
   if (typeof argv1 === "string" && argv1) anchors.push(path.dirname(argv1));
-  const rel = path.join("open-sse", "services", "compression");
-  for (const anchor of anchors) {
-    let dir = path.resolve(anchor);
-    for (let i = 0; i <= 8; i++) {
-      if (fs.existsSync(/* turbopackIgnore: true */ opaqueJoin(dir, rel))) return dir;
-      const parent = path.dirname(dir);
-      if (parent === dir) break;
-      dir = parent;
-    }
-  }
-  return opaqueJoin(os.homedir(), ".omniroute");
+  return probeUpForSubpath(
+    anchors,
+    path.join("open-sse", "services", "compression"),
+    opaqueJoin(os.homedir(), ".omniroute")
+  );
 }
 
 function getFiltersDir(): string {
