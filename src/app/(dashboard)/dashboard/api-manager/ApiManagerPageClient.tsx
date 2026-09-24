@@ -36,6 +36,7 @@ import type {
   ClaudeCodeBlockableFamilyId,
   ComboOption,
   KeyStatus,
+  KeyUsageStats,
   KeyType,
   Model,
   ProviderConnection,

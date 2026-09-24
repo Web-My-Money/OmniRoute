@@ -15,6 +15,8 @@ import Tooltip from "@/shared/components/Tooltip";
 import { ComboCompressionModeSelect } from "@/shared/components/compression/ComboCompressionModeSelect";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
 import { FieldLabelWithHelp, WeightTotalBar } from "./parts";
+import { pickDisplayValue } from "@/shared/utils/maskEmail";
+import useEmailPrivacyStore from "@/store/emailPrivacyStore";
 import { useComboProxyAssignments } from "./useComboProxyAssignments";
 import { ResponseValidationEditor, type ResponseValidationValue } from "./ResponseValidationEditor";
 import ReasoningTokenBufferToggle from "./ReasoningTokenBufferToggle";
