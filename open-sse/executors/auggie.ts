@@ -24,6 +24,8 @@
  */
 
 import { spawn } from "node:child_process";
+import { spawnHostBinary } from "@/lib/hostBinarySpawn";
+import { opaqueJoin } from "@/lib/opaquePath";
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
@@ -92,7 +94,7 @@ export async function initAuggieModels(
     liveModelSet = new Set();
     return;
   }
-  const child = spawn(bin, ["model", "list"], {
+  const child = spawnHostBinary(bin, ["model", "list"], {
     env: process.env,
     stdio: ["ignore", "pipe", "pipe"],
     shell: false,
@@ -249,8 +251,8 @@ export function resolveAuggieBin(): string {
   // 3. Linux/macOS installer paths
   const home = os.homedir();
   for (const candidate of [
-    path.join(home, ".local", "share", "auggie", "bin", "auggie"),
-    path.join(home, ".auggie", "bin", "auggie"),
+    opaqueJoin(home, ".local", "share", "auggie", "bin", "auggie"),
+    opaqueJoin(home, ".auggie", "bin", "auggie"),
   ]) {
     if (fs.existsSync(candidate)) return candidate;
   }
@@ -314,7 +316,7 @@ export function checkAuggieCliVersion(timeoutMs = 5000): Promise<AuggieCliVersio
     let child: ReturnType<typeof spawn>;
     try {
       // No `shell` option — fixed argv, no cmd.exe interpretation.
-      child = spawn(bin, ["--version"], {
+      child = spawnHostBinary(bin, ["--version"], {
         env: process.env,
         stdio: ["ignore", "pipe", "pipe"],
       });
@@ -427,7 +429,7 @@ export class AuggieExecutor extends BaseExecutor {
     // stays a fixed literal array; `model` is already allowlist-validated by
     // resolveAuggieModel() before reaching here, so no argument-injection surface
     // is reopened by shell interpretation.
-    const child = spawn(
+    const child = spawnHostBinary(
       auggieBin,
       buildAuggieArgs(model),
       buildAuggieSpawnOptions(["pipe", "pipe", "pipe"])
@@ -529,7 +531,7 @@ export class AuggieExecutor extends BaseExecutor {
           // `shell: true` on win32 only (see buildAuggieSpawnOptions() for why).
           // `model` is already allowlist-validated upstream, so shell interpretation
           // does not reopen argument-injection.
-          child = spawn(
+          child = spawnHostBinary(
             auggieBin,
             buildAuggieArgs(model),
             buildAuggieSpawnOptions(["pipe", "pipe", "pipe"])

@@ -6,6 +6,7 @@ import * as yaml from "js-yaml";
 import { requireCliToolsAuth } from "@/lib/api/requireCliToolsAuth";
 import { getRuntimePorts } from "@/lib/runtime/ports";
 import { getCliPrimaryConfigPath, getOpenCodeConfigPath } from "@/shared/services/cliRuntime";
+import { opaqueJoin } from "@/lib/opaquePath";
 import { mergeOpenCodeConfigText } from "@/shared/services/opencodeConfig";
 import { guideSettingsSaveSchema } from "@/shared/validation/schemas";
 import { isValidationFailure, validateBody } from "@/shared/validation/helpers";
@@ -89,7 +90,7 @@ export async function POST(request, { params }) {
  */
 async function saveContinueConfig({ baseUrl, apiKey, model }) {
   const { apiPort } = getRuntimePorts();
-  const configPath = path.join(os.homedir(), ".continue", "config.json");
+  const configPath = opaqueJoin(os.homedir(), ".continue", "config.json");
   const configDir = path.dirname(configPath);
 
   // Ensure dir exists
@@ -98,7 +99,7 @@ async function saveContinueConfig({ baseUrl, apiKey, model }) {
   // Read existing config if any
   let existingConfig: any = {};
   try {
-    const raw = await fs.readFile(configPath, "utf-8");
+    const raw = await fs.readFile(/* turbopackIgnore: true */ configPath, "utf-8");
     existingConfig = JSON.parse(raw);
   } catch {
     // No existing config or invalid JSON — start fresh
@@ -211,7 +212,7 @@ async function saveOpenCodeConfig({ baseUrl, apiKey, model, models, modelLabels 
  */
 async function saveHermesConfig({ baseUrl, apiKey, model }) {
   const configPath =
-    getCliPrimaryConfigPath("hermes") || path.join(os.homedir(), ".hermes", "config.yaml");
+    getCliPrimaryConfigPath("hermes") || opaqueJoin(os.homedir(), ".hermes", "config.yaml");
   const configDir = path.dirname(configPath);
 
   await fs.mkdir(configDir, { recursive: true });
@@ -230,7 +231,7 @@ async function saveHermesConfig({ baseUrl, apiKey, model }) {
 
   let existingConfig: Record<string, any> = {};
   try {
-    const raw = await fs.readFile(configPath, "utf-8");
+    const raw = await fs.readFile(/* turbopackIgnore: true */ configPath, "utf-8");
     const parsed = yaml.load(raw);
     if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
       existingConfig = parsed as Record<string, any>;

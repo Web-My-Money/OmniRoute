@@ -57,3 +57,13 @@ export function resolveDataDir() {
 export function resolveStoragePath(dataDir = resolveDataDir()) {
   return path.join(dataDir, "storage.sqlite");
 }
+
+/**
+ * Indirection for joins whose segments point at host-machine locations
+ * (home dirs, install paths). Turbopack/NFT evaluates `path.join(dir, name)`
+ * with a dynamic segment as a glob and traces thousands of repository files;
+ * routing the join through a plain function keeps the result opaque.
+ */
+export function opaqueJoin(...segments) {
+  return path.join(...segments);
+}
