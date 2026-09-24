@@ -7,7 +7,7 @@ import { authorizeWebSocketHandshake, extractWsTokenFromRequest } from "@/lib/ws
 import { getModelInfo } from "@/sse/services/model";
 import { resolveCcDiscoveryAliasStrip } from "@/lib/ccDiscoveryAliasResolve";
 import { getProviderCredentialsWithQuotaPreflight } from "@/sse/services/auth";
-import { enforceApiKeyPolicy } from "@/shared/utils/apiKeyPolicy";
+import { enforceApiKeyPolicy, type ApiKeyMetadata } from "@/shared/utils/apiKeyPolicy";
 import { checkAndRefreshToken } from "@/sse/services/tokenRefresh";
 import { resolveCodexWsModelInfo } from "./modelResolution";
 import { isFeatureFlagEnabled } from "@/shared/utils/featureFlags";
@@ -40,8 +40,6 @@ const executor = new CodexExecutor();
 const log = logger("RESPONSES_WS");
 
 type JsonRecord = Record<string, unknown>;
-type ApiKeyMetadata = Awaited<ReturnType<typeof getApiKeyMetadata>>;
-
 const bridgePayloadSchema = z
   .object({
     action: z.string().optional(),
@@ -363,7 +361,10 @@ async function resolveCodexCredentials(
   provider: string,
   model: string,
   allowedConnections: string[] | null
-) {
+): Promise<
+  | { error: Response }
+  | { credentials: NonNullable<Awaited<ReturnType<typeof checkAndRefreshToken>>> }
+> {
   const credentials = await getProviderCredentialsWithQuotaPreflight(
     provider,
     null,
@@ -388,7 +389,7 @@ async function resolveCodexCredentials(
   return { credentials: refreshed };
 }
 
-async function resolveCodexRequestContext(body: JsonRecord) {
+async function resolveCodexRequestContext(body: JsonRecord): Promise<CodexRequestContext> {
   if (!isFeatureFlagEnabled("OMNIROUTE_CODEX_WS_ENABLED")) {
     return {
       error: jsonError(503, "codex_ws_disabled", "Codex Responses WebSocket transport is disabled"),
@@ -426,7 +427,7 @@ async function resolveCodexRequestContext(body: JsonRecord) {
     requestedModel,
     responseBody
   );
-  if (reasoningRoute.error) return { error: reasoningRoute.error };
+  if ("error" in reasoningRoute) return { error: reasoningRoute.error };
   return {
     authRequest,
     apiKey,
@@ -438,9 +439,33 @@ async function resolveCodexRequestContext(body: JsonRecord) {
   };
 }
 
+interface CodexRequestContextSuccess {
+  authRequest: Request;
+  apiKey: string | null;
+  responseBody: JsonRecord;
+  requestedModel: string;
+  metadata: ApiKeyMetadata | null;
+  allowedConnections: string[] | null;
+  decision: Awaited<ReturnType<typeof resolveReasoningRoutingRule>>;
+  intent: ReturnType<typeof extractReasoningIntent>;
+  sourceModels: Awaited<ReturnType<typeof resolveReasoningSourceModels>>;
+  routingTags: ReturnType<typeof resolveRequestRoutingTags>;
+}
+
+type CodexRequestContext = { error: Response } | CodexRequestContextSuccess;
+
+interface CodexUpstreamSuccess extends CodexRequestContextSuccess {
+  provider: string;
+  model: string;
+  credentials: NonNullable<Awaited<ReturnType<typeof checkAndRefreshToken>>>;
+  reasoningDecision: Awaited<ReturnType<typeof resolveReasoningRoutingRule>>;
+}
+
+type CodexUpstreamContext = { error: Response } | CodexUpstreamSuccess;
+
 async function resolveCodexUpstreamContext(
-  context: Awaited<ReturnType<typeof resolveCodexRequestContext>>
-) {
+  context: CodexRequestContext
+): Promise<CodexUpstreamContext> {
   if ("error" in context) return context;
   const routedModel = context.decision?.targetModel ?? context.requestedModel;
   const modelInfo = await resolveCodexWsModelInfo(routedModel, getModelInfo);
@@ -460,7 +485,7 @@ async function resolveCodexUpstreamContext(
     model,
     context.allowedConnections
   );
-  if (credentialResult.error) return credentialResult;
+  if ("error" in credentialResult) return credentialResult;
   let reasoningDecision = context.decision;
   if (!reasoningDecision) {
     reasoningDecision = await resolveReasoningRoutingRule({
@@ -485,13 +510,14 @@ async function resolveCodexUpstreamContext(
       };
     }
   }
-  return {
+  const upstream: CodexUpstreamSuccess = {
     ...context,
     provider,
     model,
     credentials: credentialResult.credentials,
     reasoningDecision,
   };
+  return upstream;
 }
 
 async function resolveCodexProxy(provider: string): Promise<string | undefined> {
