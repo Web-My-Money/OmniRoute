@@ -100,8 +100,9 @@ async function verifyChecksum(filePath: string, expectedSha256: string): Promise
 function findBinaryInDir(dir: string): string | null {
   const candidates = ["cli-proxy-api", "cli-proxy-api.exe", "CLIProxyAPI", "CLIProxyAPI.exe"];
   for (const name of candidates) {
-    if (fsSync.existsSync(/* turbopackIgnore: true */ path.join(dir, name))) {
-      return path.join(/* turbopackIgnore: true */ dir, name);
+    const candidate = path.join(dir, name);
+    if (fsSync.existsSync(/* turbopackIgnore: true */ candidate)) {
+      return candidate;
     }
   }
   return null;
