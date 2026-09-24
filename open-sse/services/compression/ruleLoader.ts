@@ -186,7 +186,7 @@ export function validateRulePack(pack: unknown): { valid: boolean; errors: strin
 }
 
 function readPack(language: string, category: string): RulePack | null {
-  const filename = path.join(getRulesDir(), language, `${category}.json`);
+  const filename = opaqueJoin(getRulesDir(), language, `${category}.json`);
   if (!fs.existsSync(filename)) return null;
   const parsed = JSON.parse(fs.readFileSync(filename, "utf8")) as unknown;
   const validation = validateRulePack(parsed);
@@ -224,7 +224,7 @@ export function loadAllRulesForLanguage(
   const key = `${getRulesDir()}:${language}:*`;
   if (cache.has(key) && !options.refresh) return cache.get(key) ?? [];
 
-  const languageDir = path.join(getRulesDir(), language);
+  const languageDir = opaqueJoin(getRulesDir(), language);
   if (!fs.existsSync(languageDir)) {
     cache.set(key, []);
     return [];
@@ -246,7 +246,7 @@ export function getAvailableLanguagePacks(): RulePackMetadata[] {
 
   return fs
     .readdirSync(root)
-    .filter((entry) => fs.statSync(path.join(root, entry)).isDirectory())
+    .filter((entry) => fs.statSync(opaqueJoin(root, entry)).isDirectory())
     .map((language) => {
       const categories = fs
         .readdirSync(opaqueJoin(root, language))

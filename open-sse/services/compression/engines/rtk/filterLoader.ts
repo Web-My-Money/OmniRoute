@@ -94,7 +94,7 @@ function projectFiltersTrusted(
 ): boolean | "changed" {
   if (trustProjectFilters) return true;
   if (process.env.OMNIROUTE_RTK_TRUST_PROJECT_FILTERS === "1") return true;
-  const trustPath = path.join(path.dirname(filtersPath), "trust.json");
+  const trustPath = opaqueJoin(path.dirname(filtersPath), "trust.json");
   if (!fs.existsSync(trustPath)) return false;
   try {
     const filtersHash = sha256(fs.readFileSync(filtersPath, "utf8"));
@@ -128,8 +128,8 @@ function collectFilterSources(options: RtkFilterLoadOptions = {}): FilterSource[
 
 function collectProjectFilterSources(sources: FilterSource[], options: RtkFilterLoadOptions): void {
   const projectCandidates = [
-    { path: path.join(process.cwd(), ".rtk", "filters.toml"), format: "rtk-toml-v1" as const },
-    { path: path.join(process.cwd(), ".rtk", "filters.json"), format: "omniroute-json" as const },
+    { path: opaqueJoin(process.cwd(), ".rtk", "filters.toml"), format: "rtk-toml-v1" as const },
+    { path: opaqueJoin(process.cwd(), ".rtk", "filters.json"), format: "omniroute-json" as const },
   ];
   for (const candidate of projectCandidates) {
     if (!fs.existsSync(candidate.path)) continue;
@@ -153,8 +153,8 @@ function collectProjectFilterSources(sources: FilterSource[], options: RtkFilter
 
 function collectGlobalFilterSources(sources: FilterSource[]): void {
   const globalCandidates = [
-    { path: path.join(getDataDir(), "rtk", "filters.toml"), format: "rtk-toml-v1" as const },
-    { path: path.join(getDataDir(), "rtk", "filters.json"), format: "omniroute-json" as const },
+    { path: opaqueJoin(getDataDir(), "rtk", "filters.toml"), format: "rtk-toml-v1" as const },
+    { path: opaqueJoin(getDataDir(), "rtk", "filters.json"), format: "omniroute-json" as const },
   ];
   for (const candidate of globalCandidates) {
     if (fs.existsSync(candidate.path)) {
@@ -181,7 +181,7 @@ function collectBuiltinFilterSources(sources: FilterSource[]): void {
     for (const file of builtinFiles) {
       sources.push({
         source: "builtin",
-        path: path.join(builtinDir, file),
+        path: opaqueJoin(builtinDir, file),
         trusted: true,
         format: "omniroute-json",
       });
