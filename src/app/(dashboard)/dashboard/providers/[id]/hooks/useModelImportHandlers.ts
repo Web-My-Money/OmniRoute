@@ -18,7 +18,10 @@ import type { ProviderMessageTranslator } from "../providerPageHelpers";
 import { useNotificationStore } from "@/store/notificationStore";
 import { extractImportWarning } from "./modelImportWarning";
 
-type NotifyStore = ReturnType<typeof useNotificationStore>;
+type NotifyStore = Pick<
+  ReturnType<typeof useNotificationStore.getState>,
+  "success" | "error" | "warning" | "info"
+>;
 
 // ──── types ──────────────────────────────────────────────────────────────────
 

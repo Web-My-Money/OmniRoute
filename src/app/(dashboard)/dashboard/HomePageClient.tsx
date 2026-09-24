@@ -168,7 +168,7 @@ export default function HomePageClient({ machineId }: HomePageClientProps) {
       url: `https://github.com/diegosouzapw/OmniRoute/releases/tag/v${cleanLatest}`,
       desc: `A new version of the OmniRoute desktop app is available. Please download the respective app format for your system to update (current: v${versionInfo?.current || ""}).`,
     };
-  }, [platform, versionInfo?.latest, versionInfo?.current]);
+  }, [platform, versionInfo]);
 
   // Electron internal auto-updater state and listeners
   const [electronUpdateStatus, setElectronUpdateStatus] = useState<{
@@ -217,7 +217,7 @@ export default function HomePageClient({ machineId }: HomePageClientProps) {
     // Fetch the pin settings (lightweight)
     fetch("/api/settings")
       .then((r) => (r.ok ? r.json() : {}))
-      .then((data) => {
+      .then((data: Record<string, unknown>) => {
         if (data) {
           if (typeof data.pinProviderQuotaToHome === "boolean") {
             setPinProviderQuotaToHome(data.pinProviderQuotaToHome);

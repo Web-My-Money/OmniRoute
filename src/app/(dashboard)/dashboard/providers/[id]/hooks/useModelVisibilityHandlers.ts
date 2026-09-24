@@ -33,7 +33,10 @@ import {
 import { useNotificationStore } from "@/store/notificationStore";
 import { extractApiErrorMessage } from "@/shared/http/apiErrorMessage";
 
-type NotifyStore = ReturnType<typeof useNotificationStore>;
+type NotifyStore = Pick<
+  ReturnType<typeof useNotificationStore.getState>,
+  "success" | "error" | "warning" | "info"
+>;
 
 // ──── types ──────────────────────────────────────────────────────────────────
 
