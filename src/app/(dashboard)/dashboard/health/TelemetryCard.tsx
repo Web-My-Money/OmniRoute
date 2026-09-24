@@ -120,10 +120,9 @@ function getIndicatorTone(value: number, warning: number, critical: number, inve
   return "bg-emerald-500/10 text-emerald-500";
 }
 
-export default function TelemetryCard() {
+export default function TelemetryCard({ health = null }: { health?: HealthPayload | null }) {
   const t = useTranslations("telemetry");
   const [telemetry, setTelemetry] = useState<TelemetryPayload | null>(null);
-  const [health, setHealth] = useState<HealthPayload | null>(null);
   const [samples, setSamples] = useState<TelemetrySample[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -131,30 +130,15 @@ export default function TelemetryCard() {
 
   const loadTelemetry = useCallback(async () => {
     try {
-      const [telemetryResult, healthResult] = await Promise.allSettled([
-        fetch("/api/telemetry/summary").then((response) => {
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          return response.json() as Promise<TelemetryPayload>;
-        }),
-        fetch("/api/monitoring/health").then((response) => {
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          return response.json() as Promise<HealthPayload>;
-        }),
-      ]);
+      const response = await fetch("/api/telemetry/summary");
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const nextTelemetry = (await response.json()) as TelemetryPayload;
 
-      if (telemetryResult.status === "rejected" && healthResult.status === "rejected") {
-        throw telemetryResult.reason;
-      }
-
-      const nextTelemetry = telemetryResult.status === "fulfilled" ? telemetryResult.value : null;
-      const nextHealth = healthResult.status === "fulfilled" ? healthResult.value : null;
-      if (nextTelemetry) setTelemetry(nextTelemetry);
-      if (nextHealth) setHealth(nextHealth);
+      setTelemetry(nextTelemetry);
       setError(null);
       setLastUpdated(new Date());
 
-      const memoryBytes =
-        nextTelemetry?.memoryUsage?.rss || nextHealth?.system?.memoryUsage?.rss || 0;
+      const memoryBytes = nextTelemetry?.memoryUsage?.rss || health?.system?.memoryUsage?.rss || 0;
       const latencyMs =
         nextTelemetry?.avgLatencyMs ?? nextTelemetry?.avg ?? nextTelemetry?.p50 ?? 0;
       const throughput = nextTelemetry?.totalRequests ?? nextTelemetry?.count ?? 0;
@@ -173,7 +157,7 @@ export default function TelemetryCard() {
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [t, health]);
 
   useEffect(() => {
     void loadTelemetry();
