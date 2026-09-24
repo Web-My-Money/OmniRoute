@@ -26,7 +26,7 @@ export async function GET(request) {
 
     if (alias) {
       const resolved = await resolveModelAliasLookup(alias);
-      if (!resolved.ok) {
+      if ("error" in resolved) {
         return NextResponse.json(
           {
             error: {

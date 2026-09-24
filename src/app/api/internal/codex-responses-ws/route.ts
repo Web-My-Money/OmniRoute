@@ -498,7 +498,7 @@ async function resolveCodexProxy(provider: string): Promise<string | undefined> 
   try {
     return proxyConfigToUrl(await resolveProxy(provider)) || undefined;
   } catch (err) {
-    logger.warn(`[codex-responses-ws] proxy resolution failed: ${sanitizeErrorMessage(err)}`);
+    log.warn(`[codex-responses-ws] proxy resolution failed: ${sanitizeErrorMessage(err)}`);
     return undefined;
   }
 }
