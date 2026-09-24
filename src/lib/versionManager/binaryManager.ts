@@ -8,6 +8,7 @@ import { pipeline } from "stream/promises";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import { getChecksums, getReleaseByVersion } from "./releaseChecker.ts";
+import { opaqueJoin } from "@/lib/opaquePath";
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_DATA_DIR = process.env.DATA_DIR || path.join(os.homedir(), ".omniroute");
@@ -100,7 +101,7 @@ async function verifyChecksum(filePath: string, expectedSha256: string): Promise
 function findBinaryInDir(dir: string): string | null {
   const candidates = ["cli-proxy-api", "cli-proxy-api.exe", "CLIProxyAPI", "CLIProxyAPI.exe"];
   for (const name of candidates) {
-    const candidate = path.join(dir, name);
+    const candidate = opaqueJoin(dir, name);
     if (fsSync.existsSync(/* turbopackIgnore: true */ candidate)) {
       return candidate;
     }
