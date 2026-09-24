@@ -51,6 +51,12 @@ interface RtkFilterLoadOptions {
 }
 
 function getModuleDir(): string {
+  // Statically scoped probe first: path.join(process.cwd(), <literal>) lets
+  // the bundler's file tracer narrow the pattern to this subfolder instead
+  // of unioning the whole project (per the NFT warning's own guidance).
+  const scopedProbe = path.join(process.cwd(), "open-sse", "services", "compression");
+  if (fs.existsSync(scopedProbe)) return process.cwd();
+
   const anchors = [process.cwd()];
   const argv1 = process.argv[1];
   if (typeof argv1 === "string" && argv1) anchors.push(path.dirname(argv1));
