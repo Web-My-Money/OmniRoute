@@ -93,7 +93,7 @@ export function createNodeSqliteAdapterFromDatabase(
     get name() {
       return filePath;
     },
-    prepare(sql: string): PreparedStatement {
+    prepare<Row = unknown>(sql: string): PreparedStatement<Row> {
       const stmt = getCached(sql);
       return {
         run(...params: unknown[]): RunResult {
@@ -103,11 +103,11 @@ export function createNodeSqliteAdapterFromDatabase(
             lastInsertRowid: Number(r.lastInsertRowid ?? 0),
           };
         },
-        get(...params: unknown[]): unknown {
-          return stmt.get(...params);
+        get(...params: unknown[]): Row | undefined {
+          return stmt.get(...params) as Row | undefined;
         },
-        all(...params: unknown[]): unknown[] {
-          return stmt.all(...params);
+        all(...params: unknown[]): Row[] {
+          return stmt.all(...params) as Row[];
         },
       };
     },
