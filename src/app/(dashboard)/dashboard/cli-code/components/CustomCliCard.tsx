@@ -119,7 +119,12 @@ export default function CustomCliCard({
 
   return (
     <Card padding="sm" className="overflow-hidden">
-      <div className="flex items-center justify-between hover:cursor-pointer" onClick={onToggle}>
+      <button
+        type="button"
+        className="flex w-full items-center justify-between text-left hover:cursor-pointer"
+        onClick={onToggle}
+        aria-expanded={isExpanded}
+      >
         <div className="flex items-center gap-3">
           <div className="size-8 rounded-lg flex items-center justify-center shrink-0 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
             <span className="material-symbols-outlined text-xl">{tool.icon || "terminal"}</span>
@@ -140,7 +145,7 @@ export default function CustomCliCard({
         >
           expand_more
         </span>
-      </div>
+      </button>
 
       {isExpanded && (
         <div className="mt-6 pt-6 border-t border-border space-y-5">

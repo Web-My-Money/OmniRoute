@@ -1659,7 +1659,7 @@ function ComboCardInner({
                   e.stopPropagation();
                   onCopy(combo.name, `combo-${combo.id}`);
                 }}
-                className="p-0.5 hover:bg-black/5 dark:hover:bg-white/5 rounded text-text-muted hover:text-primary transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                className="p-0.5 hover:bg-black/5 dark:hover:bg-white/5 rounded text-text-muted hover:text-primary transition-colors opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100"
                 title={t("copyComboName")}
               >
                 <span className="material-symbols-outlined text-[14px]">

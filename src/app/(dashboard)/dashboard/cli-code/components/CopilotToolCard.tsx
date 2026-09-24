@@ -172,7 +172,12 @@ export default function CopilotToolCard({
   return (
     <Card padding="sm" className="overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between hover:cursor-pointer" onClick={onToggle}>
+      <button
+        type="button"
+        className="flex w-full items-center justify-between text-left hover:cursor-pointer"
+        onClick={onToggle}
+        aria-expanded={isExpanded}
+      >
         <div className="flex items-center gap-3">
           <div className="size-8 rounded-lg flex items-center justify-center shrink-0">
             <Image
@@ -203,7 +208,7 @@ export default function CopilotToolCard({
         >
           expand_more
         </span>
-      </div>
+      </button>
 
       {/* Expanded content */}
       {isExpanded && (

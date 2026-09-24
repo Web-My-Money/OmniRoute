@@ -289,10 +289,9 @@ const ProviderCard = forwardRef<ProviderCardHandle, ProviderCardProps>(function 
     return null;
   })();
 
-  const handleToggle = (event: MouseEvent<HTMLDivElement>) => {
+  const stopCardNavigation = (event: MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    onToggle(allDisabled);
   };
 
   const handleCardClick = useCallback(() => {
@@ -462,11 +461,11 @@ const ProviderCard = forwardRef<ProviderCardHandle, ProviderCardProps>(function 
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {Number(stats.total || 0) > 0 && (
-                  <div onClick={handleToggle}>
+                  <div onClick={stopCardNavigation}>
                     <Toggle
                       size="xs"
                       checked={!allDisabled}
-                      onChange={undefined}
+                      onChange={() => onToggle(allDisabled)}
                       title={allDisabled ? t("enableProvider") : t("disableProvider")}
                     />
                   </div>
@@ -485,7 +484,7 @@ const ProviderCard = forwardRef<ProviderCardHandle, ProviderCardProps>(function 
                   </button>
                 )}
                 {!isLlmProvider && (
-                  <span className="material-symbols-outlined text-text-muted opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="material-symbols-outlined text-text-muted opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity">
                     chevron_right
                   </span>
                 )}

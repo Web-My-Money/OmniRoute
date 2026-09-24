@@ -1346,7 +1346,7 @@ function ProviderModelsModal({
                 </div>
                 <button
                   onClick={() => handleCopy(m.fullModel)}
-                  className="shrink-0 ml-2 p-1.5 rounded-lg text-text-muted hover:text-text-main hover:bg-bg-subtle transition-colors opacity-0 group-hover:opacity-100"
+                  className="shrink-0 ml-2 p-1.5 rounded-lg text-text-muted hover:text-text-main hover:bg-bg-subtle transition-colors opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
                   title={t("copyModelName")}
                 >
                   <span className="material-symbols-outlined text-[14px]">

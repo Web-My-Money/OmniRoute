@@ -305,7 +305,12 @@ export default function DroidToolCard({
 
   return (
     <Card padding="sm" className="overflow-hidden">
-      <div className="flex items-center justify-between hover:cursor-pointer" onClick={onToggle}>
+      <button
+        type="button"
+        className="flex w-full items-center justify-between text-left hover:cursor-pointer"
+        onClick={onToggle}
+        aria-expanded={isExpanded}
+      >
         <div className="flex items-center gap-3">
           <div className="size-8 flex items-center justify-center shrink-0">
             <ProviderIcon providerId="droid" size={32} type="color" />
@@ -327,7 +332,7 @@ export default function DroidToolCard({
         >
           expand_more
         </span>
-      </div>
+      </button>
 
       {isExpanded && (
         <div className="mt-4 pt-4 border-t border-border flex flex-col gap-4">

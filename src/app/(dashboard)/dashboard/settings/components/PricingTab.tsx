@@ -996,7 +996,7 @@ function ModelRow({
           <span className={`px-1.5 py-0.5 rounded text-[9px] ${getSourceTone(source)}`}>
             {getSourceLabel(source)}
           </span>
-          <span className="text-text-muted text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">
+          <span className="text-text-muted text-[10px] opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
             {model.id}
           </span>
         </div>

@@ -682,7 +682,12 @@ export default function DefaultToolCard({
 
   return (
     <Card padding="sm" className="overflow-hidden">
-      <div className="flex items-center justify-between hover:cursor-pointer" onClick={onToggle}>
+      <button
+        type="button"
+        className="flex w-full items-center justify-between text-left hover:cursor-pointer"
+        onClick={onToggle}
+        aria-expanded={isExpanded}
+      >
         <div className="flex items-center gap-3">
           <div className="size-8 rounded-lg flex items-center justify-center shrink-0">
             {renderIcon()}
@@ -743,7 +748,7 @@ export default function DefaultToolCard({
         >
           expand_more
         </span>
-      </div>
+      </button>
 
       {isExpanded && <div className="mt-6 pt-6 border-t border-border">{renderGuideSteps()}</div>}
 

@@ -349,18 +349,22 @@ export default function CompressionAnalyticsTab() {
             {stats.last24h.map((entry, idx) => {
               const countPct = (entry.count / maxCountPerHour) * 100;
               const tokenPct = (entry.tokensSaved / maxTokensPerHour) * 100;
+              const pointLabel = t("compressionAnalyticsChartPoint", {
+                hour: entry.hour,
+                count: entry.count,
+                tokens: entry.tokensSaved.toLocaleString(),
+              });
               return (
                 <div key={idx} className="flex-1 flex flex-col items-center gap-2">
                   <div
-                    className="w-full rounded-t-sm bg-gradient-to-b from-primary to-primary/70 transition-all hover:opacity-80 cursor-pointer group relative"
+                    className="w-full rounded-t-sm bg-gradient-to-b from-primary to-primary/70 transition-all hover:opacity-80 group relative"
                     style={{ height: `${Math.max(countPct, 5)}%` }}
-                    title={t("compressionAnalyticsChartPoint", {
-                      hour: entry.hour,
-                      count: entry.count,
-                      tokens: entry.tokensSaved.toLocaleString(),
-                    })}
+                    title={pointLabel}
+                    role="img"
+                    aria-label={pointLabel}
+                    tabIndex={0}
                   >
-                    <div className="absolute -top-6 left-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity text-xs text-text-muted whitespace-nowrap text-center">
+                    <div className="absolute -top-6 left-0 right-0 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity text-xs text-text-muted whitespace-nowrap text-center">
                       {entry.count}
                     </div>
                   </div>
