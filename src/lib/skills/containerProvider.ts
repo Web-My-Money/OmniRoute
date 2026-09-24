@@ -17,6 +17,7 @@
 
 import { createRequire } from "module";
 import os from "os";
+import { spawnHostBinarySync } from "@/lib/hostBinarySpawn";
 
 const require = createRequire(import.meta.url);
 const childProcess = require("child_process") as typeof import("child_process");
@@ -70,7 +71,7 @@ const SANDBOX_NAME = (sandboxId: string) => `omniroute-${sandboxId}`;
  */
 function probeCommand(binary: string): boolean {
   const args = process.platform === "win32" ? ["where", binary] : ["which", binary];
-  const r = childProcess.spawnSync(/* turbopackIgnore: true */ args[0], args.slice(1), {
+  const r = spawnHostBinarySync(args[0], args.slice(1), {
     encoding: "utf8",
     stdio: "ignore",
   });

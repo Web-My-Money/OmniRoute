@@ -47,7 +47,10 @@ export async function loadOrCreateMitmCa(
 ): Promise<MitmCaPair> {
   const { keyPath, certPath } = caPaths(certDir);
 
-  if (fs.existsSync(keyPath) && fs.existsSync(/* turbopackIgnore: true */ certPath)) {
+  if (
+    fs.existsSync(/* turbopackIgnore: true */ keyPath) &&
+    fs.existsSync(/* turbopackIgnore: true */ certPath)
+  ) {
     return {
       key: fs.readFileSync(/* turbopackIgnore: true */ keyPath, "utf-8"),
       cert: fs.readFileSync(/* turbopackIgnore: true */ certPath, "utf-8"),

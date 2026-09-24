@@ -1,4 +1,5 @@
 import { execFile, spawn } from "child_process";
+import { spawnHostBinary } from "@/lib/hostBinarySpawn";
 import fs from "fs";
 import fsPromises from "fs/promises";
 import os from "os";
@@ -633,7 +634,7 @@ export async function startTailscaleLogin({
   const spawnArgs = await buildTailscaleArgs(...tailscaleUpArgs(resolvedHostname, authKey));
 
   return new Promise((resolve, reject) => {
-    const child = spawn(/* turbopackIgnore: true */ resolution.binaryPath as string, spawnArgs, {
+    const child = spawnHostBinary(resolution.binaryPath as string, spawnArgs, {
       detached: true,
       windowsHide: true,
       stdio: ["ignore", "pipe", "pipe"],
@@ -717,7 +718,7 @@ export async function startTailscaleFunnel(
   const funnelArgs = await buildTailscaleArgs("funnel", "--bg", String(port));
 
   return new Promise((resolve, reject) => {
-    const child = spawn(/* turbopackIgnore: true */ resolution.binaryPath as string, funnelArgs, {
+    const child = spawnHostBinary(resolution.binaryPath as string, funnelArgs, {
       windowsHide: true,
       stdio: ["ignore", "pipe", "pipe"],
       env: buildExecEnv(),
