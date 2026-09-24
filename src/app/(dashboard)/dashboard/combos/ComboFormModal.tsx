@@ -31,6 +31,7 @@ import {
   isIntelligentBuilderStrategy,
   parseQualifiedModel,
   resolveComboBuilderProviderId,
+  type ComboBuilderStage,
 } from "@/lib/combos/builderDraft";
 import { normalizeComboConfigMode } from "@/shared/constants/comboConfigMode";
 import { normalizeIntelligentRoutingConfig } from "@/lib/combos/intelligentRouting";
@@ -92,6 +93,10 @@ function secondsInputToOptionalMs(value, maxSeconds = 86400) {
   return Math.min(maxSeconds, Math.round(seconds)) * MS_PER_SECOND;
 }
 
+function toInputValue(value: unknown): string | number {
+  return typeof value === "number" ? value : value == null ? "" : String(value);
+}
+
 function updateFusionTuning(config, field, rawValue) {
   const value = rawValue === "" ? undefined : Number(rawValue);
   const next = { ...(config.fusionTuning || {}), [field]: value };
@@ -132,7 +137,12 @@ const COMBO_FORM_STAGE_META = [
     fallbackDescription: "Final verification before saving.",
     icon: "fact_check",
   },
-];
+] satisfies {
+  id: ComboBuilderStage;
+  fallbackLabel: string;
+  fallbackDescription: string;
+  icon: string;
+}[];
 
 const COMBO_TEMPLATES = [
   {
@@ -670,9 +680,13 @@ export default function ComboFormModal({
   const [manualModelError, setManualModelError] = useState("");
   const [builderComboRefName, setBuilderComboRefName] = useState("");
   const [builderError, setBuilderError] = useState("");
-  const [builderStage, setBuilderStage] = useState<string>(COMBO_BUILDER_STAGES[0]);
+  const [builderStage, setBuilderStage] = useState<ComboBuilderStage>(COMBO_BUILDER_STAGES[0]);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [config, setConfig] = useState(sanitizeComboRuntimeConfig(combo?.config));
+  const fusionTuning =
+    config.fusionTuning && typeof config.fusionTuning === "object"
+      ? (config.fusionTuning as Record<string, unknown>)
+      : undefined;
   const [showStrategyNudge, setShowStrategyNudge] = useState(false);
   const strategyChangeMountedRef = useRef(false);
   // Agent features (#399 / #401 / #454)
@@ -1801,7 +1815,7 @@ export default function ComboFormModal({
                   ...previousConfig,
                   ...nextIntelligentConfig,
                   weights: {
-                    ...(previousConfig?.weights || {}),
+                    ...((previousConfig?.weights as Record<string, unknown> | undefined) || {}),
                     ...(nextIntelligentConfig?.weights || {}),
                   },
                 }))
@@ -2382,7 +2396,7 @@ export default function ComboFormModal({
                         type="number"
                         min="0"
                         max="10"
-                        value={config.maxRetries ?? ""}
+                        value={toInputValue(config.maxRetries)}
                         placeholder="1"
                         onChange={(e) =>
                           setConfig({
@@ -2408,7 +2422,7 @@ export default function ComboFormModal({
                         min="0"
                         max="60000"
                         step="500"
-                        value={config.retryDelayMs ?? ""}
+                        value={toInputValue(config.retryDelayMs)}
                         placeholder="2000"
                         onChange={(e) =>
                           setConfig({
@@ -2500,7 +2514,7 @@ export default function ComboFormModal({
                         type="number"
                         min="0"
                         max="10"
-                        value={config.maxSetRetries ?? ""}
+                        value={toInputValue(config.maxSetRetries)}
                         placeholder="0"
                         onChange={(e) =>
                           setConfig({
@@ -2526,7 +2540,7 @@ export default function ComboFormModal({
                         min="0"
                         max="60000"
                         step="500"
-                        value={config.setRetryDelayMs ?? ""}
+                        value={toInputValue(config.setRetryDelayMs)}
                         placeholder="2000"
                         onChange={(e) =>
                           setConfig({
@@ -2554,7 +2568,7 @@ export default function ComboFormModal({
                           type="number"
                           min="1"
                           max="20"
-                          value={config.concurrencyPerModel ?? ""}
+                          value={toInputValue(config.concurrencyPerModel)}
                           placeholder="3"
                           onChange={(e) =>
                             setConfig({
@@ -2582,7 +2596,7 @@ export default function ComboFormModal({
                           min="1000"
                           max="120000"
                           step="1000"
-                          value={config.queueTimeoutMs ?? ""}
+                          value={toInputValue(config.queueTimeoutMs)}
                           placeholder="30000"
                           onChange={(e) =>
                             setConfig({
@@ -2607,7 +2621,7 @@ export default function ComboFormModal({
                           type="number"
                           min="0"
                           max="1000"
-                          value={config.stickyRoundRobinLimit ?? ""}
+                          value={toInputValue(config.stickyRoundRobinLimit)}
                           placeholder={getI18nOrFallback(t, "stickyLimitInherit", "inherit")}
                           onChange={(e) =>
                             setConfig({
@@ -2642,7 +2656,7 @@ export default function ComboFormModal({
                           type="number"
                           min="0"
                           max="1000"
-                          value={config.stickyWeightedLimit ?? ""}
+                          value={toInputValue(config.stickyWeightedLimit)}
                           placeholder="1"
                           onChange={(e) =>
                             setConfig({
@@ -2669,7 +2683,7 @@ export default function ComboFormModal({
                         showHelp={!isExpertMode}
                       />
                       <select
-                        value={config.nestedComboMode ?? "flatten"}
+                        value={toInputValue(config.nestedComboMode ?? "flatten")}
                         onChange={(e) =>
                           setConfig({
                             ...config,
@@ -2760,7 +2774,7 @@ export default function ComboFormModal({
                           min="0.5"
                           max="0.94"
                           step="0.01"
-                          value={config.handoffThreshold ?? ""}
+                          value={toInputValue(config.handoffThreshold)}
                           placeholder="0.85"
                           onChange={(e) =>
                             setConfig({
@@ -2789,7 +2803,7 @@ export default function ComboFormModal({
                           type="number"
                           min="5"
                           max="100"
-                          value={config.maxMessagesForSummary ?? ""}
+                          value={toInputValue(config.maxMessagesForSummary)}
                           placeholder="30"
                           onChange={(e) =>
                             setConfig({
@@ -2814,7 +2828,7 @@ export default function ComboFormModal({
                         />
                         <input
                           type="text"
-                          value={config.handoffModel ?? ""}
+                          value={toInputValue(config.handoffModel)}
                           placeholder="codex/gpt-5.6-sol"
                           onChange={(e) =>
                             setConfig({
@@ -2852,7 +2866,7 @@ export default function ComboFormModal({
                         />
                         <input
                           type="text"
-                          value={config.judgeModel ?? ""}
+                          value={toInputValue(config.judgeModel)}
                           placeholder={models[0]?.model || "openai/gpt-5.5"}
                           onChange={(e) =>
                             setConfig({ ...config, judgeModel: e.target.value || undefined })
@@ -2874,7 +2888,7 @@ export default function ComboFormModal({
                           type="number"
                           min="1"
                           max="50"
-                          value={config.fusionTuning?.minPanel ?? ""}
+                          value={toInputValue(fusionTuning?.minPanel)}
                           placeholder="2"
                           onChange={(e) =>
                             setConfig(updateFusionTuning(config, "minPanel", e.target.value))
@@ -2900,7 +2914,7 @@ export default function ComboFormModal({
                           type="number"
                           min="0"
                           max="120000"
-                          value={config.fusionTuning?.stragglerGraceMs ?? ""}
+                          value={toInputValue(fusionTuning?.stragglerGraceMs)}
                           placeholder="8000"
                           onChange={(e) =>
                             setConfig(
@@ -2928,7 +2942,7 @@ export default function ComboFormModal({
                           type="number"
                           min="1000"
                           max="600000"
-                          value={config.fusionTuning?.panelHardTimeoutMs ?? ""}
+                          value={toInputValue(fusionTuning?.panelHardTimeoutMs)}
                           placeholder="90000"
                           onChange={(e) =>
                             setConfig(
