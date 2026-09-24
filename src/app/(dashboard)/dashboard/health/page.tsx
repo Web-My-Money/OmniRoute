@@ -299,7 +299,7 @@ export default function HealthPage() {
         </span>
       </div>
 
-      <TelemetryCard />
+      <TelemetryCard health={data} />
 
       <ProviderHealthAutopilotCard />
 
