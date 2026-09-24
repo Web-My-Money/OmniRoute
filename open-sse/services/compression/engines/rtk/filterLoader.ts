@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { opaqueJoin } from "@/lib/opaquePath";
 import os from "node:os";
 import crypto from "node:crypto";
 import { detectCommandType } from "./commandDetector.ts";
@@ -57,20 +58,20 @@ function getModuleDir(): string {
   for (const anchor of anchors) {
     let dir = path.resolve(anchor);
     for (let i = 0; i <= 8; i++) {
-      if (fs.existsSync(path.join(dir, rel))) return dir;
+      if (fs.existsSync(opaqueJoin(dir, rel))) return dir;
       const parent = path.dirname(dir);
       if (parent === dir) break;
       dir = parent;
     }
   }
-  return path.join(os.homedir(), ".omniroute");
+  return opaqueJoin(os.homedir(), ".omniroute");
 }
 
 function getFiltersDir(): string {
   const root = getModuleDir();
   const candidates = [
-    path.join(root, "open-sse", "services", "compression", "engines", "rtk", "filters"),
-    path.join(root, "app", "open-sse", "services", "compression", "engines", "rtk", "filters"),
+    opaqueJoin(root, "open-sse", "services", "compression", "engines", "rtk", "filters"),
+    opaqueJoin(root, "app", "open-sse", "services", "compression", "engines", "rtk", "filters"),
   ];
   return (
     candidates.find((candidate, index) => {
@@ -80,7 +81,7 @@ function getFiltersDir(): string {
 }
 
 function getDataDir(): string {
-  return process.env.DATA_DIR || path.join(os.homedir(), ".omniroute");
+  return process.env.DATA_DIR || opaqueJoin(os.homedir(), ".omniroute");
 }
 
 function sha256(value: string): string {

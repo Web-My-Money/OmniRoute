@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { opaqueJoin } from "@/lib/opaquePath";
 import os from "node:os";
 import type { CavemanIntensity, CavemanRule } from "./types.ts";
 
@@ -66,21 +67,21 @@ function getModuleDir(): string {
   for (const anchor of anchors) {
     let dir = path.resolve(anchor);
     for (let i = 0; i <= 8; i++) {
-      if (fs.existsSync(path.join(dir, rel))) return dir;
+      if (fs.existsSync(opaqueJoin(dir, rel))) return dir;
       const parent = path.dirname(dir);
       if (parent === dir) break;
       dir = parent;
     }
   }
-  return path.join(os.homedir(), ".omniroute");
+  return opaqueJoin(os.homedir(), ".omniroute");
 }
 
 function getRulesDir(): string {
   if (rulesDirCache) return rulesDirCache;
   const root = getModuleDir();
   const candidates = [
-    path.join(root, "open-sse", "services", "compression", "rules"),
-    path.join(root, "app", "open-sse", "services", "compression", "rules"),
+    opaqueJoin(root, "open-sse", "services", "compression", "rules"),
+    opaqueJoin(root, "app", "open-sse", "services", "compression", "rules"),
   ];
   rulesDirCache =
     candidates.find((candidate, index) => {
@@ -248,7 +249,7 @@ export function getAvailableLanguagePacks(): RulePackMetadata[] {
     .filter((entry) => fs.statSync(path.join(root, entry)).isDirectory())
     .map((language) => {
       const categories = fs
-        .readdirSync(path.join(root, language))
+        .readdirSync(opaqueJoin(root, language))
         .filter((entry) => entry.endsWith(".json"))
         .map((entry) => path.basename(entry, ".json"))
         .sort();
