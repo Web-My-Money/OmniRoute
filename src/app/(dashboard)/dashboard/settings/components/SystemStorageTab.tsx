@@ -78,6 +78,11 @@ export default function SystemStorageTab() {
       days: 0,
     },
     lastBackupAt: null,
+    walBytes: 0,
+    memory: null,
+    topTables: [],
+    memoryFts: null,
+    cleanup: null,
   });
   const [backupCleanupOptions, setBackupCleanupOptions] = useState({
     keepLatest: 20,
@@ -785,6 +790,114 @@ export default function SystemStorageTab() {
     );
   };
 
+  const renderMaintenanceCard = () => {
+    const lastRun = storageHealth.cleanup?.lastRun ?? null;
+    const cleanupEnabled = storageHealth.cleanup?.autoCleanupEnabled === true;
+    const memory = storageHealth.memory;
+    const cgroup = memory?.cgroup ?? null;
+    const fts = storageHealth.memoryFts;
+    const topTables = storageHealth.topTables || [];
+    const hasData =
+      lastRun !== null ||
+      memory !== null ||
+      topTables.length > 0 ||
+      (storageHealth.walBytes ?? 0) > 0;
+    if (!hasData) return null;
+
+    return (
+      <div className="mb-4 p-4 rounded-lg border border-border bg-bg">
+        <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
+          <div>
+            <h4 className="text-sm font-semibold flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                monitor_heart
+              </span>
+              {t("storageMaintenance")}
+            </h4>
+            <p className="mt-1 text-xs text-text-muted">{t("storageMaintenanceDesc")}</p>
+          </div>
+          <Badge variant={cleanupEnabled ? "success" : "warning"} size="sm">
+            {cleanupEnabled ? t("storageCleanupEnabled") : t("storageCleanupDisabled")}
+          </Badge>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="p-3 rounded-lg bg-black/[0.02] dark:bg-white/[0.02]">
+            <p className="text-xs text-text-muted mb-1">{t("storageLastAutoCleanup")}</p>
+            <p className="text-sm font-semibold">
+              {lastRun ? formatRelativeTime(lastRun.ranAt) : t("storageCleanupNeverRan")}
+            </p>
+          </div>
+          <div className="p-3 rounded-lg bg-black/[0.02] dark:bg-white/[0.02]">
+            <p className="text-xs text-text-muted mb-1">{t("storageCleanupRowsDeleted")}</p>
+            <p className="text-sm font-semibold">
+              {lastRun ? lastRun.totalDeleted.toLocaleString() : "—"}
+              {lastRun && lastRun.totalErrors > 0 && (
+                <span className="ml-2 text-red-500 text-xs">
+                  {t("storageCleanupErrors", { count: lastRun.totalErrors })}
+                </span>
+              )}
+            </p>
+          </div>
+          <div className="p-3 rounded-lg bg-black/[0.02] dark:bg-white/[0.02]">
+            <p className="text-xs text-text-muted mb-1">{t("storageWalSize")}</p>
+            <p className="text-sm font-semibold">{formatBytes(storageHealth.walBytes ?? 0)}</p>
+          </div>
+          <div className="p-3 rounded-lg bg-black/[0.02] dark:bg-white/[0.02]">
+            <p className="text-xs text-text-muted mb-1">{t("storageProcessRss")}</p>
+            <p className="text-sm font-semibold">
+              {memory ? formatBytes(memory.process.rssBytes) : "—"}
+            </p>
+          </div>
+          {cgroup && (
+            <>
+              <div className="p-3 rounded-lg bg-black/[0.02] dark:bg-white/[0.02]">
+                <p className="text-xs text-text-muted mb-1">{t("storageCgroupBilled")}</p>
+                <p className="text-sm font-semibold">{formatBytes(cgroup.currentBytes)}</p>
+              </div>
+              {cgroup.fileBytes !== null && (
+                <div className="p-3 rounded-lg bg-black/[0.02] dark:bg-white/[0.02]">
+                  <p className="text-xs text-text-muted mb-1">{t("storageCgroupCache")}</p>
+                  <p className="text-sm font-semibold">{formatBytes(cgroup.fileBytes)}</p>
+                </div>
+              )}
+            </>
+          )}
+          {fts?.exists && (
+            <div className="p-3 rounded-lg bg-black/[0.02] dark:bg-white/[0.02]">
+              <p className="text-xs text-text-muted mb-1">{t("storageFtsIndex")}</p>
+              <p className="text-sm font-semibold">
+                {formatBytes(fts.ftsBytes)}
+                <span className="ml-1 text-xs text-text-muted font-normal">
+                  / {formatBytes(fts.memoriesBytes)}
+                </span>
+              </p>
+            </div>
+          )}
+        </div>
+
+        {topTables.length > 0 && (
+          <div className="mt-4">
+            <p className="text-xs text-text-muted mb-2">{t("storageTopTables")}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5">
+              {topTables.slice(0, 9).map((table) => (
+                <div
+                  key={table.name}
+                  className="flex items-center justify-between px-2.5 py-1.5 rounded bg-black/[0.02] dark:bg-white/[0.02] text-xs"
+                >
+                  <span className="font-mono truncate mr-2">{table.name}</span>
+                  <span className="text-text-muted whitespace-nowrap">
+                    {formatBytes(table.bytes)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderBackupList = () => {
     if (!backupsExpanded) return null;
 
@@ -1267,6 +1380,7 @@ export default function SystemStorageTab() {
       </div>
 
       {renderDatabaseStatistics()}
+      {renderMaintenanceCard()}
 
       <div className="pt-3 border-t border-border/50 mb-4">
         <div className="flex items-center gap-2 mb-3">
