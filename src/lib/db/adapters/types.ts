@@ -3,10 +3,10 @@ export interface RunResult {
   lastInsertRowid: number | bigint;
 }
 
-export interface PreparedStatement {
+export interface PreparedStatement<Row = unknown> {
   run(...params: unknown[]): RunResult;
-  get(...params: unknown[]): unknown;
-  all(...params: unknown[]): unknown[];
+  get(...params: unknown[]): Row | undefined;
+  all(...params: unknown[]): Row[];
 }
 
 export interface SqliteAdapter {
@@ -14,7 +14,7 @@ export interface SqliteAdapter {
   readonly open: boolean;
   readonly name: string;
 
-  prepare(sql: string): PreparedStatement;
+  prepare<Row = unknown>(sql: string): PreparedStatement<Row>;
   exec(sql: string): void;
   pragma(pragmaStr: string, options?: { simple?: boolean }): unknown;
 
