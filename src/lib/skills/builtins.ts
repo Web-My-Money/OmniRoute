@@ -208,7 +208,7 @@ export const builtinSkills: Record<string, SkillHandler> = {
     }
 
     const { resolved, relative } = resolveWorkspacePath(inputPath, context);
-    const stat = await fs.stat(resolved);
+    const stat = await fs.stat(/* turbopackIgnore: true */ resolved);
     if (!stat.isFile()) throw new Error("Skill file path must point to a file");
     if (stat.size > MAX_FILE_BYTES) {
       throw new Error(`Skill file exceeds the ${MAX_FILE_BYTES} byte read limit`);
@@ -217,7 +217,7 @@ export const builtinSkills: Record<string, SkillHandler> = {
     return {
       success: true,
       path: relative,
-      content: await fs.readFile(resolved, encoding),
+      content: await fs.readFile(/* turbopackIgnore: true */ resolved, encoding),
       bytesRead: stat.size,
       encoding,
       context: context.apiKeyId,
@@ -388,14 +388,7 @@ export const builtinSkills: Record<string, SkillHandler> = {
   },
 
   web_fetch: async (input, context) => {
-    const {
-      url,
-      format,
-      depth,
-      wait_for_selector,
-      include_metadata,
-      provider,
-    } = input as {
+    const { url, format, depth, wait_for_selector, include_metadata, provider } = input as {
       url: string;
       format?: "markdown" | "html" | "links" | "screenshot";
       depth?: 0 | 1 | 2;

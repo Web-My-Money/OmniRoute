@@ -38,7 +38,7 @@ const hasOmniRouteConfig = (settings: Record<string, unknown> | null): boolean =
 // Read current config.json
 const readConfig = async (): Promise<Record<string, unknown> | null> => {
   try {
-    const content = await fs.readFile(getJcodeConfigPath(), "utf-8");
+    const content = await fs.readFile(/* turbopackIgnore: true */ getJcodeConfigPath(), "utf-8");
     return JSON.parse(content) as Record<string, unknown>;
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return null;
@@ -84,10 +84,7 @@ export async function GET(request: Request) {
       configPath: getJcodeConfigPath(),
     });
   } catch (err) {
-    return NextResponse.json(
-      { error: { message: sanitizeErrorMessage(err) } },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: { message: sanitizeErrorMessage(err) } }, { status: 500 });
   }
 }
 
@@ -100,10 +97,7 @@ export async function POST(request: Request) {
   try {
     rawBody = await request.json();
   } catch {
-    return NextResponse.json(
-      { error: { message: "Invalid JSON body" } },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: { message: "Invalid JSON body" } }, { status: 400 });
   }
 
   try {
@@ -134,7 +128,7 @@ export async function POST(request: Request) {
     // Read existing config or start fresh
     let existing: Record<string, unknown> = {};
     try {
-      const raw = await fs.readFile(configPath, "utf-8");
+      const raw = await fs.readFile(/* turbopackIgnore: true */ configPath, "utf-8");
       existing = JSON.parse(raw) as Record<string, unknown>;
     } catch {
       /* No existing config */
@@ -165,10 +159,7 @@ export async function POST(request: Request) {
       configPath,
     });
   } catch (err) {
-    return NextResponse.json(
-      { error: { message: sanitizeErrorMessage(err) } },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: { message: sanitizeErrorMessage(err) } }, { status: 500 });
   }
 }
 
@@ -191,7 +182,7 @@ export async function DELETE(request: Request) {
     // Read existing config
     let existing: Record<string, unknown> = {};
     try {
-      const raw = await fs.readFile(configPath, "utf-8");
+      const raw = await fs.readFile(/* turbopackIgnore: true */ configPath, "utf-8");
       existing = JSON.parse(raw) as Record<string, unknown>;
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code === "ENOENT") {
@@ -221,9 +212,6 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true, message: "jcode OmniRoute settings removed" });
   } catch (err) {
-    return NextResponse.json(
-      { error: { message: sanitizeErrorMessage(err) } },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: { message: sanitizeErrorMessage(err) } }, { status: 500 });
   }
 }

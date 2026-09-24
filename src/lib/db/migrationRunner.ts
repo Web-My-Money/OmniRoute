@@ -62,7 +62,7 @@ function resolveMigrationsDir(): string {
       path.join(basePath, "app", "src", "lib", "db", "migrations"),
     ];
     for (const loc of locations) {
-      if (fs.existsSync(loc)) return loc;
+      if (fs.existsSync(/* turbopackIgnore: true */ loc)) return loc;
     }
     return null;
   };
@@ -219,7 +219,7 @@ function isDeferredUnsupportedMigration(
 function getMigrationFiles(): Array<{ version: string; name: string; path: string }> {
   // The extra directories are an independent set: a missing core directory must not
   // make them vanish silently.
-  if (!fs.existsSync(MIGRATIONS_DIR)) return getExtraMigrationFiles();
+  if (!fs.existsSync(/* turbopackIgnore: true */ MIGRATIONS_DIR)) return getExtraMigrationFiles();
 
   const files = fs
     .readdirSync(MIGRATIONS_DIR)
@@ -231,7 +231,7 @@ function getMigrationFiles(): Array<{ version: string; name: string; path: strin
       return {
         version: match[1],
         name: match[2],
-        path: path.join(MIGRATIONS_DIR, filename),
+        path: path.join(/* turbopackIgnore: true */ MIGRATIONS_DIR, filename),
       };
     })
     .filter(Boolean) as Array<{ version: string; name: string; path: string }>;

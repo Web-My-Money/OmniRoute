@@ -1,4 +1,5 @@
-import { spawn, execFile } from "child_process";
+import { execFile } from "child_process";
+import { spawnHostBinary } from "@/lib/hostBinarySpawn";
 import { createHash } from "crypto";
 import { promisify } from "util";
 import fs from "fs/promises";
@@ -814,7 +815,7 @@ export async function startCloudflaredTunnel(): Promise<CloudflaredTunnelStatus>
       startedAt: new Date().toISOString(),
     });
 
-    const child = spawn(binary.binaryPath as string, getCloudflaredStartArgs(targetUrl), {
+    const child = spawnHostBinary(binary.binaryPath as string, getCloudflaredStartArgs(targetUrl), {
       windowsHide: true,
       stdio: ["ignore", "pipe", "pipe"],
       env: buildCloudflaredChildEnv(),

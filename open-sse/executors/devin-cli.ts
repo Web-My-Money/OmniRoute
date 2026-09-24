@@ -26,7 +26,8 @@
  *   model_configs_v4.bin catalog on startup.
  */
 
-import { spawn } from "node:child_process";
+import { spawnHostBinary } from "@/lib/hostBinarySpawn";
+import { opaqueJoin } from "@/lib/opaquePath";
 import path from "node:path";
 import os from "node:os";
 import fs from "node:fs";
@@ -52,8 +53,8 @@ function resolveDevinBin(): string {
   // 4. Linux/macOS installer paths
   const home = os.homedir();
   for (const candidate of [
-    path.join(home, ".local", "share", "devin", "bin", "devin"),
-    path.join(home, ".devin", "bin", "devin"),
+    opaqueJoin(home, ".local", "share", "devin", "bin", "devin"),
+    opaqueJoin(home, ".devin", "bin", "devin"),
   ]) {
     if (fs.existsSync(candidate)) return candidate;
   }
@@ -153,7 +154,7 @@ export class DevinCliExecutor extends BaseExecutor {
         const env: NodeJS.ProcessEnv = { ...process.env };
         if (apiKey) env.WINDSURF_API_KEY = apiKey;
 
-        const child = spawn(devinBin, ["acp", "--agent-type", "summarizer"], {
+        const child = spawnHostBinary(devinBin, ["acp", "--agent-type", "summarizer"], {
           env,
           stdio: ["pipe", "pipe", "pipe"],
           windowsHide: true,

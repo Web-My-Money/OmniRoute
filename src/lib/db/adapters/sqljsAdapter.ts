@@ -33,7 +33,7 @@ function resolveSqlJsWasmPath(): string {
   } catch {}
 
   for (const candidatePath of candidatePaths) {
-    if (fs.existsSync(candidatePath)) {
+    if (fs.existsSync(/* turbopackIgnore: true */ candidatePath)) {
       return candidatePath;
     }
   }

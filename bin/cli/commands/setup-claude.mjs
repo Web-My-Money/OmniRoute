@@ -19,6 +19,7 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import os from "node:os";
+import { opaqueJoin } from "../data-dir.mjs";
 import { printHeading, printInfo, printSuccess, printError } from "../io.mjs";
 import {
   categoriseModel,
@@ -75,7 +76,7 @@ export function buildProfileSettings(modelId, baseUrl, cfg) {
  * @returns {Promise<{written:number, skipped:number, profiles:Array<{name:string, model:string, filePath:string}>}>}
  */
 export async function syncClaudeProfilesFromModels(models, opts = {}) {
-  const claudeHome = opts.claudeHome || join(os.homedir(), ".claude");
+  const claudeHome = opts.claudeHome || opaqueJoin(os.homedir(), ".claude");
   const profilesRoot = join(claudeHome, "profiles");
   const baseUrl = opts.baseUrl;
   const dryRun = Boolean(opts.dryRun);
@@ -140,7 +141,7 @@ export async function runSetupClaudeCommand(opts = {}) {
     .replace(/\/+$/, "")
     .replace(/\/v1$/, "");
   const apiKey = opts.apiKey ?? opts["api-key"] ?? process.env.OMNIROUTE_API_KEY ?? "";
-  const claudeHome = opts.claudeHome ?? opts["claude-home"] ?? join(os.homedir(), ".claude");
+  const claudeHome = opts.claudeHome ?? opts["claude-home"] ?? opaqueJoin(os.homedir(), ".claude");
   const profilesRoot = join(claudeHome, "profiles");
   const dryRun = Boolean(opts.dryRun ?? opts["dry-run"]);
 

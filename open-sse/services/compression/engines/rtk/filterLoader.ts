@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { opaqueJoin, probeUpForSubpath } from "@/lib/opaquePath";
 import os from "node:os";
 import crypto from "node:crypto";
 import { detectCommandType } from "./commandDetector.ts";
@@ -53,34 +54,28 @@ function getModuleDir(): string {
   const anchors = [process.cwd()];
   const argv1 = process.argv[1];
   if (typeof argv1 === "string" && argv1) anchors.push(path.dirname(argv1));
-  const rel = path.join("open-sse", "services", "compression");
-  for (const anchor of anchors) {
-    let dir = path.resolve(anchor);
-    for (let i = 0; i <= 8; i++) {
-      if (fs.existsSync(path.join(dir, rel))) return dir;
-      const parent = path.dirname(dir);
-      if (parent === dir) break;
-      dir = parent;
-    }
-  }
-  return path.join(os.homedir(), ".omniroute");
+  return probeUpForSubpath(
+    anchors,
+    path.join("open-sse", "services", "compression"),
+    opaqueJoin(os.homedir(), ".omniroute")
+  );
 }
 
 function getFiltersDir(): string {
   const root = getModuleDir();
   const candidates = [
-    path.join(root, "open-sse", "services", "compression", "engines", "rtk", "filters"),
-    path.join(root, "app", "open-sse", "services", "compression", "engines", "rtk", "filters"),
+    opaqueJoin(root, "open-sse", "services", "compression", "engines", "rtk", "filters"),
+    opaqueJoin(root, "app", "open-sse", "services", "compression", "engines", "rtk", "filters"),
   ];
   return (
     candidates.find((candidate, index) => {
-      return candidates.indexOf(candidate) === index && fs.existsSync(candidate);
+      return candidates.indexOf(candidate) === index && fs.existsSync(/* turbopackIgnore: true */ candidate);
     }) ?? candidates[0]
   );
 }
 
 function getDataDir(): string {
-  return process.env.DATA_DIR || path.join(os.homedir(), ".omniroute");
+  return process.env.DATA_DIR || opaqueJoin(os.homedir(), ".omniroute");
 }
 
 function sha256(value: string): string {
@@ -93,11 +88,11 @@ function projectFiltersTrusted(
 ): boolean | "changed" {
   if (trustProjectFilters) return true;
   if (process.env.OMNIROUTE_RTK_TRUST_PROJECT_FILTERS === "1") return true;
-  const trustPath = path.join(path.dirname(filtersPath), "trust.json");
-  if (!fs.existsSync(trustPath)) return false;
+  const trustPath = opaqueJoin(path.dirname(filtersPath), "trust.json");
+  if (!fs.existsSync(/* turbopackIgnore: true */ trustPath)) return false;
   try {
-    const filtersHash = sha256(fs.readFileSync(filtersPath, "utf8"));
-    const trust = JSON.parse(fs.readFileSync(trustPath, "utf8")) as Record<string, unknown>;
+    const filtersHash = sha256(fs.readFileSync(/* turbopackIgnore: true */ filtersPath, "utf8"));
+    const trust = JSON.parse(fs.readFileSync(/* turbopackIgnore: true */ trustPath, "utf8")) as Record<string, unknown>;
     const isToml = filtersPath.endsWith(".toml");
     const trustedHash = isToml
       ? typeof trust.filtersTomlSha256 === "string"
@@ -127,11 +122,11 @@ function collectFilterSources(options: RtkFilterLoadOptions = {}): FilterSource[
 
 function collectProjectFilterSources(sources: FilterSource[], options: RtkFilterLoadOptions): void {
   const projectCandidates = [
-    { path: path.join(process.cwd(), ".rtk", "filters.toml"), format: "rtk-toml-v1" as const },
-    { path: path.join(process.cwd(), ".rtk", "filters.json"), format: "omniroute-json" as const },
+    { path: opaqueJoin(process.cwd(), ".rtk", "filters.toml"), format: "rtk-toml-v1" as const },
+    { path: opaqueJoin(process.cwd(), ".rtk", "filters.json"), format: "omniroute-json" as const },
   ];
   for (const candidate of projectCandidates) {
-    if (!fs.existsSync(candidate.path)) continue;
+    if (!fs.existsSync(/* turbopackIgnore: true */ candidate.path)) continue;
     const trusted = projectFiltersTrusted(candidate.path, options.trustProjectFilters === true);
     if (trusted === true) {
       sources.push({ source: "project", ...candidate, trusted: true });
@@ -152,11 +147,11 @@ function collectProjectFilterSources(sources: FilterSource[], options: RtkFilter
 
 function collectGlobalFilterSources(sources: FilterSource[]): void {
   const globalCandidates = [
-    { path: path.join(getDataDir(), "rtk", "filters.toml"), format: "rtk-toml-v1" as const },
-    { path: path.join(getDataDir(), "rtk", "filters.json"), format: "omniroute-json" as const },
+    { path: opaqueJoin(getDataDir(), "rtk", "filters.toml"), format: "rtk-toml-v1" as const },
+    { path: opaqueJoin(getDataDir(), "rtk", "filters.json"), format: "omniroute-json" as const },
   ];
   for (const candidate of globalCandidates) {
-    if (fs.existsSync(candidate.path)) {
+    if (fs.existsSync(/* turbopackIgnore: true */ candidate.path)) {
       sources.push({ source: "global", ...candidate, trusted: true });
     }
   }
@@ -164,11 +159,11 @@ function collectGlobalFilterSources(sources: FilterSource[]): void {
 
 function collectBuiltinFilterSources(sources: FilterSource[]): void {
   const builtinDir = getFiltersDir();
-  if (fs.existsSync(builtinDir)) {
+  if (fs.existsSync(/* turbopackIgnore: true */ builtinDir)) {
     let builtinFiles: string[] = [];
     try {
       builtinFiles = fs
-        .readdirSync(builtinDir)
+        .readdirSync(/* turbopackIgnore: true */ builtinDir)
         .filter((entry) => entry.endsWith(".json"))
         .sort();
     } catch {
@@ -180,7 +175,7 @@ function collectBuiltinFilterSources(sources: FilterSource[]): void {
     for (const file of builtinFiles) {
       sources.push({
         source: "builtin",
-        path: path.join(builtinDir, file),
+        path: opaqueJoin(builtinDir, file),
         trusted: true,
         format: "omniroute-json",
       });
@@ -190,7 +185,7 @@ function collectBuiltinFilterSources(sources: FilterSource[]): void {
 
 function parseFilterFile(source: FilterSource): RtkFilterDefinition[] {
   try {
-    const content = fs.readFileSync(source.path, "utf8");
+    const content = fs.readFileSync(/* turbopackIgnore: true */ source.path, "utf8");
     const definitions =
       source.format === "rtk-toml-v1"
         ? (() => {

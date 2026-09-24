@@ -672,7 +672,7 @@ function cleanupRecreatedSqliteFiles(sqliteFile: string) {
     `${sqliteFile}-journal`,
   ]) {
     try {
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      if (fs.existsSync(/* turbopackIgnore: true */ filePath)) fs.unlinkSync(filePath);
     } catch {
       /* ignore */
     }
@@ -845,7 +845,7 @@ function createManagedDbBackup(db: SqliteDatabase, reason: string): boolean {
 
   try {
     const backupDir = DB_BACKUPS_DIR || path.join(DATA_DIR, "db_backups");
-    if (!fs.existsSync(backupDir)) {
+    if (!fs.existsSync(/* turbopackIgnore: true */ backupDir)) {
       fs.mkdirSync(backupDir, { recursive: true });
     }
 

@@ -51,7 +51,7 @@ function resolveCursorAgentBinary(): string | null {
     "/usr/bin/cursor-agent",
   ];
   for (const candidate of candidates) {
-    if (existsSync(candidate)) return candidate;
+    if (existsSync(/* turbopackIgnore: true */ candidate)) return candidate;
   }
   // Fallback: PATH-based lookup (lets execFile do the resolution).
   const pathDirs = (process.env.PATH || "").split(delimiter).filter(Boolean);

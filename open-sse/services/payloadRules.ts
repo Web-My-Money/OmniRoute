@@ -174,12 +174,12 @@ async function refreshPayloadRulesFileCache(force = false) {
     cachedFilePath = filePath;
 
     try {
-      const stat = await fs.stat(filePath);
+      const stat = await fs.stat(/* turbopackIgnore: true */ filePath);
       if (!force && cachedFileMtimeMs === stat.mtimeMs) {
         return;
       }
 
-      const content = await fs.readFile(filePath, "utf-8");
+      const content = await fs.readFile(/* turbopackIgnore: true */ filePath, "utf-8");
       const parsed = JSON.parse(content);
       cachedFileConfig = normalizePayloadRulesConfig(parsed);
       cachedFileMtimeMs = stat.mtimeMs;

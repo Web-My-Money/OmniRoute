@@ -21,7 +21,7 @@ const EXTENSIONS_DIRS = [
 export function detectCopilot(): DetectionResult {
   for (const dir of EXTENSIONS_DIRS) {
     try {
-      if (!fs.existsSync(dir)) continue;
+      if (!fs.existsSync(/* turbopackIgnore: true */ dir)) continue;
       const entries = fs.readdirSync(dir);
       for (const name of entries) {
         // Copilot extensions are named like `github.copilot-1.x.x`,
