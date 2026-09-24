@@ -11,11 +11,7 @@ import {
   normalizeIntelligentRoutingConfig,
 } from "@/lib/combos/intelligentRouting";
 import { AI_PROVIDERS } from "@/shared/constants/providers";
-
-function getI18nOrFallback(t: any, key: string, fallback: string) {
-  if (typeof t?.has === "function" && t.has(key)) return t(key);
-  return fallback;
-}
+import { getI18nOrFallback } from "./comboFormUtils";
 
 function formatProviderLabel(providerId: string, activeProviders: any[] = []) {
   const matchedProvider = activeProviders.find(

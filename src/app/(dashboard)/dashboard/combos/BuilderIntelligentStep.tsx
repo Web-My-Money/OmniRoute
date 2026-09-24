@@ -11,11 +11,7 @@ import {
 } from "@/lib/combos/intelligentRouting";
 import { AI_PROVIDERS } from "@/shared/constants/providers";
 import { compareTr } from "@/shared/utils/turkishText";
-
-function getI18nOrFallback(t: any, key: string, fallback: string) {
-  if (typeof t?.has === "function" && t.has(key)) return t(key);
-  return fallback;
-}
+import { getI18nOrFallback } from "./comboFormUtils";
 
 function toProviderOptions(activeProviders: any[] = [], candidatePool: string[] = []) {
   const uniqueProviders = new Map<string, { id: string; label: string; connectionCount: number }>();
