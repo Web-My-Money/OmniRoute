@@ -247,6 +247,18 @@ export default function HealthPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-end gap-3">
+        {error && (
+          <span
+            role="status"
+            className="text-xs text-amber-400 flex items-center gap-1"
+            title={error}
+          >
+            <span className="material-symbols-outlined text-[14px]" aria-hidden="true">
+              warning
+            </span>
+            {t("refreshFailed")}
+          </span>
+        )}
         {lastRefresh && (
           <span className="text-xs text-text-muted">
             {t("updatedAt", { time: lastRefresh.toLocaleTimeString(locale) })}
