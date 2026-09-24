@@ -4382,6 +4382,7 @@
     "retry": "Retry",
     "allOperational": "All systems operational",
     "issuesDetected": "System issues detected",
+    "refreshFailed": "Refresh failed — showing last known data",
     "updatedAt": "Updated {time}",
     "latency": "Latency",
     "latencyP50": "p50",
