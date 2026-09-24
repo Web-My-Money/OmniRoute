@@ -58,7 +58,7 @@ function getModuleDir(): string {
   for (const anchor of anchors) {
     let dir = path.resolve(anchor);
     for (let i = 0; i <= 8; i++) {
-      if (fs.existsSync(opaqueJoin(dir, rel))) return dir;
+      if (fs.existsSync(/* turbopackIgnore: true */ opaqueJoin(dir, rel))) return dir;
       const parent = path.dirname(dir);
       if (parent === dir) break;
       dir = parent;
@@ -75,7 +75,7 @@ function getFiltersDir(): string {
   ];
   return (
     candidates.find((candidate, index) => {
-      return candidates.indexOf(candidate) === index && fs.existsSync(candidate);
+      return candidates.indexOf(candidate) === index && fs.existsSync(/* turbopackIgnore: true */ candidate);
     }) ?? candidates[0]
   );
 }
@@ -95,10 +95,10 @@ function projectFiltersTrusted(
   if (trustProjectFilters) return true;
   if (process.env.OMNIROUTE_RTK_TRUST_PROJECT_FILTERS === "1") return true;
   const trustPath = opaqueJoin(path.dirname(filtersPath), "trust.json");
-  if (!fs.existsSync(trustPath)) return false;
+  if (!fs.existsSync(/* turbopackIgnore: true */ trustPath)) return false;
   try {
-    const filtersHash = sha256(fs.readFileSync(filtersPath, "utf8"));
-    const trust = JSON.parse(fs.readFileSync(trustPath, "utf8")) as Record<string, unknown>;
+    const filtersHash = sha256(fs.readFileSync(/* turbopackIgnore: true */ filtersPath, "utf8"));
+    const trust = JSON.parse(fs.readFileSync(/* turbopackIgnore: true */ trustPath, "utf8")) as Record<string, unknown>;
     const isToml = filtersPath.endsWith(".toml");
     const trustedHash = isToml
       ? typeof trust.filtersTomlSha256 === "string"
@@ -132,7 +132,7 @@ function collectProjectFilterSources(sources: FilterSource[], options: RtkFilter
     { path: opaqueJoin(process.cwd(), ".rtk", "filters.json"), format: "omniroute-json" as const },
   ];
   for (const candidate of projectCandidates) {
-    if (!fs.existsSync(candidate.path)) continue;
+    if (!fs.existsSync(/* turbopackIgnore: true */ candidate.path)) continue;
     const trusted = projectFiltersTrusted(candidate.path, options.trustProjectFilters === true);
     if (trusted === true) {
       sources.push({ source: "project", ...candidate, trusted: true });
@@ -157,7 +157,7 @@ function collectGlobalFilterSources(sources: FilterSource[]): void {
     { path: opaqueJoin(getDataDir(), "rtk", "filters.json"), format: "omniroute-json" as const },
   ];
   for (const candidate of globalCandidates) {
-    if (fs.existsSync(candidate.path)) {
+    if (fs.existsSync(/* turbopackIgnore: true */ candidate.path)) {
       sources.push({ source: "global", ...candidate, trusted: true });
     }
   }
@@ -165,11 +165,11 @@ function collectGlobalFilterSources(sources: FilterSource[]): void {
 
 function collectBuiltinFilterSources(sources: FilterSource[]): void {
   const builtinDir = getFiltersDir();
-  if (fs.existsSync(builtinDir)) {
+  if (fs.existsSync(/* turbopackIgnore: true */ builtinDir)) {
     let builtinFiles: string[] = [];
     try {
       builtinFiles = fs
-        .readdirSync(builtinDir)
+        .readdirSync(/* turbopackIgnore: true */ builtinDir)
         .filter((entry) => entry.endsWith(".json"))
         .sort();
     } catch {
@@ -191,7 +191,7 @@ function collectBuiltinFilterSources(sources: FilterSource[]): void {
 
 function parseFilterFile(source: FilterSource): RtkFilterDefinition[] {
   try {
-    const content = fs.readFileSync(source.path, "utf8");
+    const content = fs.readFileSync(/* turbopackIgnore: true */ source.path, "utf8");
     const definitions =
       source.format === "rtk-toml-v1"
         ? (() => {

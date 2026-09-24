@@ -67,7 +67,7 @@ function getModuleDir(): string {
   for (const anchor of anchors) {
     let dir = path.resolve(anchor);
     for (let i = 0; i <= 8; i++) {
-      if (fs.existsSync(opaqueJoin(dir, rel))) return dir;
+      if (fs.existsSync(/* turbopackIgnore: true */ opaqueJoin(dir, rel))) return dir;
       const parent = path.dirname(dir);
       if (parent === dir) break;
       dir = parent;
@@ -85,7 +85,7 @@ function getRulesDir(): string {
   ];
   rulesDirCache =
     candidates.find((candidate, index) => {
-      return candidates.indexOf(candidate) === index && fs.existsSync(candidate);
+      return candidates.indexOf(candidate) === index && fs.existsSync(/* turbopackIgnore: true */ candidate);
     }) ?? candidates[0];
   return rulesDirCache;
 }
@@ -187,8 +187,8 @@ export function validateRulePack(pack: unknown): { valid: boolean; errors: strin
 
 function readPack(language: string, category: string): RulePack | null {
   const filename = opaqueJoin(getRulesDir(), language, `${category}.json`);
-  if (!fs.existsSync(filename)) return null;
-  const parsed = JSON.parse(fs.readFileSync(filename, "utf8")) as unknown;
+  if (!fs.existsSync(/* turbopackIgnore: true */ filename)) return null;
+  const parsed = JSON.parse(fs.readFileSync(/* turbopackIgnore: true */ filename, "utf8")) as unknown;
   const validation = validateRulePack(parsed);
   if (!validation.valid) {
     throw new Error(
@@ -225,13 +225,13 @@ export function loadAllRulesForLanguage(
   if (cache.has(key) && !options.refresh) return cache.get(key) ?? [];
 
   const languageDir = opaqueJoin(getRulesDir(), language);
-  if (!fs.existsSync(languageDir)) {
+  if (!fs.existsSync(/* turbopackIgnore: true */ languageDir)) {
     cache.set(key, []);
     return [];
   }
 
   const rules = fs
-    .readdirSync(languageDir)
+    .readdirSync(/* turbopackIgnore: true */ languageDir)
     .filter((entry) => entry.endsWith(".json"))
     .sort()
     .flatMap((entry) => loadRulePack(language, path.basename(entry, ".json"), options));
@@ -242,14 +242,14 @@ export function loadAllRulesForLanguage(
 
 export function getAvailableLanguagePacks(): RulePackMetadata[] {
   const root = getRulesDir();
-  if (!fs.existsSync(root)) return [];
+  if (!fs.existsSync(/* turbopackIgnore: true */ root)) return [];
 
   return fs
-    .readdirSync(root)
-    .filter((entry) => fs.statSync(opaqueJoin(root, entry)).isDirectory())
+    .readdirSync(/* turbopackIgnore: true */ root)
+    .filter((entry) => fs.statSync(/* turbopackIgnore: true */ opaqueJoin(root, entry)).isDirectory())
     .map((language) => {
       const categories = fs
-        .readdirSync(opaqueJoin(root, language))
+        .readdirSync(/* turbopackIgnore: true */ opaqueJoin(root, language))
         .filter((entry) => entry.endsWith(".json"))
         .map((entry) => path.basename(entry, ".json"))
         .sort();
