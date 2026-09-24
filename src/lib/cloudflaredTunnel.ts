@@ -814,11 +814,15 @@ export async function startCloudflaredTunnel(): Promise<CloudflaredTunnelStatus>
       startedAt: new Date().toISOString(),
     });
 
-    const child = spawn(binary.binaryPath as string, getCloudflaredStartArgs(targetUrl), {
-      windowsHide: true,
-      stdio: ["ignore", "pipe", "pipe"],
-      env: buildCloudflaredChildEnv(),
-    });
+    const child = spawn(
+      /* turbopackIgnore: true */ binary.binaryPath as string,
+      getCloudflaredStartArgs(targetUrl),
+      {
+        windowsHide: true,
+        stdio: ["ignore", "pipe", "pipe"],
+        env: buildCloudflaredChildEnv(),
+      }
+    );
 
     tunnelProcess = child;
     tunnelPid = child.pid ?? null;

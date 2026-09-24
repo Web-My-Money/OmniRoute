@@ -246,7 +246,7 @@ async function readKiroIdeProfileArn(): Promise<string | null> {
   ];
   for (const profilePath of kiroProfilePaths) {
     try {
-      const profileContent = await readFile(profilePath, "utf-8");
+      const profileContent = await readFile(/* turbopackIgnore: true */ profilePath, "utf-8");
       const profileData = JSON.parse(profileContent);
       if (profileData.arn) {
         return profileData.arn;

@@ -32,7 +32,7 @@ const LINUX_CERT_PATHS: LinuxCertConfig[] = [
 
 function getLinuxCertConfig(): LinuxCertConfig {
   for (const config of LINUX_CERT_PATHS) {
-    if (fs.existsSync(config.dir)) {
+    if (fs.existsSync(/* turbopackIgnore: true */ config.dir)) {
       return config;
     }
   }

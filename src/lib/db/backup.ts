@@ -163,7 +163,7 @@ function collectBackupFamilies(backupDir: string) {
 
 export function cleanupDbBackups(options?: { maxFiles?: number; retentionDays?: number }) {
   const backupDir = getBackupDir();
-  if (!fs.existsSync(backupDir)) {
+  if (!fs.existsSync(/* turbopackIgnore: true */ backupDir)) {
     return {
       deletedBackupFamilies: 0,
       deletedFiles: 0,
@@ -366,7 +366,8 @@ export function backupDbFile(reason = "auto") {
     _lastBackupAt = now;
 
     const backupDir = getBackupDir();
-    if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+    if (!fs.existsSync(/* turbopackIgnore: true */ backupDir))
+      fs.mkdirSync(backupDir, { recursive: true });
 
     if (reason !== "manual" && reason !== "pre-restore") {
       // Shrink detection is useful for automatic safety backups, but it should
@@ -413,7 +414,7 @@ export function backupDbFile(reason = "auto") {
 export async function listDbBackups() {
   const backupDir = getBackupDir();
   try {
-    if (!fs.existsSync(backupDir)) return [];
+    if (!fs.existsSync(/* turbopackIgnore: true */ backupDir)) return [];
 
     const entries = fs
       .readdirSync(backupDir)
@@ -477,8 +478,8 @@ export async function restoreDbBackup(backupId: string) {
   const backupPath = path.resolve(backupDir, backupId);
   // Prevent path traversal: resolved path must stay within backupDir
   if (
-    !backupPath.startsWith(path.resolve(backupDir) + path.sep) &&
-    backupPath !== path.resolve(backupDir)
+    !backupPath.startsWith(path.resolve(/* turbopackIgnore: true */ backupDir) + path.sep) &&
+    backupPath !== path.resolve(/* turbopackIgnore: true */ backupDir)
   ) {
     throw new Error("Invalid backup ID: path traversal detected");
   }
@@ -516,7 +517,8 @@ export async function restoreDbBackup(backupId: string) {
     if (SQLITE_FILE && fs.existsSync(SQLITE_FILE)) {
       const stat = fs.statSync(SQLITE_FILE);
       if (stat.size >= 4096) {
-        if (!fs.existsSync(backupDirForPre)) fs.mkdirSync(backupDirForPre, { recursive: true });
+        if (!fs.existsSync(/* turbopackIgnore: true */ backupDirForPre))
+          fs.mkdirSync(backupDirForPre, { recursive: true });
         const preBackupPath = path.join(
           backupDirForPre,
           `db_${new Date().toISOString().replace(/[:.]/g, "-")}_pre-restore.sqlite`

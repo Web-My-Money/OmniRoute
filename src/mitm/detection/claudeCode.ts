@@ -13,13 +13,13 @@ const PATHS = [
   "/usr/bin/claude",
   path.join(HOME, ".local", "bin", "claude"),
   path.join(HOME, ".npm-global", "bin", "claude"),
-  path.join(HOME, ".claude"),
+  path.join(/* turbopackIgnore: true */ HOME, ".claude"),
   path.join(process.env.APPDATA ?? path.join(HOME, "AppData", "Roaming"), "npm", "claude.cmd"),
 ];
 
 export function detectClaudeCode(): DetectionResult {
   for (const p of PATHS) {
-    if (fs.existsSync(p)) return { installed: true, path: p };
+    if (fs.existsSync(/* turbopackIgnore: true */ p)) return { installed: true, path: p };
   }
   return { installed: false };
 }

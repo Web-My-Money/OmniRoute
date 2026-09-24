@@ -144,7 +144,7 @@ const hasOmniRouteConfig = (modelCfg: GrokModelSection | null): boolean =>
 // Read current config.toml
 const readConfigToml = async (): Promise<string> => {
   try {
-    return await fs.readFile(getGrokBuildConfigPath(), "utf-8");
+    return await fs.readFile(/* turbopackIgnore: true */ getGrokBuildConfigPath(), "utf-8");
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return "";
     throw err;
@@ -270,7 +270,7 @@ export async function DELETE(request: Request) {
 
     let toml: string;
     try {
-      toml = await fs.readFile(configPath, "utf-8");
+      toml = await fs.readFile(/* turbopackIgnore: true */ configPath, "utf-8");
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code === "ENOENT") {
         return NextResponse.json({ success: true, message: "No config file to reset" });

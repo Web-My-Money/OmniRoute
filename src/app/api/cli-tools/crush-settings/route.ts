@@ -62,7 +62,7 @@ const hasOmniRouteConfig = (settings: Record<string, unknown> | null): boolean =
 // Read current crush.json
 const readConfig = async (): Promise<Record<string, unknown> | null> => {
   try {
-    const content = await fs.readFile(getCrushConfigPath(), "utf-8");
+    const content = await fs.readFile(/* turbopackIgnore: true */ getCrushConfigPath(), "utf-8");
     return JSON.parse(content) as Record<string, unknown>;
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return null;
@@ -152,7 +152,7 @@ export async function POST(request: Request) {
     // Read existing config or start fresh
     let existing: Record<string, unknown> = {};
     try {
-      const raw = await fs.readFile(configPath, "utf-8");
+      const raw = await fs.readFile(/* turbopackIgnore: true */ configPath, "utf-8");
       existing = JSON.parse(raw) as Record<string, unknown>;
     } catch {
       /* No existing config */
@@ -212,7 +212,7 @@ export async function DELETE(request: Request) {
     // Read existing config
     let existing: Record<string, unknown> = {};
     try {
-      const raw = await fs.readFile(configPath, "utf-8");
+      const raw = await fs.readFile(/* turbopackIgnore: true */ configPath, "utf-8");
       existing = JSON.parse(raw) as Record<string, unknown>;
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code === "ENOENT") {

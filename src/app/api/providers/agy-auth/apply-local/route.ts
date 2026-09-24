@@ -65,7 +65,7 @@ export async function POST(request: Request) {
   const tokenPath = getAgyTokenFilePath();
   let rawJson: unknown;
   try {
-    const content = await fs.readFile(tokenPath, "utf8");
+    const content = await fs.readFile(/* turbopackIgnore: true */ tokenPath, "utf8");
     rawJson = JSON.parse(content);
   } catch (error) {
     const code = (error as NodeJS.ErrnoException)?.code;
@@ -117,7 +117,10 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     if (error instanceof AgyAuthFileError) {
-      return NextResponse.json({ error: error.message, code: error.code }, { status: error.status });
+      return NextResponse.json(
+        { error: error.message, code: error.code },
+        { status: error.status }
+      );
     }
     return NextResponse.json(
       { error: sanitizeErrorMessage(error) || "Failed to import local Antigravity CLI login" },
