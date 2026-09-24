@@ -2369,7 +2369,7 @@ function ProviderModelsModal({
                 )}
                 <button
                   onClick={() => copy(m.id, copyKey)}
-                  className="p-1 hover:bg-sidebar rounded text-text-muted hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="p-1 hover:bg-sidebar rounded text-text-muted hover:text-primary opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
                   title={tc("copy")}
                 >
                   <span className="material-symbols-outlined text-sm">

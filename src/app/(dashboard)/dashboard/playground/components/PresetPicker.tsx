@@ -110,7 +110,11 @@ export default function PresetPicker({ configState, setConfigState }: PresetPick
             aria-label={t("loadPreset")}
           >
             <option value="" disabled>
-              {loading ? t("loadingPresets") : presets.length === 0 ? t("noPresets") : t("loadPresetPlaceholder")}
+              {loading
+                ? t("loadingPresets")
+                : presets.length === 0
+                  ? t("noPresets")
+                  : t("loadPresetPlaceholder")}
             </option>
             {presets.map((preset) => (
               <option key={preset.id} value={preset.id}>
@@ -146,7 +150,7 @@ export default function PresetPicker({ configState, setConfigState }: PresetPick
                 </button>
                 <button
                   onClick={() => void remove(preset.id)}
-                  className="opacity-0 group-hover:opacity-100 p-0.5 text-text-muted hover:text-destructive transition-all"
+                  className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 p-0.5 text-text-muted hover:text-destructive transition-all"
                   aria-label={`Delete preset "${preset.name}"`}
                 >
                   <span className="material-symbols-outlined text-[12px]">delete</span>
@@ -186,9 +190,7 @@ export default function PresetPicker({ configState, setConfigState }: PresetPick
                 className="text-xs bg-bg-alt border border-border rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary text-text-main"
               />
 
-              {saveError && (
-                <p className="text-xs text-destructive">{saveError}</p>
-              )}
+              {saveError && <p className="text-xs text-destructive">{saveError}</p>}
 
               <div className="flex items-center justify-end gap-2">
                 <button
