@@ -1,4 +1,5 @@
-import { spawn, execFile } from "child_process";
+import { execFile } from "child_process";
+import { spawnHostBinary } from "@/lib/hostBinarySpawn";
 import { createHash } from "crypto";
 import { promisify } from "util";
 import fs from "fs/promises";
@@ -130,7 +131,7 @@ const CLOUDFLARED_SAFE_ENV_KEYS = [
   "no_proxy",
 ] as const;
 
-let tunnelProcess: ReturnType<typeof spawn> | null = null;
+let tunnelProcess: ReturnType<typeof spawnHostBinary> | null = null;
 let tunnelPid: number | null = null;
 let installPromise: Promise<string> | null = null;
 let startPromise: Promise<CloudflaredTunnelStatus> | null = null;
@@ -814,7 +815,7 @@ export async function startCloudflaredTunnel(): Promise<CloudflaredTunnelStatus>
       startedAt: new Date().toISOString(),
     });
 
-    const child = spawn(binary.binaryPath as string, getCloudflaredStartArgs(targetUrl), {
+    const child = spawnHostBinary(binary.binaryPath as string, getCloudflaredStartArgs(targetUrl), {
       windowsHide: true,
       stdio: ["ignore", "pipe", "pipe"],
       env: buildCloudflaredChildEnv(),

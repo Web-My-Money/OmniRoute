@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { opaqueJoin, probeUpForSubpath } from "@/lib/opaquePath";
 import os from "node:os";
 import type { CavemanIntensity, CavemanRule } from "./types.ts";
 
@@ -62,29 +63,23 @@ function getModuleDir(): string {
   const anchors = [process.cwd()];
   const argv1 = process.argv[1];
   if (typeof argv1 === "string" && argv1) anchors.push(path.dirname(argv1));
-  const rel = path.join("open-sse", "services", "compression");
-  for (const anchor of anchors) {
-    let dir = path.resolve(anchor);
-    for (let i = 0; i <= 8; i++) {
-      if (fs.existsSync(path.join(dir, rel))) return dir;
-      const parent = path.dirname(dir);
-      if (parent === dir) break;
-      dir = parent;
-    }
-  }
-  return path.join(os.homedir(), ".omniroute");
+  return probeUpForSubpath(
+    anchors,
+    path.join("open-sse", "services", "compression"),
+    opaqueJoin(os.homedir(), ".omniroute")
+  );
 }
 
 function getRulesDir(): string {
   if (rulesDirCache) return rulesDirCache;
   const root = getModuleDir();
   const candidates = [
-    path.join(root, "open-sse", "services", "compression", "rules"),
-    path.join(root, "app", "open-sse", "services", "compression", "rules"),
+    opaqueJoin(root, "open-sse", "services", "compression", "rules"),
+    opaqueJoin(root, "app", "open-sse", "services", "compression", "rules"),
   ];
   rulesDirCache =
     candidates.find((candidate, index) => {
-      return candidates.indexOf(candidate) === index && fs.existsSync(candidate);
+      return candidates.indexOf(candidate) === index && fs.existsSync(/* turbopackIgnore: true */ candidate);
     }) ?? candidates[0];
   return rulesDirCache;
 }
@@ -185,9 +180,9 @@ export function validateRulePack(pack: unknown): { valid: boolean; errors: strin
 }
 
 function readPack(language: string, category: string): RulePack | null {
-  const filename = path.join(getRulesDir(), language, `${category}.json`);
-  if (!fs.existsSync(filename)) return null;
-  const parsed = JSON.parse(fs.readFileSync(filename, "utf8")) as unknown;
+  const filename = opaqueJoin(getRulesDir(), language, `${category}.json`);
+  if (!fs.existsSync(/* turbopackIgnore: true */ filename)) return null;
+  const parsed = JSON.parse(fs.readFileSync(/* turbopackIgnore: true */ filename, "utf8")) as unknown;
   const validation = validateRulePack(parsed);
   if (!validation.valid) {
     throw new Error(
@@ -223,14 +218,14 @@ export function loadAllRulesForLanguage(
   const key = `${getRulesDir()}:${language}:*`;
   if (cache.has(key) && !options.refresh) return cache.get(key) ?? [];
 
-  const languageDir = path.join(getRulesDir(), language);
-  if (!fs.existsSync(languageDir)) {
+  const languageDir = opaqueJoin(getRulesDir(), language);
+  if (!fs.existsSync(/* turbopackIgnore: true */ languageDir)) {
     cache.set(key, []);
     return [];
   }
 
   const rules = fs
-    .readdirSync(languageDir)
+    .readdirSync(/* turbopackIgnore: true */ languageDir)
     .filter((entry) => entry.endsWith(".json"))
     .sort()
     .flatMap((entry) => loadRulePack(language, path.basename(entry, ".json"), options));
@@ -241,14 +236,14 @@ export function loadAllRulesForLanguage(
 
 export function getAvailableLanguagePacks(): RulePackMetadata[] {
   const root = getRulesDir();
-  if (!fs.existsSync(root)) return [];
+  if (!fs.existsSync(/* turbopackIgnore: true */ root)) return [];
 
   return fs
-    .readdirSync(root)
-    .filter((entry) => fs.statSync(path.join(root, entry)).isDirectory())
+    .readdirSync(/* turbopackIgnore: true */ root)
+    .filter((entry) => fs.statSync(/* turbopackIgnore: true */ opaqueJoin(root, entry)).isDirectory())
     .map((language) => {
       const categories = fs
-        .readdirSync(path.join(root, language))
+        .readdirSync(/* turbopackIgnore: true */ opaqueJoin(root, language))
         .filter((entry) => entry.endsWith(".json"))
         .map((entry) => path.basename(entry, ".json"))
         .sort();

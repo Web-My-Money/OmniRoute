@@ -263,7 +263,7 @@ export async function POST(request: Request) {
 
     for (const filePath of [getCertPath(), getKeyPath()]) {
       try {
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        if (fs.existsSync(/* turbopackIgnore: true */ filePath)) fs.unlinkSync(filePath);
       } catch {
         /* ignore */
       }

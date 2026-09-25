@@ -1,4 +1,5 @@
 import { execFile, spawn } from "child_process";
+import { spawnHostBinary } from "@/lib/hostBinarySpawn";
 import fs from "fs";
 import fsPromises from "fs/promises";
 import os from "os";
@@ -234,7 +235,7 @@ async function resolvePathCommand(command: string) {
 
 async function resolveBinary(): Promise<BinaryResolution> {
   const envPath = toNonEmptyString(process.env.TAILSCALE_BIN);
-  if (envPath && fs.existsSync(envPath)) {
+  if (envPath && fs.existsSync(/* turbopackIgnore: true */ envPath)) {
     return { binaryPath: envPath, installSource: "env", managedInstall: false };
   }
 
@@ -261,7 +262,7 @@ async function resolveBinary(): Promise<BinaryResolution> {
 
 async function resolveDaemonBinary(tailscaleBinaryPath: string | null) {
   const envPath = toNonEmptyString(process.env.TAILSCALED_BIN);
-  if (envPath && fs.existsSync(envPath)) return envPath;
+  if (envPath && fs.existsSync(/* turbopackIgnore: true */ envPath)) return envPath;
 
   const daemonFilename = os.platform() === "win32" ? "tailscaled.exe" : "tailscaled";
   const siblingDir = tailscaleBinaryPath ? path.dirname(tailscaleBinaryPath) : null;
@@ -645,7 +646,7 @@ export async function startTailscaleLogin({
   const spawnArgs = await buildTailscaleArgs(...tailscaleUpArgs(resolvedHostname, authKey));
 
   return new Promise((resolve, reject) => {
-    const child = spawn(resolution.binaryPath as string, spawnArgs, {
+    const child = spawnHostBinary(resolution.binaryPath as string, spawnArgs, {
       detached: true,
       windowsHide: true,
       stdio: ["ignore", "pipe", "pipe"],
@@ -729,7 +730,7 @@ export async function startTailscaleFunnel(
   const funnelArgs = await buildTailscaleArgs("funnel", "--bg", String(port));
 
   return new Promise((resolve, reject) => {
-    const child = spawn(resolution.binaryPath as string, funnelArgs, {
+    const child = spawnHostBinary(resolution.binaryPath as string, funnelArgs, {
       windowsHide: true,
       stdio: ["ignore", "pipe", "pipe"],
       env: buildExecEnv(),

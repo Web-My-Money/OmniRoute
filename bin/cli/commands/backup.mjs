@@ -14,7 +14,7 @@ import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "node:
 import { dirname, join, extname, basename } from "node:path";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { resolveDataDir } from "../data-dir.mjs";
+import { resolveDataDir, opaqueJoin } from "../data-dir.mjs";
 import { getBaseUrl, isServerUp } from "../api.mjs";
 import { t } from "../i18n.mjs";
 import { backupSqliteFile } from "../sqlite.mjs";
@@ -213,10 +213,10 @@ export async function runBackupCommand(opts = {}) {
         skipped++;
         continue;
       }
-      const sourcePath = join(dataDir, file.name);
+      const sourcePath = opaqueJoin(dataDir, file.name);
       if (existsSync(sourcePath)) {
         const destName = opts.encrypt ? `${file.name}.enc` : file.name;
-        const destPath = join(backupPath, destName);
+        const destPath = opaqueJoin(backupPath, destName);
         mkdirSync(dirname(destPath), { recursive: true });
         if (file.name.endsWith(".sqlite")) {
           const tmpPath = destPath.replace(/\.enc$/, "");
@@ -242,10 +242,10 @@ export async function runBackupCommand(opts = {}) {
         version: "omniroute-cli-v1",
         encrypted: !!opts.encrypt,
         files: FILES_TO_BACKUP.filter(
-          (f) => existsSync(join(dataDir, f.name)) && !shouldExclude(f.name, excludePatterns)
+          (f) => existsSync(opaqueJoin(dataDir, f.name)) && !shouldExclude(f.name, excludePatterns)
         ).map((f) => (opts.encrypt ? `${f.name}.enc` : f.name)),
       };
-      writeFileSync(join(backupPath, "backup-info.json"), JSON.stringify(info, null, 2), "utf8");
+      writeFileSync(opaqueJoin(backupPath, "backup-info.json"), JSON.stringify(info, null, 2), "utf8");
 
       if (opts.cloud) {
         const cloudCode = await _uploadBackupToCloud(backupPath, info);
@@ -451,9 +451,9 @@ export async function runRestoreCommand(backupId, opts = {}) {
   const dataDir = resolveDataDir();
   try {
     for (const file of FILES_TO_BACKUP) {
-      const sourcePath = join(backupPath, file.name);
+      const sourcePath = opaqueJoin(backupPath, file.name);
       if (existsSync(sourcePath)) {
-        copyFileSync(sourcePath, join(dataDir, file.name));
+        copyFileSync(sourcePath, opaqueJoin(dataDir, file.name));
         console.log(`\x1b[2m  Restored: ${file.name}\x1b[0m`);
       }
     }

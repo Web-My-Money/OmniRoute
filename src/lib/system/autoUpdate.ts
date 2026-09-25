@@ -403,7 +403,7 @@ export async function launchAutoUpdate({
         : buildNpmUpdateScript(latest);
 
   mkdirSync(path.dirname(config.logPath), { recursive: true });
-  const logFd = openSync(config.logPath, "a");
+  const logFd = openSync(/* turbopackIgnore: true */ config.logPath, "a");
   const child = spawnImpl("sh", ["-lc", script], {
     detached: true,
     stdio: ["ignore", logFd, logFd],

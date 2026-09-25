@@ -25,6 +25,7 @@ import { registerMonitorFetcher } from "./quotaMonitor.ts";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { opaqueJoin } from "@/lib/opaquePath";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -39,7 +40,7 @@ const EXPIRY_SKEW_MS = 60_000; // refresh a bit before actual expiry
  */
 function getAuthPath(): string {
   const override = (process.env.GROK_AUTH_PATH || "").trim();
-  return override || join(homedir(), ".grok", "auth.json");
+  return override || opaqueJoin(homedir(), ".grok", "auth.json");
 }
 
 /**

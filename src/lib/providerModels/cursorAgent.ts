@@ -70,7 +70,7 @@ export function resolveCursorAgentBinary(options?: { allowPathFallback?: boolean
     "/opt/homebrew/bin/cursor-agent",
   ];
   for (const candidate of candidates) {
-    if (existsSync(candidate)) return candidate;
+    if (existsSync(/* turbopackIgnore: true */ candidate)) return candidate;
   }
   if (!allowPathFallback) return null;
   // Fallback: PATH-based lookup (lets execFile do the resolution).

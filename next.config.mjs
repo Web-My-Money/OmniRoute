@@ -267,6 +267,12 @@ const nextConfig = {
       "./app.__qa_backup/**/*",
       "./tests/**/*",
       "./logs/**/*",
+      // Nested git worktrees live inside the repo root on this project
+      // (.worktrees/, .claude/worktrees/) — tracing them can pull a second
+      // copy of the repo into the NFT graph and crashes standalone copies
+      // when a worktree is deleted mid-build.
+      "./.worktrees/**/*",
+      "./.claude/**/*",
     ],
   },
   serverExternalPackages: [

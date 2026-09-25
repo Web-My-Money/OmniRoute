@@ -15,6 +15,7 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import os from "node:os";
+import { opaqueJoin } from "../data-dir.mjs";
 import { printHeading, printInfo, printSuccess, printError } from "../io.mjs";
 import { guardHostConfigTarget } from "../utils/config-home-guard.mjs";
 import { t } from "../i18n.mjs";
@@ -247,7 +248,7 @@ function buildProfileToml(modelId, cfg) {
 }
 
 export async function syncCodexProfilesFromModels(models, opts = {}) {
-  const codexHome = opts.codexHome || join(os.homedir(), ".codex");
+  const codexHome = opts.codexHome || opaqueJoin(os.homedir(), ".codex");
   const dryRun = Boolean(opts.dryRun);
   const onlyFilter = opts.only ? opts.only.split(",").map((s) => s.trim()) : null;
 

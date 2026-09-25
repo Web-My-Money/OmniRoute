@@ -68,7 +68,7 @@ function getDbPath(): string | null {
   }
 
   for (const c of candidates) {
-    if (existsSync(c)) return c;
+    if (existsSync(/* turbopackIgnore: true */ c)) return c;
   }
 
   return null;
