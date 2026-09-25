@@ -103,7 +103,7 @@ function normalizeImportedModel(model: JsonRecord): ManagedImportedModel {
 function normalizeImportedModels(
   discoveredModels: readonly SyncedAvailableModel[]
 ): ManagedImportedModel[] {
-  return discoveredModels.map((model) => normalizeImportedModel(model as JsonRecord));
+  return discoveredModels.map((model) => normalizeImportedModel(model as unknown as JsonRecord));
 }
 
 function isImportedSource(source: unknown): boolean {
@@ -407,12 +407,12 @@ export async function importManagedModels({
   }
 
   const importedChanges = summarizeImportedChanges(
-    previousSyncedAvailableModels as JsonRecord[],
-    discoveredModels as JsonRecord[],
+    previousSyncedAvailableModels as unknown as JsonRecord[],
+    discoveredModels as unknown as JsonRecord[],
     importedIds
   );
   const importedModels = collectAddedImportedModels(
-    previousSyncedAvailableModels as JsonRecord[],
+    previousSyncedAvailableModels as unknown as JsonRecord[],
     candidateImportedModels
   );
 

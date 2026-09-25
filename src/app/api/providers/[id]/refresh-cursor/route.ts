@@ -75,7 +75,9 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   try {
     const { id } = await params;
 
-    const connection = (await getCachedProviderConnectionById(id)) as CursorConnectionLike | null;
+    const connection = (await getCachedProviderConnectionById(
+      id
+    )) as unknown as CursorConnectionLike | null;
     if (!connection) {
       return NextResponse.json({ error: "Connection not found" }, { status: 404 });
     }

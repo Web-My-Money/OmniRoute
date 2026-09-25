@@ -414,10 +414,13 @@ export async function GET(request: Request) {
       await import("@/lib/usage/costCalculator");
     const { PROVIDER_ID_TO_ALIAS } = await import("@omniroute/open-sse/config/providerModels");
 
-    const summaryRow = getUsageSummary(unifiedSource, unifiedParams) as Record<string, unknown>;
+    const summaryRow = getUsageSummary(unifiedSource, unifiedParams) as unknown as Record<
+      string,
+      unknown
+    >;
 
-    const dailyRows = getDailyUsage(unifiedSource, unifiedParams) as UsageRows;
-    const dailyCostRows = getDailyCostRows(unifiedSource, unifiedParams) as UsageRows;
+    const dailyRows = getDailyUsage(unifiedSource, unifiedParams) as unknown as UsageRows;
+    const dailyCostRows = getDailyCostRows(unifiedSource, unifiedParams) as unknown as UsageRows;
 
     const heatmapStart = new Date();
     heatmapStart.setUTCDate(heatmapStart.getUTCDate() - 364);
@@ -439,30 +442,42 @@ export async function GET(request: Request) {
       });
     }
 
-    const heatmapRows = getHeatmapRows(heatmapConditions, heatmapParams) as UsageRows;
+    const heatmapRows = getHeatmapRows(heatmapConditions, heatmapParams) as unknown as UsageRows;
 
-    const modelRows = getModelUsageRows(unifiedSource, unifiedParams) as UsageRows;
+    const modelRows = getModelUsageRows(unifiedSource, unifiedParams) as unknown as UsageRows;
 
-    const providerCostRows = getProviderCostRows(unifiedSource, unifiedParams) as UsageRows;
+    const providerCostRows = getProviderCostRows(
+      unifiedSource,
+      unifiedParams
+    ) as unknown as UsageRows;
 
-    const providerRows = getProviderUsageRows(unifiedSource, unifiedParams) as UsageRows;
+    const providerRows = getProviderUsageRows(unifiedSource, unifiedParams) as unknown as UsageRows;
 
     const accountCostWhereClause = whereClause
       .replace(/timestamp/g, "usage_history.timestamp")
       .replace(/api_key_/g, "usage_history.api_key_");
-    const accountCostRows = getAccountCostRows(accountCostWhereClause, params) as UsageRows;
+    const accountCostRows = getAccountCostRows(
+      accountCostWhereClause,
+      params
+    ) as unknown as UsageRows;
 
-    const accountRows = getAccountUsageRows(accountCostWhereClause, params) as UsageRows;
+    const accountRows = getAccountUsageRows(accountCostWhereClause, params) as unknown as UsageRows;
 
     const apiKeyWhereClause = appendWhereCondition(
       whereClause,
       "(api_key_id IS NOT NULL AND api_key_id != '') OR (api_key_name IS NOT NULL AND api_key_name != '')"
     );
-    const apiKeyRows = getApiKeyUsageRows(apiKeyWhereClause, params) as UsageRows;
+    const apiKeyRows = getApiKeyUsageRows(apiKeyWhereClause, params) as unknown as UsageRows;
 
-    const serviceTierRows = getServiceTierUsageRows(unifiedSource, unifiedParams) as UsageRows;
+    const serviceTierRows = getServiceTierUsageRows(
+      unifiedSource,
+      unifiedParams
+    ) as unknown as UsageRows;
 
-    const apiKeyMetadataRows = getApiKeyMetadataRows(apiKeyWhereClause, params) as UsageRows;
+    const apiKeyMetadataRows = getApiKeyMetadataRows(
+      apiKeyWhereClause,
+      params
+    ) as unknown as UsageRows;
 
     const apiKeyMetadata = new Map<string, { latestName: string; aliases: Set<string> }>();
     for (const row of apiKeyMetadataRows) {
@@ -479,9 +494,9 @@ export async function GET(request: Request) {
       apiKeyMetadata.set(groupKey, existing);
     }
 
-    const weeklyRows = getWeeklyPatternRows(unifiedSource, unifiedParams) as UsageRows;
+    const weeklyRows = getWeeklyPatternRows(unifiedSource, unifiedParams) as unknown as UsageRows;
 
-    const fallbackRow = getFallbackStats(whereClause, params) as Record<string, unknown>;
+    const fallbackRow = getFallbackStats(whereClause, params) as unknown as Record<string, unknown>;
     const errorBreakdown = getErrorTypeBreakdown(whereClause, params);
 
     const summary = {
@@ -900,7 +915,7 @@ export async function GET(request: Request) {
           apiKeyParams: apiKeyParamEntries,
         });
 
-        const presetModelRows = getPresetCostModelRows(pSrc, pParams) as UsageRows;
+        const presetModelRows = getPresetCostModelRows(pSrc, pParams) as unknown as UsageRows;
 
         let presetTotalCost = 0;
         for (const row of presetModelRows) {

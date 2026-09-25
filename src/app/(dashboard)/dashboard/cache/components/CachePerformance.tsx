@@ -14,6 +14,7 @@ interface CachePerformanceProps {
   loading?: boolean;
   error?: string | null;
   onRetry?: () => void;
+  stats?: unknown;
 }
 
 function HitRateBar({ hitRate, label }: { hitRate: number; label: string }) {

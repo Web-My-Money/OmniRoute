@@ -29,6 +29,9 @@ export const DETECTORS: Record<AgentId, () => DetectionResult> = {
   "claude-code": detectClaudeCode,
   "open-code": detectOpenCode,
   trae: () => ({ installed: false }),
+  // GHE Copilot runs inside the enterprise IDE context; there is no
+  // local binary/config surface to detect yet — match the trae stub.
+  "ghe-copilot": () => ({ installed: false }),
 };
 
 export function detectAgent(id: AgentId): DetectionResult {

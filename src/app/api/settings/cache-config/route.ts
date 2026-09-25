@@ -85,7 +85,7 @@ export async function PUT(request: NextRequest) {
 
     const validation = validateBody(cacheConfigUpdateSchema, rawBody);
     if (isValidationFailure(validation)) {
-      return validation.response;
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
     const updates: Partial<UserDatabaseSettings["cache"]> = {};
@@ -116,7 +116,9 @@ export async function PUT(request: NextRequest) {
     // updateDatabaseSettings() calls invalidateDbCache("settings") internally,
     // which bumps the model-catalog cache version so in-flight responses pick
     // up the fresh TTL — no separate version bump needed here.
-    updateDatabaseSettings({ cache: updates });
+    // mergeSectionObject() applies sections field-by-field, so a partial cache
+    // section is valid even though the declared type is the full shape.
+    updateDatabaseSettings({ cache: updates as UserDatabaseSettings["cache"] });
 
     // idempotencyWindowMs is not part of the databaseSettings "cache" section —
     // persist it through the flat general settings module instead (see GET).

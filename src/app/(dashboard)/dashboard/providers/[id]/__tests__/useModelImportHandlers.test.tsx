@@ -29,7 +29,7 @@ function buildParams(
   return {
     providerId: "cloudflare-ai",
     models: [],
-    modelMeta: { customModels: [] },
+    modelMeta: { customModels: [], modelCompatOverrides: [] },
     modelAliases: {},
     connections: [],
     isFreeNoAuth: false,

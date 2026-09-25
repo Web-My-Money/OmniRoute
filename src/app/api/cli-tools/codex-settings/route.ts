@@ -15,15 +15,15 @@ import { cliModelConfigSchema } from "@/shared/validation/schemas";
 import { isValidationFailure, validateBody } from "@/shared/validation/helpers";
 import { getApiKeyById } from "@/lib/localDb";
 import { normalizeCodexBaseUrl } from "@/shared/utils/codexBaseUrl";
-import { migrateCodexFeatureFlags } from "@/shared/utils/codexConfig";
+import { migrateCodexFeatureFlags, type ParsedCodexToml } from "@/shared/utils/codexConfig";
 
 const getCodexConfigPath = () => getCliConfigPaths("codex").config;
 const getCodexAuthPath = () => getCliConfigPaths("codex").auth;
 const getCodexDir = () => path.dirname(getCodexConfigPath());
 
 // Parse TOML config to object (simple parser for codex config)
-const parseToml = (content: string) => {
-  const result: Record<string, any> = { _root: {}, _sections: {} };
+const parseToml = (content: string): ParsedCodexToml => {
+  const result: ParsedCodexToml = { _root: {}, _sections: {} };
   let currentSection = "_root";
 
   content.split("\n").forEach((line) => {
@@ -245,7 +245,7 @@ export async function POST(request: Request) {
     await createMultiBackup("codex", [configPath, authPath]);
 
     // Read and parse existing config
-    let parsed: Record<string, any> = { _root: {}, _sections: {} };
+    let parsed: ParsedCodexToml = { _root: {}, _sections: {} };
     try {
       const existingConfig = await fs.readFile(configPath, "utf-8");
       parsed = parseToml(existingConfig);
@@ -342,7 +342,7 @@ export async function DELETE(request: Request) {
     await createMultiBackup("codex", [configPath, getCodexAuthPath()]);
 
     // Read and parse existing config
-    let parsed: Record<string, any> = { _root: {}, _sections: {} };
+    let parsed: ParsedCodexToml = { _root: {}, _sections: {} };
     try {
       const existingConfig = await fs.readFile(configPath, "utf-8");
       parsed = parseToml(existingConfig);

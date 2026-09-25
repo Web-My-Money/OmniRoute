@@ -4,7 +4,15 @@
  */
 type JsonRecord = Record<string, unknown>;
 
-export function toJsonErrorPayload(rawError: unknown, fallbackMessage = "Upstream provider error") {
+/** Guaranteed `{ error: {...} }` envelope; callers may carry sibling fields. */
+export interface JsonErrorPayload {
+  error: Record<string, unknown>;
+}
+
+export function toJsonErrorPayload(
+  rawError: unknown,
+  fallbackMessage = "Upstream provider error"
+): JsonErrorPayload {
   const fallback = {
     error: {
       message: fallbackMessage,
@@ -38,7 +46,9 @@ export function toJsonErrorPayload(rawError: unknown, fallbackMessage = "Upstrea
           },
         };
       }
-      return rawError;
+      // errorObj is verified to be an object above; rebuild the envelope so the
+      // return type is guaranteed while sibling fields are preserved.
+      return { ...rawErrorRecord, error: errorRecord };
     }
     if (!("message" in rawErrorRecord)) {
       const message = extractErrorMessage(rawErrorRecord);

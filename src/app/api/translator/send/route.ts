@@ -52,7 +52,9 @@ export async function POST(request) {
       await Promise.all(
         connections.map(async (candidate) => ({
           candidate,
-          blocked: await isConnectionUnavailableToAuxiliaryActivity(candidate.id),
+          blocked: await isConnectionUnavailableToAuxiliaryActivity(
+            typeof candidate.id === "string" ? candidate.id : ""
+          ),
         }))
       )
     ).find(({ candidate, blocked }) => candidate.isActive !== false && !blocked)?.candidate;
@@ -85,13 +87,16 @@ export async function POST(request) {
       projectId: connection.projectId,
       providerSpecificData: connection.providerSpecificData,
     };
-    targetFormat = getTargetFormat(provider, connection.providerSpecificData);
+    targetFormat = getTargetFormat(
+      provider,
+      connection.providerSpecificData as Record<string, unknown>
+    );
 
     // Build URL and headers using provider service
     const url = buildProviderUrl(provider, body.model || "test-model", true, {
       baseUrlIndex: 0,
       baseUrl: getProviderBaseUrl(connection.providerSpecificData),
-      providerSpecificData: connection.providerSpecificData,
+      providerSpecificData: connection.providerSpecificData as Record<string, unknown>,
     });
     const headers = buildProviderHeaders(provider, credentials, true, body);
 

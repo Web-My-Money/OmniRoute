@@ -120,3 +120,14 @@ declare module "yazl" {
     outputStream: NodeJS.ReadableStream;
   }
 }
+
+// Bun's built-in SQLite — only resolved when the script actually runs under
+// Bun (guarded by `"Bun" in globalThis` at the call site); tsc just needs the
+// ambient name so the dynamic import compiles under Node.
+declare module "bun:sqlite" {
+  export class Database {
+    constructor(filename?: string, options?: Record<string, unknown>);
+    prepare(sql: string): unknown;
+    close(): void;
+  }
+}

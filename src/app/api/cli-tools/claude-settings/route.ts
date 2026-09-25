@@ -24,9 +24,11 @@ const getClaudeSettingsPath = () => getCliPrimaryConfigPath("claude");
 // Ported from upstream decolua/9router@6c10edf8: tolerate JSONC (trailing
 // commas) and return null on any parse error so the dashboard renders
 // "installed but not configured" instead of a 500 misread as "not installed".
-const readSettings = async () => {
+const readSettings = async (): Promise<{ env?: Record<string, unknown> } | null> => {
   const settingsPath = getClaudeSettingsPath();
-  return readJsoncConfig(settingsPath);
+  return readJsoncConfig(settingsPath) as Promise<{
+    env?: Record<string, unknown>;
+  } | null>;
 };
 
 // GET - Check claude CLI and read current settings

@@ -1,3 +1,8 @@
+// Registers jest-dom matchers (toBeInTheDocument, toHaveTextContent, …) for
+// vitest `expect` — the package is a devDependency but was never imported, so
+// tests using these matchers failed with "Invalid Chai property" (#8618).
+import "@testing-library/jest-dom/vitest";
+
 // jsdom (unlike real browsers) does not implement `window.matchMedia`. Several
 // dashboard components read the OS color-scheme preference via
 // `window.matchMedia("(prefers-color-scheme: dark)")` (see

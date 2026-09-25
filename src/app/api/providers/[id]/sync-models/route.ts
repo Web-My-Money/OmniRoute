@@ -5,7 +5,7 @@ import {
   deleteSyncedAvailableModelsForProvider,
   getSyncedAvailableModelsForConnection,
 } from "@/lib/db/models";
-import { selectModelsForImport } from "@/shared/utils/freeModels";
+import { selectModelsForImport, type FreeModelCandidate } from "@/shared/utils/freeModels";
 import {
   importManagedModels,
   type ManagedModelImportMode,
@@ -605,7 +605,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       );
     }
 
-    const allFetchedModels = modelsData.models || [];
+    const allFetchedModels = (
+      Array.isArray(modelsData.models) ? modelsData.models : []
+    ) as FreeModelCandidate[];
     const importFreeOnly = Boolean(
       (connection.providerSpecificData as Record<string, unknown> | undefined)?.importFreeModelsOnly
     );

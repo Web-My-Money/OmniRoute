@@ -79,18 +79,24 @@ function sortProviderOptions(options: WizardProviderOption[]): WizardProviderOpt
 }
 
 export function getWizardApiKeyProviderOptions(): WizardProviderOption[] {
-  const freeApiKeyProviders = Object.values(FREE_PROVIDERS).filter(
+  // FREE_PROVIDERS is declared as `{}` (empty stub); cast its values to the
+  // definition shape so the spread union stays typed.
+  const freeApiKeyProviders = (Object.values(FREE_PROVIDERS) as WizardProviderDefinition[]).filter(
     (provider) => provider.noAuth || supportsApiKeyOnFreeProvider(provider.id)
   );
-  const providers = [...Object.values(APIKEY_PROVIDERS), ...freeApiKeyProviders].filter(
-    (provider) => !(provider as WizardProviderDefinition).hiddenFromDashboard
-  );
+  const providers = (
+    [...Object.values(APIKEY_PROVIDERS), ...freeApiKeyProviders] as WizardProviderDefinition[]
+  ).filter((provider) => !provider.hiddenFromDashboard);
   return sortProviderOptions(providers.map((provider) => toProviderOption(provider, "apikey")));
 }
 
 export function getWizardOAuthProviderOptions(): WizardProviderOption[] {
   const providersById = new Map<string, WizardProviderDefinition>();
-  for (const provider of [...Object.values(OAUTH_PROVIDERS), ...Object.values(FREE_PROVIDERS)]) {
+  const catalogProviders = [
+    ...Object.values(OAUTH_PROVIDERS),
+    ...(Object.values(FREE_PROVIDERS) as WizardProviderDefinition[]),
+  ] as WizardProviderDefinition[];
+  for (const provider of catalogProviders) {
     if (SUPPORTED_WIZARD_OAUTH_PROVIDER_IDS.has(provider.id)) {
       providersById.set(provider.id, provider);
     }

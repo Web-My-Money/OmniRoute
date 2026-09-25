@@ -210,7 +210,7 @@ export default function HomePageClient({ machineId }: HomePageClientProps) {
     // Fetch the pin settings (lightweight)
     fetch("/api/settings")
       .then((r) => (r.ok ? r.json() : {}))
-      .then((data) => {
+      .then((data: { showQuickStartOnHome?: unknown; showProviderTopologyOnHome?: unknown }) => {
         if (data) {
           if (typeof data.showQuickStartOnHome === "boolean") {
             setShowQuickStartOnHome(data.showQuickStartOnHome);

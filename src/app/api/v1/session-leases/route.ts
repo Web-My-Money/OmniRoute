@@ -22,7 +22,7 @@ import {
 import { getModelInfo } from "@/sse/services/model";
 import { buildErrorBody } from "@omniroute/open-sse/utils/error.ts";
 
-const action = <T extends string>(name: T, shape: z.ZodRawShape) =>
+const action = <T extends string, S extends z.ZodRawShape>(name: T, shape: S) =>
   z.object({ action: z.literal(name), ...shape });
 const generation = z.number().int().positive().safe();
 const actionSchema = z.discriminatedUnion("action", [
@@ -55,8 +55,7 @@ export const OPTIONS = async (): Promise<Response> => handleCorsOptions();
 export async function POST(request: Request): Promise<Response> {
   const apiKey = extractApiKey(request);
   if (!apiKey) return error(401, "LEASE_AUTHENTICATION_REQUIRED", "Authentication required");
-  if (!(await isValidApiKey(apiKey)))
-    return error(401, "LEASE_API_KEY_INVALID", "Invalid API key");
+  if (!(await isValidApiKey(apiKey))) return error(401, "LEASE_API_KEY_INVALID", "Invalid API key");
   const contentType = request.headers.get("content-type")?.toLowerCase().split(";", 1)[0].trim();
   if (contentType !== "application/json") {
     return error(415, "LEASE_CONTENT_TYPE_REQUIRED", "Content-Type must be application/json");
@@ -115,7 +114,9 @@ export async function POST(request: Request): Promise<Response> {
         "No eligible connection satisfies the managed key policy"
       );
     }
-    const failure = buildManagedLeaseSelectionErrorResponse(selection);
+    const failure = buildManagedLeaseSelectionErrorResponse(
+      selection as Parameters<typeof buildManagedLeaseSelectionErrorResponse>[0]
+    );
     if (failure) {
       for (const [name, value] of Object.entries(CORS_HEADERS)) failure.headers.set(name, value);
       return failure;

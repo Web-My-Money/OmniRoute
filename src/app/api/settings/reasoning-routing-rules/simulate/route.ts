@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { buildErrorBody } from "@omniroute/open-sse/utils/error.ts";
 import { requireManagementAuth } from "@/lib/api/requireManagementAuth";
 import { getApiKeyById } from "@/lib/db/apiKeys";
@@ -47,7 +48,7 @@ async function readPermissionError(targetRejection: Response | null): Promise<st
 
 async function resolveSimulationDecision(
   model: string,
-  effort: string,
+  effort: z.infer<typeof simulateReasoningRoutingSchema>["effort"],
   thinkingBudgetTokens: number | undefined,
   apiKey: { id?: string } | null,
   requestTags: string[],
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
   const authError = await requireManagementAuth(request);
   if (authError) return authError;
   const parsed = await validatedJsonBody(request, simulateReasoningRoutingSchema);
-  if (!parsed.success) return parsed.response;
+  if (parsed.success === false) return parsed.response;
   const { model, effort, thinkingBudgetTokens, apiKeyId, requestTags, transport } = parsed.data;
   const apiKey = apiKeyId ? await getApiKeyById(apiKeyId) : null;
   if (apiKeyId && !apiKey) {

@@ -186,7 +186,7 @@ export interface LiteConfig {
 
 export interface CompressionPipelineStep {
   engine: CompressionEngineId;
-  intensity?: CavemanIntensity | RtkIntensity;
+  intensity?: CavemanIntensity | RtkIntensity | (string & {});
   config?: Record<string, unknown>;
 }
 

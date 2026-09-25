@@ -122,9 +122,10 @@ export function normalizeVideoTranscript(
   if (!Number.isFinite(durationSeconds) || durationSeconds <= 0) {
     throw new Error("Invalid video transcript duration");
   }
+  const cuesArray = rawCues as unknown[];
   const seen = new Set<string>();
   const normalized: VideoTranscriptCue[] = [];
-  for (const cue of rawCues) {
+  for (const cue of cuesArray) {
     if (!cue || typeof cue !== "object") throw new Error("Invalid video transcript cue");
     const record = cue as Record<string, unknown>;
     const text = typeof record.text === "string" ? record.text.trim() : "";
@@ -141,7 +142,12 @@ export function normalizeVideoTranscript(
         : typeof record.end === "number"
           ? record.end
           : Number.NaN;
-    const confidence = record.confidence === undefined ? 1 : record.confidence;
+    const confidence =
+      record.confidence === undefined
+        ? 1
+        : typeof record.confidence === "number"
+          ? record.confidence
+          : Number.NaN;
     if (
       !text ||
       typeof source !== "string" ||

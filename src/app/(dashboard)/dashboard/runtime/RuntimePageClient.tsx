@@ -1154,6 +1154,7 @@ function QuotaGroup({
   items: QuotaMonitor[];
 }) {
   const t = useTranslations("runtime");
+  const nodeMap = useProviderNodeMap();
   const toneMap = {
     red: { text: "#ef4444", bg: "rgba(239,68,68,0.08)", border: "rgba(239,68,68,0.20)" },
     amber: { text: "#eab308", bg: "rgba(234,179,8,0.08)", border: "rgba(234,179,8,0.20)" },

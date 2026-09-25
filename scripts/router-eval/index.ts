@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
+import { Readable } from "node:stream";
 
 import {
   compareRouterEvalRuns,
@@ -158,7 +159,7 @@ function parseInputLine(rawLine: string): RouterObservation | null {
 async function readJsonl(inputPath?: string): Promise<RouterObservation[]> {
   let text: string;
   if (!inputPath) {
-    text = await new Response(process.stdin, { duplex: "half" }).text();
+    text = await new Response(Readable.toWeb(process.stdin) as ReadableStream).text();
   } else {
     text = await fs.promises.readFile(path.resolve(inputPath), "utf8");
   }
@@ -325,7 +326,9 @@ function readUsageHistoryDb(
 async function openSqliteDatabase(sqliteFile: string): Promise<SqliteDatabase> {
   if ("Bun" in globalThis) {
     const sqlite = await import("bun:sqlite");
-    return new sqlite.Database(sqliteFile, { readonly: true });
+    // bun:sqlite's Database satisfies SqliteAdapter's prepare/all/get surface at
+    // runtime, but its ambient type can't prove it — cast at the boundary.
+    return new sqlite.Database(sqliteFile, { readonly: true }) as unknown as SqliteDatabase;
   }
 
   const sqlite = await import("better-sqlite3");

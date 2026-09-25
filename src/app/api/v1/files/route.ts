@@ -134,7 +134,7 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const parsed = parseFilesListQuery(searchParams);
-  if (!parsed.ok) return parsed.response;
+  if (parsed.ok !== true) return parsed.response;
   const { limit, after, order, purpose } = parsed;
 
   // We fetch limit + 1 to check if there are more items

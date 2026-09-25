@@ -1,4 +1,7 @@
-import { handleJinaFoundationProxy } from "@omniroute/open-sse/handlers/jinaFoundation.ts";
+import {
+  handleJinaFoundationProxy,
+  type JinaFoundationCredentials,
+} from "@omniroute/open-sse/handlers/jinaFoundation.ts";
 import {
   getProviderCredentialsWithQuotaPreflight,
   clearRecoveredProviderState,
@@ -12,6 +15,7 @@ import { isValidationFailure, validateBody } from "@/shared/validation/helpers";
 import {
   isAllRateLimitedCredentials,
   rateLimitedProviderResponse,
+  isAllExpiredCredentials,
 } from "@/app/api/v1/_shared/rateLimit";
 import { JINA_FOUNDATION_PROVIDER_ID, JINA_SEGMENT_BASE_URL } from "@/lib/providers/jina";
 
@@ -66,7 +70,11 @@ async function postHandler(request: Request) {
     path: "/v1/segment",
     upstreamUrl: `${JINA_SEGMENT_BASE_URL}/`,
     body,
-    credentials,
+    // reason: the preflight union includes {allExpired} sentinel members that
+    // carry no apiKey/accessToken; the Jina proxy only reads credential fields
+    credentials: isAllExpiredCredentials(credentials)
+      ? null
+      : (credentials as unknown as JinaFoundationCredentials | null),
     provider: JINA_FOUNDATION_PROVIDER_ID,
     model: "segment",
   });

@@ -20,6 +20,8 @@ function makeMemory(content: string, overrides: Partial<Memory> = {}): Memory {
     createdAt: new Date(),
     updatedAt: new Date(),
     expiresAt: null,
+    accessCount: 0,
+    lastAccessedAt: null,
     ...overrides,
   };
 }

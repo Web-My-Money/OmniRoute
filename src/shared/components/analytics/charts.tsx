@@ -131,7 +131,7 @@ export function CompactStatGrid({ sections }: { sections: CompactStatSection[] }
 
 // ── ActivityHeatmap ────────────────────────────────────────────────────────
 
-export function ActivityHeatmap({ activityMap }) {
+export function ActivityHeatmap({ activityMap }: { activityMap?: Record<string, number> | null }) {
   const t = useTranslations("analytics");
   const locale = useLocale();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -222,7 +222,10 @@ export function ActivityHeatmap({ activityMap }) {
           {t("activitySummary", {
             active: Object.keys(activityMap || {}).length,
             tokens: fmt(
-              Object.values(activityMap || {}).reduce((a: number, b: number) => a + b, 0)
+              Object.values(activityMap || {}).reduce(
+                (a: number, b) => a + (typeof b === "number" ? b : 0),
+                0
+              )
             ),
             days: 365,
           })}
@@ -449,7 +452,7 @@ export function ApiKeyTable({ byApiKey }) {
   );
 }
 
-export function MostActiveDay7d({ activityMap }) {
+export function MostActiveDay7d({ activityMap }: { activityMap?: Record<string, number> | null }) {
   const t = useTranslations("analytics");
   const locale = useLocale();
   const weekdayFormatter = useMemo(

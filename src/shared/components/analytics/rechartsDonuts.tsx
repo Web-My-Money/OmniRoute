@@ -12,6 +12,13 @@ import {
 import { PROVIDER_COLORS } from "./chartColors";
 import { ChartLoadingCard, DarkTooltip, useRecharts } from "./rechartsCore";
 
+interface DonutSegment {
+  name: string;
+  value: number;
+  fill: string;
+  fullName?: string;
+}
+
 function CompactDonutCard({
   pieData,
   title,
@@ -20,6 +27,14 @@ function CompactDonutCard({
   labelClassName = "",
   getLegendKey,
   getLegendTitle,
+}: {
+  pieData: DonutSegment[];
+  title: string;
+  formatter: (n: number) => string;
+  valueClassName?: string;
+  labelClassName?: string;
+  getLegendKey?: (seg: DonutSegment, i: number) => string;
+  getLegendTitle?: (seg: DonutSegment) => string | undefined;
 }) {
   const recharts = useRecharts();
 

@@ -24,10 +24,11 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       headers: { "Content-Type": "application/json", ...CORS_HEADERS },
     });
   }
-  // entry.bytes is a Buffer (subclass of Uint8Array); pass it directly.
+  // entry.bytes is a Buffer (subclass of Uint8Array); pass it as Uint8Array.
   // Wrapping in `new Uint8Array(...)` would copy the entire payload — up to
-  // 8 MB per image — for no benefit.
-  return new Response(entry.bytes, {
+  // 8 MB per image — for no benefit. The DOM BodyInit type just doesn't list
+  // Buffer, so narrow the view instead of copying.
+  return new Response(entry.bytes as Uint8Array<ArrayBuffer>, {
     status: 200,
     headers: {
       "Content-Type": entry.mime,

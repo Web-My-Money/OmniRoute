@@ -5,13 +5,13 @@ import { sanitizeErrorMessage } from "@omniroute/open-sse/utils/error.ts";
 import { formatValidationMessage, validateBody } from "@/shared/validation/helpers";
 import { volcenginePlanConnectSchema } from "@/shared/validation/schemas/volcenginePlan";
 
-export async function POST(request: Request): Promise<NextResponse> {
+export async function POST(request: Request): Promise<Response> {
   const auth = await requireManagementAuth(request);
   if (auth) return auth;
 
   const raw = await request.json().catch(() => ({}));
   const validation = validateBody(volcenginePlanConnectSchema, raw);
-  if (!validation.success) {
+  if (validation.success !== true) {
     return NextResponse.json(
       { success: false, error: formatValidationMessage(validation.error) },
       { status: 400 }
@@ -22,11 +22,10 @@ export async function POST(request: Request): Promise<NextResponse> {
   // Auto flow: phone present → start a session-based headless phone/SMS login.
   if (phone) {
     try {
-      const { volcengineConsoleAutoLoginService } = await import(
-        "@omniroute/open-sse/services/volcengineConsoleAutoLogin.ts"
-      );
+      const { volcengineConsoleAutoLoginService } =
+        await import("@omniroute/open-sse/services/volcengineConsoleAutoLogin.ts");
       const started = await volcengineConsoleAutoLoginService.startLogin(phone, { timeout });
-      if (!started.ok) {
+      if (started.ok !== true) {
         return NextResponse.json({ success: false, error: started.error }, { status: 400 });
       }
       return NextResponse.json({ success: true, session: started.session });

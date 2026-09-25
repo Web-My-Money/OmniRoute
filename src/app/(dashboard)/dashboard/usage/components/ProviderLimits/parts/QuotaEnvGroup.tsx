@@ -17,6 +17,8 @@ interface Props {
   onToggle: (id: string) => void;
   onRefresh: (id: string, provider: string) => void;
   onOpenCutoff: (connection: any) => void;
+  onToggleActive: (connectionId: string, nextActive: boolean) => void;
+  togglingActiveId: string | null;
   /** Initial open state — defaults to true; UI persistence is out of scope. */
   defaultOpen?: boolean;
 }

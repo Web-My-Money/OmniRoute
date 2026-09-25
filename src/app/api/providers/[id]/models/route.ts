@@ -125,6 +125,7 @@ import {
   enrichCodexModelsFromGithubCatalog,
   fetchCodexDiscoveryModels,
   fetchCodexGithubCatalogModels,
+  type CodexDiscoveryModel,
 } from "./discovery/codex";
 import { maybeHandleConolModelDiscovery } from "./conolDiscovery";
 import { buildNoAuthModelsResponse, filterModelsForRoute } from "./modelRouteProjection";
@@ -355,7 +356,7 @@ export async function GET(
         return buildDiscoveryFallbackResponse(warnings);
       }
       const status = getSafeOutboundFetchErrorStatus(error);
-      if (status === 400 || status === 503 || status === 504) return null;
+      if (status === 503 || status === 504) return null;
       return buildDiscoveryFallbackResponse(warnings);
     };
 
@@ -512,8 +513,7 @@ export async function GET(
 
       try {
         const graphqlEndpoint =
-          (typeof connection.providerSpecificData?.graphqlEndpoint === "string" &&
-            connection.providerSpecificData.graphqlEndpoint) ||
+          toNonEmptyString(asRecord(connection.providerSpecificData)?.graphqlEndpoint) ||
           process.env.PROMPTQL_GRAPHQL_ENDPOINT ||
           "https://data.prompt.ql.app/promptql/playground-v2-hge/v1/graphql";
         const discovered = await discoverPromptQlModels({
@@ -1187,7 +1187,9 @@ export async function GET(
       const psd = asRecord(connection.providerSpecificData);
       const baseUrl = getProviderBaseUrl(psd) || OCI_DEFAULT_BASE_URL;
       const projectId =
-        connection.projectId || toNonEmptyString(psd.projectId) || toNonEmptyString(psd.project);
+        toNonEmptyString(connection.projectId) ||
+        toNonEmptyString(psd.projectId) ||
+        toNonEmptyString(psd.project);
 
       let response: Response;
       try {
@@ -1455,8 +1457,7 @@ export async function GET(
 
         const modelsResp = await safeOutboundFetch(
           "https://platformapi.innerai.com/api/v1/ai_models",
-          { headers: innerAiHeaders },
-          getProviderOutboundGuard(provider)
+          { headers: innerAiHeaders, guard: getProviderOutboundGuard() }
         );
         if (!modelsResp.ok) {
           throw new Error(`Inner.ai models API returned HTTP ${modelsResp.status}`);
@@ -1906,8 +1907,7 @@ export async function GET(
       // ponytail: Anthropic partner models via Model Garden publisher endpoint (Bearer only)
       if (bearerToken) {
         const psd = asRecord(connection.providerSpecificData);
-        const region =
-          (typeof psd.region === "string" && psd.region.trim()) || "us-central1";
+        const region = (typeof psd.region === "string" && psd.region.trim()) || "us-central1";
 
         // Extract project_id from SA JSON for project-scoped listing (mirrors executor URL pattern).
         // Falls back to global publisher endpoint if no project available.
@@ -1917,7 +1917,9 @@ export async function GET(
           try {
             const sa = JSON.parse(credential);
             if (sa?.project_id) projectId = sa.project_id;
-          } catch { /* not SA JSON, skip */ }
+          } catch {
+            /* not SA JSON, skip */
+          }
         }
         if (projectId) {
           anthropicModelsUrl = `https://aiplatform.googleapis.com/v1/projects/${projectId}/locations/${region}/publishers/anthropic/models`;
@@ -1938,9 +1940,8 @@ export async function GET(
           });
           if (anthropicResponse.ok) {
             const anthropicData = await anthropicResponse.json();
-            const { parseVertexAnthropicModels } = await import(
-              "@/lib/providerModels/vertexAnthropicModelsParser"
-            );
+            const { parseVertexAnthropicModels } =
+              await import("@/lib/providerModels/vertexAnthropicModelsParser");
             allModels.push(...parseVertexAnthropicModels(anthropicData));
           } else {
             console.log("[models] Vertex Anthropic partner discovery failed", {
@@ -2115,9 +2116,12 @@ export async function GET(
         getModelsByProviderId("codex") || [],
         getStaticModelsForProvider("codex") || []
       );
-      const finalizeCodexCatalog = (remoteModels: typeof cachedDiscoveryModels) =>
+      const finalizeCodexCatalog = (remoteModels: CodexDiscoveryModel[]) =>
         buildCodexDiscoveryCatalog(remoteModels, staticCodexCatalog);
-      const cachedCatalogModels = finalizeCodexCatalog(cachedDiscoveryModels);
+      const cachedCatalogModels = finalizeCodexCatalog(
+        // reason: cached rows were produced by this same catalog builder before persistence
+        cachedDiscoveryModels as unknown as CodexDiscoveryModel[]
+      );
       const cachedIdsMatchFinalCatalog =
         cachedDiscoveryModels.length === cachedCatalogModels.length &&
         cachedDiscoveryModels.every((model, index) => model.id === cachedCatalogModels[index]?.id);
@@ -2148,7 +2152,7 @@ export async function GET(
 
       const liveModels = await fetchCodexDiscoveryModels({
         accessToken: accessToken || null,
-        providerSpecificData: connection.providerSpecificData,
+        providerSpecificData: asRecord(connection.providerSpecificData),
         fetchImpl: (url, init) =>
           safeOutboundFetch(url, {
             ...SAFE_OUTBOUND_FETCH_PRESETS.modelsDiscovery,

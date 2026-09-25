@@ -116,7 +116,7 @@ function adobeFireflySuccessResponse(data: {
 async function loginAdobeFirefly(
   connectionId: string,
   body: { timeout?: unknown; freshSession?: unknown }
-): Promise<NextResponse> {
+): Promise<Response> {
   const timeout = typeof body.timeout === "number" ? body.timeout : undefined;
   const freshSession = typeof body.freshSession === "boolean" ? body.freshSession : true;
 
@@ -160,7 +160,7 @@ async function loginAdobeFirefly(
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-): Promise<NextResponse> {
+): Promise<Response> {
   const auth = await requireManagementAuth(req);
   if (auth) return auth;
 
@@ -194,9 +194,8 @@ export async function POST(
   // persistence (same shape as the other web-cookie providers).
   if (providerSlug === "conol-web" || providerSlug === "cnl") {
     try {
-      const { startConolBrowserLogin } = await import(
-        "@omniroute/open-sse/services/conolBrowserLogin.ts"
-      );
+      const { startConolBrowserLogin } =
+        await import("@omniroute/open-sse/services/conolBrowserLogin.ts");
       const result = await startConolBrowserLogin(
         typeof body.timeout === "number" ? body.timeout : undefined
       );

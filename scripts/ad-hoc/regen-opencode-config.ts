@@ -6,7 +6,7 @@
  * Usage:  bun run scripts/regen-opencode-config.ts
  *      or npx tsx scripts/regen-opencode-config.ts
  */
-import { generateOpencodeConfig } from "../src/lib/cli-helper/config-generator/opencode.ts";
+import { generateOpencodeConfig } from "../../src/lib/cli-helper/config-generator/opencode.ts";
 
 const baseURL = process.env.OMNIROUTE_URL ?? "http://localhost:20128";
 const apiKey = process.env.OMNIROUTE_KEY ?? process.env.OPENCODE_API_KEY ?? "";

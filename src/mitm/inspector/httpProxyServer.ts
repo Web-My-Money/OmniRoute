@@ -126,7 +126,7 @@ function handleHttp(req: http.IncomingMessage, res: http.ServerResponse): void {
       const upstream = await fetch(target.toString(), {
         method: req.method ?? "GET",
         headers: upstreamHeaders,
-        body: body.length > 0 ? body : undefined,
+        body: body.length > 0 ? new Uint8Array(body) : undefined,
         redirect: "manual",
       });
 
@@ -168,11 +168,7 @@ function handleHttp(req: http.IncomingMessage, res: http.ServerResponse): void {
   })();
 }
 
-function handleConnect(
-  req: http.IncomingMessage,
-  clientSocket: net.Socket,
-  head: Buffer
-): void {
+function handleConnect(req: http.IncomingMessage, clientSocket: net.Socket, head: Buffer): void {
   const target = req.url ?? "";
   const [host, rawPort] = target.split(":");
   const port = Number(rawPort) || 443;

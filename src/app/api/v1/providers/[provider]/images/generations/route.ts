@@ -85,7 +85,7 @@ export async function POST(request, { params }) {
       `No credentials for image provider: ${rawProvider}`
     );
   }
-  if (credentials.allRateLimited) {
+  if ("allRateLimited" in credentials && credentials.allRateLimited) {
     return unavailableResponse(
       HTTP_STATUS.RATE_LIMITED,
       `[${rawProvider}] All accounts rate limited`,
@@ -118,7 +118,10 @@ export async function POST(request, { params }) {
     });
   }
 
-  const errorPayload = toJsonErrorPayload((result as any).error, "Image generation provider error");
+  const errorPayload = toJsonErrorPayload(
+    (result as any).error, // reason: provider result union is not statically narrowed here
+    "Image generation provider error"
+  ) as { error?: { message?: unknown } } | null;
   const message =
     typeof errorPayload?.error?.message === "string"
       ? errorPayload.error.message

@@ -71,7 +71,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const q = url.searchParams;
   const parsed = parseTraeCallbackQuery(q);
-  if (!parsed.ok) {
+  if (parsed.ok !== true) {
     return htmlClose({ success: false, error: parsed.error }, t);
   }
   try {

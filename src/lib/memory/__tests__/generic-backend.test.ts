@@ -19,11 +19,11 @@ const SAMPLE_MEMORY: Memory = {
   key: "my-key",
   content: "Hello world",
   metadata: { source: "test" },
-  embedding: null,
   createdAt: new Date("2026-01-01T00:00:00.000Z"),
   updatedAt: new Date("2026-01-01T00:00:00.000Z"),
   lastAccessedAt: new Date("2026-01-01T00:00:00.000Z"),
   expiresAt: null,
+  accessCount: 0,
 };
 
 const SAMPLE_MEMORY_JSON = {

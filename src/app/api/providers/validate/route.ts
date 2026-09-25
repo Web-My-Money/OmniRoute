@@ -110,7 +110,9 @@ export async function POST(request) {
     }
 
     const registryProxy = await resolveProxyForProvider(provider);
-    let proxyToUse = registryProxy;
+    // ProxyValue admits URL strings alongside proxy objects — proxyConfigToUrl
+    // (inside the proxy context) accepts both at runtime.
+    let proxyToUse: Record<string, unknown> | string | null = registryProxy;
 
     if (!proxyToUse) {
       const providerProxy = await getProxyForLevel("provider", provider);
@@ -118,12 +120,15 @@ export async function POST(request) {
       proxyToUse = providerProxy || globalProxy || null;
     }
 
-    const result = await runWithProxyContextOrDirect(proxyToUse || null, () =>
-      validateProviderApiKey({
-        provider,
-        apiKey,
-        providerSpecificData,
-      })
+    const result = await runWithProxyContextOrDirect(
+      // reason: ProxyValue also admits URL strings, which proxyConfigToUrl accepts at runtime
+      (proxyToUse || null) as Parameters<typeof runWithProxyContextOrDirect>[0],
+      () =>
+        validateProviderApiKey({
+          provider,
+          apiKey,
+          providerSpecificData,
+        })
     );
 
     if (result.unsupported) {

@@ -62,15 +62,22 @@ export async function POST(request) {
       null,
       modelInfo.model
     );
-    if (!credentials || credentials.allRateLimited) {
+    if (
+      !credentials ||
+      ("allRateLimited" in credentials && credentials.allRateLimited) ||
+      ("allExpired" in credentials && credentials.allExpired)
+    ) {
       return estimated;
     }
+    // reason: the preflight union includes sentinel members without connectionId;
+    // both sentinel cases are excluded by the checks above
+    const countingCredentials = credentials as { connectionId?: string | null };
 
     const executor = await getExecutor(modelInfo.provider);
     // The provider-side count is a real upstream call — it must honor the
     // connection's proxy assignment exactly like chat execution does.
     const proxyInfo = await safeResolveProxy(
-      credentials.connectionId,
+      countingCredentials.connectionId,
       undefined,
       modelInfo.provider
     );

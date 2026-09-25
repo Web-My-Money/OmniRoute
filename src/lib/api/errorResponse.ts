@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 
-export type ApiErrorType = "invalid_request" | "not_found" | "conflict" | "server_error";
+export type ApiErrorType =
+  "invalid_request" | "not_found" | "conflict" | "server_error" | "upstream_error" | "timeout";
 
 interface ApiErrorPayload {
   status: number;

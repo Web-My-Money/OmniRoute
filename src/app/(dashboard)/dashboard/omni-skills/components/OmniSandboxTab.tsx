@@ -1,9 +1,10 @@
 "use client";
 
+import type { ReactElement } from "react";
 import { useTranslations } from "next-intl";
 import { Card } from "@/shared/components";
 
-export function OmniSandboxTab(): JSX.Element {
+export function OmniSandboxTab(): ReactElement {
   const t = useTranslations("skills");
 
   return (

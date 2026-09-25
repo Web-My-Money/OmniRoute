@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
       trend,
       idempotency: idempotencyStats,
       config: {
-        semanticCacheEnabled: settings.semanticCacheEnabled !== false,
+        semanticCacheEnabled: (settings as Record<string, unknown>).semanticCacheEnabled !== false,
       },
     });
   } catch (error) {

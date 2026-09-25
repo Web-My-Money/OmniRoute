@@ -42,6 +42,20 @@ async function apiCall(endpoint: string, options: RequestInit = {}) {
  */
 export default function RedisLauncherPanel() {
   const t = useTranslations("settings");
+  // Translation keys may be absent on older locale bundles — fall back to the
+  // inline English string (with {{value}} interpolation) in that case.
+  const tt = (
+    key: string,
+    fallback: string,
+    values?: Record<string, string | number | Date>
+  ): string => {
+    try {
+      if (typeof t.has === "function" && t.has(key)) return t(key, values);
+    } catch {}
+    return values
+      ? fallback.replace(/\{\{(\w+)\}\}/g, (_, name: string) => String(values[name] ?? ""))
+      : fallback;
+  };
   const [state, setState] = useState<LaunchState>("idle");
   const [status, setStatus] = useState<Status | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -90,10 +104,10 @@ export default function RedisLauncherPanel() {
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
           <h3 className="text-base font-semibold text-text-main">
-            {t("redisLauncherTitle", "Local Redis")}
+            {tt("redisLauncherTitle", "Local Redis")}
           </h3>
           <p className="mt-1 text-sm text-text-muted">
-            {t(
+            {tt(
               "redisLauncherDesc",
               "One-click launch a Redis 7 container (Podman or Docker) for response cache, quota tracking, and rate limiting."
             )}
@@ -101,17 +115,17 @@ export default function RedisLauncherPanel() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="outline" onClick={refresh} disabled={state === "checking"}>
-            {state === "checking" ? "…" : t("redisLauncherRefresh", "Refresh")}
+            {state === "checking" ? "…" : tt("redisLauncherRefresh", "Refresh")}
           </Button>
           {status?.running ? (
             <Button size="sm" variant="outline" onClick={stop} disabled={state === "launching"}>
-              {state === "launching" ? "…" : t("redisLauncherStop", "Stop")}
+              {state === "launching" ? "…" : tt("redisLauncherStop", "Stop")}
             </Button>
           ) : (
             <Button size="sm" onClick={launch} disabled={state === "launching"}>
               {state === "launching"
-                ? t("redisLauncherLaunching", "Launching…")
-                : t("redisLauncherLaunch", "Launch Redis")}
+                ? tt("redisLauncherLaunching", "Launching…")
+                : tt("redisLauncherLaunch", "Launch Redis")}
             </Button>
           )}
         </div>
@@ -120,17 +134,17 @@ export default function RedisLauncherPanel() {
       {status && (
         <dl className="mt-4 grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
           <Stat
-            label={t("redisLauncherContainer", "Container")}
+            label={tt("redisLauncherContainer", "Container")}
             value={status.exists ? "present" : "missing"}
             tone={status.exists ? "ok" : "warn"}
           />
           <Stat
-            label={t("redisLauncherRunning", "Running")}
+            label={tt("redisLauncherRunning", "Running")}
             value={status.running ? "yes" : "no"}
             tone={status.running ? "ok" : "warn"}
           />
           <Stat
-            label={t("redisLauncherReachable", "Reachable")}
+            label={tt("redisLauncherReachable", "Reachable")}
             value={status.reachable ? "yes" : "no"}
             tone={status.reachable ? "ok" : "warn"}
           />
@@ -139,12 +153,12 @@ export default function RedisLauncherPanel() {
 
       {error && (
         <p className="mt-3 text-sm text-red-400">
-          {t("redisLauncherError", "Error: {{message}}", { message: error })}
+          {tt("redisLauncherError", "Error: {{message}}", { message: error })}
         </p>
       )}
 
       <p className="mt-3 text-xs text-text-muted">
-        {t(
+        {tt(
           "redisLauncherHint",
           "Equivalent to running `omniroute redis up`. The container is named `omniroute-redis` and listens on 127.0.0.1:6379."
         )}
@@ -153,15 +167,7 @@ export default function RedisLauncherPanel() {
   );
 }
 
-function Stat({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone: "ok" | "warn";
-}) {
+function Stat({ label, value, tone }: { label: string; value: string; tone: "ok" | "warn" }) {
   const color = tone === "ok" ? "text-emerald-400" : "text-amber-400";
   return (
     <div className="rounded-lg border border-border bg-bg-subtle p-3">

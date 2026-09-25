@@ -14,7 +14,7 @@ import { volcenginePlanCodeSchema } from "@/shared/validation/schemas/volcengine
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ sessionId: string }> }
-): Promise<NextResponse> {
+): Promise<Response> {
   const auth = await requireManagementAuth(request);
   if (auth) return auth;
 
@@ -24,7 +24,7 @@ export async function POST(
   // regardless of whether the session happens to exist, and answering 404 for
   // it (the previous behavior) hides the real cause.
   const validation = validateBody(volcenginePlanCodeSchema, raw);
-  if (!validation.success) {
+  if (validation.success !== true) {
     return NextResponse.json(
       { success: false, error: formatValidationMessage(validation.error) },
       { status: 400 }
@@ -33,9 +33,8 @@ export async function POST(
   const { code, captcha, timeout } = validation.data;
 
   try {
-    const { volcengineConsoleAutoLoginService } = await import(
-      "@omniroute/open-sse/services/volcengineConsoleAutoLogin.ts"
-    );
+    const { volcengineConsoleAutoLoginService } =
+      await import("@omniroute/open-sse/services/volcengineConsoleAutoLogin.ts");
 
     if (!volcengineConsoleAutoLoginService.getStatus(sessionId)) {
       return NextResponse.json(

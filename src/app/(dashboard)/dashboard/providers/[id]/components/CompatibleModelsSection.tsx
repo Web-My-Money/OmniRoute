@@ -434,6 +434,7 @@ export default function CompatibleModelsSection({
               return (
                 <PassthroughModelRow
                   key={`${providerStorageAlias}:${modelId}`}
+                  provider={providerStorageAlias}
                   modelId={modelId}
                   fullModel={fullModel}
                   alias={alias}

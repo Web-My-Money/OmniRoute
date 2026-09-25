@@ -3,6 +3,7 @@ import {
   getCodexParentAccountDiagnostic,
 } from "@omniroute/open-sse/services/codexAccount/index.ts";
 import type { AdaptiveAdmissionPublicSnapshot } from "@omniroute/open-sse/services/admission/runtime.ts";
+import type { ModelLockoutInfo } from "@omniroute/open-sse/services/accountFallback.ts";
 import type { PerConnectionAdmissionController } from "@/shared/middleware/chatBodyAdmission";
 
 type JsonRecord = Record<string, unknown>;
@@ -183,7 +184,7 @@ interface BuildHealthPayloadOptions {
   circuitBreakers: CircuitBreakerStatus[];
   rateLimitStatus: JsonRecord;
   learnedLimits: JsonRecord;
-  lockouts: JsonRecord;
+  lockouts: ModelLockoutInfo[];
   localProviders: JsonRecord;
   inflightRequests: number;
   quotaMonitorSummary: QuotaMonitorSummary;

@@ -264,9 +264,9 @@ export function getDatabaseSettings(): DatabaseSettings {
   };
 }
 
-export function updateDatabaseSettings(
-  updates: Partial<UserDatabaseSettings>
-): UserDatabaseSettings {
+export function updateDatabaseSettings(updates: {
+  [S in DatabaseSettingsSection]?: Partial<UserDatabaseSettings[S]>;
+}): UserDatabaseSettings {
   const nextSettings = getUserDatabaseSettings();
   const optimizationUpdated = updates.optimization !== undefined;
 

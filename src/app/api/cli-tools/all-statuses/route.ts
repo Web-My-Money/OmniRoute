@@ -174,7 +174,7 @@ export async function GET(request: Request): Promise<Response> {
               installed: runtime.installed,
               runnable: runtime.runnable,
               version: (runtime as Record<string, unknown>).version as string | undefined,
-              command: runtime.command ?? undefined,
+              command: ((runtime as Record<string, unknown>).command as string | null) ?? undefined,
               commandPath: (runtime as Record<string, unknown>).commandPath as string | undefined,
               reason: runtime.reason ?? undefined,
             },
