@@ -1,0 +1,11 @@
+{
+    "schema_version": 2,
+    "commit": "70307aa47df4184aa1700f05f463c7637f93acfa",
+    "indexed_at": "2026-08-10T14:51:50Z",
+    "project": "C-Dev-wmm-omniroute",
+    "nodes": 45632,
+    "edges": 136888,
+    "original_size": 56754176,
+    "compressed_size": 9252500,
+    "compression_level": 9
+}

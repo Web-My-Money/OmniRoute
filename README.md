@@ -40,6 +40,49 @@
 [![Star History Rank](https://api.star-history.com/badge?repo=diegosouzapw/OmniRoute&theme=dark)](https://www.star-history.com/diegosouzapw/omniroute)
 [![olud.ai](https://olud.ai/badge.php?tool=diegosouzapw-omniroute)](https://olud.ai/project/diegosouzapw-omniroute.html)
 
+</div>
+
+<br/>
+
+---
+
+## Web-My-Money fork
+
+This is the `Web-My-Money` org's fork of upstream [`diegosouzapw/OmniRoute`](https://github.com/diegosouzapw/OmniRoute) (MIT licensed). It exists so WMM has full source-code ownership of the `omniroute` service in the `Cloud-Agents-Stack` Railway project — every Multica agent and Hermes/G Dog route their LLM calls through it, so being able to read, audit, and patch this code ourselves (instead of depending on a third-party prebuilt image) matters.
+
+**Branches**
+
+- `wmm-production` — the branch WMM builds/deploys from. Currently pinned to upstream tag `v3.8.49` (the exact commit `diegosouzapw/omniroute:3.8.49` was built from), so it matches the image the live Railway service ran before the fork existed. Make WMM-specific edits and cherry-picked upstream fixes here.
+- `release/v3.8.49`, `main`, etc. — mirrors of upstream branches, kept only as fetch targets for pulling updates. Do not commit WMM changes directly to these.
+
+**Pulling updates from upstream**
+
+The `upstream` remote points at `diegosouzapw/OmniRoute`. To pull newer upstream work into our branch:
+
+```bash
+git fetch upstream
+git checkout wmm-production
+git merge upstream/main            # or upstream/release/vX.Y.Z, or a specific tag
+# resolve conflicts, then:
+git push origin wmm-production
+```
+
+(If `upstream` isn't configured in your clone: `git remote add upstream https://github.com/diegosouzapw/OmniRoute.git`.)
+
+**Railway deploy (build-from-source)**
+
+The live Railway `omniroute` service builds directly from this fork's `wmm-production` branch (Dockerfile builder) rather than a manually published image — pushing a fix here and letting Railway redeploy is the intended edit-deploy loop. Two things to know:
+
+- Railway has no documented way to select a Docker build `--target` for a multi-stage Dockerfile (it always builds the last stage). Upstream's `Dockerfile` ends at `runner-cli` (extra CLI tooling we don't need/run). Railway is pointed instead at **`Dockerfile.railway`** in this repo (via the `RAILWAY_DOCKERFILE_PATH` service variable) — a copy of upstream's `Dockerfile` truncated so `runner-base` is the last stage, matching the target the previously-deployed image was built from. See the header comment in `Dockerfile.railway` for how to re-sync it after merging upstream Dockerfile changes.
+- Every `RUN --mount=type=cache,id=...` in `Dockerfile.railway` uses a Railway-specific id format Railway requires but does not clearly document beyond one example: `id=s/<the-real-Railway-service-id>-<target path>`, and it must be the literal id of whichever specific Railway service is doing the build — verified against two real builds that a mismatched (but real) id fails identically to a made-up one. The ids in this file are hardcoded to the live production `omniroute` service's id. A throwaway verification service needs those ids temporarily swapped to its own id to build successfully; see `Dockerfile.railway`'s header comment for the full list of shapes tried and why.
+- All live state (combos, provider/OAuth connections, compression settings, API keys) lives in `storage.sqlite` under `DATA_DIR`, which is the Railway `omniroute-volume` volume mounted on the service — not baked into the image. A source/build swap does not touch it as long as the volume and env vars stay attached to the service.
+
+**Status (2026-08-13): cutover complete.** A real Railway build of this branch (commit `5568391` at time of writing) succeeded end-to-end against a throwaway verification service — booted healthy, and a request shaped exactly like the tool-schema-heavy payloads that used to trip `chat_admission_busy`/`structure_limit` (see the `fix(admission)` commit below) now passes admission cleanly. A few vestigial fields on the Railway service still display the old upstream image tag (`diegosouzapw/omniroute:3.8.49`) and the `DOCKER_IMAGE` env var; these are leftover labels — the running code is from this fork. See `SYNC_UPSTREAM.md` for how to pull upstream updates without losing the WMM fixes.
+
+---
+
+<div align="center">
+
 ### 💬 Join the community
 
 **👋 Follow the maintainer — get new providers, releases & tips first:**
