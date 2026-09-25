@@ -57,10 +57,7 @@ test("cleanup: has background scheduler (startCleanupScheduler)", () => {
     source.includes("startCleanupScheduler"),
     "must export startCleanupScheduler for periodic background cleanup"
   );
-  assert.ok(
-    source.includes("CLEANUP_INTERVAL_MS"),
-    "must have a cleanup interval constant"
-  );
+  assert.ok(source.includes("CLEANUP_INTERVAL_MS"), "must have a cleanup interval constant");
   assert.ok(
     source.includes("VACUUM"),
     "scheduler must run VACUUM after deletes to reclaim disk space"
@@ -83,7 +80,7 @@ test("cleanup: scheduler is wired into instrumentation-node.ts", () => {
   );
 });
 
-test("cleanup: mcp_tool_audit uses correct table name (not 'mcp_audit_log')", () => {
+test("cleanup: mcp_tool_audit uses its created_at column", () => {
   assert.ok(
     source.includes("DELETE FROM mcp_tool_audit WHERE created_at < ?"),
     "mcp_tool_audit cleanup must use its created_at column"
@@ -98,7 +95,7 @@ test("cleanup: mcp_tool_audit uses correct table name (not 'mcp_audit_log')", ()
   );
 });
 
-test("cleanup: a2a_task_events uses correct table name (not 'a2a_events')", () => {
+test("cleanup: a2a_task_events uses its created_at column", () => {
   assert.ok(
     source.includes("DELETE FROM a2a_task_events WHERE created_at < ?"),
     "a2a_task_events cleanup must use its created_at column"
@@ -113,11 +110,16 @@ test("cleanup: a2a_task_events uses correct table name (not 'a2a_events')", () =
   );
 });
 
-test("cleanup: memories uses correct table name (not 'memory_entries')", () => {
+test("cleanup: scheduler does not run proxy cleanup twice", () => {
+  const schedulerSource = source.slice(source.indexOf("export function startCleanupScheduler"));
   assert.ok(
-    source.includes("DELETE FROM memories WHERE"),
-    "must use correct table name memories"
+    !schedulerSource.includes("cleanupProxyLogs()"),
+    "runAutoCleanup already owns proxy log cleanup"
   );
+});
+
+test("cleanup: memories uses correct table name (not 'memory_entries')", () => {
+  assert.ok(source.includes("DELETE FROM memories WHERE"), "must use correct table name memories");
   assert.ok(
     !source.includes("DELETE FROM memory_entries WHERE"),
     "must NOT use non-existent table name memory_entries"

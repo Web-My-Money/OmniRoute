@@ -119,8 +119,14 @@ export function appendUserTurn(body: Body, text: string): Body {
  * Build the judge directive. Sources are anonymized ("Source N") so the judge
  * weighs substance, not the reputation of a model brand.
  */
+const MAX_PANEL_TEXT = 32_000;
+const MAX_JUDGE_PROMPT = 200_000;
 export function buildJudgePrompt(answers: Array<{ text: string }>): string {
   const panel = answers.map((a, i) => `[Source ${i + 1}]\n${a.text}`).join("\n\n");
+  const bounded =
+    panel.length > MAX_JUDGE_PROMPT
+      ? panel.slice(0, MAX_JUDGE_PROMPT) + "\n... (truncated)"
+      : panel;
 
   return [
     `You are the JUDGE in a model-fusion panel. ${answers.length} expert models independently answered the user's most recent request. Their responses are below, anonymized by source.`,
@@ -134,7 +140,7 @@ export function buildJudgePrompt(answers: Array<{ text: string }>): string {
     "Then write the best possible final answer — more complete and correct than any single response, and than the panel as a whole — with no filler.",
     "",
     "=== PANEL RESPONSES ===",
-    panel,
+    bounded,
     "=== END PANEL RESPONSES ===",
     "",
     "Now write the final answer to the user's original request.",
@@ -418,7 +424,10 @@ export async function handleFusionChat({
     }
     try {
       const json = await resp.clone().json();
-      const text = extractPanelText(json);
+      let text = extractPanelText(json);
+      if (text.length > MAX_PANEL_TEXT) {
+        text = text.slice(0, MAX_PANEL_TEXT) + "\n... (truncated)";
+      }
       if (text) {
         answers.push({ model, text });
         log.info("FUSION", `Panel ${model} ok (${text.length} chars)`);

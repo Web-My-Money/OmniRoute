@@ -6,6 +6,7 @@
 
 import { getDbInstance } from "./core";
 import { getUserDatabaseSettings } from "./databaseSettings";
+import { maintainMemoryFts } from "./memoryFtsMaintenance";
 import { rollupUsageHistoryBeforeDate } from "@/lib/usage/aggregateHistory";
 import { purgeCallLogArtifactDirectory } from "@/lib/usage/callLogArtifacts";
 import {
@@ -383,6 +384,13 @@ export async function cleanupCompressionRunTelemetry(): Promise<CleanupResult> {
   const result: CleanupResult = { deleted: 0, errors: 0 };
 
   try {
+    const tableExists = db
+      .prepare(
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'compression_run_telemetry'"
+      )
+      .get();
+    if (!tableExists) return result;
+
     const stmt = db.prepare("DELETE FROM compression_run_telemetry WHERE timestamp < ?");
     const runResult = stmt.run(cutoffEpoch);
     result.deleted = runResult.changes;
@@ -600,16 +608,56 @@ function isResetUsageHistoryPeriod(period: string): period is ResetUsageHistoryP
  */
 const RESET_TARGETS: Array<DeleteByPeriodTarget & { resultKey: keyof ResetUsageHistoryResult }> = [
   { table: "usage_history", column: "timestamp", cutoff: "iso", resultKey: "deletedUsageHistory" },
-  { table: "daily_usage_summary", column: "date", cutoff: "date", resultKey: "deletedDailySummary" },
-  { table: "hourly_usage_summary", column: "date_hour", cutoff: "dateHour", resultKey: "deletedHourlySummary" },
+  {
+    table: "daily_usage_summary",
+    column: "date",
+    cutoff: "date",
+    resultKey: "deletedDailySummary",
+  },
+  {
+    table: "hourly_usage_summary",
+    column: "date_hour",
+    cutoff: "dateHour",
+    resultKey: "deletedHourlySummary",
+  },
   { table: "call_logs", column: "timestamp", cutoff: "iso", resultKey: "deletedCallLogs" },
-  { table: "request_detail_logs", column: "timestamp", cutoff: "iso", resultKey: "deletedRequestDetailLogs" },
+  {
+    table: "request_detail_logs",
+    column: "timestamp",
+    cutoff: "iso",
+    resultKey: "deletedRequestDetailLogs",
+  },
   { table: "proxy_logs", column: "timestamp", cutoff: "iso", resultKey: "deletedProxyLogs" },
-  { table: "relay_logs", column: "created_at", cutoff: "epochSeconds", resultKey: "deletedRelayLogs" },
-  { table: "compression_analytics", column: "timestamp", cutoff: "iso", resultKey: "deletedCompressionAnalytics" },
-  { table: "compression_run_telemetry", column: "timestamp", cutoff: "epochMs", resultKey: "deletedCompressionRunTelemetry" },
-  { table: "routing_decisions", column: "created_at", cutoff: "iso", resultKey: "deletedRoutingDecisions" },
-  { table: "quota_consumption", column: "updated_at", cutoff: "epochMs", resultKey: "deletedQuotaConsumption" },
+  {
+    table: "relay_logs",
+    column: "created_at",
+    cutoff: "epochSeconds",
+    resultKey: "deletedRelayLogs",
+  },
+  {
+    table: "compression_analytics",
+    column: "timestamp",
+    cutoff: "iso",
+    resultKey: "deletedCompressionAnalytics",
+  },
+  {
+    table: "compression_run_telemetry",
+    column: "timestamp",
+    cutoff: "epochMs",
+    resultKey: "deletedCompressionRunTelemetry",
+  },
+  {
+    table: "routing_decisions",
+    column: "created_at",
+    cutoff: "iso",
+    resultKey: "deletedRoutingDecisions",
+  },
+  {
+    table: "quota_consumption",
+    column: "updated_at",
+    cutoff: "epochMs",
+    resultKey: "deletedQuotaConsumption",
+  },
   { table: "token_ledger", column: "created_at", cutoff: "iso", resultKey: "deletedTokenLedger" },
 ];
 
@@ -716,6 +764,15 @@ export async function cleanupProxyLogs(): Promise<CleanupResult> {
 const CLEANUP_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
 let _cleanupSchedulerTimer: ReturnType<typeof setInterval> | null = null;
 
+function runMemoryFtsMaintenance(): void {
+  const result = maintainMemoryFts(getDbInstance());
+  const error = result.error ? ` error=${JSON.stringify(result.error)}` : "";
+  console.log(
+    `[Cleanup] Memory FTS maintenance action=${result.action} ftsBytes=${result.ftsBytes} ` +
+      `memoriesBytes=${result.memoriesBytes} durationMs=${result.durationMs}${error}`
+  );
+}
+
 /**
  * Start the background cleanup scheduler. Runs cleanup on startup
  * and then every 6 hours. Runs VACUUM after deletes to reclaim disk space.
@@ -731,10 +788,10 @@ export function startCleanupScheduler(): void {
   setTimeout(async () => {
     try {
       const result = await runAutoCleanup();
-      const proxyResult = await cleanupProxyLogs();
-      const totalDeleted = result.totalDeleted + proxyResult.deleted;
+      const totalDeleted = result.totalDeleted;
       if (totalDeleted > 0) {
         console.log(`[Cleanup] Startup cleanup freed ${totalDeleted} rows. Running VACUUM...`);
+        runMemoryFtsMaintenance();
         try {
           const db = getDbInstance();
           db.exec("VACUUM");
@@ -752,10 +809,10 @@ export function startCleanupScheduler(): void {
   _cleanupSchedulerTimer = setInterval(async () => {
     try {
       const result = await runAutoCleanup();
-      const proxyResult = await cleanupProxyLogs();
-      const totalDeleted = result.totalDeleted + proxyResult.deleted;
+      const totalDeleted = result.totalDeleted;
       if (totalDeleted > 0) {
         console.log(`[Cleanup] Periodic cleanup freed ${totalDeleted} rows. Running VACUUM...`);
+        runMemoryFtsMaintenance();
         try {
           const db = getDbInstance();
           db.exec("VACUUM");
