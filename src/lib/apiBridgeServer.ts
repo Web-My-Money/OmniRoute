@@ -203,7 +203,7 @@ export function initApiBridgeServer(): void {
 
     if (!isOpenAiCompatiblePath(pathname)) {
       writeUpgradeProxyError(
-        socket,
+        socket as net.Socket,
         404,
         JSON.stringify({
           error: "not_found",
@@ -213,7 +213,7 @@ export function initApiBridgeServer(): void {
       return;
     }
 
-    proxyUpgrade(req, socket, head, dashboardPort);
+    proxyUpgrade(req, socket as net.Socket, head, dashboardPort);
   });
 
   server.on("error", (error: NodeJS.ErrnoException) => {

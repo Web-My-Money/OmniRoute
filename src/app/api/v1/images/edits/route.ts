@@ -56,6 +56,17 @@ const ImageEditJsonSchema = z
   })
   .passthrough();
 
+// Credential union from getProviderCredentialsWithQuotaPreflight includes
+// rate-limit/expired marker members; after those are guarded above, the
+// remaining members satisfy this handler-facing credentials shape.
+type UsableCredentials = {
+  apiKey?: string;
+  accessToken?: string | null;
+  connectionId?: string;
+  providerSpecificData?: Record<string, unknown>;
+  baseUrl?: unknown;
+};
+
 /**
  * /v1/images/edits — OpenAI-compatible image-edit endpoint.
  *
@@ -262,7 +273,7 @@ async function handleAdobeFireflyEditRequest(params: {
       `No credentials for provider: ${parsed.provider}`
     );
   }
-  if (credentials.allRateLimited) {
+  if ("allRateLimited" in credentials && credentials.allRateLimited) {
     return unavailableResponse(
       HTTP_STATUS.RATE_LIMITED,
       `[${parsed.provider}] All accounts rate limited`,
@@ -291,7 +302,7 @@ async function handleAdobeFireflyEditRequest(params: {
       image_urls: dataUrls,
       images: dataUrls,
     },
-    credentials,
+    credentials: credentials as UsableCredentials,
     log,
   });
 
@@ -397,7 +408,7 @@ async function postHandler(request: Request, _context?: unknown) {
         `No credentials for provider: ${parsed.provider}`
       );
     }
-    if (credentials.allRateLimited) {
+    if ("allRateLimited" in credentials && credentials.allRateLimited) {
       return unavailableResponse(
         HTTP_STATUS.RATE_LIMITED,
         `[${parsed.provider}] All accounts rate limited`,
@@ -417,7 +428,7 @@ async function postHandler(request: Request, _context?: unknown) {
       },
       imageBytes,
       imageMime,
-      credentials,
+      credentials: credentials as UsableCredentials,
       log,
       signal: request.signal,
       clientHeaders: publicBaseUrlHeaders(request.headers),
@@ -459,7 +470,7 @@ async function postHandler(request: Request, _context?: unknown) {
         `No credentials for provider: ${parsed.provider}`
       );
     }
-    if (credentials.allRateLimited) {
+    if ("allRateLimited" in credentials && credentials.allRateLimited) {
       return unavailableResponse(
         HTTP_STATUS.RATE_LIMITED,
         `[${parsed.provider}] All accounts rate limited`,
@@ -536,7 +547,7 @@ async function postHandler(request: Request, _context?: unknown) {
         `No credentials for provider: ${parsed.provider}`
       );
     }
-    if (credentials.allRateLimited) {
+    if ("allRateLimited" in credentials && credentials.allRateLimited) {
       return unavailableResponse(
         HTTP_STATUS.RATE_LIMITED,
         `[${parsed.provider}] All accounts rate limited`,
@@ -556,17 +567,17 @@ async function postHandler(request: Request, _context?: unknown) {
         n: 1,
       },
       images,
-      credentials,
+      credentials: credentials as UsableCredentials,
       log,
     });
 
-    if (result.success) {
+    if ("data" in result && result.success) {
       await clearRecoveredProviderState(credentials);
       return jsonResponse(result.data);
     }
     return jsonResponse(
-      toJsonErrorPayload(result.error, "Image edit provider error"),
-      result.status
+      toJsonErrorPayload("error" in result ? result.error : undefined, "Image edit provider error"),
+      "status" in result ? result.status : HTTP_STATUS.BAD_GATEWAY
     );
   }
 
@@ -603,7 +614,7 @@ async function postHandler(request: Request, _context?: unknown) {
         `No credentials for provider: ${parsed.provider}`
       );
     }
-    if (credentials.allRateLimited) {
+    if ("allRateLimited" in credentials && credentials.allRateLimited) {
       return unavailableResponse(
         HTTP_STATUS.RATE_LIMITED,
         `[${parsed.provider}] All accounts rate limited`,
@@ -616,7 +627,7 @@ async function postHandler(request: Request, _context?: unknown) {
       provider: parsed.provider,
       model: parsed.model,
       baseUrl: providerConfig.baseUrl,
-      credentials,
+      credentials: credentials as UsableCredentials,
       prompt,
       imageBytes,
       imageMime,
@@ -668,7 +679,7 @@ async function postHandler(request: Request, _context?: unknown) {
       `No credentials for custom image provider: ${customProviderId}`
     );
   }
-  if (credentials.allRateLimited) {
+  if ("allRateLimited" in credentials && credentials.allRateLimited) {
     return unavailableResponse(
       HTTP_STATUS.RATE_LIMITED,
       `[${customProviderId}] All accounts rate limited`,
@@ -680,7 +691,7 @@ async function postHandler(request: Request, _context?: unknown) {
   const result = await handleOpenAIImageEdit({
     provider: customProviderId,
     model: customModel,
-    credentials,
+    credentials: credentials as UsableCredentials,
     prompt,
     imageBytes,
     imageMime,

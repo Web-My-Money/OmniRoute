@@ -58,9 +58,11 @@ export async function handleGetModels(request: Request, dependencies: GetModelsD
           existing.push(connection);
           connectionsByProvider.set(key, existing);
         };
+        const asString = (v: unknown) => (typeof v === "string" ? v : undefined);
         for (const connection of active) {
-          registerConnectionKey(connection.provider, connection);
-          registerConnectionKey(PROVIDER_ID_TO_ALIAS[connection.provider], connection);
+          const providerId = asString(connection.provider);
+          registerConnectionKey(providerId, connection);
+          registerConnectionKey(providerId ? PROVIDER_ID_TO_ALIAS[providerId] : null, connection);
         }
         const getConnectionsForProvider = (...keys: Array<string | null | undefined>) => {
           const seen = new Set<string>();
@@ -68,8 +70,9 @@ export async function handleGetModels(request: Request, dependencies: GetModelsD
           for (const key of keys) {
             if (!key) continue;
             for (const connection of connectionsByProvider.get(key) || []) {
-              if (!connection?.id || seen.has(connection.id)) continue;
-              seen.add(connection.id);
+              const connectionId = asString(connection?.id);
+              if (!connectionId || seen.has(connectionId)) continue;
+              seen.add(connectionId);
               collected.push(connection);
             }
           }
@@ -149,8 +152,7 @@ export async function handleGetModels(request: Request, dependencies: GetModelsD
         staticModelId: m.model,
         syncedModelIds: syncedForProvider ? [...syncedForProvider] : [],
       });
-      const available =
-        (!activeProviders || activeProviders.has(m.provider)) && !suppressedBySync;
+      const available = (!activeProviders || activeProviders.has(m.provider)) && !suppressedBySync;
       return {
         ...m,
         fullModel,

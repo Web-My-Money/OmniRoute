@@ -6,6 +6,7 @@ import { getRuntimePorts } from "@/lib/runtime/ports";
 import { resolveNestedComboTargets } from "@omniroute/open-sse/services/combo.ts";
 import { testComboSchema } from "@/shared/validation/schemas";
 import { isValidationFailure, validateBody } from "@/shared/validation/helpers";
+import { isRecord } from "@/lib/usage/providerLimits/quotaNormalize";
 import { requireManagementAuth } from "@/lib/api/requireManagementAuth";
 import { sanitizeErrorMessage } from "@omniroute/open-sse/utils/error";
 
@@ -16,7 +17,23 @@ async function getInternalApiKey(): Promise<string | null> {
   return pickApiKeyForInternalUse("combo-health-check");
 }
 
-function buildComboTestResult(target, partial = {}) {
+function buildComboTestResult(
+  target: {
+    modelStr?: string;
+    provider?: string;
+    stepId?: string;
+    executionKey?: string;
+    connectionId?: string;
+    label?: string;
+  },
+  partial: {
+    status?: string;
+    statusCode?: number;
+    error?: string;
+    latencyMs?: number;
+    responseText?: string;
+  } = {}
+) {
   return {
     model: target.modelStr,
     provider: target.provider,
@@ -159,7 +176,16 @@ export async function POST(request) {
     }
 
     const allCombos = await getCombos();
-    const targets = resolveNestedComboTargets(combo, allCombos);
+    const targets = resolveNestedComboTargets(
+      {
+        ...combo,
+        name: typeof combo.name === "string" ? combo.name : comboName,
+        models: Array.isArray(combo.models) ? combo.models : [],
+        config: isRecord(combo.config) ? combo.config : null,
+        autoConfig: isRecord(combo.autoConfig) ? combo.autoConfig : null,
+      },
+      allCombos
+    );
 
     if (targets.length === 0) {
       return NextResponse.json({ error: "Combo has no models" }, { status: 400 });

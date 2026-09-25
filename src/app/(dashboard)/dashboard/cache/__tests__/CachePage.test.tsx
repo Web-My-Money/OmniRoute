@@ -41,7 +41,6 @@ vi.mock("next-intl", () => ({
         "cache.cachedTokensCol": "Cache Read",
         "cache.cacheCreation": "Cache Write",
         "cache.cacheCreationWrite": "Written to cache",
-        "cache.inputTokens": "Total Input Tokens",
         "cache.semanticCache": "Semantic Cache",
         "cache.semanticCacheSectionDesc": "Semantic cache section",
         "cache.semanticCacheDisabledDesc": "Semantic cache is disabled.",

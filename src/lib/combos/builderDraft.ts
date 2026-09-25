@@ -91,7 +91,7 @@ export function buildPrecisionComboModelStep({
   /** #3266: account allowlist scoping round-robin to a subset of connections. */
   allowedConnectionIds?: string[] | null;
   weight?: number;
-}): ComboModelStep {
+}): Omit<ComboModelStep, "id"> {
   const normalizedProviderId = toTrimmedString(providerId) || "provider";
   const normalizedModelId = toTrimmedString(modelId) || "model";
   const normalizedConnectionId = toTrimmedString(connectionId);
@@ -153,7 +153,7 @@ export function buildManualComboModelStep({
   value: unknown;
   providers?: ComboBuilderProviderIdentity[];
   weight?: number;
-}): ComboModelStep | null {
+}): Omit<ComboModelStep, "id"> | null {
   const parsed = parseQualifiedModel(value);
   if (!parsed) return null;
 
@@ -217,7 +217,7 @@ export type ComboBuilderGlobalModelEntry = {
   modelName: string;
   connectionCount: number;
   connections: unknown[];
-  step: ComboModelStep;
+  step: Omit<ComboModelStep, "id">;
 };
 
 type ComboBuilderGlobalProvider = {

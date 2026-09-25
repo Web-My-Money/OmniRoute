@@ -16,12 +16,12 @@ export function createBetterSqliteAdapter(db: import("better-sqlite3").Database)
       return db.inTransaction;
     },
 
-    prepare(sql: string): PreparedStatement {
+    prepare<Row = unknown>(sql: string): PreparedStatement<Row> {
       const stmt = db.prepare(sql);
       return {
         run: (...params: unknown[]): RunResult => stmt.run(...params) as unknown as RunResult,
-        get: (...params: unknown[]): unknown => stmt.get(...params),
-        all: (...params: unknown[]): unknown[] => stmt.all(...params),
+        get: (...params: unknown[]): Row | undefined => stmt.get(...params) as Row | undefined,
+        all: (...params: unknown[]): Row[] => stmt.all(...params) as Row[],
       };
     },
 

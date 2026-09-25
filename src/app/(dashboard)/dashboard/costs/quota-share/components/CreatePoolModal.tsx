@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button, Modal } from "@/shared/components";
-import type { QuotaPool, Policy, QuotaDimension } from "@/lib/quota/dimensions";
+import type { Policy, QuotaDimension } from "@/lib/quota/dimensions";
+import type { PoolAllocation, PoolCreate, QuotaPool } from "@/lib/db/quotaPools";
 
 interface Connection {
   id: string;
@@ -23,7 +24,7 @@ interface CreatePoolModalProps {
   plans: Record<string, PlanInfo>;
   existingPools: QuotaPool[];
   onClose: () => void;
-  onCreate: (pool: Omit<QuotaPool, "id" | "createdAt">) => Promise<void>;
+  onCreate: (pool: PoolCreate) => Promise<void>;
 }
 
 export default function CreatePoolModal({
@@ -65,7 +66,7 @@ export default function CreatePoolModal({
       await onCreate({
         connectionId,
         name: poolName,
-        allocations: [],
+        allocations: [] as PoolAllocation[],
       });
       onClose();
     } catch (err) {
@@ -137,7 +138,11 @@ export default function CreatePoolModal({
                       : "border-border text-text-muted hover:text-text-main"
                   }`}
                 >
-                  {p === "hard" ? t("policyHard") : p === "soft" ? t("policySoft") : t("policyBurst")}
+                  {p === "hard"
+                    ? t("policyHard")
+                    : p === "soft"
+                      ? t("policySoft")
+                      : t("policyBurst")}
                 </button>
               ))}
             </div>

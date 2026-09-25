@@ -153,7 +153,14 @@ async function postHandler(request, context) {
         return rateLimitedProviderResponse(prefix, credentials);
       }
 
-      const token = credentials?.apiKey || credentials?.accessToken;
+      // reason: the preflight union includes sentinel members ({allExpired},
+      // env-credential variants) without apiKey/accessToken — rate-limited and
+      // expired states are already handled above
+      const usableCredentials = credentials as unknown as {
+        apiKey?: string;
+        accessToken?: string;
+      };
+      const token = usableCredentials?.apiKey || usableCredentials?.accessToken;
       const startTime = Date.now();
       try {
         let res = await fetch(localProvider.baseUrl, {

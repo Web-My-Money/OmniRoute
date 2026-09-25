@@ -3,6 +3,7 @@ import { getCombos, getComboById } from "@/lib/db/combos";
 import { getPricingForModel } from "@/lib/db/settings";
 import { getQuotaSnapshots } from "@/lib/db/quotaSnapshots";
 import { computeCostFromPricing, normalizeModelName } from "@/lib/usage/costCalculator";
+import { isRecord } from "@/lib/usage/providerLimits/quotaNormalize";
 import { resolveNestedComboTargets } from "@omniroute/open-sse/services/combo.ts";
 import type {
   ComboRecord,
@@ -265,7 +266,18 @@ async function buildComboForecast(
   const comboName = typeof combo.name === "string" ? combo.name : "";
   if (!comboId || !comboName) return null;
 
-  const targets = resolveNestedComboTargets(combo, allCombos) as ResolvedComboTargetView[];
+  const targets = resolveNestedComboTargets(
+    {
+      ...combo,
+      name: comboName,
+      models: Array.isArray(combo.models) ? combo.models : [],
+      config: isRecord(combo.config) ? combo.config : null,
+      autoConfig: isRecord(combo.autoConfig) ? combo.autoConfig : null,
+    },
+    // `allCombos` rows are structurally compatible with open-sse's
+    // ComboCollectionLike but TS does not infer the relationship.
+    allCombos as never
+  ) as ResolvedComboTargetView[];
   const rowsByTarget = groupRowsByExecutionKey(rows);
   const totalRequests = rows.reduce((sum, row) => sum + row.requests, 0);
   const totalCostUsd = rows.reduce((sum, row) => sum + row.costUsd, 0);

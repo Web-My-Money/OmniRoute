@@ -114,7 +114,8 @@ export function rebuildAnthropic(chunks: SseEvent[]): MergedResponse {
       const cb = asRecord(j.content_block);
       const block: AnthropicBlock = { type: "text" };
       if (cb) {
-        for (const [k, v] of Object.entries(cb)) (block as Record<string, unknown>)[k] = v;
+        for (const [k, v] of Object.entries(cb))
+          (block as unknown as Record<string, unknown>)[k] = v;
       }
       if (block.type === "text" && block.text === undefined) block.text = "";
       if (block.type === "thinking" && block.thinking === undefined) block.thinking = "";

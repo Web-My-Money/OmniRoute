@@ -82,9 +82,9 @@ export async function GET(request: Request) {
           ? {
               codexAccountPool: projectCodexAccountPool(
                 {
-                  id: c.id,
-                  provider: c.provider,
-                  providerSpecificData: c.providerSpecificData ?? {},
+                  id: String(c.id),
+                  provider: String(c.provider),
+                  providerSpecificData: (c.providerSpecificData ?? {}) as Record<string, unknown>,
                 },
                 Date.now()
               ),
@@ -248,7 +248,7 @@ export async function POST(request: Request) {
         ...(cookieHeader ? { cookie: cookieHeader } : {}),
         ...buildModelSyncInternalHeaders(),
       };
-      const syncUrl = `${internalOrigin}/api/providers/${encodeURIComponent(newConnection.id)}/sync-models?mode=import`;
+      const syncUrl = `${internalOrigin}/api/providers/${encodeURIComponent(String(newConnection.id))}/sync-models?mode=import`;
       // Intentionally not awaited: this is async/non-blocking work.
       void fetchModelSyncInternal(syncUrl, {
         method: "POST",
@@ -411,12 +411,15 @@ export async function DELETE(request: Request) {
     const requestedIds = new Set(body.ids);
     const deletedConnections = (
       await getProviderConnections({}, undefined, undefined, ["id", "provider"])
-    ).filter((connection) => requestedIds.has(connection.id));
+    ).filter((connection) => typeof connection.id === "string" && requestedIds.has(connection.id));
     const deleted = await deleteProviderConnections(body.ids);
 
     for (const connection of deletedConnections) {
       try {
-        await cleanupProviderModelsAfterConnectionDelete(connection.provider, connection.id);
+        await cleanupProviderModelsAfterConnectionDelete(
+          String(connection.provider),
+          String(connection.id)
+        );
       } catch (error) {
         console.error(
           `Failed to clean up models for deleted ${connection.provider} connection:`,

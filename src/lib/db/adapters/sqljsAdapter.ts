@@ -231,7 +231,7 @@ export async function createSqlJsAdapter(filePath: string): Promise<SqliteAdapte
     }
   }
 
-  function makeStatement(sql: string): PreparedStatement {
+  function makeStatement<Row = unknown>(sql: string): PreparedStatement<Row> {
     return {
       run(...params: unknown[]): RunResult {
         const stmt = db.prepare(sql);
@@ -248,25 +248,25 @@ export async function createSqlJsAdapter(filePath: string): Promise<SqliteAdapte
           stmt.free();
         }
       },
-      get(...params: unknown[]): unknown {
+      get(...params: unknown[]): Row | undefined {
         const stmt = db.prepare(sql);
         try {
           const bindValue = toBindValue(params);
           if (bindValue !== undefined) stmt.bind(bindValue);
-          if (stmt.step()) return toPlainRow(stmt.getAsObject());
+          if (stmt.step()) return toPlainRow(stmt.getAsObject()) as Row;
           return undefined;
         } finally {
           stmt.free();
         }
       },
-      all(...params: unknown[]): unknown[] {
+      all(...params: unknown[]): Row[] {
         const stmt = db.prepare(sql);
         try {
           const bindValue = toBindValue(params);
           if (bindValue !== undefined) stmt.bind(bindValue);
           const rows: unknown[] = [];
           while (stmt.step()) rows.push(toPlainRow(stmt.getAsObject()));
-          return rows;
+          return rows as Row[];
         } finally {
           stmt.free();
         }
@@ -322,7 +322,7 @@ export async function createSqlJsAdapter(filePath: string): Promise<SqliteAdapte
       return filePath;
     },
 
-    prepare(sql: string): PreparedStatement {
+    prepare<Row = unknown>(sql: string): PreparedStatement<Row> {
       return makeStatement(sql);
     },
 

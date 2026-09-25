@@ -3,15 +3,37 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import React from "react";
 import CacheTrends from "../components/CacheTrends";
+import type { CacheTrendPoint } from "../components/CacheTrends";
 
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) => key,
 }));
 
-const sampleTrendData = [
-  { timestamp: "2026-04-01T00:00:00Z", requests: 120, hits: 100, misses: 20, hitRate: 83.3 },
-  { timestamp: "2026-04-01T01:00:00Z", requests: 95, hits: 80, misses: 15, hitRate: 84.2 },
-  { timestamp: "2026-04-01T02:00:00Z", requests: 200, hits: 180, misses: 20, hitRate: 90.0 },
+const sampleTrendData: CacheTrendPoint[] = [
+  {
+    timestamp: "2026-04-01T00:00:00Z",
+    requests: 120,
+    cachedRequests: 100,
+    inputTokens: 12000,
+    cachedTokens: 9600,
+    cacheCreationTokens: 400,
+  },
+  {
+    timestamp: "2026-04-01T01:00:00Z",
+    requests: 95,
+    cachedRequests: 80,
+    inputTokens: 9500,
+    cachedTokens: 7700,
+    cacheCreationTokens: 300,
+  },
+  {
+    timestamp: "2026-04-01T02:00:00Z",
+    requests: 200,
+    cachedRequests: 180,
+    inputTokens: 21000,
+    cachedTokens: 18200,
+    cacheCreationTokens: 600,
+  },
 ];
 
 describe("CacheTrends", () => {
@@ -33,9 +55,9 @@ describe("CacheTrends", () => {
       expect(screen.getByRole("heading")).toBeInTheDocument();
     });
 
-    it("renders peak hit rate from data", () => {
+    it("renders peak cached requests from data", () => {
       render(<CacheTrends data={sampleTrendData} />);
-      expect(screen.getByText("90.0")).toBeInTheDocument();
+      expect(screen.getByText("180 / 200")).toBeInTheDocument();
     });
   });
 

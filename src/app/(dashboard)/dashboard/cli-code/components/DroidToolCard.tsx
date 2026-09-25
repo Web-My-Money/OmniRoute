@@ -118,7 +118,7 @@ export default function DroidToolCard({
   }, [droidStatus, apiKeys]);
 
   // (#618) Multi-model list manipulation helpers.
-  const addModel = (value) => {
+  const addModel = (value?: string) => {
     const v = (value ?? modelInput).trim();
     if (!v || modelList.includes(v)) return;
     setModelList((prev) => [...prev, v]);

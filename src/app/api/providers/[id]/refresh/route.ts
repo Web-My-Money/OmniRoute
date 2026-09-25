@@ -11,8 +11,12 @@ import { rotationGroupFor } from "@omniroute/open-sse/services/refreshSerializer
 
 type RefreshResult = {
   accessToken?: string;
+  expiresAt?: string | null;
   expiresIn?: number;
   error?: string;
+  code?: string;
+  reason?: string;
+  migrateTo?: string;
 };
 
 /**
@@ -99,6 +103,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     if (
       (provider === "github" || provider === "ghe-copilot") &&
       !connection.refreshToken &&
+      typeof connection.accessToken === "string" &&
       connection.accessToken
     ) {
       const copilotResult = await refreshCopilotToken(
@@ -114,7 +119,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       }
 
       const refreshedProviderSpecificData = {
-        ...(connection.providerSpecificData || {}),
+        ...((connection.providerSpecificData || {}) as Record<string, unknown>),
         copilotToken: copilotResult.token,
         copilotTokenExpiresAt: copilotResult.expiresAt,
       };

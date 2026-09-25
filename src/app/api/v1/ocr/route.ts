@@ -102,7 +102,12 @@ async function postHandler(request, context) {
     return rateLimitedProviderResponse(resolvedProvider, credentials);
   }
 
-  const tokenReadyCredentials = await resolveVertexOcrAccessToken(resolvedProvider, credentials);
+  // reason: the preflight union includes sentinel members without apiKey/
+  // accessToken; the vertex resolver is generic over the credential shape
+  const tokenReadyCredentials = await resolveVertexOcrAccessToken(
+    resolvedProvider,
+    credentials as { apiKey?: string; accessToken?: string }
+  );
   const ocrCredentials = resolveOcrCredentials(tokenReadyCredentials, resolvedProvider);
 
   const response = await handleOcr({ body: { ...body, model }, credentials: ocrCredentials });

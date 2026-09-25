@@ -229,16 +229,20 @@ test("compat overrides ignore invalid protocol keys and can be fully removed aga
       openai: {
         normalizeToolCallId: false,
       },
+      // reason: deliberately feeds an unknown protocol key to verify runtime dropping
       invalid: {
         normalizeToolCallId: true,
       },
-    },
+    } as Parameters<typeof modelsDb.mergeModelCompatOverride>[2]["compatByProtocol"],
   });
 
   let overrides = modelsDb.getModelCompatOverrides("openai");
 
   assert.equal(overrides.length, 1);
-  assert.equal(overrides[0].compatByProtocol.invalid, undefined);
+  assert.equal(
+    (overrides[0].compatByProtocol as Record<string, unknown> | undefined)?.invalid,
+    undefined
+  );
   assert.deepEqual(overrides[0].upstreamHeaders, { "X-Test": "enabled" });
 
   modelsDb.mergeModelCompatOverride("openai", "gpt-4.1-mini", {

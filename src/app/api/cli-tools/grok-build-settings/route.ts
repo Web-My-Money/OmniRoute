@@ -24,6 +24,7 @@ import {
   resolveGrokBuildConfigPath,
   type GrokBuildApplyOptions,
   type GrokSubagentType,
+  type GrokBuildSettings,
 } from "@/shared/services/grokBuildConfig";
 
 const logger = pino({ name: "grok-build-settings-api" });

@@ -8,6 +8,7 @@ import { validateBaseUrl } from "@/lib/cli-helper/config-generator";
 import {
   generateHermesAgentConfig,
   getCurrentHermesAgentRoles,
+  type HermesAgentRoleSelection,
 } from "@/lib/cli-helper/config-generator/hermes-agent";
 import { getHermesConfigPath } from "@/lib/cli-helper/config-generator/hermesHome";
 import { getApiKeyById } from "@/lib/db/apiKeys";
@@ -123,7 +124,9 @@ export async function POST(request: Request) {
     baseUrl,
     keyId,
     apiKey: resolvedApiKey,
-    selections,
+    // reason: the request schema validates role as a plain string; the generator
+    // expects the narrower HermesAgentRole union
+    selections: selections as HermesAgentRoleSelection[],
   };
 
   const result = await generateHermesAgentConfig(payload);

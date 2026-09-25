@@ -42,8 +42,8 @@ export async function POST(request: Request) {
     }
 
     const validation = validateBody(actionSchema, rawBody);
-    if (!validation.success) {
-      return NextResponse.json({ error: { message: validation.error } }, { status: 400 });
+    if (validation.success !== true) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
     const result = await executeProviderHealthAutopilotAction(validation.data);

@@ -55,7 +55,14 @@ export function chmodSystrayBinAt(runtimeRoot: string, platform: NodeJS.Platform
   }
 }
 
-export async function loadSystray(): Promise<(new (...args: unknown[]) => unknown) | null> {
+/** Minimal systray2 surface used by bin/cli/tray — the package is lazily installed at runtime. */
+export interface SystrayInstance {
+  onClick(cb: (action: { seq_id: number; item?: unknown }) => void): void;
+  sendAction(action: unknown): void;
+  kill(exitProcess?: boolean): void;
+}
+
+export async function loadSystray(): Promise<(new (...args: unknown[]) => SystrayInstance) | null> {
   ensureRuntimeDir();
   if (!isInstalled()) {
     try {
@@ -72,7 +79,8 @@ export async function loadSystray(): Promise<(new (...args: unknown[]) => unknow
   chmodSystrayBinAt(RUNTIME_DIR, process.platform);
   try {
     const mod = await import(systrayModuleSpecifier(RUNTIME_DIR));
-    return (mod.default ?? mod.SysTray ?? mod) as (new (...args: unknown[]) => unknown) | null;
+    return (mod.default ?? mod.SysTray ?? mod) as
+      (new (...args: unknown[]) => SystrayInstance) | null;
   } catch (err) {
     console.warn(`[omniroute] tray runtime import failed: ${(err as Error).message}`);
     return null;

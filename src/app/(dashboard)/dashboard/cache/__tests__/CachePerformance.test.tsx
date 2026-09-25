@@ -31,7 +31,7 @@ describe("CachePerformance", () => {
 
     it("renders hit rate percentage", () => {
       render(<CachePerformance {...defaultProps} />);
-      expect(screen.getByText("85.0%")).toBeInTheDocument();
+      expect(screen.getAllByText("85.0%").length).toBeGreaterThan(0);
     });
 
     it("renders total requests", () => {

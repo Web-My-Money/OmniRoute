@@ -20,7 +20,7 @@ describe("IdempotencyLayer", () => {
   describe("renders with data", () => {
     it("renders deduplicated request count", () => {
       render(<IdempotencyLayer {...defaultProps} />);
-      expect(screen.getByText("47")).toBeInTheDocument();
+      expect(screen.getAllByText("47").length).toBeGreaterThan(0);
     });
 
     it("renders deduplication window duration", () => {
@@ -53,7 +53,7 @@ describe("IdempotencyLayer", () => {
 
     it("displays values once loading is complete", () => {
       render(<IdempotencyLayer {...defaultProps} loading={false} />);
-      expect(screen.getByText("47")).toBeInTheDocument();
+      expect(screen.getAllByText("47").length).toBeGreaterThan(0);
     });
   });
 

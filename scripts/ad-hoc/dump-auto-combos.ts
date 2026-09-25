@@ -35,7 +35,7 @@ for (const name of allTemplates) {
       template: name,
       candidateCount: combo.models.length,
       models: combo.models.map((m) => m.model ?? `${m.providerId}/unknown`),
-      weightPack: combo.weights ?? {},
+      weightPack: (combo.weights ?? {}) as Record<string, number>,
       explorationRate: combo.explorationRate,
     });
   } catch (err) {
@@ -50,3 +50,5 @@ for (const name of allTemplates) {
 }
 
 console.log(JSON.stringify(results, null, 2));
+
+export {};

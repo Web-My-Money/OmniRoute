@@ -89,6 +89,7 @@ test("router config patch compare reports recommendation and metric deltas", () 
     const comparison = JSON.parse(readFileSync(jsonOutput, "utf8")) as {
       kind?: string;
       changedRecommendation?: boolean;
+      result?: { passed?: boolean };
       delta?: { aiq?: number; avgCostUsd?: number; avgLatencyMs?: number };
       candidate?: { recommendedConfigId?: string };
     };

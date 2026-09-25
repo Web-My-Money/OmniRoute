@@ -96,9 +96,18 @@ export function diffAgainstBaseline(live, baseline) {
 
 function runTsc() {
   try {
+    // Invoke the local tsc entrypoint through node directly — spawning npx(.cmd)
+    // without a shell throws EINVAL on Windows (CVE-2024-27980 hardening).
     const stdout = execFileSync(
-      process.platform === "win32" ? "npx.cmd" : "npx",
-      ["tsc", "--pretty", "false", "--noEmit", "-p", TSCONFIG],
+      process.execPath,
+      [
+        path.join(ROOT, "node_modules", "typescript", "bin", "tsc"),
+        "--pretty",
+        "false",
+        "--noEmit",
+        "-p",
+        TSCONFIG,
+      ],
       { encoding: "utf8", maxBuffer: 64 * 1024 * 1024, cwd: ROOT }
     );
     return stdout;
@@ -147,7 +156,9 @@ function main() {
       `[dashboard-typecheck] ${improvements.length} baselined error(s) no longer present ` +
         `— run 'node scripts/check/check-dashboard-typecheck.mjs --update' to ratchet the baseline down:\n` +
         improvements
-          .map((i) => `  - ${i.file} ${i.code} (baseline ${i.baselineCount} -> live ${i.liveCount})`)
+          .map(
+            (i) => `  - ${i.file} ${i.code} (baseline ${i.baselineCount} -> live ${i.liveCount})`
+          )
           .join("\n")
     );
   }

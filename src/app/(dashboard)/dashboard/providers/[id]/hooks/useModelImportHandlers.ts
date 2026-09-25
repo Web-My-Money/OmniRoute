@@ -15,6 +15,7 @@
 
 import React, { useState } from "react";
 import { providerText, type ProviderMessageTranslator } from "../providerPageHelpers";
+import type { ModelMeta } from "./useProviderModels";
 import { extractImportWarning } from "./modelImportWarning";
 
 interface NotifyStore {
@@ -39,7 +40,7 @@ export interface ImportProgress {
 export interface UseModelImportHandlersParams {
   providerId: string;
   models: Array<{ id: string; name?: string }>;
-  modelMeta: { customModels: Array<{ id: string }>; modelCompatOverrides?: unknown[] };
+  modelMeta: ModelMeta;
   modelAliases: Record<string, string>;
   connections: Array<{
     id?: string;

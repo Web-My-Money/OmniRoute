@@ -97,7 +97,7 @@ type EndpointModelSummary = {
   root?: string;
 };
 
-type CopyHandler = (text: string, key?: string) => void | Promise<void>;
+type CopyHandler = (text: string, key?: string) => void | Promise<unknown>;
 
 type EndpointTunnelVisibility = {
   showCloudflaredTunnel: boolean;
@@ -2485,4 +2485,3 @@ function EndpointCard({
     </div>
   );
 }
-

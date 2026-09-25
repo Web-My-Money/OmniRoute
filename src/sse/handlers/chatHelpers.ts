@@ -781,7 +781,7 @@ export function shouldRetryStreamEarlyEof(
 
 export function decideProxyResolutionFailure(
   err: unknown,
-  env: { PROXY_FAIL_OPEN?: string } = process.env
+  env: NodeJS.ProcessEnv = process.env
 ): null {
   if ((env.PROXY_FAIL_OPEN ?? "").trim().toLowerCase() === "true") {
     log.warn(

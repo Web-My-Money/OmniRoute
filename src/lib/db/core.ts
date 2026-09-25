@@ -1041,7 +1041,7 @@ export function getDbInstance(): SqliteDatabase {
       // node::RemoveEnvironmentCleanupHook, env == nullptr). The DB is never
       // actually queried during build — it only exists so module-eval that
       // touches getDbInstance() at build time does not throw. (#10060)
-      const noopStatement: PreparedStatement = {
+      const noopStatement: PreparedStatement<unknown> = {
         run: () => ({ changes: 0, lastInsertRowid: 0 }),
         get: () => undefined,
         all: () => [],
@@ -1050,7 +1050,8 @@ export function getDbInstance(): SqliteDatabase {
         driver: "sql.js",
         open: true,
         name: ":memory:",
-        prepare: () => noopStatement,
+        // reason: the stub is never queried during build — any Row shape is vacuously correct
+        prepare: <Row = unknown>() => noopStatement as unknown as PreparedStatement<Row>,
         exec: () => {},
         pragma: () => undefined,
         transaction: <T>(fn: (...args: unknown[]) => T) => fn,

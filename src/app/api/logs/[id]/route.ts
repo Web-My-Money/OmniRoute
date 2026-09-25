@@ -108,7 +108,24 @@ export async function GET(
     }
 
     // Next, try persistent call log by id
-    let persistedRequest = await getCallLogById(id);
+    let persistedRequest:
+      | NonNullable<Awaited<ReturnType<typeof getCallLogById>>>
+      | {
+          id: string;
+          timestamp: string;
+          path: string;
+          status: number;
+          model: unknown;
+          provider: unknown;
+          connectionId: unknown;
+          duration: number;
+          detailState: string;
+          active: boolean;
+          error: unknown;
+          pipelinePayloads: Record<string, unknown>;
+          hasPipelineDetails: boolean;
+        }
+      | null = await getCallLogById(id);
 
     // If persistent call log doesn't have payloads, try the in-memory completedDetails cache
     if (

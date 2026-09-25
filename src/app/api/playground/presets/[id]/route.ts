@@ -72,7 +72,7 @@ export async function GET(
 
   const { id: rawId } = await params;
   const validation = validateId(rawId);
-  if (!validation.valid) return validation.error;
+  if (validation.valid !== true) return validation.error;
   const { id } = validation;
 
   try {
@@ -106,7 +106,7 @@ export async function PUT(
 
   const { id: rawId } = await params;
   const validation = validateId(rawId);
-  if (!validation.valid) return validation.error;
+  if (validation.valid !== true) return validation.error;
   const { id } = validation;
 
   // Parse JSON body
@@ -166,7 +166,7 @@ export async function DELETE(
 
   const { id: rawId } = await params;
   const validation = validateId(rawId);
-  if (!validation.valid) return validation.error;
+  if (validation.valid !== true) return validation.error;
   const { id } = validation;
 
   try {

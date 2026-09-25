@@ -51,6 +51,7 @@
     "open-sse",
     "dist",
     "coverage",
+    "**/*.stories.tsx",
     ".source",
     ".tmp",
     ".claude",
