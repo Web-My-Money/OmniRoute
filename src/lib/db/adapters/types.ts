@@ -3,18 +3,20 @@ export interface RunResult {
   lastInsertRowid: number | bigint;
 }
 
-export interface PreparedStatement<Row = unknown> {
+export interface PreparedStatement {
   run(...params: unknown[]): RunResult;
-  get(...params: unknown[]): Row | undefined;
-  all(...params: unknown[]): Row[];
+  get(...params: unknown[]): unknown;
+  all(...params: unknown[]): unknown[];
 }
 
 export interface SqliteAdapter {
   readonly driver: "better-sqlite3" | "node:sqlite" | "bun:sqlite" | "sql.js";
   readonly open: boolean;
   readonly name: string;
+  /** Driver transaction state when exposed by the underlying SQLite implementation. */
+  readonly inTransaction?: boolean;
 
-  prepare<Row = unknown>(sql: string): PreparedStatement<Row>;
+  prepare(sql: string): PreparedStatement;
   exec(sql: string): void;
   pragma(pragmaStr: string, options?: { simple?: boolean }): unknown;
 

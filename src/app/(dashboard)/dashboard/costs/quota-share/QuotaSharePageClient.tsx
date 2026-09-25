@@ -5,8 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/shared/components";
 import useEmailPrivacyStore from "@/store/emailPrivacyStore";
 import { maskEmailLikeValue } from "@/shared/utils/maskEmail";
-import type { QuotaPool } from "@/lib/db/quotaPools";
-import type { QuotaDimension } from "@/lib/quota/dimensions";
+import type { QuotaPool } from "@/lib/quota/dimensions";
 
 import { usePools } from "./hooks/usePools";
 import { usePoolUsage } from "./hooks/usePoolUsage";
@@ -40,8 +39,14 @@ interface ApiKey {
   name?: string;
 }
 
+interface PlanDimension {
+  unit: string;
+  window: string;
+  limit: number;
+}
+
 interface PlanInfo {
-  dimensions: QuotaDimension[];
+  dimensions: PlanDimension[];
   source: "auto" | "manual";
 }
 
@@ -171,7 +176,7 @@ export default function QuotaSharePageClient() {
           const planMap: Record<string, PlanInfo> = {};
           for (const p of plansData as Array<{
             connectionId: string;
-            dimensions: QuotaDimension[];
+            dimensions: PlanDimension[];
             source: "auto" | "manual";
           }>) {
             if (p.connectionId)

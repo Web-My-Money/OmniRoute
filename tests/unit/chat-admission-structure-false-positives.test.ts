@@ -62,7 +62,7 @@ function exhaustedController(): InstanceType<typeof ChatAdmissionController> {
   return controller;
 }
 
-test("chatBodyAdmission: deeply nested tool schema (>12 levels) does not false-flag heavy", () => {
+test("chatBodyAdmission: deeply nested tool schema (>12 levels) does not false-flag heavy", async () => {
   const controller = exhaustedController();
   const body = {
     messages: shortMessages(),
@@ -82,7 +82,7 @@ test("chatBodyAdmission: deeply nested tool schema (>12 levels) does not false-f
     ],
   };
 
-  const result = admitChatStructure(body, null, { controller });
+  const result = await admitChatStructure(body, null, { controller });
   assert.equal(
     result.admit,
     true,
@@ -90,7 +90,7 @@ test("chatBodyAdmission: deeply nested tool schema (>12 levels) does not false-f
   );
 });
 
-test("chatBodyAdmission: high tool-array node count (>10,000) does not false-flag heavy", () => {
+test("chatBodyAdmission: high tool-array node count (>10,000) does not false-flag heavy", async () => {
   const controller = exhaustedController();
   // 60 tools x ~230 nodes/tool ≈ 13,800 total JSON nodes: over the old 10,000-node cap,
   // under the new 50,000-node cap. Kept under CHAT_HEAVY_TOOL_COUNT (64) and each
@@ -109,7 +109,7 @@ test("chatBodyAdmission: high tool-array node count (>10,000) does not false-fla
     },
   }));
 
-  const result = admitChatStructure({ messages: shortMessages(), tools }, null, { controller });
+  const result = await admitChatStructure({ messages: shortMessages(), tools }, null, { controller });
   assert.equal(
     result.admit,
     true,
@@ -117,7 +117,7 @@ test("chatBodyAdmission: high tool-array node count (>10,000) does not false-fla
   );
 });
 
-test("chatBodyAdmission: non-ASCII text in tool descriptions does not false-flag heavy", () => {
+test("chatBodyAdmission: non-ASCII text in tool descriptions does not false-flag heavy", async () => {
   const controller = exhaustedController();
   // 20 tools x 2,000 non-ASCII characters = 40,000 chars of description text.
   // Old flat 1 token/char (applied to tool-schema text) => 40,000 estimated tokens,
@@ -134,7 +134,7 @@ test("chatBodyAdmission: non-ASCII text in tool descriptions does not false-flag
     },
   }));
 
-  const result = admitChatStructure({ messages: shortMessages(), tools }, null, { controller });
+  const result = await admitChatStructure({ messages: shortMessages(), tools }, null, { controller });
   assert.equal(
     result.admit,
     true,
@@ -142,14 +142,14 @@ test("chatBodyAdmission: non-ASCII text in tool descriptions does not false-flag
   );
 });
 
-test("chatBodyAdmission: a genuinely oversized message is still classified heavy and rejected under full capacity", () => {
+test("chatBodyAdmission: a genuinely oversized message is still classified heavy and rejected under full capacity", async () => {
   // No forced-exhaustion here — this must earn "heavy" on its own real size, at the
   // unchanged ASCII rate (0.25 token/char): 140,000 chars => 35,000 estimated tokens,
   // over the 32,000 default.
   const bigMessage = { role: "user", content: "a".repeat(140_000) };
   const controllerA = new ChatAdmissionController(1);
 
-  const first = admitChatStructure({ messages: [bigMessage], tools: [] }, null, {
+  const first = await admitChatStructure({ messages: [bigMessage], tools: [] }, null, {
     controller: controllerA,
   });
   assert.equal(first.admit, true, "the first heavy request should acquire the sole free slot");
@@ -160,8 +160,12 @@ test("chatBodyAdmission: a genuinely oversized message is still classified heavy
   // Capacity is now fully held by `first` (never released) — a second, equally heavy
   // request must be turned away with a retryable 503, proving the real protection this
   // module exists for was not accidentally disabled by the false-positive fixes above.
-  const second = admitChatStructure({ messages: [bigMessage], tools: [] }, null, {
+  // v3.8.50+: a busy controller only sheds under real heap pressure (#10183/#10268)
+  // and may queue briefly first — force both so this asserts the rejection path.
+  const second = await admitChatStructure({ messages: [bigMessage], tools: [] }, null, {
     controller: controllerA,
+    queueMs: 0,
+    heapPressureCheck: () => true,
   });
   assert.equal(second.admit, false, "a second heavy request must be rejected while capacity is full");
   if (!second.admit) {
@@ -169,7 +173,7 @@ test("chatBodyAdmission: a genuinely oversized message is still classified heavy
   }
 });
 
-test("chatBodyAdmission: large non-ASCII MESSAGE content (not tool schema) is still weighted as real content", () => {
+test("chatBodyAdmission: large non-ASCII MESSAGE content (not tool schema) is still weighted as real content", async () => {
   // Same character count as the tool-description test above (40,000 non-ASCII chars),
   // but as message content instead of tool-schema text. Content mode uses 0.5
   // token/char for non-ASCII (not the 0.25 structural rate), so this is expected to
@@ -179,10 +183,10 @@ test("chatBodyAdmission: large non-ASCII MESSAGE content (not tool schema) is st
   const messages = Array.from({ length: 20 }, () => ({ role: "user", content: accented }));
   const controllerA = new ChatAdmissionController(1);
 
-  const first = admitChatStructure({ messages, tools: [] }, null, { controller: controllerA });
+  const first = await admitChatStructure({ messages, tools: [] }, null, { controller: controllerA });
   assert.equal(first.admit, true, "first request should be admitted (acquires the sole slot if heavy)");
 
-  const second = admitChatStructure({ messages, tools: [] }, null, { controller: controllerA });
+  const second = await admitChatStructure({ messages, tools: [] }, null, { controller: controllerA });
   // 40,000 non-ASCII chars * 0.5 token/char = 20,000 estimated tokens — under the
   // 32,000 default on its own, so this specific size is NOT expected to be "heavy"
   // (and therefore does not need the controller at all). This test documents that

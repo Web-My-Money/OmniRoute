@@ -74,17 +74,17 @@ export function createBunSqliteAdapter(db: BunSqliteDatabaseLike, filePath: stri
       return filePath;
     },
 
-    prepare<Row = unknown>(sql: string): PreparedStatement<Row> {
+    prepare(sql: string): PreparedStatement {
       const statement = db.query(sql);
       return {
         run(...params: unknown[]): RunResult {
           return normalizeRunResult(statement.run(...normalizeParams(params)));
         },
-        get(...params: unknown[]): Row | undefined {
-          return statement.get(...normalizeParams(params)) as Row | undefined;
+        get(...params: unknown[]): unknown {
+          return statement.get(...normalizeParams(params));
         },
-        all(...params: unknown[]): Row[] {
-          return statement.all(...normalizeParams(params)) as Row[];
+        all(...params: unknown[]): unknown[] {
+          return statement.all(...normalizeParams(params));
         },
       };
     },
@@ -129,7 +129,7 @@ export function createBunSqliteAdapter(db: BunSqliteDatabaseLike, filePath: stri
       try {
         db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
       } catch {}
-      fs.copyFileSync(filePath, destination);
+      await fs.promises.copyFile(filePath, destination);
     },
 
     checkpoint(mode = "TRUNCATE"): void {

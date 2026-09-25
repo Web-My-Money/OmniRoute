@@ -94,7 +94,9 @@ export default function OpenClawToolCard({
         }
         // (#523) Keys from /api/keys are masked (first 8 + "****" + last 4).
         // Match by prefix/suffix instead of exact comparison.
-        if (provider.apiKey) {
+        // apiKey may be a structured secret reference (object) rather than a
+        // plaintext string, e.g. OpenClaw SecretRefs. Only match on strings.
+        if (typeof provider.apiKey === "string" && provider.apiKey) {
           const fileKeyPrefix = provider.apiKey.slice(0, 8);
           const fileKeySuffix = provider.apiKey.slice(-4);
           const matchedKey = apiKeys?.find(
@@ -278,12 +280,7 @@ export default function OpenClawToolCard({
 
   return (
     <Card padding="sm" className="overflow-hidden">
-      <button
-        type="button"
-        className="flex w-full items-center justify-between text-left hover:cursor-pointer"
-        onClick={onToggle}
-        aria-expanded={isExpanded}
-      >
+      <div className="flex items-center justify-between hover:cursor-pointer" onClick={onToggle}>
         <div className="flex items-center gap-3">
           <div className="size-8 flex items-center justify-center shrink-0">
             <Image
@@ -315,7 +312,7 @@ export default function OpenClawToolCard({
         >
           expand_more
         </span>
-      </button>
+      </div>
 
       {isExpanded && (
         <div className="mt-4 pt-4 border-t border-border flex flex-col gap-4">

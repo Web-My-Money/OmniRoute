@@ -73,7 +73,7 @@ export function SessionPicker({ sessions, selectedId, onSelect, onDelete }: Sess
                   onDelete(s.id);
                   if (selectedId === s.id) onSelect(undefined);
                 }}
-                className="px-2 text-text-muted hover:text-red-400 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-ring rounded"
+                className="px-2 text-text-muted hover:text-red-400 opacity-0 group-hover:opacity-100 focus-ring rounded"
                 aria-label={t("deleteSession")}
               >
                 <span className="material-symbols-outlined text-[14px]" aria-hidden="true">

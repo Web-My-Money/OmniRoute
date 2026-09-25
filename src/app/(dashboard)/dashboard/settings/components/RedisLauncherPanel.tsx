@@ -42,10 +42,6 @@ async function apiCall(endpoint: string, options: RequestInit = {}) {
  */
 export default function RedisLauncherPanel() {
   const t = useTranslations("settings");
-  // next-intl's t(key, values) has no fallback-string overload — wrap with
-  // t.has() so the inline English fallbacks still render for missing keys.
-  const tf = (key: string, fallback: string, values?: Record<string, string | number | Date>) =>
-    t.has(key) ? t(key, values) : fallback;
   const [state, setState] = useState<LaunchState>("idle");
   const [status, setStatus] = useState<Status | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -94,10 +90,10 @@ export default function RedisLauncherPanel() {
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
           <h3 className="text-base font-semibold text-text-main">
-            {tf("redisLauncherTitle", "Local Redis")}
+            {t("redisLauncherTitle", "Local Redis")}
           </h3>
           <p className="mt-1 text-sm text-text-muted">
-            {tf(
+            {t(
               "redisLauncherDesc",
               "One-click launch a Redis 7 container (Podman or Docker) for response cache, quota tracking, and rate limiting."
             )}
@@ -105,17 +101,17 @@ export default function RedisLauncherPanel() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="outline" onClick={refresh} disabled={state === "checking"}>
-            {state === "checking" ? "…" : tf("redisLauncherRefresh", "Refresh")}
+            {state === "checking" ? "…" : t("redisLauncherRefresh", "Refresh")}
           </Button>
           {status?.running ? (
             <Button size="sm" variant="outline" onClick={stop} disabled={state === "launching"}>
-              {state === "launching" ? "…" : tf("redisLauncherStop", "Stop")}
+              {state === "launching" ? "…" : t("redisLauncherStop", "Stop")}
             </Button>
           ) : (
             <Button size="sm" onClick={launch} disabled={state === "launching"}>
               {state === "launching"
-                ? tf("redisLauncherLaunching", "Launching…")
-                : tf("redisLauncherLaunch", "Launch Redis")}
+                ? t("redisLauncherLaunching", "Launching…")
+                : t("redisLauncherLaunch", "Launch Redis")}
             </Button>
           )}
         </div>
@@ -124,17 +120,17 @@ export default function RedisLauncherPanel() {
       {status && (
         <dl className="mt-4 grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
           <Stat
-            label={tf("redisLauncherContainer", "Container")}
+            label={t("redisLauncherContainer", "Container")}
             value={status.exists ? "present" : "missing"}
             tone={status.exists ? "ok" : "warn"}
           />
           <Stat
-            label={tf("redisLauncherRunning", "Running")}
+            label={t("redisLauncherRunning", "Running")}
             value={status.running ? "yes" : "no"}
             tone={status.running ? "ok" : "warn"}
           />
           <Stat
-            label={tf("redisLauncherReachable", "Reachable")}
+            label={t("redisLauncherReachable", "Reachable")}
             value={status.reachable ? "yes" : "no"}
             tone={status.reachable ? "ok" : "warn"}
           />
@@ -143,12 +139,12 @@ export default function RedisLauncherPanel() {
 
       {error && (
         <p className="mt-3 text-sm text-red-400">
-          {tf("redisLauncherError", "Error: {{message}}", { message: error })}
+          {t("redisLauncherError", "Error: {{message}}", { message: error })}
         </p>
       )}
 
       <p className="mt-3 text-xs text-text-muted">
-        {tf(
+        {t(
           "redisLauncherHint",
           "Equivalent to running `omniroute redis up`. The container is named `omniroute-redis` and listens on 127.0.0.1:6379."
         )}
@@ -157,7 +153,15 @@ export default function RedisLauncherPanel() {
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: string; tone: "ok" | "warn" }) {
+function Stat({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: "ok" | "warn";
+}) {
   const color = tone === "ok" ? "text-emerald-400" : "text-amber-400";
   return (
     <div className="rounded-lg border border-border bg-bg-subtle p-3">

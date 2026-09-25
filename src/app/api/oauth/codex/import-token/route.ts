@@ -3,7 +3,7 @@ import { z } from "zod";
 import { extractCodexAccountInfo } from "@/lib/oauth/services/codexImport";
 import { parseCodexSessionJson } from "@/lib/oauth/utils/codexSessionImport";
 import { createProviderConnection } from "@/models";
-import { isAuthRequired, isAuthenticated } from "@/shared/utils/apiAuth";
+import { requireManagementAuth } from "@/lib/api/requireManagementAuth";
 import { buildErrorBody, sanitizeErrorMessage } from "@omniroute/open-sse/utils/error.ts";
 
 /**
@@ -47,7 +47,7 @@ function resolveAccessToken(
     return { ok: true, resolved: { accessToken: parsed.accessToken, name: parsed.name } };
   }
   const result = parseCodexSessionJson(parsed.session);
-  if ("error" in result) return { ok: false, error: result.error };
+  if (!result.ok) return { ok: false, error: result.error };
   return { ok: true, resolved: { accessToken: result.session.accessToken, name: parsed.name } };
 }
 
@@ -84,7 +84,7 @@ async function parseRequestBody(
   }
 
   const resolved = resolveAccessToken(parsed.data);
-  if ("error" in resolved) {
+  if (!resolved.ok) {
     return {
       ok: false,
       response: NextResponse.json(buildErrorBody(400, resolved.error), { status: 400 }),
@@ -93,10 +93,11 @@ async function parseRequestBody(
   return { ok: true, resolved: resolved.resolved };
 }
 
-async function requireAuth(request: Request): Promise<NextResponse | null> {
-  if (!(await isAuthRequired(request))) return null;
-  if (await isAuthenticated(request)) return null;
-  return NextResponse.json(buildErrorBody(401, "Unauthorized"), { status: 401 });
+async function requireAuth(request: Request): Promise<Response | null> {
+  // GHSA-mg76: importing a provider connection is a state-mutating admin action.
+  // Require management scope (or a dashboard session) rather than accepting any
+  // valid client key, which the PUBLIC /api/oauth/ classification otherwise allows.
+  return requireManagementAuth(request, { invalidApiKeyStatus: 401 });
 }
 
 export async function POST(request: Request) {
@@ -104,7 +105,7 @@ export async function POST(request: Request) {
   if (authResponse) return authResponse;
 
   const body = await parseRequestBody(request);
-  if ("response" in body) return body.response;
+  if (!body.ok) return body.response;
 
   const { accessToken, name } = body.resolved;
   const info = extractCodexAccountInfo(accessToken);

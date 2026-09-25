@@ -59,7 +59,7 @@ export async function handleServiceInstall(
   install: ServiceInstaller
 ): Promise<Response> {
   const parsed = await readServiceInstallVersion(request);
-  if ("response" in parsed) {
+  if (!parsed.ok) {
     return parsed.response;
   }
 

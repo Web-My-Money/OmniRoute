@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useSyncExternalStore, type ReactElement } from "react";
+import { useCallback, useState, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 
 // SSR-safe origin via useSyncExternalStore.
@@ -20,7 +20,7 @@ interface LinkCardProps {
   prompt: string;
 }
 
-function LinkCard({ label, url, icon, prompt }: LinkCardProps): ReactElement {
+function LinkCard({ label, url, icon, prompt }: LinkCardProps): JSX.Element {
   const t = useTranslations("agentSkills");
   const [copied, setCopied] = useState(false);
 
@@ -65,7 +65,7 @@ function LinkCard({ label, url, icon, prompt }: LinkCardProps): ReactElement {
   );
 }
 
-export function McpA2aLinksBar(): ReactElement {
+export function McpA2aLinksBar(): JSX.Element {
   const t = useTranslations("agentSkills");
   const origin = useOrigin();
 

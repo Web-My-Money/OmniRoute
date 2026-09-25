@@ -102,7 +102,9 @@ export default function DroidToolCard({
       if (existing.length > 0) {
         setModelList(existing.map((m) => m.model).filter(Boolean));
         const first = existing[0];
-        if (first?.apiKey) {
+        // apiKey may be a structured secret reference (object) rather than a
+        // plaintext string. Only match on strings.
+        if (typeof first?.apiKey === "string" && first.apiKey) {
           // (#523) Keys from /api/keys are masked. Match by prefix/suffix.
           const fileKeyPrefix = first.apiKey.slice(0, 8);
           const fileKeySuffix = first.apiKey.slice(-4);
@@ -305,12 +307,7 @@ export default function DroidToolCard({
 
   return (
     <Card padding="sm" className="overflow-hidden">
-      <button
-        type="button"
-        className="flex w-full items-center justify-between text-left hover:cursor-pointer"
-        onClick={onToggle}
-        aria-expanded={isExpanded}
-      >
+      <div className="flex items-center justify-between hover:cursor-pointer" onClick={onToggle}>
         <div className="flex items-center gap-3">
           <div className="size-8 flex items-center justify-center shrink-0">
             <ProviderIcon providerId="droid" size={32} type="color" />
@@ -332,7 +329,7 @@ export default function DroidToolCard({
         >
           expand_more
         </span>
-      </button>
+      </div>
 
       {isExpanded && (
         <div className="mt-4 pt-4 border-t border-border flex flex-col gap-4">

@@ -17,6 +17,7 @@ import { join } from "node:path";
 import os from "node:os";
 import { opaqueJoin } from "../data-dir.mjs";
 import { printHeading, printInfo, printSuccess, printError } from "../io.mjs";
+import { guardHostConfigTarget } from "../utils/config-home-guard.mjs";
 import { t } from "../i18n.mjs";
 
 // ── Model categorisation ──────────────────────────────────────────────────────
@@ -307,6 +308,14 @@ export async function runSetupCodexCommand(opts = {}) {
   const onlyFilter = opts.only ? opts.only.split(",").map((s) => s.trim()) : null;
 
   printHeading(`OmniRoute → Codex CLI profile generator`);
+
+  const guard = await guardHostConfigTarget(codexHome, {
+    toolLabel: "Codex",
+    hostCommand: "omniroute setup-codex",
+    allowContainerWrite: Boolean(opts.allowContainerWrite ?? opts["allow-container-write"]),
+    dryRun,
+  });
+  if (guard !== 0) return guard;
   printInfo(`Connecting to ${baseUrl} …`);
 
   // ── Fetch model catalog ───────────────────────────────────────────────────
@@ -381,6 +390,10 @@ export function registerSetupCodex(program) {
       "Comma-separated substrings — only generate profiles for matching model IDs (e.g. glm,kimi)"
     )
     .option("--dry-run", "Print what would be written without touching the filesystem")
+    .option(
+      "--allow-container-write",
+      "Write even when the target is inside a container and not mounted from the host"
+    )
     .action(async (opts) => {
       const exitCode = await runSetupCodexCommand(opts);
       if (exitCode !== 0) process.exit(exitCode);

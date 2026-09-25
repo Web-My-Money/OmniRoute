@@ -44,22 +44,10 @@ const checkOmpInstalled = async () => {
   }
 };
 
-interface ModelsYmlProvider {
-  baseUrl?: string;
-  apiKey?: string;
-  discovery?: { type?: string };
-  [key: string]: unknown;
-}
-
-interface ModelsYml {
-  providers?: Record<string, ModelsYmlProvider>;
-  [key: string]: unknown;
-}
-
-const readModelsYml = async (): Promise<ModelsYml> => {
+const readModelsYml = async () => {
   try {
     const content = await fs.readFile(getOmpModelsYmlPath(), "utf-8");
-    return (yamlLoad(content) || {}) as ModelsYml;
+    return yamlLoad(content) || {};
   } catch {
     return {};
   }
@@ -98,7 +86,10 @@ export async function GET(request: Request) {
       configPath: getOmpModelsYmlPath(),
     });
   } catch (error) {
-    return NextResponse.json({ error: { message: sanitizeErrorMessage(error) } }, { status: 500 });
+    return NextResponse.json(
+      { error: { message: sanitizeErrorMessage(error) } },
+      { status: 500 }
+    );
   }
 }
 
@@ -149,7 +140,10 @@ export async function POST(request: Request) {
       configPath: getOmpModelsYmlPath(),
     });
   } catch (error) {
-    return NextResponse.json({ error: { message: sanitizeErrorMessage(error) } }, { status: 500 });
+    return NextResponse.json(
+      { error: { message: sanitizeErrorMessage(error) } },
+      { status: 500 }
+    );
   }
 }
 
@@ -178,6 +172,9 @@ export async function DELETE(request: Request) {
       message: "OmniRoute removed from Oh My Pi",
     });
   } catch (error) {
-    return NextResponse.json({ error: { message: sanitizeErrorMessage(error) } }, { status: 500 });
+    return NextResponse.json(
+      { error: { message: sanitizeErrorMessage(error) } },
+      { status: 500 }
+    );
   }
 }

@@ -1,16 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import {
-  normalizeCodexImportRecord,
-  flattenCodexImportPayload,
-} from "@/lib/oauth/services/codexImport";
+import { normalizeCodexImportRecord, flattenCodexImportPayload } from "@/lib/oauth/services/codexImport";
 import { createProviderConnection } from "@/models";
-import { isAuthRequired, isAuthenticated } from "@/shared/utils/apiAuth";
+import { requireManagementAuth } from "@/lib/api/requireManagementAuth";
 import { sanitizeErrorMessage } from "@omniroute/open-sse/utils/error.ts";
-import {
-  refreshCodexToken,
-  isUnrecoverableRefreshError,
-} from "@omniroute/open-sse/services/tokenRefresh.ts";
+import { refreshCodexToken, isUnrecoverableRefreshError } from "@omniroute/open-sse/services/tokenRefresh.ts";
 
 /**
  * Message returned when the imported record's refresh_token is already dead
@@ -35,10 +29,9 @@ const EXPIRED_SESSION_MESSAGE =
  * error string when the refresh_token is confirmed dead and the import
  * should be rejected.
  */
-async function validateCodexRefreshToken(payload: {
-  accessToken: string;
-  refreshToken: string;
-}): Promise<string | null> {
+async function validateCodexRefreshToken(
+  payload: { accessToken: string; refreshToken: string },
+): Promise<string | null> {
   let refreshResult: unknown;
   try {
     refreshResult = await refreshCodexToken(payload.refreshToken, undefined, null);
@@ -84,15 +77,15 @@ async function validateCodexRefreshToken(payload: {
  */
 
 const bodySchema = z.object({
-  accounts: z.union([z.record(z.string(), z.unknown()), z.array(z.unknown())], {
-    error: "accounts must be an object or an array of objects",
+  accounts: z.union([z.record(z.unknown()), z.array(z.unknown())], {
+    errorMap: () => ({ message: "accounts must be an object or an array of objects" }),
   }),
 });
 
-async function requireAuth(request: Request): Promise<NextResponse | null> {
-  if (!(await isAuthRequired(request))) return null;
-  if (await isAuthenticated(request)) return null;
-  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+async function requireAuth(request: Request): Promise<Response | null> {
+  // GHSA-mg76: importing a provider connection is a state-mutating admin action;
+  // require management scope (or a dashboard session), not any valid client key.
+  return requireManagementAuth(request, { invalidApiKeyStatus: 401 });
 }
 
 export async function POST(request: Request) {
@@ -103,23 +96,29 @@ export async function POST(request: Request) {
   try {
     rawBody = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid or empty JSON body" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid or empty JSON body" },
+      { status: 400 },
+    );
   }
 
   const parsed = bodySchema.safeParse(rawBody);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Invalid request body" },
-      { status: 400 }
+      { error: parsed.error.errors[0]?.message ?? "Invalid request body" },
+      { status: 400 },
     );
   }
 
   const flat = flattenCodexImportPayload(parsed.data.accounts);
-  if ("error" in flat) {
+  if (!flat.ok) {
     return NextResponse.json({ error: flat.error }, { status: 400 });
   }
   if (flat.records.length === 0) {
-    return NextResponse.json({ error: "No accounts found in payload" }, { status: 400 });
+    return NextResponse.json(
+      { error: "No accounts found in payload" },
+      { status: 400 },
+    );
   }
 
   const results: Array<
@@ -131,7 +130,7 @@ export async function POST(request: Request) {
 
   for (let i = 0; i < flat.records.length; i++) {
     const norm = normalizeCodexImportRecord(flat.records[i]);
-    if ("error" in norm) {
+    if (!norm.ok) {
       failed += 1;
       results.push({ index: i, ok: false, error: norm.error });
       continue;

@@ -38,6 +38,6 @@ export function spawnHostBinarySync(
   binary: string,
   args: string[],
   options: SpawnSyncOptions
-): SpawnSyncReturns<Buffer> {
+): SpawnSyncReturns<string | Buffer> {
   return spawnSync(binary, args, options);
 }

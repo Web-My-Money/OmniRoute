@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import type { QuotaPool } from "@/lib/db/quotaPools";
-import type { PoolAllocation, Policy } from "@/lib/quota/dimensions";
+import type { QuotaPool, PoolAllocation, Policy } from "@/lib/quota/dimensions";
 
 const LS_KEY = "omniroute:quota-share:pools";
 
@@ -35,9 +34,14 @@ interface PoolCreate {
 export function adaptLsPoolToApiSchema(lsPool: LsPool): PoolCreate {
   const connectionId = lsPool.connectionId || "";
   const name =
-    lsPool.accountLabel || lsPool.provider || lsPool.connectionId?.slice(0, 12) || "Migrated pool";
+    lsPool.accountLabel ||
+    lsPool.provider ||
+    lsPool.connectionId?.slice(0, 12) ||
+    "Migrated pool";
   const policy: Policy =
-    lsPool.policy === "soft" || lsPool.policy === "burst" ? (lsPool.policy as Policy) : "hard";
+    lsPool.policy === "soft" || lsPool.policy === "burst"
+      ? (lsPool.policy as Policy)
+      : "hard";
 
   const allocations: PoolAllocation[] = (lsPool.allocations || [])
     .filter((a) => a.apiKeyId)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef, type ReactElement } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { SkillsConceptCard } from "@/shared/components/SkillsConceptCard";
 import { matchesSearch } from "@/shared/utils/turkishText";
@@ -14,7 +14,7 @@ type FilterCategory = "all" | "api" | "cli" | "config";
 
 // ── Skeleton helpers ─────────────────────────────────────────────────────────
 
-function SkillCardSkeleton(): ReactElement {
+function SkillCardSkeleton(): JSX.Element {
   return (
     <div className="flex items-start gap-3 rounded-lg border border-border p-3 animate-pulse">
       <div className="h-9 w-9 rounded-lg bg-bg-subtle shrink-0" />
@@ -27,9 +27,13 @@ function SkillCardSkeleton(): ReactElement {
   );
 }
 
-function CoverageBarSkeleton(): ReactElement {
+function CoverageBarSkeleton(): JSX.Element {
   return (
     <div className="space-y-2 animate-pulse">
+      <div className="flex gap-2">
+        <div className="h-2 w-16 rounded bg-bg-subtle" />
+        <div className="flex-1 h-2 rounded bg-bg-subtle" />
+      </div>
       <div className="flex gap-2">
         <div className="h-2 w-16 rounded bg-bg-subtle" />
         <div className="flex-1 h-2 rounded bg-bg-subtle" />
@@ -44,7 +48,7 @@ function CoverageBarSkeleton(): ReactElement {
 
 // ── Main component ───────────────────────────────────────────────────────────
 
-export function AgentSkillsPageClient(): ReactElement {
+export function AgentSkillsPageClient(): JSX.Element {
   const t = useTranslations("agentSkills");
 
   // State
@@ -189,8 +193,12 @@ export function AgentSkillsPageClient(): ReactElement {
   });
 
   const selectedMarkdown = selectedId ? (markdownCache.get(selectedId) ?? null) : null;
-  const coverageTotal = coverage !== null ? coverage.api.have + coverage.cli.have : null;
-  const showGenerateButton = coverageTotal !== null && coverageTotal < 42;
+  const coverageTotal =
+    coverage !== null ? coverage.api.have + coverage.cli.have + coverage.config.have : null;
+  const catalogTotal =
+    coverage !== null ? coverage.api.total + coverage.cli.total + coverage.config.total : null;
+  const showGenerateButton =
+    coverageTotal !== null && catalogTotal !== null && coverageTotal < catalogTotal;
 
   return (
     <div className="flex flex-col gap-4">

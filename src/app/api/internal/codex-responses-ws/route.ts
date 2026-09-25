@@ -7,7 +7,7 @@ import { authorizeWebSocketHandshake, extractWsTokenFromRequest } from "@/lib/ws
 import { getModelInfo } from "@/sse/services/model";
 import { resolveCcDiscoveryAliasStrip } from "@/lib/ccDiscoveryAliasResolve";
 import { getProviderCredentialsWithQuotaPreflight } from "@/sse/services/auth";
-import { enforceApiKeyPolicy, type ApiKeyMetadata } from "@/shared/utils/apiKeyPolicy";
+import { enforceApiKeyPolicy } from "@/shared/utils/apiKeyPolicy";
 import { checkAndRefreshToken } from "@/sse/services/tokenRefresh";
 import { resolveCodexWsModelInfo } from "./modelResolution";
 import { isFeatureFlagEnabled } from "@/shared/utils/featureFlags";
@@ -21,6 +21,7 @@ import {
 import { sanitizeErrorMessage } from "@omniroute/open-sse/utils/error.ts";
 import { logger } from "@omniroute/open-sse/utils/logger.ts";
 import { resolveProxy } from "@omniroute/open-sse/utils/networkProxy.ts";
+import { withCodexFingerprintCredentials } from "@omniroute/open-sse/config/codexIdentity.ts";
 import { proxyConfigToUrl } from "@omniroute/open-sse/utils/proxyDispatcher.ts";
 import {
   attachReasoningRuleDirective,
@@ -34,12 +35,21 @@ import { resolveRequestRoutingTags } from "@/domain/tagRouter";
 import { validateApiKeyRoutingTarget } from "@/shared/utils/apiKeyPolicy";
 import { persistResponsesWsCallHistory } from "./history";
 import { applyResponsesWsCompression } from "./compression";
+import { getComboByName } from "@/lib/db/combos";
+import { getComboModelString } from "@/lib/combos/steps";
+import {
+  buildManagedLeaseErrorResponse,
+  isExclusiveLeaseManagedKey,
+  LeaseContextError,
+} from "@/sse/services/leaseContext";
 
 const CODEX_RESPONSES_WS_URL = "wss://chatgpt.com/backend-api/codex/responses";
 const executor = new CodexExecutor();
 const log = logger("RESPONSES_WS");
 
 type JsonRecord = Record<string, unknown>;
+type ApiKeyMetadata = Awaited<ReturnType<typeof getApiKeyMetadata>>;
+
 const bridgePayloadSchema = z
   .object({
     action: z.string().optional(),
@@ -361,10 +371,7 @@ async function resolveCodexCredentials(
   provider: string,
   model: string,
   allowedConnections: string[] | null
-): Promise<
-  | { error: Response }
-  | { credentials: NonNullable<Awaited<ReturnType<typeof checkAndRefreshToken>>> }
-> {
+) {
   const credentials = await getProviderCredentialsWithQuotaPreflight(
     provider,
     null,
@@ -389,7 +396,7 @@ async function resolveCodexCredentials(
   return { credentials: refreshed };
 }
 
-async function resolveCodexRequestContext(body: JsonRecord): Promise<CodexRequestContext> {
+async function resolveCodexRequestContext(body: JsonRecord) {
   if (!isFeatureFlagEnabled("OMNIROUTE_CODEX_WS_ENABLED")) {
     return {
       error: jsonError(503, "codex_ws_disabled", "Codex Responses WebSocket transport is disabled"),
@@ -416,6 +423,17 @@ async function resolveCodexRequestContext(body: JsonRecord): Promise<CodexReques
   if (policyResult.rejection) return { error: policyResult.rejection };
   const metadata =
     policyResult.apiKeyInfo ?? (apiKey ? await getApiKeyMetadata(apiKey).catch(() => null) : null);
+  if (isExclusiveLeaseManagedKey(metadata)) {
+    return {
+      error: buildManagedLeaseErrorResponse(
+        new LeaseContextError(
+          409,
+          "LEASE_UNSUPPORTED_TRANSPORT",
+          "Managed leases require the fenced HTTP Responses transport"
+        )
+      ),
+    };
+  }
   const allowedConnections =
     metadata && Array.isArray(metadata.allowedConnections) && metadata.allowedConnections.length > 0
       ? metadata.allowedConnections
@@ -427,45 +445,22 @@ async function resolveCodexRequestContext(body: JsonRecord): Promise<CodexReques
     requestedModel,
     responseBody
   );
-  if ("error" in reasoningRoute) return { error: reasoningRoute.error };
+  if (reasoningRoute.error) return { error: reasoningRoute.error };
   return {
     authRequest,
     apiKey,
     responseBody,
     requestedModel,
+    clientHeaders: Object.fromEntries(authRequest.headers.entries()),
     metadata,
     allowedConnections,
     ...reasoningRoute,
   };
 }
 
-interface CodexRequestContextSuccess {
-  authRequest: Request;
-  apiKey: string | null;
-  responseBody: JsonRecord;
-  requestedModel: string;
-  metadata: ApiKeyMetadata | null;
-  allowedConnections: string[] | null;
-  decision: Awaited<ReturnType<typeof resolveReasoningRoutingRule>>;
-  intent: ReturnType<typeof extractReasoningIntent>;
-  sourceModels: Awaited<ReturnType<typeof resolveReasoningSourceModels>>;
-  routingTags: ReturnType<typeof resolveRequestRoutingTags>;
-}
-
-type CodexRequestContext = { error: Response } | CodexRequestContextSuccess;
-
-interface CodexUpstreamSuccess extends CodexRequestContextSuccess {
-  provider: string;
-  model: string;
-  credentials: NonNullable<Awaited<ReturnType<typeof checkAndRefreshToken>>>;
-  reasoningDecision: Awaited<ReturnType<typeof resolveReasoningRoutingRule>>;
-}
-
-type CodexUpstreamContext = { error: Response } | CodexUpstreamSuccess;
-
 async function resolveCodexUpstreamContext(
-  context: CodexRequestContext
-): Promise<CodexUpstreamContext> {
+  context: Awaited<ReturnType<typeof resolveCodexRequestContext>>
+) {
   if ("error" in context) return context;
   const routedModel = context.decision?.targetModel ?? context.requestedModel;
   const modelInfo = await resolveCodexWsModelInfo(routedModel, getModelInfo);
@@ -485,7 +480,7 @@ async function resolveCodexUpstreamContext(
     model,
     context.allowedConnections
   );
-  if ("error" in credentialResult) return credentialResult;
+  if (credentialResult.error) return credentialResult;
   let reasoningDecision = context.decision;
   if (!reasoningDecision) {
     reasoningDecision = await resolveReasoningRoutingRule({
@@ -510,21 +505,20 @@ async function resolveCodexUpstreamContext(
       };
     }
   }
-  const upstream: CodexUpstreamSuccess = {
+  return {
     ...context,
     provider,
     model,
     credentials: credentialResult.credentials,
     reasoningDecision,
   };
-  return upstream;
 }
 
 async function resolveCodexProxy(provider: string): Promise<string | undefined> {
   try {
     return proxyConfigToUrl(await resolveProxy(provider)) || undefined;
   } catch (err) {
-    log.warn(`[codex-responses-ws] proxy resolution failed: ${sanitizeErrorMessage(err)}`);
+    logger.warn(`[codex-responses-ws] proxy resolution failed: ${sanitizeErrorMessage(err)}`);
     return undefined;
   }
 }
@@ -532,6 +526,17 @@ async function resolveCodexProxy(provider: string): Promise<string | undefined> 
 async function prepare(body: JsonRecord) {
   const context = await resolveCodexRequestContext(body);
   if ("error" in context) return context.error;
+  const combo = await getComboByName(context.requestedModel).catch(() => null);
+  if (combo) {
+    const models = Array.isArray(combo.models) ? combo.models : [];
+    if (models.some((model) => getComboModelString(model)?.startsWith("chatgpt-web-codex/"))) {
+      return jsonError(
+        426,
+        "responses_websocket_http_fallback",
+        "This Combo contains ChatGPT Web (Codex) and must use the HTTP/SSE Responses transport"
+      );
+    }
+  }
   const upstream = await resolveCodexUpstreamContext(context);
   if ("error" in upstream) return upstream.error;
   const { responseBody, metadata, provider, model, credentials: refreshedCredentials } = upstream;
@@ -555,17 +560,22 @@ async function prepare(body: JsonRecord) {
     model,
     requestId: randomUUID(),
   });
+  const credentialsWithFingerprint = withCodexFingerprintCredentials(
+    refreshedCredentials,
+    context.clientHeaders,
+    responseBodyWithMemory
+  );
   const transformed = (await executor.transformRequest(
     model,
     responseBodyWithMemory,
     true,
-    refreshedCredentials
+    credentialsWithFingerprint
   )) as JsonRecord;
   transformed.model = model;
   delete transformed.stream;
   delete transformed.stream_options;
 
-  const headers = normalizeUpstreamHeaders(executor.buildHeaders(refreshedCredentials, true));
+  const headers = normalizeUpstreamHeaders(executor.buildHeaders(credentialsWithFingerprint, true));
 
   // #5611: apply the configured Global/provider proxy to the upstream Codex
   // Responses WebSocket too. The downstream client→OmniRoute hop works, but the

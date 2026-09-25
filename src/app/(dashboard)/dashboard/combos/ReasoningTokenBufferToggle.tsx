@@ -1,5 +1,4 @@
 import Tooltip from "@/shared/components/Tooltip";
-import { getI18nOrFallback } from "./comboFormUtils";
 
 type TranslationFn = {
   (key: string): string;
@@ -11,6 +10,13 @@ type Props = {
   setConfig: (config: Record<string, any>) => void;
   t: TranslationFn;
 };
+
+function getI18nOrFallback(t: TranslationFn, key: string, fallback: string): string {
+  try {
+    if (typeof t.has === "function" && t.has(key)) return t(key);
+  } catch {}
+  return fallback;
+}
 
 export default function ReasoningTokenBufferToggle({ config, setConfig, t }: Props) {
   return (

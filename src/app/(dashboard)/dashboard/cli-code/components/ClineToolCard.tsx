@@ -223,8 +223,10 @@ export default function ClineToolCard({
 
   const handleManualConfig = (config) => {
     if (config.model) setSelectedModel(config.model);
-    // (#523) Match apiKey string to key id if possible
-    if (config.apiKey && apiKeys?.length > 0) {
+    // (#523) Match apiKey string to key id if possible.
+    // apiKey may be a structured secret reference (object) rather than a
+    // plaintext string. Only match on strings.
+    if (typeof config.apiKey === "string" && config.apiKey && apiKeys?.length > 0) {
       const prefix = config.apiKey.slice(0, 8);
       const suffix = config.apiKey.slice(-4);
       const matchedKey = apiKeys.find(
@@ -238,12 +240,7 @@ export default function ClineToolCard({
 
   return (
     <Card padding="sm" className="overflow-hidden">
-      <button
-        type="button"
-        className="flex w-full items-center justify-between text-left hover:cursor-pointer"
-        onClick={onToggle}
-        aria-expanded={isExpanded}
-      >
+      <div className="flex items-center justify-between hover:cursor-pointer" onClick={onToggle}>
         <div className="flex items-center gap-3">
           <div className="size-8 rounded-lg flex items-center justify-center shrink-0">
             <ProviderIcon providerId={tool.id || "cline"} size={32} type="color" />
@@ -265,7 +262,7 @@ export default function ClineToolCard({
         >
           expand_more
         </span>
-      </button>
+      </div>
 
       {isExpanded && (
         <div className="mt-6 pt-6 border-t border-border">

@@ -131,7 +131,7 @@ const CLOUDFLARED_SAFE_ENV_KEYS = [
   "no_proxy",
 ] as const;
 
-let tunnelProcess: ReturnType<typeof spawn> | null = null;
+let tunnelProcess: ReturnType<typeof spawnHostBinary> | null = null;
 let tunnelPid: number | null = null;
 let installPromise: Promise<string> | null = null;
 let startPromise: Promise<CloudflaredTunnelStatus> | null = null;

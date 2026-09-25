@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
 import { getProviderById } from "@/shared/constants/providers";
 import { requireManagementAuth } from "@/lib/api/requireManagementAuth";
 import { getApiKeys } from "@/lib/db/apiKeys";
@@ -21,7 +22,7 @@ import {
   getWeeklyPatternRows,
   getPresetCostModelRows,
 } from "@/lib/db/usageAnalytics";
-import { getFallbackStats } from "@/lib/db/callLogStats";
+import { getFallbackStats, getErrorTypeBreakdown } from "@/lib/db/callLogStats";
 import { buildByProviderRows } from "@/lib/usage/providerDisplayNames";
 import { toNumber } from "@/shared/utils/numeric";
 
@@ -216,7 +217,12 @@ function resolveModelPricing(
     }
   }
 
-  // Last resort fallback for historical usage (e.g. "gpt-4" missing, matches "gpt-4.1" or first available)
+  // Short-circuit :free models to $0 (they have no pricing entry → should not fall back to arbitrary rates)
+  if (!pricing && model.endsWith(":free")) {
+    return null;
+  }
+
+  // Last resort fallback for historical usage (e.g. "gpt-4" missing, matches "gpt-4.1")
   if (!pricing && providerPricing && typeof providerPricing === "object") {
     for (const [key, val] of Object.entries(providerPricing as Record<string, unknown>)) {
       const lm = model.toLowerCase();
@@ -224,10 +230,6 @@ function resolveModelPricing(
         pricing = val;
         break;
       }
-    }
-    if (!pricing) {
-      const keys = Object.keys(providerPricing as Record<string, unknown>);
-      if (keys.length > 0) pricing = (providerPricing as Record<string, unknown>)[keys[0]];
     }
   }
 
@@ -412,13 +414,10 @@ export async function GET(request: Request) {
       await import("@/lib/usage/costCalculator");
     const { PROVIDER_ID_TO_ALIAS } = await import("@omniroute/open-sse/config/providerModels");
 
-    const summaryRow = getUsageSummary(unifiedSource, unifiedParams) as unknown as Record<
-      string,
-      unknown
-    >;
+    const summaryRow = getUsageSummary(unifiedSource, unifiedParams) as Record<string, unknown>;
 
-    const dailyRows = getDailyUsage(unifiedSource, unifiedParams) as unknown as UsageRows;
-    const dailyCostRows = getDailyCostRows(unifiedSource, unifiedParams) as unknown as UsageRows;
+    const dailyRows = getDailyUsage(unifiedSource, unifiedParams) as UsageRows;
+    const dailyCostRows = getDailyCostRows(unifiedSource, unifiedParams) as UsageRows;
 
     const heatmapStart = new Date();
     heatmapStart.setUTCDate(heatmapStart.getUTCDate() - 364);
@@ -440,42 +439,30 @@ export async function GET(request: Request) {
       });
     }
 
-    const heatmapRows = getHeatmapRows(heatmapConditions, heatmapParams) as unknown as UsageRows;
+    const heatmapRows = getHeatmapRows(heatmapConditions, heatmapParams) as UsageRows;
 
-    const modelRows = getModelUsageRows(unifiedSource, unifiedParams) as unknown as UsageRows;
+    const modelRows = getModelUsageRows(unifiedSource, unifiedParams) as UsageRows;
 
-    const providerCostRows = getProviderCostRows(
-      unifiedSource,
-      unifiedParams
-    ) as unknown as UsageRows;
+    const providerCostRows = getProviderCostRows(unifiedSource, unifiedParams) as UsageRows;
 
-    const providerRows = getProviderUsageRows(unifiedSource, unifiedParams) as unknown as UsageRows;
+    const providerRows = getProviderUsageRows(unifiedSource, unifiedParams) as UsageRows;
 
     const accountCostWhereClause = whereClause
       .replace(/timestamp/g, "usage_history.timestamp")
       .replace(/api_key_/g, "usage_history.api_key_");
-    const accountCostRows = getAccountCostRows(
-      accountCostWhereClause,
-      params
-    ) as unknown as UsageRows;
+    const accountCostRows = getAccountCostRows(accountCostWhereClause, params) as UsageRows;
 
-    const accountRows = getAccountUsageRows(accountCostWhereClause, params) as unknown as UsageRows;
+    const accountRows = getAccountUsageRows(accountCostWhereClause, params) as UsageRows;
 
     const apiKeyWhereClause = appendWhereCondition(
       whereClause,
       "(api_key_id IS NOT NULL AND api_key_id != '') OR (api_key_name IS NOT NULL AND api_key_name != '')"
     );
-    const apiKeyRows = getApiKeyUsageRows(apiKeyWhereClause, params) as unknown as UsageRows;
+    const apiKeyRows = getApiKeyUsageRows(apiKeyWhereClause, params) as UsageRows;
 
-    const serviceTierRows = getServiceTierUsageRows(
-      unifiedSource,
-      unifiedParams
-    ) as unknown as UsageRows;
+    const serviceTierRows = getServiceTierUsageRows(unifiedSource, unifiedParams) as UsageRows;
 
-    const apiKeyMetadataRows = getApiKeyMetadataRows(
-      apiKeyWhereClause,
-      params
-    ) as unknown as UsageRows;
+    const apiKeyMetadataRows = getApiKeyMetadataRows(apiKeyWhereClause, params) as UsageRows;
 
     const apiKeyMetadata = new Map<string, { latestName: string; aliases: Set<string> }>();
     for (const row of apiKeyMetadataRows) {
@@ -492,9 +479,10 @@ export async function GET(request: Request) {
       apiKeyMetadata.set(groupKey, existing);
     }
 
-    const weeklyRows = getWeeklyPatternRows(unifiedSource, unifiedParams) as unknown as UsageRows;
+    const weeklyRows = getWeeklyPatternRows(unifiedSource, unifiedParams) as UsageRows;
 
-    const fallbackRow = getFallbackStats(whereClause, params) as unknown as Record<string, unknown>;
+    const fallbackRow = getFallbackStats(whereClause, params) as Record<string, unknown>;
+    const errorBreakdown = getErrorTypeBreakdown(whereClause, params);
 
     const summary = {
       totalRequests: Number(summaryRow?.totalRequests || 0),
@@ -883,6 +871,7 @@ export async function GET(request: Request) {
       weeklyCounts,
       dailyByModel,
       modelNames,
+      errorBreakdown,
       range,
     } as any;
 
@@ -911,7 +900,7 @@ export async function GET(request: Request) {
           apiKeyParams: apiKeyParamEntries,
         });
 
-        const presetModelRows = getPresetCostModelRows(pSrc, pParams) as unknown as UsageRows;
+        const presetModelRows = getPresetCostModelRows(pSrc, pParams) as UsageRows;
 
         let presetTotalCost = 0;
         for (const row of presetModelRows) {

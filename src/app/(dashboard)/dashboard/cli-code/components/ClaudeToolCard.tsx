@@ -286,12 +286,7 @@ export default function ClaudeToolCard({
 
   return (
     <Card padding="sm" className="overflow-hidden">
-      <button
-        type="button"
-        className="flex w-full items-center justify-between text-left hover:cursor-pointer"
-        onClick={onToggle}
-        aria-expanded={isExpanded}
-      >
+      <div className="flex items-center justify-between hover:cursor-pointer" onClick={onToggle}>
         <div className="flex items-center gap-3">
           <div className="size-8 flex items-center justify-center shrink-0">
             <ProviderIcon providerId="claude" size={32} type="color" />
@@ -313,7 +308,7 @@ export default function ClaudeToolCard({
         >
           expand_more
         </span>
-      </button>
+      </div>
 
       {isExpanded && (
         <div className="mt-4 pt-4 border-t border-border flex flex-col gap-4">
