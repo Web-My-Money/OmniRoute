@@ -6,6 +6,7 @@
  */
 
 import { getDbInstance } from "./core";
+import { isRecord } from "@/shared/types/json";
 
 const NAMESPACE = "provider_param_filters";
 
@@ -38,10 +39,6 @@ function bumpCacheGeneration(): void {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
 
 function parseStoredValue(raw: unknown): unknown {
   if (typeof raw !== "string") return raw;

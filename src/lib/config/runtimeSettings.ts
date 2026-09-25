@@ -5,8 +5,7 @@ import {
   type OperatorProviderErrorRule,
 } from "@omniroute/open-sse/config/providerErrorRules.ts";
 import { isAutomatedTestProcess } from "@/shared/utils/testProcess";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 export type RuntimeReloadSection =
   | "payloadRules"
@@ -92,7 +91,6 @@ function isTruthyEnvFlag(value: string | undefined): boolean {
   if (typeof value !== "string") return false;
   return new Set(["1", "true", "yes", "on"]).has(value.trim().toLowerCase());
 }
-
 
 function toRecord(value: unknown): JsonRecord {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : {};
@@ -425,8 +423,7 @@ async function applyModelsDevSyncSection(
   }
 
   const wasEnabled = previousSnapshot.modelsDevSyncEnabled === true;
-  const isEnabled =
-    isModelsDevSyncEnvForcedOn() || currentSnapshot.modelsDevSyncEnabled === true;
+  const isEnabled = isModelsDevSyncEnvForcedOn() || currentSnapshot.modelsDevSyncEnabled === true;
   const intervalChanged =
     previousSnapshot.modelsDevSyncInterval !== currentSnapshot.modelsDevSyncInterval;
 

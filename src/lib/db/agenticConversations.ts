@@ -21,6 +21,7 @@
 
 import { v4 as uuidv4 } from "uuid";
 import { getDbInstance } from "./core";
+import { type JsonRecord } from "@/shared/types/json";
 
 export interface AgenticConversationRow {
   id: string;
@@ -30,8 +31,6 @@ export interface AgenticConversationRow {
   firstSeenAt: string;
   lastSeenAt: string;
 }
-
-type JsonRecord = Record<string, unknown>;
 
 function asRecord(value: unknown): JsonRecord {
   return value && typeof value === "object" ? (value as JsonRecord) : {};

@@ -12,8 +12,7 @@
 
 import { promises as fs } from "fs";
 import path from "path";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 /**
  * CLIProxyAPI `type` → OmniRoute provider id. Only OAuth-based providers OmniRoute

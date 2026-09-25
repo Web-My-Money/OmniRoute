@@ -8,12 +8,11 @@ import { invalidateCodexQuotaCache } from "@omniroute/open-sse/services/codexQuo
 import { getCodexBackendIdentityHeaders } from "@omniroute/open-sse/config/codexClient.ts";
 import { runWithProxyContext } from "@omniroute/open-sse/utils/proxyFetch.ts";
 import { sanitizeErrorMessage } from "@omniroute/open-sse/utils/error.ts";
+import { type JsonRecord } from "@/shared/types/json";
 
 const CODEX_RESET_CREDIT_CONSUME_URL =
   "https://chatgpt.com/backend-api/wham/rate-limit-reset-credits/consume";
 const CODEX_RESET_CREDITS_URL = "https://chatgpt.com/backend-api/wham/rate-limit-reset-credits";
-
-type JsonRecord = Record<string, unknown>;
 
 type CodexConnectionLike = JsonRecord & {
   id: string;

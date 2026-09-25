@@ -1,4 +1,4 @@
-export type JsonRecord = Record<string, unknown>;
+export type { JsonRecord } from "@/shared/types/json";
 export type ProxyScope = "global" | "provider" | "account" | "combo";
 
 // Rotation strategy applied when a scope has a POOL of proxies (#6365). Defaults

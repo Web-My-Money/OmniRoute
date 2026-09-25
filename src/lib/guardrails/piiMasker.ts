@@ -3,13 +3,12 @@ import { processPII } from "@/shared/utils/inputSanitizer";
 import { sanitizePII, sanitizePIIResponse } from "@/lib/piiSanitizer";
 
 import { isFeatureFlagEnabled } from "@/shared/utils/featureFlags";
+import { type JsonRecord } from "@/shared/types/json";
 
 type PiiDetection = {
   count: number;
   type: string;
 };
-
-type JsonRecord = Record<string, unknown>;
 
 function isRequestPiiMaskingEnabled() {
   // Request PII redaction is controlled by PII_REDACTION_ENABLED feature flag (DB > env > default).

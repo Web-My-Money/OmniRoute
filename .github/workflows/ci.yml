@@ -165,6 +165,15 @@ jobs:
       # runs tsc scoped to the dashboard tree against a frozen baseline of
       # pre-existing errors; only NEW errors fail it.
       - run: npm run check:dashboard-typecheck
+      # Same ratchet pattern as dashboard-typecheck, scoped to the test tree
+      # (tests/**, src/**/__tests__/**): pre-existing test-mock debt is frozen
+      # in config/quality/tests-typecheck-baseline.json; only NEW errors fail.
+      - run: npm run check:tests-typecheck
+      # Upstream-drift guard: '-s ours' rebases silently revert local fixes
+      # without conflicts (v3.8.50 regressed PR #28's fixes this way). The
+      # manifest freezes sentinel lines per locally-patched file; a missing
+      # sentinel = a local patch reverted. Pure grep — no git/network needed.
+      - run: npm run check:upstream-drift
       # typecheck:noimplicit:core dropped from this job (2026-07 optimize):
       # it was advisory (continue-on-error) and largely subsumed by the blocking
       # check:type-coverage ratchet in quality-gate. Local: npm run typecheck:noimplicit:core.

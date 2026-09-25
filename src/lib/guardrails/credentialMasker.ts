@@ -1,5 +1,6 @@
 import { BaseGuardrail, type GuardrailContext, type GuardrailResult } from "./base";
 import { getSettings } from "@/lib/db/settings";
+import { type JsonRecord } from "@/shared/types/json";
 
 /**
  * CredentialMaskerGuardrail — redacts well-known API-key / secret-token patterns
@@ -113,8 +114,6 @@ export function redactCredentials(text: string): CredentialRedactionResult {
   }
   return { text: result, detections, modified: result !== text };
 }
-
-type JsonRecord = Record<string, unknown>;
 
 function isSensitiveHeaderKey(key: string): boolean {
   return ["authorization", "x-api-key", "api-key", "apikey"].includes(key.toLowerCase());

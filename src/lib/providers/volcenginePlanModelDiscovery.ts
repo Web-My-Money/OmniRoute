@@ -27,8 +27,7 @@
  */
 
 import type { SyncedAvailableModelInput } from "@/lib/db/models/synced";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 export type VolcPlanKind = "agent" | "coding";
 

@@ -7,6 +7,7 @@ import { DATA_DIR, SQLITE_FILE, applyDatabaseOptimizationSettings, getDbInstance
 import { invalidateDbCache } from "./readCache";
 import { getDatabaseStats } from "./stats";
 import { getState as getVacuumSchedulerState, refreshVacuumScheduler } from "./vacuumScheduler";
+import { isRecord } from "@/shared/types/json";
 
 const DATABASE_SETTINGS_NAMESPACE = "databaseSettings";
 
@@ -71,10 +72,6 @@ const LEGACY_FLAT_KEYS: {
     optimizeOnStartup: ["optimizeOnStartup"],
   },
 };
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
 
 function cloneDefaultSettings(): UserDatabaseSettings {
   return structuredClone(DEFAULT_DATABASE_SETTINGS) as UserDatabaseSettings;

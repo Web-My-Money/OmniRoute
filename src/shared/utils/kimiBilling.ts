@@ -1,3 +1,4 @@
+import { type JsonRecord } from "@/shared/types/json";
 /**
  * Public Dashboard contract for Kimi Coding Extra Usage (额度加油包).
  *
@@ -49,8 +50,6 @@ type KimiBillingCardRow =
       target: "_blank";
       rel: "noreferrer noopener";
     };
-
-type JsonRecord = Record<string, unknown>;
 
 function toRecord(value: unknown): JsonRecord | null {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : null;

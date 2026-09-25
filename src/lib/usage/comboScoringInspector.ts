@@ -39,6 +39,7 @@ import type {
   ComboScoringInspectorWeightSource,
   UtilizationTimeRange,
 } from "@/shared/types/utilization";
+import { isRecord } from "@/shared/types/json";
 
 export interface ComboScoringInspectorOptions {
   range: UtilizationTimeRange;
@@ -95,10 +96,6 @@ function roundNumber(value: number, digits = 4): number {
 
 function normalizeTaskType(taskType: string | undefined): string {
   return typeof taskType === "string" && taskType.trim().length > 0 ? taskType.trim() : "default";
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 /**

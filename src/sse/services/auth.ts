@@ -156,8 +156,8 @@ import {
   getOAuthSessionAvailability,
   reserveOAuthSession,
 } from "@omniroute/open-sse/services/oauthSessionOccupancy.ts";
+import { type JsonRecord } from "@/shared/types/json";
 
-type JsonRecord = Record<string, unknown>;
 interface RecoverableConnectionState {
   connectionId: string;
   testStatus?: string | null;

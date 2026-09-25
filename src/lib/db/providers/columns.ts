@@ -3,7 +3,8 @@
  * No DB access; no imports — JSON/Object/builtins only.
  */
 
-export type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
+export type { JsonRecord };
 
 export function withNullableMaxConcurrent(
   record: JsonRecord,

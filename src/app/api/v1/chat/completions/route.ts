@@ -27,6 +27,7 @@ import {
   withCompressionHeaderEcho,
 } from "@/shared/utils/compressionHeaderEcho";
 import { resolveModelAliasWithSeedFallbackOnBody } from "@/lib/modelAliasResolver";
+import { isRecord } from "@/shared/types/json";
 
 let initPromise = null;
 
@@ -43,10 +44,6 @@ function ensureInitialized() {
     });
   }
   return initPromise;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 // Minimal request-shape validation (Rule #7 / T06 gate). This is the hottest path in the

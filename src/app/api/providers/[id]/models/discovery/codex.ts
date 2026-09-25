@@ -4,6 +4,7 @@ import {
   getCodexDefaultHeaders,
 } from "@omniroute/open-sse/config/codexClient.ts";
 import { isCodexDiscoveryModelExcluded } from "@/shared/services/codexDiscoveryPolicy";
+import { type JsonRecord } from "@/shared/types/json";
 
 export {
   CODEX_DISCOVERY_EXCLUDED_IDS,
@@ -15,8 +16,6 @@ export const CODEX_MODELS_URL = "https://chatgpt.com/backend-api/codex/models";
 export const CODEX_GITHUB_MODELS_URL =
   "https://raw.githubusercontent.com/openai/codex/refs/heads/main/codex-rs/models-manager/models.json";
 export const CODEX_GITHUB_CATALOG_CACHE_TTL_MS = 5 * 60 * 1000;
-
-type JsonRecord = Record<string, unknown>;
 
 export type CodexDiscoveryModel = {
   id: string;

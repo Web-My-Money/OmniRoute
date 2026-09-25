@@ -1,4 +1,5 @@
 import { isAutomatedTestProcess } from "@/shared/utils/testProcess";
+import { type JsonRecord } from "@/shared/types/json";
 
 export interface ModelLockoutSettings {
   enabled: boolean;
@@ -17,8 +18,6 @@ export const DEFAULT_MODEL_LOCKOUT_SETTINGS: ModelLockoutSettings = {
   maxBackoffSteps: 10,
   useExponentialBackoff: true,
 };
-
-type JsonRecord = Record<string, unknown>;
 
 function asRecord(value: unknown): JsonRecord {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : {};

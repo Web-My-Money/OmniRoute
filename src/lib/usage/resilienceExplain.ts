@@ -17,8 +17,7 @@ import type {
   ResilienceProviderExplanation,
   ResilienceSkipReason,
 } from "@/shared/types/utilization";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 const logger = pino({ name: "resilience-explain" });
 

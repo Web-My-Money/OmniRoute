@@ -4,8 +4,7 @@ import { getProviderConnections, updateProviderConnection } from "@/lib/db/provi
 import { getCachedProviderConnectionById } from "@/lib/localDb";
 import { clearProviderFailure, clearModelLock } from "@omniroute/open-sse/services/accountFallback";
 import { resolveProviderAlias } from "@omniroute/open-sse/services/model";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 export type ProviderAutopilotSeverity = "info" | "warning" | "critical";
 export type ProviderAutopilotState = "healthy" | "degraded" | "down";

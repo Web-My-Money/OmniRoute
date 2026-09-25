@@ -3,11 +3,10 @@ import { classifyProviderError } from "@omniroute/open-sse/services/errorClassif
 import { sanitizePII } from "../../piiSanitizer";
 import { omitEncryptedReasoningFromLogChunks, protectPayloadForLog } from "../../logPayloads";
 import type { CallLogDetailState } from "../callLogArtifacts";
+import { type JsonRecord } from "@/shared/types/json";
 // #7879: re-export the canonical helper so existing consumers of this module
 // keep importing `toNumber` from here unchanged.
 export { toNumber } from "@/shared/utils/numeric";
-
-type JsonRecord = Record<string, unknown>;
 
 export function asRecord(value: unknown): JsonRecord {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : {};

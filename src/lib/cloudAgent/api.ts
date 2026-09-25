@@ -3,8 +3,7 @@ import { getProviderConnections } from "@/lib/db/providers";
 import { resolveAllowedOrigin, getCorsStatus } from "@/server/cors/origins";
 import type { AgentCredentials } from "./baseAgent.ts";
 import type { CloudAgentTaskRow } from "./db.ts";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 /**
  * CORS headers for the cloud-agent surface. These routes are MANAGEMENT

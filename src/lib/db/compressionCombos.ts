@@ -6,6 +6,7 @@ import type {
 
 import { backupDbFile } from "./backup";
 import { getDbInstance, rowToCamel } from "./core";
+import { type JsonRecord } from "@/shared/types/json";
 
 export interface CompressionCombo {
   id: string;
@@ -26,8 +27,6 @@ export interface CompressionComboAssignment {
   routingComboId: string;
   createdAt: string;
 }
-
-type JsonRecord = Record<string, unknown>;
 
 const DEFAULT_COMPRESSION_COMBO_ID = "default-caveman";
 const DEFAULT_COMPRESSION_COMBO_NAME = "Standard Savings";

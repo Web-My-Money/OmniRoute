@@ -1,3 +1,4 @@
+import { type JsonRecord } from "@/shared/types/json";
 /**
  * db/caseMapping.ts — pure snake_case ↔ camelCase column mapping.
  *
@@ -8,8 +9,6 @@
  * (and core.ts itself) imports. core.ts re-exports all five so existing call sites that
  * pull these helpers off the core module keep working unchanged.
  */
-
-type JsonRecord = Record<string, unknown>;
 
 const BOOLEAN_CAMEL_COLUMNS = new Set([
   "isActive",

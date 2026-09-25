@@ -22,9 +22,9 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("next-intl", () => ({
-  useTranslations: () => (key: string) => key,
-}));
+// No local next-intl mock: the global vitest setup mock renders the real en.json
+// copy, which the detail-modal assertions below rely on ("Request log detail",
+// "Close detail modal" aria-labels from requestLogger.detail).
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn(), refresh: vi.fn() }),

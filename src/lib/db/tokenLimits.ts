@@ -14,6 +14,7 @@
 import { randomUUID } from "crypto";
 import { getDbInstance } from "./core";
 import { getBudgetWindow, type BudgetResetInterval } from "@/domain/costRules";
+import { type JsonRecord } from "@/shared/types/json";
 
 export type TokenLimitScopeType = "model" | "provider" | "global";
 
@@ -47,8 +48,6 @@ export interface TokenWindowState {
   periodStartAt: number;
   nextResetAt: number;
 }
-
-type JsonRecord = Record<string, unknown>;
 
 let _schemaChecked = false;
 
@@ -158,7 +157,16 @@ export function upsertTokenLimit(input: UpsertTokenLimitInput): TokenLimit {
                    reset_time     = excluded.reset_time,
                    enabled        = excluded.enabled,
                    updated_at     = datetime('now')`
-  ).run({ id, apiKeyId: input.apiKeyId, scopeType, scopeValue, tokenLimit, resetInterval, resetTime, enabled });
+  ).run({
+    id,
+    apiKeyId: input.apiKeyId,
+    scopeType,
+    scopeValue,
+    tokenLimit,
+    resetInterval,
+    resetTime,
+    enabled,
+  });
 
   const row = db
     .prepare(
@@ -281,11 +289,7 @@ export function incrementWindowTokens(
 }
 
 /** Append a window-reset audit log row. */
-export function logTokenLimitReset(
-  limitId: string,
-  prevTokens: number,
-  windowStart: string
-): void {
+export function logTokenLimitReset(limitId: string, prevTokens: number, windowStart: string): void {
   ensureSchema();
   const db = getDbInstance();
   db.prepare(

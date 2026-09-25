@@ -11,8 +11,8 @@
  */
 
 import { getDbInstance } from "./core";
+import { type JsonRecord } from "@/shared/types/json";
 
-type JsonRecord = Record<string, unknown>;
 type BudgetResetInterval = "daily" | "weekly" | "monthly";
 
 interface BudgetConfigRecord {

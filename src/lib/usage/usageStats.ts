@@ -14,8 +14,8 @@ import { getAccountDisplayName } from "@/lib/display/names";
 import { calculateCost } from "./costCalculator";
 import { getRawDataCutoffDate, isAggregationEnabled } from "./aggregateHistory";
 import { toNumber } from "@/shared/utils/numeric";
+import { type JsonRecord } from "@/shared/types/json";
 
-type JsonRecord = Record<string, unknown>;
 type UsageBucket = {
   requests: number;
   promptTokens: number;

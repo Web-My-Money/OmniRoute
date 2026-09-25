@@ -1,8 +1,7 @@
 import { getProviderConnections, updateProviderConnection } from "@/lib/db/providers";
 import { getSettings, updateSettings } from "@/lib/db/settings";
 import { getCodexRequestDefaults } from "./requestDefaults";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 const MIGRATION_SETTING_KEY = "codexConnectionDefaultsMigrationV1";
 

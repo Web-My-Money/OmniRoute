@@ -1,6 +1,5 @@
 import { wildcardMatch } from "@omniroute/open-sse/services/wildcardRouter.ts";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 interface ConnectionLike {
   providerSpecificData?: unknown;

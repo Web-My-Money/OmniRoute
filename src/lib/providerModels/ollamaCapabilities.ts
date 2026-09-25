@@ -1,6 +1,5 @@
 import { z } from "zod";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 const ollamaShowResponseSchema = z
   .object({
