@@ -35,10 +35,9 @@ import {
   QUOTA_AUTOPING_TICK_INTERVAL_MS,
   type QuotaAutoPingProviderConfig,
 } from "@/shared/constants/quotaAutoPing";
+import { type JsonRecord } from "@/shared/types/json";
 
 const log = logger("QuotaAutoPing");
-
-type JsonRecord = Record<string, unknown>;
 
 export interface QuotaAutoPingConnection {
   id: string;

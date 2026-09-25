@@ -10,8 +10,7 @@ import {
   type ContextBudgetPolicy,
   type LadderStage,
 } from "@omniroute/open-sse/services/compression/adaptiveCompression/types.ts";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 function toRecord(value: unknown): JsonRecord {
   return value && typeof value === "object" ? (value as JsonRecord) : {};

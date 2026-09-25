@@ -1,4 +1,5 @@
 import { sanitizePII } from "./piiSanitizer";
+import { type JsonRecord } from "@/shared/types/json";
 
 const SENSITIVE_KEYS = new Set([
   "api_key",
@@ -34,8 +35,6 @@ const SENSITIVE_KEYS = new Set([
   "storage-state",
   "runtimeKey",
 ]);
-
-type JsonRecord = Record<string, unknown>;
 
 const ENCRYPTED_REASONING_KEY = "encrypted_content";
 

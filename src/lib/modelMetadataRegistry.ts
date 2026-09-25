@@ -29,14 +29,13 @@ import {
   CANONICAL_EFFORT_VALUES,
   extendCodexGpt56EffortValues,
 } from "@/shared/reasoning/effortStandardization";
+import { type JsonRecord } from "@/shared/types/json";
 
 const MODEL_METADATA_SCHEMA_VERSION = "model-metadata-v1";
 
 export const MODEL_ALIAS_AMBIGUOUS = "MODEL_ALIAS_AMBIGUOUS";
 export const MODEL_NOT_MAPPED = "MODEL_NOT_MAPPED";
 export const INTERNAL_PROXY_ERROR = "INTERNAL_PROXY_ERROR";
-
-type JsonRecord = Record<string, unknown>;
 
 export interface CatalogEnrichmentSnapshot {
   modelsDevPricing: PricingByProvider | null;

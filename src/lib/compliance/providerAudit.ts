@@ -1,4 +1,4 @@
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 const WARNING_PATTERNS = [
   /\[sanitizer\]/i,
   /prompt injection detected/i,

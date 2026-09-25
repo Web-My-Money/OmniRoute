@@ -1,8 +1,8 @@
+import { type JsonRecord } from "@/shared/types/json";
 /**
  * Normalize upstream error bodies to a JSON-safe payload.
  * Accepts unknown/object/string inputs and guarantees an { error: { ... } } shape.
  */
-type JsonRecord = Record<string, unknown>;
 
 /** Guaranteed `{ error: {...} }` envelope; callers may carry sibling fields. */
 export interface JsonErrorPayload {

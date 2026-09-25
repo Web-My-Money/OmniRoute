@@ -3,12 +3,10 @@ import {
   toClientAntigravityModelId,
 } from "@omniroute/open-sse/config/antigravityModelAliases.ts";
 import { isUserCallableAgyModelId } from "@omniroute/open-sse/config/agyModels.ts";
+import { type JsonRecord } from "@/shared/types/json";
 
-type JsonRecord = Record<string, unknown>;
-
-export function isRecord(value: unknown): value is JsonRecord {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
+import { isRecord } from "@/shared/types/json";
+export { isRecord };
 
 export function isUsageQuotaKeyAllowed(provider: string, quotaKey: string): boolean {
   if (quotaKey === "credits" || quotaKey === "models") return true;

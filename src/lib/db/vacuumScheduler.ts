@@ -2,6 +2,7 @@ import { DEFAULT_DATABASE_SETTINGS } from "@/types/databaseSettings";
 import { MAX_TIMER_TIMEOUT_MS } from "@/shared/utils/runtimeTimeouts";
 
 import { getDbInstance } from "./core";
+import { isRecord } from "@/shared/types/json";
 // Direct `key_value` access — the existing `keyValueStore` helpers only exist
 // in test fixtures; the 3 production call sites (pricingSync, jsonMigration,
 // serviceModels) all use `getDbInstance().prepare(...).run()` directly. We
@@ -77,10 +78,6 @@ const STATE_DEFAULTS: VacuumSchedulerState = {
 
 let timer: ReturnType<typeof setTimeout> | null = null;
 let currentState: VacuumSchedulerState = { ...STATE_DEFAULTS };
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return !!value && typeof value === "object" && !Array.isArray(value);
-}
 
 function parseJsonSafe(raw: string | null): unknown {
   if (raw === null) return undefined;

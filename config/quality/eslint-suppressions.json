@@ -631,11 +631,6 @@
       "count": 1
     }
   },
-  "open-sse/services/grokQuotaFetcher.ts": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
-    }
-  },
   "open-sse/services/imageCombo.ts": {
     "@typescript-eslint/no-unused-vars": {
       "count": 1
@@ -2328,11 +2323,6 @@
     }
   },
   "src/lib/db/quotaConsumption.ts": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
-    }
-  },
-  "src/lib/db/quotaSnapshots.ts": {
     "@typescript-eslint/no-unused-vars": {
       "count": 1
     }

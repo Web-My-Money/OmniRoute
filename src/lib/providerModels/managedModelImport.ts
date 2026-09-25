@@ -26,8 +26,7 @@ import { isDiscoverableAgyModelId } from "@omniroute/open-sse/config/agyModels.t
 import { filterChatSelectableModels } from "@omniroute/open-sse/services/modelEndpointPolicy.ts";
 import { filterSelectableModels } from "@omniroute/open-sse/services/modelLifecycle.ts";
 import { isSelfHostedChatProvider } from "@/shared/constants/providers";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 export type ManagedModelImportMode = "merge" | "sync";
 

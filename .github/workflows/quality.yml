@@ -306,6 +306,16 @@ jobs:
           echo "::group::check:dashboard-typecheck"
           npm run check:dashboard-typecheck || failed+=("check:dashboard-typecheck")
           echo "::endgroup::"
+          # Test-tree typecheck ratchet: pre-existing test-mock debt frozen in
+          # config/quality/tests-typecheck-baseline.json; only NEW errors fail.
+          echo "::group::check:tests-typecheck"
+          npm run check:tests-typecheck || failed+=("check:tests-typecheck")
+          echo "::endgroup::"
+          # Upstream-drift guard: '-s ours' rebases revert local patches with no
+          # conflict (v3.8.50 regressed PR #28 this way). Sentinel grep, no git.
+          echo "::group::check:upstream-drift"
+          npm run check:upstream-drift || failed+=("check:upstream-drift")
+          echo "::endgroup::"
           # #10134: TS7 zero-new-diagnostics ratchet — folded into this non-fail-fast
           # loop (never a separate blocking step) so an earlier red gate cannot abort
           # the job and mask it (#8542 mechanism). PR-only: the base-relative

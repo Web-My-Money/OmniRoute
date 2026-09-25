@@ -7,7 +7,8 @@ import {
   enrichOllamaModelsWithCapabilities,
 } from "@/lib/providerModels/ollamaCapabilities";
 
-export type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
+export type { JsonRecord };
 
 export function asRecord(value: unknown): JsonRecord {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : {};

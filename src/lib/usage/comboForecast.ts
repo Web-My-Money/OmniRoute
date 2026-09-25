@@ -16,8 +16,7 @@ import type {
   QuotaSnapshotRow,
   UtilizationTimeRange,
 } from "@/shared/types/utilization";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 type ResolvedComboTargetView = {
   stepId: string;

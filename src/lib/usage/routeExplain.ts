@@ -7,8 +7,7 @@ import type {
   ResilienceExplanation,
 } from "@/shared/types/utilization";
 import { getCallLogById, getCallLogs } from "./callLogs";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 type ExplainLog = {
   id: string;

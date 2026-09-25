@@ -1,4 +1,4 @@
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 /**
  * Default models that support Anthropic Fast Mode (speed:"fast").

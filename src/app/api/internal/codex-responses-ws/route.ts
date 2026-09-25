@@ -42,12 +42,11 @@ import {
   isExclusiveLeaseManagedKey,
   LeaseContextError,
 } from "@/sse/services/leaseContext";
+import { isRecord, type JsonRecord } from "@/shared/types/json";
 
 const CODEX_RESPONSES_WS_URL = "wss://chatgpt.com/backend-api/codex/responses";
 const executor = new CodexExecutor();
 const log = logger("RESPONSES_WS");
-
-type JsonRecord = Record<string, unknown>;
 
 const bridgePayloadSchema = z
   .object({
@@ -57,10 +56,6 @@ const bridgePayloadSchema = z
     response: z.record(z.string(), z.unknown()).optional(),
   })
   .passthrough();
-
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
 
 function toStringOrNull(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;

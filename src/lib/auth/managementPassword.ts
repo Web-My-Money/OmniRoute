@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import { getSettings, updateSettings } from "@/lib/db/settings";
+import { type JsonRecord } from "@/shared/types/json";
 
 const BCRYPT_HASH_PATTERN = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
 const MANAGEMENT_PASSWORD_SALT_ROUNDS = 12;
@@ -7,8 +8,6 @@ const MANAGEMENT_PASSWORD_SALT_ROUNDS = 12;
 // Well-known placeholder shipped in `.env.example` (INITIAL_PASSWORD=CHANGEME). Bootstrapping
 // with it leaves the dashboard open to anyone, so we warn loudly on boot (Seg2 hardening).
 const INSECURE_DEFAULT_PASSWORDS = new Set(["CHANGEME"]);
-
-type JsonRecord = Record<string, unknown>;
 
 type MigrationSource = "stored_hash" | "stored_plaintext" | "env" | "missing";
 

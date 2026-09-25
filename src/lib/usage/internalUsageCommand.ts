@@ -4,14 +4,13 @@ import {
   type ApiKeyUsageLimitStatus,
 } from "@/lib/usage/apiKeyUsageLimits";
 import { buildErrorBody } from "@omniroute/open-sse/utils/error";
+import { isRecord, type JsonRecord } from "@/shared/types/json";
 
 export const INTERNAL_USAGE_COMMAND = "@@om-usage";
 export const USAGE_COMMAND_DISABLED_MESSAGE = "Usage command is disabled for this API key.";
 const USAGE_COMMAND_AUTH_REQUIRED_MESSAGE = "Usage command requires an authenticated API key.";
 const LOCAL_USAGE_MODEL = "omniroute/local-usage";
 const TEXT_PLAIN_HEADERS = { "Content-Type": "text/plain; charset=utf-8" } as const;
-
-type JsonRecord = Record<string, unknown>;
 
 export interface UsageCommandApiKeyMetadata {
   id: string;
@@ -107,10 +106,6 @@ async function getDefaultUsageCommandQuotaPolicy(): Promise<UsageCommandQuotaPol
     defaultThresholdPercent: resilience.quotaPreflight.defaultThresholdPercent,
     providerWindowDefaults: resilience.quotaPreflight.providerWindowDefaults,
   };
-}
-
-function isRecord(value: unknown): value is JsonRecord {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 function readHeader(request: Request, name: string): string | null {
@@ -829,7 +824,10 @@ export async function handleInternalUsageCommandHttpRequest(
     if (!apiKey || !(await resolvedDeps.isValidApiKey(apiKey))) {
       if (json) {
         return Response.json(
-          { allowed: false, error: { message: USAGE_COMMAND_AUTH_REQUIRED_MESSAGE } } satisfies UsageCommandJson,
+          {
+            allowed: false,
+            error: { message: USAGE_COMMAND_AUTH_REQUIRED_MESSAGE },
+          } satisfies UsageCommandJson,
           { status: 401 }
         );
       }
@@ -840,7 +838,10 @@ export async function handleInternalUsageCommandHttpRequest(
     if (!metadata?.id) {
       if (json) {
         return Response.json(
-          { allowed: false, error: { message: USAGE_COMMAND_AUTH_REQUIRED_MESSAGE } } satisfies UsageCommandJson,
+          {
+            allowed: false,
+            error: { message: USAGE_COMMAND_AUTH_REQUIRED_MESSAGE },
+          } satisfies UsageCommandJson,
           { status: 401 }
         );
       }
@@ -850,7 +851,10 @@ export async function handleInternalUsageCommandHttpRequest(
     if (metadata.allowUsageCommand !== true) {
       if (json) {
         return Response.json(
-          { allowed: false, error: { message: USAGE_COMMAND_DISABLED_MESSAGE } } satisfies UsageCommandJson,
+          {
+            allowed: false,
+            error: { message: USAGE_COMMAND_DISABLED_MESSAGE },
+          } satisfies UsageCommandJson,
           { status: 403 }
         );
       }

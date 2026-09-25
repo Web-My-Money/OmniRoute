@@ -43,6 +43,7 @@ import {
 } from "@omniroute/open-sse/services/compression/preserveSystemPromptMode.ts";
 import { maybePrewarmUltraSlmOnConfig } from "@omniroute/open-sse/services/compression/ultra.ts";
 import { applyDetailConfigUpdate, buildDetailConfigDefaults } from "./compressionDetailNormalizers";
+import { type JsonRecord } from "@/shared/types/json";
 
 const NAMESPACE = "compression";
 const COMPRESSION_MODES = new Set<CompressionMode>([
@@ -57,7 +58,6 @@ const COMPRESSION_MODES = new Set<CompressionMode>([
   "omniglyph",
 ]);
 
-type JsonRecord = Record<string, unknown>;
 // TTL cache for compression settings (5s)
 let compressionSettingsCache: {
   value: CompressionConfig;

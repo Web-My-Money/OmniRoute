@@ -1,3 +1,4 @@
+import { isRecord, type JsonRecord } from "@/shared/types/json";
 /**
  * @file steps.ts
  * @description Combo step normalization helpers for model, combo-ref, provider-wildcard, and routing metadata.
@@ -5,7 +6,6 @@
  * @changes
  * - [2026-07-25] [Composer] - Preserve provider-wildcard steps during combo normalization
  */
-type JsonRecord = Record<string, unknown>;
 
 export const COMBO_SCHEMA_VERSION = 2;
 
@@ -65,10 +65,6 @@ interface NormalizeComboStepOptions {
 
 interface NormalizeComboRecordOptions {
   allCombos?: ComboCollectionLike;
-}
-
-function isRecord(value: unknown): value is JsonRecord {
-  return !!value && typeof value === "object" && !Array.isArray(value);
 }
 
 function toTrimmedString(value: unknown): string | null {

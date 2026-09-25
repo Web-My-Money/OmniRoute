@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { getProviderConnections, updateProviderConnection } from "@/lib/localDb";
 import { buildConfigSyncEnvelope, toLegacyCloudSyncPayload } from "@/lib/sync/bundle";
+import { type JsonRecord } from "@/shared/types/json";
 
 const CLOUD_URL = process.env.CLOUD_URL || process.env.NEXT_PUBLIC_CLOUD_URL;
 const CLOUD_SYNC_TIMEOUT_MS = Number(process.env.CLOUD_SYNC_TIMEOUT_MS || 12000);
@@ -12,8 +13,6 @@ const CLOUD_SYNC_SECRET = process.env.OMNIROUTE_CLOUD_SYNC_SECRET || "";
 // status, lastError*, rateLimitedUntil, updatedAt) so a misconfigured or
 // hostile CLOUD_URL cannot silently swap user OAuth tokens.
 const CLOUD_SYNC_SECRETS_ENABLED = process.env.OMNIROUTE_CLOUD_SYNC_SECRETS === "true";
-
-type JsonRecord = Record<string, unknown>;
 
 function asRecord(value: unknown): JsonRecord {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : {};
@@ -82,10 +81,14 @@ export async function fetchWithTimeout(url, options = {}, timeoutMs = CLOUD_SYNC
 
 /**
  * Sync data to Cloud (shared utility)
- * @param {string} machineId
- * @param {string|null} createdKey - Key created during enable
+ * @param machineId - required; a past caller invoked syncToCloud() with no args
+ *   and pushed to `${CLOUD_URL}/sync/undefined`
+ * @param createdKey - Key created during enable
  */
-export async function syncToCloud(machineId, createdKey = null) {
+export async function syncToCloud(machineId: string, createdKey: string | null = null) {
+  if (!machineId || typeof machineId !== "string") {
+    return { error: "machineId is required for cloud sync" };
+  }
   if (!CLOUD_URL) {
     return { error: "NEXT_PUBLIC_CLOUD_URL is not configured" };
   }

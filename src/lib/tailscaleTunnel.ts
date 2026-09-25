@@ -11,6 +11,7 @@ import { getRuntimePorts } from "@/lib/runtime/ports";
 import { getCachedPassword, setCachedPassword } from "@/mitm/manager";
 import { execFileWithPassword } from "@/mitm/systemCommands";
 import { getConsistentMachineId } from "@/shared/utils/machineId";
+import { type JsonRecord } from "@/shared/types/json";
 
 const execFileAsync = promisify(execFile);
 
@@ -37,8 +38,6 @@ const SYSTEM_SOCKET_MAC = "/var/run/tailscaled.sock";
 let _cachedActiveSocket: string | null = null;
 let _cachedActiveSocketTimestamp = 0;
 const SOCKET_CACHE_TTL_MS = 10_000;
-
-type JsonRecord = Record<string, unknown>;
 
 export type TailscaleTunnelInstallSource = "managed" | "path" | "env" | "windows-default";
 export type TailscaleTunnelPhase =

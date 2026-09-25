@@ -9,8 +9,8 @@ import {
 import { getResolvedModelCapabilities } from "@/lib/modelCapabilities";
 import { normalizeRoutingTags } from "@/domain/tagRouter";
 import { splitClaudeEffortSuffix } from "@omniroute/open-sse/config/providerModels.ts";
+import { type JsonRecord } from "@/shared/types/json";
 
-type JsonRecord = Record<string, unknown>;
 const EFFORTS = new Set<ReasoningEffort>([
   "none",
   "low",

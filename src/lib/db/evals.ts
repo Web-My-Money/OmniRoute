@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { getDbInstance, rowToCamel } from "./core";
+import { type JsonRecord } from "@/shared/types/json";
 
 export type EvalTargetType = "suite-default" | "model" | "combo";
 export type EvalCaseStrategy = "contains" | "exact" | "regex" | "custom";
@@ -73,8 +74,6 @@ export interface EvalRoutingRunQuery {
   maxAgeHours?: number;
   limit?: number;
 }
-
-type JsonRecord = Record<string, unknown>;
 
 interface StatementLike<TRow = unknown> {
   all: (...params: unknown[]) => TRow[];

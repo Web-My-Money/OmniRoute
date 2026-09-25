@@ -1,3 +1,4 @@
+import { type JsonRecord } from "@/shared/types/json";
 /**
  * Pure, stateless helpers extracted from usageHistory.ts.
  * No DB access, no module-level state — safe to import anywhere.
@@ -6,8 +7,6 @@
 // #7879: re-export the canonical helper so existing consumers of this module
 // keep importing `toNumber` from here unchanged.
 export { toNumber } from "@/shared/utils/numeric";
-
-type JsonRecord = Record<string, unknown>;
 
 export function asRecord(value: unknown): JsonRecord {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : {};

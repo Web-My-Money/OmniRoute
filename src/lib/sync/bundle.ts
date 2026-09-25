@@ -8,8 +8,7 @@ import {
   getSettings,
   getReasoningRoutingRules,
 } from "@/lib/localDb";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 export interface ConfigSyncBundle {
   settings: JsonRecord;

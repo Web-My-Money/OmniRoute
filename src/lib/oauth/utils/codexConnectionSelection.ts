@@ -1,4 +1,4 @@
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 type CodexConnectionIdentity = {
   workspaceId: string | null;

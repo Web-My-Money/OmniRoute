@@ -12,11 +12,10 @@ import { getDbInstance } from "@/lib/db/core";
 import { getAllProviderLimitsCache, getProviderLimitsCache } from "@/lib/db/providerLimits";
 import { getProviderQuotaWindowStart } from "@/lib/db/quotaResetEvents";
 import { calculateCost } from "@/lib/usage/costCalculator";
+import { type JsonRecord } from "@/shared/types/json";
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const RECORDED_COST_MATCH_TOLERANCE_MS = 30_000;
-
-type JsonRecord = Record<string, unknown>;
 
 interface UsageHistoryFilter {
   whereSql: string;

@@ -24,14 +24,12 @@ import { registerQuotaFetcher, registerQuotaWindows, type QuotaInfo } from "./qu
 import { registerMonitorFetcher } from "./quotaMonitor.ts";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
 import { opaqueJoin } from "@/lib/opaquePath";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const BILLING_URL = "https://cli-chat-proxy.grok.com/v1/billing?format=credits";
 const DEFAULT_ISSUER = "https://auth.x.ai";
-const FETCH_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes — matches grok-web rate limit cooldown
 const REQUEST_TIMEOUT_MS = 10_000;
 const EXPIRY_SKEW_MS = 60_000; // refresh a bit before actual expiry
 /**

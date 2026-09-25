@@ -9,6 +9,7 @@
  */
 
 import { getDbInstance } from "./core";
+import { isRecord } from "@/shared/types/json";
 
 const NAMESPACE = "interception_rules";
 
@@ -44,10 +45,6 @@ function invalidateCache(): void {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
-}
 
 function toNormalizedString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;

@@ -3,8 +3,7 @@ import {
   type ProviderBillingStatus,
 } from "@/shared/utils/providerBilling";
 import { getDbInstance, isBuildPhase, isCloud } from "./core";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 interface StatementLike<TRow = unknown> {
   all: (...params: unknown[]) => TRow[];

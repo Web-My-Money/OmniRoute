@@ -5,8 +5,7 @@ import {
 import type { AdaptiveAdmissionPublicSnapshot } from "@omniroute/open-sse/services/admission/runtime.ts";
 import type { ModelLockoutInfo } from "@omniroute/open-sse/services/accountFallback.ts";
 import type { PerConnectionAdmissionController } from "@/shared/middleware/chatBodyAdmission";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 /** Process-wide structural chat-admission snapshot type (chatBodyAdmission.ts). */
 export type ChatAdmissionSnapshot = ReturnType<PerConnectionAdmissionController["snapshot"]>;

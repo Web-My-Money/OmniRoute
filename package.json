@@ -218,6 +218,8 @@
     "typecheck:core": "tsc --pretty false -p tsconfig.typecheck-core.json",
     "typecheck:noimplicit:core": "tsc --pretty false -p tsconfig.typecheck-noimplicit-core.json",
     "check:dashboard-typecheck": "node scripts/check/check-dashboard-typecheck.mjs",
+    "check:tests-typecheck": "node scripts/check/check-tests-typecheck.mjs",
+    "check:upstream-drift": "node scripts/check/check-upstream-drift.mjs",
     "check:open-sse-typecheck": "node scripts/check/check-open-sse-typecheck.mjs",
     "check:ts7-diagnostics-ratchet": "node scripts/check/check-ts7-diagnostics-ratchet.mjs",
     "backfill-aggregation": "node --import tsx src/scripts/backfillAggregation.ts",

@@ -1,6 +1,5 @@
 import { normalizeComboModels, type ComboStep } from "./steps";
-
-type JsonRecord = Record<string, unknown>;
+import { isRecord, type JsonRecord } from "@/shared/types/json";
 
 export type ComboControlCenterHealthState = "healthy" | "warning" | "critical" | "idle";
 
@@ -92,10 +91,6 @@ export interface ComboControlCenterSummary {
   usageSkew: number;
   healthState: ComboControlCenterHealthState;
   healthReasons: string[];
-}
-
-function isRecord(value: unknown): value is JsonRecord {
-  return !!value && typeof value === "object" && !Array.isArray(value);
 }
 
 function toNumber(value: unknown, fallback = 0): number {

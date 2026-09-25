@@ -13,52 +13,9 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("next-intl", () => ({
-  useTranslations: (namespace?: string) => {
-    const messages: Record<string, string> = {
-      "endpoint.apiEndpointsCatalogUnavailable": "API catalog unavailable",
-      "endpoint.apiEndpointsSearchPlaceholder": "Search endpoints",
-      "endpoint.badgeLoopbackTooltip": "Loopback only",
-      "endpoint.badgeAlwaysProtectedTooltip": "Always protected",
-      "endpoint.badgeInternalTooltip": "Internal endpoint",
-      "endpoint.tierAll": "All",
-      "endpoint.tierAuth": "Auth",
-      "endpoint.tierLoopback": "Loopback",
-      "endpoint.tierAlwaysProtected": "Protected",
-      "endpoint.tierPublic": "Public",
-      "endpoint.showInternal": "Show internal",
-      "endpoint.hideInternal": "Hide internal",
-      "endpoint.vscodeAliasTitle": "VS Code Token Alias",
-      "endpoint.vscodeAliasDescriptionReady":
-        "Ready-to-paste compatibility URLs using the /api/v1/vscode/{token}/... endpoint.",
-      "endpoint.vscodeAliasDescriptionError":
-        "Showing placeholder URLs because CLI keys could not be loaded in this session.",
-      "endpoint.vscodeAliasDescriptionLoading":
-        "Loading CLI keys. Placeholder URLs are shown until a key is available.",
-      "endpoint.vscodeAliasDescriptionPlaceholder":
-        "Showing placeholder URLs. Create or activate an API key in CLI Tools to replace {token}.",
-      "endpoint.vscodeAliasManage": "CLI Tools",
-      "endpoint.vscodeAliasBaseLabel": "VS Code base",
-      "endpoint.vscodeAliasModelsLabel": "VS Code models",
-      "endpoint.vscodeAliasChatLabel": "VS Code chat",
-      "endpoint.tryIt": "Try it",
-      "endpoint.parameters": "Parameters",
-      "endpoint.responses": "Responses",
-      "endpoint.requestBody": "Request body",
-      "endpoint.description": "Description",
-      "endpoint.noDescription": "No description",
-      "endpoint.security": "Security",
-      "endpoint.authRequired": "Auth required",
-      "endpoint.noAuth": "No auth",
-      "endpoint.execute": "Execute",
-      "endpoint.executing": "Executing",
-      "endpoint.close": "Close",
-      "endpoint.openJsonResponse": "Open JSON response",
-    };
-
-    return (key: string) => messages[`${namespace}.${key}`] || key;
-  },
-}));
+// No local next-intl mock: the global vitest setup mock renders the real en.json
+// copy (with param interpolation), which the assertions below rely on —
+// e.g. catalogStats -> "1 endpoints across 1 categories".
 
 function jsonResponse(data: unknown, status = 200) {
   return {
@@ -174,7 +131,8 @@ describe("ApiEndpointsTab", () => {
     await waitForText("VS Code Token Alias");
     await waitForText("OmniRoute API");
     expect(document.body.textContent).toContain("1 endpoints across 1 categories");
-    expect(document.body.textContent).toContain("/api/v1/vscode/sk-live-123/models");
+    // The CLI-keys fetch resolves after the catalog — wait for the token swap.
+    await waitForText("/api/v1/vscode/sk-live-123/models");
     expect(document.body.textContent).toContain("/api/v1/chat/completions");
   });
 

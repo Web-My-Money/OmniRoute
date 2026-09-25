@@ -3,8 +3,7 @@ import {
   getProviderConnections,
   updateProviderConnection,
 } from "@/models";
-
-type JsonRecord = Record<string, unknown>;
+import { type JsonRecord } from "@/shared/types/json";
 
 export const CONSOLE_TOP_BASE = "https://console.volcengine.com/api/top/ark/cn-beijing/2024-01-01";
 const CODING_PLAN_PROVIDER = "volcengine-coding-plan";

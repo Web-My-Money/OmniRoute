@@ -1,6 +1,7 @@
 import { DEFAULT_DATABASE_SETTINGS, type DatabaseSettings } from "@/types/databaseSettings";
 
 import type { SqliteAdapter } from "./adapters/types";
+import { isRecord } from "@/shared/types/json";
 
 type SqliteDatabase = SqliteAdapter;
 type DatabaseOptimizationSettings = DatabaseSettings["optimization"];
@@ -25,10 +26,6 @@ function parseKeyValueJson(raw: string | null | undefined): unknown {
   } catch {
     return raw;
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 function normalizeAutoVacuumMode(value: unknown, fallback: AutoVacuumMode): AutoVacuumMode {

@@ -1,8 +1,8 @@
 import { normalizeComboStep } from "@/lib/combos/steps";
 
 import type { SqliteAdapter } from "./adapters/types";
+import { isRecord, type JsonRecord } from "@/shared/types/json";
 type SqliteDatabase = SqliteAdapter;
-type JsonRecord = Record<string, unknown>;
 
 export type DbHealthIssueType =
   "integrity_check_failed" | "broken_reference" | "stale_snapshot" | "invalid_state";
@@ -129,10 +129,6 @@ interface QuotaSnapshotRow {
   provider?: string | null;
   connection_id?: string | null;
   created_at?: string | null;
-}
-
-function isRecord(value: unknown): value is JsonRecord {
-  return !!value && typeof value === "object" && !Array.isArray(value);
 }
 
 function toRecord(value: unknown): JsonRecord {

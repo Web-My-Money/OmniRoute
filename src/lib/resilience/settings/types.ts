@@ -8,7 +8,7 @@
  * @module lib/resilience/settings/types
  */
 
-export type JsonRecord = Record<string, unknown>;
+export type { JsonRecord } from "@/shared/types/json";
 export type AuthCategory = "oauth" | "apikey";
 
 export interface RequestQueueSettings {

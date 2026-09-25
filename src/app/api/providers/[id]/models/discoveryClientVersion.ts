@@ -1,10 +1,9 @@
+import { type JsonRecord } from "@/shared/types/json";
 // #8347: CLIProxyAPI-style upstreams gate a richer catalog behind a `client_version` query
 // param on the model-list request (mirroring `discovery/codex.ts::buildCodexModelsUrl`).
 // This is a per-connection, default-OFF opt-in — appending an unexpected query param to
 // every generic OpenAI-compatible upstream's model-list call is the stated regression
 // vector, so this MUST default to false and MUST never be applied to inference URLs.
-
-type JsonRecord = Record<string, unknown>;
 
 function asRecord(value: unknown): JsonRecord {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : {};

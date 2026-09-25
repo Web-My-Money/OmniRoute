@@ -50,6 +50,7 @@ import {
   rotateCallLogs,
   scheduleCallLogRotation,
 } from "./callLogRotation";
+import { type JsonRecord } from "@/shared/types/json";
 
 // Re-exported for existing importers (usageDb.ts, compliance/index.ts, purge-logs route,
 // and the call-log rotation/cap test suite) — the implementation now lives in
@@ -62,8 +63,6 @@ export {
   rotateCallLogs,
   scheduleCallLogRotation,
 };
-
-type JsonRecord = Record<string, unknown>;
 
 const pendingCallLogSaves = new Set<Promise<void>>();
 let callLogSavesClosing = false;

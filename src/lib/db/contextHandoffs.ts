@@ -1,4 +1,5 @@
 import { getDbInstance, rowToCamel } from "./core";
+import { type JsonRecord } from "@/shared/types/json";
 
 export interface HandoffPayload {
   id?: string;
@@ -17,8 +18,6 @@ export interface HandoffPayload {
   expiresAt: string;
   createdAt?: string;
 }
-
-type JsonRecord = Record<string, unknown>;
 
 interface StatementLike<TRow = unknown> {
   get: (...params: unknown[]) => TRow | undefined;
