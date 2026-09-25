@@ -105,3 +105,30 @@ export function getDatabaseStats(db: SqliteAdapter = getDbInstance()): DatabaseS
     cacheSize,
   };
 }
+
+export interface SizedDbObject {
+  name: string;
+  bytes: number;
+}
+
+/**
+ * Top N dbstat objects by on-disk bytes (tables + index shards).
+ * Lightweight alternative to {@link getDatabaseStats} for polled health
+ * surfaces — no per-table COUNT(*). Returns [] when the dbstat module
+ * is unavailable on this connection.
+ */
+export function getTopTablesBySize(
+  db: SqliteAdapter = getDbInstance(),
+  limit = 12
+): SizedDbObject[] {
+  try {
+    const rows = db
+      .prepare(
+        `SELECT name, SUM(pgsize) AS bytes FROM dbstat GROUP BY name ORDER BY bytes DESC LIMIT ?`
+      )
+      .all(limit) as Array<{ name: string; bytes: number }>;
+    return rows.map((row) => ({ name: row.name, bytes: Number(row.bytes) || 0 }));
+  } catch {
+    return [];
+  }
+}
