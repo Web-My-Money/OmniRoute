@@ -17,9 +17,6 @@
   "tests/boundary/gemini-double-escaping.live.test.ts": {
     "TS2339": 1
   },
-  "tests/boundary/gemma4-multiturn.live.test.ts": {
-    "TS2353": 4
-  },
   "tests/helpers/managementSession.ts": {
     "TS2322": 1
   },
@@ -27,12 +24,7 @@
     "TS2322": 1
   },
   "tests/integration/batch-processor-escaping.test.ts": {
-    "TS2339": 5,
-    "TS2304": 2
-  },
-  "tests/integration/combo-matrix/quota-aware.test.ts": {
-    "TS2304": 1,
-    "TS2322": 1
+    "TS2339": 4
   },
   "tests/integration/combo-routing-e2e.test.ts": {
     "TS2339": 1,
@@ -40,9 +32,6 @@
   },
   "tests/integration/compression-pipeline.test.ts": {
     "TS2739": 1
-  },
-  "tests/integration/memory-pipeline.test.ts": {
-    "TS2304": 5
   },
   "tests/integration/memory-reindex.test.ts": {
     "TS2322": 1
@@ -72,9 +61,6 @@
   "tests/unit/10313-catalog-cache-key-hashing.test.ts": {
     "TS2353": 1
   },
-  "tests/unit/8169-lite-word-boundary-truncation.test.ts": {
-    "TS2304": 4
-  },
   "tests/unit/8332-combo-vision-fallback.test.ts": {
     "TS2322": 4
   },
@@ -103,12 +89,6 @@
   "tests/unit/admission-virtual-lanes-flag.test.ts": {
     "TS2352": 4
   },
-  "tests/unit/agent-bridge-dns-route-validation.test.ts": {
-    "TS2353": 3
-  },
-  "tests/unit/agent-bridge-dns-sudo-gate.test.ts": {
-    "TS2353": 2
-  },
   "tests/unit/alibaba-free-tier-discovery.test.ts": {
     "TS2339": 4
   },
@@ -118,20 +98,11 @@
   "tests/unit/alibaba-free-tier-quota-fetcher.test.ts": {
     "TS2339": 4
   },
-  "tests/unit/alibaba-video-media.test.ts": {
-    "TS2741": 1
-  },
   "tests/unit/antigravity-429-switch-auth.test.ts": {
     "TS2304": 2
   },
-  "tests/unit/antigravity-executor-split.test.ts": {
-    "TS2304": 1
-  },
   "tests/unit/antigravity-oauth-no-pkce-no-openid.test.ts": {
     "TS2554": 1
-  },
-  "tests/unit/api-malformed-json-400.test.ts": {
-    "TS2304": 2
   },
   "tests/unit/api-models-hide-paid-6328.test.ts": {
     "TS2322": 2
@@ -143,31 +114,20 @@
     "TS2352": 1
   },
   "tests/unit/audio-soniox-provider.test.ts": {
-    "TS2741": 3,
     "TS2322": 3
-  },
-  "tests/unit/audio-transcription-handler.test.ts": {
-    "TS2741": 6
   },
   "tests/unit/auth-login-route.test.ts": {
     "TS2322": 2
   },
-  "tests/unit/auto-combo-budget-fallback-3470.test.ts": {
-    "TS2304": 5
-  },
   "tests/unit/auto-combo-engine.test.ts": {
-    "TS2304": 1,
     "TS2345": 4
   },
   "tests/unit/auto-combo-scoring-clamp.test.ts": {
     "TS2352": 1
   },
   "tests/unit/auto-update.test.ts": {
-    "TS2345": 10,
-    "TS2322": 7
-  },
-  "tests/unit/bailian-coding-plan-media.test.ts": {
-    "TS2741": 1
+    "TS2345": 7,
+    "TS2322": 3
   },
   "tests/unit/bailian-usage.test.ts": {
     "TS2339": 4
@@ -182,7 +142,6 @@
     "TS2352": 1
   },
   "tests/unit/build-next-isolated-windows-home-2402.test.ts": {
-    "TS2339": 17,
     "TS2345": 1
   },
   "tests/unit/build-next-isolated.test.ts": {
@@ -222,9 +181,6 @@
   },
   "tests/unit/chat-route-coverage.test.ts": {
     "TS2339": 1
-  },
-  "tests/unit/chatcore-combo-context-limit-8378.test.ts": {
-    "TS2345": 1
   },
   "tests/unit/chatcore-combo-context-override-rescue.test.ts": {
     "TS2345": 2,
@@ -275,7 +231,7 @@
     "TS2352": 1
   },
   "tests/unit/claude-web-live-alignment.test.ts": {
-    "TS2353": 5
+    "TS2353": 2
   },
   "tests/unit/claude-web-transport.test.ts": {
     "TS2353": 1
@@ -292,17 +248,8 @@
   "tests/unit/cli-helper/tool-detector-opencode-jsonc-10227.test.ts": {
     "TS2322": 1
   },
-  "tests/unit/cli-logs-route.test.ts": {
-    "TS2304": 5
-  },
   "tests/unit/cli-oauth-commands.test.ts": {
     "TS2339": 1
-  },
-  "tests/unit/cli-process-supervisor-spawn-error-8091.test.ts": {
-    "TS2345": 2
-  },
-  "tests/unit/cli-process-supervisor.test.ts": {
-    "TS2345": 6
   },
   "tests/unit/cli-provider-catalog-full-10080.test.ts": {
     "TS2339": 3
@@ -313,24 +260,17 @@
   "tests/unit/cli-redis-command.test.ts": {
     "TS2551": 3
   },
-  "tests/unit/cli-serve-readiness-timeout-6321.test.ts": {
-    "TS2345": 1
-  },
   "tests/unit/cli-setup-opencode.test.ts": {
     "TS2561": 2,
     "TS2353": 2
   },
   "tests/unit/cli-skills-commands.test.ts": {
-    "TS2769": 2,
-    "TS2339": 9
+    "TS2769": 2
   },
   "tests/unit/cli-stream.test.ts": {
     "TS2322": 1
   },
   "tests/unit/cli-update-prefer-online-4376.test.ts": {
-    "TS2345": 2
-  },
-  "tests/unit/cli/configure-command.test.ts": {
     "TS2345": 2
   },
   "tests/unit/cli/launch-codex-windows-spawn-args.test.ts": {
@@ -373,7 +313,7 @@
     "TS2554": 4
   },
   "tests/unit/codex-stream-false.test.ts": {
-    "TS2339": 16,
+    "TS2339": 10,
     "TS2345": 1,
     "TS2353": 3,
     "TS2322": 1,
@@ -419,9 +359,6 @@
     "TS2339": 7,
     "TS2322": 2
   },
-  "tests/unit/combo-resource-404-health.test.ts": {
-    "TS2304": 1
-  },
   "tests/unit/combo-roundrobin-compat-fallback-6238.test.ts": {
     "TS2322": 3
   },
@@ -466,20 +403,11 @@
     "TS2305": 1,
     "TS2353": 1
   },
-  "tests/unit/comfyui-baseurl-override-6928.test.ts": {
-    "TS2741": 4
-  },
   "tests/unit/command-code-registry-vision.test.ts": {
     "TS2740": 2
   },
   "tests/unit/compression-exclusions.test.ts": {
     "TS2353": 1
-  },
-  "tests/unit/compression-noop-guard.test.ts": {
-    "TS2352": 2
-  },
-  "tests/unit/compression-pipeline-inflation-guard.test.ts": {
-    "TS2352": 1
   },
   "tests/unit/compression-unknown-engine-validation-6485.test.ts": {
     "TS2322": 2
@@ -490,35 +418,20 @@
   "tests/unit/compression/body-adapter.test.ts": {
     "TS2739": 4
   },
-  "tests/unit/compression/cachingAware.test.ts": {
-    "TS2304": 6
-  },
   "tests/unit/compression/caveman-rules.test.ts": {
     "TS2769": 2
   },
   "tests/unit/compression/caveman-v379.test.ts": {
     "TS2739": 2
   },
-  "tests/unit/compression/cavemanSharedBoundaries.test.ts": {
-    "TS2304": 2
-  },
-  "tests/unit/compression/codex-responses.test.ts": {
-    "TS2740": 4,
-    "TS1355": 1,
-    "TS2304": 1
-  },
   "tests/unit/compression/compression-aggressive.test.ts": {
     "TS2739": 3
   },
   "tests/unit/compression/compression-header-dispatch.test.ts": {
-    "TS2345": 12,
     "TS2322": 5
   },
   "tests/unit/compression/compression-step-streaming.test.ts": {
     "TS2322": 2
-  },
-  "tests/unit/compression/compressionAnnotation.test.ts": {
-    "TS2304": 1
   },
   "tests/unit/compression/engine-stage-gate-metadata.test.ts": {
     "TS2322": 2
@@ -545,12 +458,6 @@
     "TS2322": 5,
     "TS2739": 1
   },
-  "tests/unit/compression/mode-and-pipeline.test.ts": {
-    "TS2304": 2
-  },
-  "tests/unit/compression/output-styles-backcompat.test.ts": {
-    "TS2353": 4
-  },
   "tests/unit/compression/pipeline-circuit-breaker.test.ts": {
     "TS2740": 1,
     "TS2322": 2
@@ -559,15 +466,6 @@
     "TS2739": 1,
     "TS2339": 1
   },
-  "tests/unit/compression/quantumLockStep.test.ts": {
-    "TS2304": 4
-  },
-  "tests/unit/compression/repro-6479-6491-null-stats-silent-drop.test.ts": {
-    "TS2304": 2
-  },
-  "tests/unit/compression/result-memo.test.ts": {
-    "TS2304": 1
-  },
   "tests/unit/compression/rtk-engine.test.ts": {
     "TS2740": 1,
     "TS2339": 1
@@ -575,35 +473,14 @@
   "tests/unit/compression/rtk-raw-output.test.ts": {
     "TS2739": 1
   },
-  "tests/unit/compression/rtk-render-gitdiff.test.ts": {
-    "TS2304": 2
-  },
-  "tests/unit/compression/rtk-render-table.test.ts": {
-    "TS2304": 3
-  },
-  "tests/unit/compression/rtk-render-terraform.test.ts": {
-    "TS2304": 2
-  },
-  "tests/unit/compression/rtk-render-testgreen.test.ts": {
-    "TS2304": 3
-  },
   "tests/unit/compression/strategySelector.test.ts": {
     "TS2739": 1
-  },
-  "tests/unit/console-log-levels.test.ts": {
-    "TS2304": 5
-  },
-  "tests/unit/context-editing-relays.test.ts": {
-    "TS2353": 4
   },
   "tests/unit/context-editing-streaming-telemetry.test.ts": {
     "TS2304": 3
   },
   "tests/unit/context-manager.test.ts": {
     "TS2488": 4
-  },
-  "tests/unit/context-window-reconcile-persisted-overrides.test.ts": {
-    "TS2304": 1
   },
   "tests/unit/copilot-m365-invocation-refresh-10718.test.ts": {
     "TS2554": 2
@@ -630,26 +507,17 @@
   "tests/unit/dashboard/providers/services/page.test.ts": {
     "TS2871": 1
   },
-  "tests/unit/db-ccr-migration-renumber-134.test.ts": {
-    "TS2304": 2
-  },
   "tests/unit/db-fresh-setup-9934.test.ts": {
     "TS2352": 1
   },
   "tests/unit/db-health-route.test.ts": {
     "TS2554": 1
   },
-  "tests/unit/db-job-registry-migration-renumber-139.test.ts": {
-    "TS2304": 2
-  },
   "tests/unit/db-quota-snapshots.test.ts": {
     "TS2551": 1
   },
   "tests/unit/db-settings-extended.test.ts": {
     "TS2345": 1
-  },
-  "tests/unit/db-tier-config.test.ts": {
-    "TS2352": 1
   },
   "tests/unit/db-upstreamProxy.test.ts": {
     "TS2339": 1
@@ -691,9 +559,6 @@
   "tests/unit/factory-provider-registry.test.ts": {
     "TS2352": 1
   },
-  "tests/unit/feature-flags-route-virtual-lanes.test.ts": {
-    "TS2304": 2
-  },
   "tests/unit/fetch-timeout.test.ts": {
     "TS2322": 1
   },
@@ -727,15 +592,6 @@
   "tests/unit/grok-cli-oauth.test.ts": {
     "TS2554": 3
   },
-  "tests/unit/grok-cli-provider-limits-ui.test.ts": {
-    "TS2694": 1,
-    "TS2304": 3,
-    "TS2339": 1,
-    "TS2345": 1
-  },
-  "tests/unit/guardrails-api-3496.test.ts": {
-    "TS2304": 4
-  },
   "tests/unit/guardrails-registry.test.ts": {
     "TS2554": 7
   },
@@ -753,9 +609,6 @@
     "TS2698": 1,
     "TS2339": 1
   },
-  "tests/unit/guardrails/vision-bridge-callmodel.test.ts": {
-    "TS2304": 2
-  },
   "tests/unit/guardrails/vision-bridge-claude-wire.test.ts": {
     "TS2339": 1
   },
@@ -770,9 +623,6 @@
   },
   "tests/unit/i18n-vi-completeness.test.ts": {
     "TS2345": 1
-  },
-  "tests/unit/image-generation-handler.test.ts": {
-    "TS2352": 1
   },
   "tests/unit/image-normalize.test.ts": {
     "TS2349": 4
@@ -793,12 +643,8 @@
     "TS2353": 1
   },
   "tests/unit/kimi-coding-billing-ui.test.ts": {
-    "TS2304": 2,
     "TS2345": 2,
     "TS2339": 1
-  },
-  "tests/unit/kimi-coding-billing.test.ts": {
-    "TS2304": 2
   },
   "tests/unit/kimi-quota-reset-recovery.test.ts": {
     "TS2769": 1
@@ -809,21 +655,11 @@
   "tests/unit/kiro-continue-filler-5231.test.ts": {
     "TS2339": 1
   },
-  "tests/unit/lib/batches/csvToJsonl.test.ts": {
-    "TS2304": 1
-  },
   "tests/unit/lib/jobRegistry/registry.test.ts": {
     "TS2307": 1
   },
-  "tests/unit/lib/managementCliToken.test.ts": {
-    "TS2304": 5
-  },
   "tests/unit/limiter-lifecycle.test.ts": {
     "TS2353": 1
-  },
-  "tests/unit/lmarena-provider.test.ts": {
-    "TS2353": 4,
-    "TS2345": 1
   },
   "tests/unit/login-bootstrap-route.test.ts": {
     "TS2769": 2
@@ -852,9 +688,6 @@
   "tests/unit/memory-tools.test.ts": {
     "TS2322": 2
   },
-  "tests/unit/microsoft-designer-web-6672.test.ts": {
-    "TS2304": 2
-  },
   "tests/unit/model-capability-resolution-snapshot-9199.test.ts": {
     "TS2559": 5
   },
@@ -871,21 +704,13 @@
     "TS2367": 1
   },
   "tests/unit/model-sync-scheduler.test.ts": {
-    "TS2741": 1,
-    "TS2322": 1,
-    "TS1215": 1,
-    "TS2304": 2
+    "TS2322": 1
   },
   "tests/unit/model-test-runner.test.ts": {
     "TS2322": 1
   },
-  "tests/unit/models-catalog-combo-metadata.test.ts": {
-    "TS2304": 2,
-    "TS2322": 1
-  },
   "tests/unit/models-dev-pricing-caching-9300.test.ts": {
-    "TS2345": 2,
-    "TS2304": 1
+    "TS2345": 2
   },
   "tests/unit/modelsdev-specialty-keying-8017.test.ts": {
     "TS2353": 3
@@ -898,9 +723,6 @@
   },
   "tests/unit/muse-spark-ws-timeout-diagnostics-10727.test.ts": {
     "TS2322": 1
-  },
-  "tests/unit/music-generation-handler.test.ts": {
-    "TS2741": 2
   },
   "tests/unit/no-thinking-alias.test.ts": {
     "TS2339": 1
@@ -930,9 +752,6 @@
   "tests/unit/ocr-route-vertex.test.ts": {
     "TS2339": 2
   },
-  "tests/unit/oidc-callback.test.ts": {
-    "TS2304": 1
-  },
   "tests/unit/openference-oauth-provider.test.ts": {
     "TS2554": 1
   },
@@ -941,9 +760,6 @@
   },
   "tests/unit/peer-routing.test.ts": {
     "TS2322": 1
-  },
-  "tests/unit/plugins-hooks.test.ts": {
-    "TS2304": 5
   },
   "tests/unit/plugins-loader-ipc.test.ts": {
     "TS2739": 1
@@ -959,30 +775,16 @@
     "TS2352": 2
   },
   "tests/unit/progress-tracker.test.ts": {
-    "TS2322": 1,
-    "TS1215": 1,
-    "TS2304": 2
-  },
-  "tests/unit/prompt-cache-affinity.test.ts": {
-    "TS2304": 2
+    "TS2322": 1
   },
   "tests/unit/provider-breaker-halfopen-recovery.test.ts": {
     "TS2561": 2
-  },
-  "tests/unit/provider-limits-recovery.test.ts": {
-    "TS2304": 4
   },
   "tests/unit/provider-limits-ui.test.ts": {
     "TS2554": 4
   },
   "tests/unit/provider-models-discovery-split.test.ts": {
     "TS2739": 5
-  },
-  "tests/unit/provider-onboarding-wizard.test.ts": {
-    "TS2304": 3
-  },
-  "tests/unit/provider-page-helpers-3501.test.ts": {
-    "TS2304": 3
   },
   "tests/unit/provider-refresh-token-route.test.ts": {
     "TS2322": 1
@@ -1038,23 +840,8 @@
   "tests/unit/quota-connection-recovery.test.ts": {
     "TS2493": 2
   },
-  "tests/unit/quota-equal-split.test.ts": {
-    "TS2353": 5
-  },
-  "tests/unit/quota-monitor.test.ts": {
-    "TS2741": 1
-  },
-  "tests/unit/quota-plans-route-retired.test.ts": {
-    "TS2304": 1
-  },
   "tests/unit/quota-policy-generalization.test.ts": {
     "TS2345": 3
-  },
-  "tests/unit/qwen-cloud-token-plan-media.test.ts": {
-    "TS2741": 1
-  },
-  "tests/unit/qwen-cloud-video-media.test.ts": {
-    "TS2741": 1
   },
   "tests/unit/qwen-token-plan-quota-fetcher.test.ts": {
     "TS2352": 1
@@ -1070,9 +857,6 @@
   },
   "tests/unit/radar-localized-feed.test.ts": {
     "TS2353": 1
-  },
-  "tests/unit/rate-limit-local-error-classification.test.ts": {
-    "TS2304": 1
   },
   "tests/unit/rateLimitManager-mintime-floor-9763.test.ts": {
     "TS2561": 1,
@@ -1102,16 +886,10 @@
   "tests/unit/repro-6951.test.ts": {
     "TS2554": 1
   },
-  "tests/unit/repro-7387-sticky-quota-exhausted.test.ts": {
-    "TS2304": 2
-  },
   "tests/unit/repro-8430.test.ts": {
     "TS2344": 1,
     "TS2698": 1,
     "TS2339": 1,
-    "TS2345": 1
-  },
-  "tests/unit/repro-9156.test.ts": {
     "TS2345": 1
   },
   "tests/unit/request-log-detail-layout.test.ts": {
@@ -1127,18 +905,10 @@
     "TS2345": 1
   },
   "tests/unit/responses-transformer.test.ts": {
-    "TS2322": 1,
-    "TS1215": 1,
-    "TS2304": 2
+    "TS2322": 1
   },
   "tests/unit/responses-translation-fixes.test.ts": {
     "TS2551": 1
-  },
-  "tests/unit/responses-ws-proxy-compression-parity.test.ts": {
-    "TS2353": 1
-  },
-  "tests/unit/responses-ws-proxy-multi-turn-history.test.ts": {
-    "TS2353": 1
   },
   "tests/unit/routing-otel.test.ts": {
     "TS2322": 1
@@ -1164,24 +934,8 @@
   "tests/unit/services/logs-sse.test.ts": {
     "TS2749": 1
   },
-  "tests/unit/services/volcengine-console-auto-login.test.ts": {
-    "TS2304": 1
-  },
   "tests/unit/session-pool.test.ts": {
     "TS2554": 1
-  },
-  "tests/unit/sidebar-costs-quota-plans.test.ts": {
-    "TS2304": 1
-  },
-  "tests/unit/skills-builtins-sandbox.test.ts": {
-    "TS2554": 1,
-    "TS2352": 1
-  },
-  "tests/unit/skills-memory-builtins.test.ts": {
-    "TS2353": 2
-  },
-  "tests/unit/snapshot-weights.test.ts": {
-    "TS2304": 9
   },
   "tests/unit/sse-auth-exclusive-leases.test.ts": {
     "TS2322": 1
@@ -1191,15 +945,10 @@
     "TS2349": 1
   },
   "tests/unit/sse-heartbeat.test.ts": {
-    "TS2322": 2,
-    "TS1215": 1,
-    "TS2304": 2
+    "TS2322": 2
   },
   "tests/unit/stream-handler-catch-logging-8143.test.ts": {
     "TS2345": 1
-  },
-  "tests/unit/sync-models-degraded-local-catalog-5460-5465.test.ts": {
-    "TS2353": 2
   },
   "tests/unit/synced-model-context-window-reconcile.test.ts": {
     "TS2440": 2,
@@ -1273,12 +1022,10 @@
     "TS2339": 1
   },
   "tests/unit/translator-toolcall-helper.test.ts": {
-    "TS2345": 1,
-    "TS2304": 1
+    "TS2345": 1
   },
   "tests/unit/tray-systray-loader-4605.test.ts": {
-    "TS2322": 1,
-    "TS2304": 1
+    "TS2322": 1
   },
   "tests/unit/ts7-open-sse-type-fixes.test.ts": {
     "TS2353": 2
@@ -1295,9 +1042,6 @@
   "tests/unit/ui/edit-compatible-node-icon-url.test.tsx": {
     "TS2493": 1,
     "TS18048": 1
-  },
-  "tests/unit/ui/free-budget-card.test.tsx": {
-    "TS2352": 1
   },
   "tests/unit/ui/grok-device-oauth-modal.test.tsx": {
     "TS2493": 2
@@ -1352,12 +1096,10 @@
     "TS2352": 1
   },
   "tests/unit/usage-utils.test.ts": {
-    "TS2304": 3,
     "TS2554": 1
   },
   "tests/unit/v1-ws-bridge.test.ts": {
-    "TS2794": 1,
-    "TS2353": 1
+    "TS2794": 1
   },
   "tests/unit/validation-search-embedding-split.test.ts": {
     "TS2352": 1
@@ -1366,26 +1108,13 @@
     "TS2551": 1
   },
   "tests/unit/version-manager.test.ts": {
-    "TS2741": 1,
-    "TS2322": 1,
-    "TS1215": 1,
-    "TS2304": 2
-  },
-  "tests/unit/video-bridge-drilldown-authz.test.ts": {
-    "TS2304": 3
+    "TS2322": 1
   },
   "tests/unit/video-bridge-route-security.test.ts": {
     "TS2322": 1
   },
-  "tests/unit/video-novita-6658.test.ts": {
-    "TS2741": 3
-  },
-  "tests/unit/video-xai-grok-imagine.test.ts": {
-    "TS2741": 3
-  },
   "tests/unit/vision-bridge-image-normalize.test.ts": {
-    "TS2349": 2,
-    "TS2304": 2
+    "TS2349": 2
   },
   "tests/unit/web-cookie-providers-new.test.ts": {
     "TS2322": 4

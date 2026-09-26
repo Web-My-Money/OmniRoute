@@ -172,6 +172,7 @@ export type ProviderCredentials = {
   projectId?: string | null;
   expiresAt?: string;
   connectionId?: string; // T07: used for API key rotation index
+  cookie?: string; // web-session providers store the cookie header here
   maxConcurrent?: number | null;
   providerSpecificData?: JsonRecord;
   requestEndpointPath?: string;

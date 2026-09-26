@@ -3361,9 +3361,6 @@
   "tests/integration/memory-pipeline.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 1
-    },
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
     }
   },
   "tests/integration/memory-reindex.test.ts": {
@@ -5150,11 +5147,6 @@
       "count": 1
     }
   },
-  "tests/unit/lib/managementCliToken.test.ts": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
-    }
-  },
   "tests/unit/lib/warmupScheduler/redisCircuitBreakerStore.test.ts": {
     "@typescript-eslint/no-unused-vars": {
       "count": 3
@@ -5341,11 +5333,6 @@
   "tests/unit/ocr-route.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 8
-    }
-  },
-  "tests/unit/oidc-callback.test.ts": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 2
     }
   },
   "tests/unit/openai-tool-opaque-object-schema.test.ts": {
@@ -6530,11 +6517,6 @@
     }
   },
   "tests/unit/waitForServer-tcp-fallback-6800.test.mjs": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
-    }
-  },
-  "tests/unit/warmupScheduler.test.ts": {
     "@typescript-eslint/no-unused-vars": {
       "count": 1
     }
