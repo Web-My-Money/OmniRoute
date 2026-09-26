@@ -34,9 +34,18 @@ const evaluateZizmor = evaluateZizmorRatchet as (
 ) => RatchetVerdict;
 const readZizmorBaseline = readBaselineZizmorValue as (p?: string) => number | null;
 const qualityWorkflowPath = new URL("../../../.github/workflows/quality.yml", import.meta.url);
+const buildWorkflowPath = new URL("../../../.github/workflows/build.yml", import.meta.url);
+
+function readWorkflow(workflowPath: URL): string {
+  return fs.readFileSync(workflowPath, "utf8").replace(/\r\n/g, "\n");
+}
 
 function readQualityWorkflow(): string {
-  return fs.readFileSync(qualityWorkflowPath, "utf8");
+  return readWorkflow(qualityWorkflowPath);
+}
+
+function readBuildWorkflow(): string {
+  return readWorkflow(buildWorkflowPath);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -317,6 +326,36 @@ test("readBaselineZizmorValue: invalid JSON returns null (does not throw)", () =
 // ─────────────────────────────────────────────────────────────────────────────
 // quality.yml — release PR build gate regression coverage (#7307)
 // ─────────────────────────────────────────────────────────────────────────────
+
+test("build.yml skips artifact-neutral pushes and cancels superseded builds", () => {
+  const source = readBuildWorkflow();
+  const pushTrigger = source.match(/  push:\n[\s\S]*?\n\npermissions:/);
+
+  assert.ok(pushTrigger, "build.yml must define a push trigger before permissions");
+  assert.match(pushTrigger[0], /branches: \["\*\*"\]/);
+  for (const ignoredPath of [
+    "docs/**",
+    "tests/**",
+    "scripts/check/**",
+    "config/quality/**",
+    "**/*.md",
+  ]) {
+    assert.match(pushTrigger[0], new RegExp(`      - "${ignoredPath.replace(/\*/g, "\\*")}"`));
+  }
+  for (const artifactPath of [
+    "package.json",
+    "src/**",
+    "scripts/build/**",
+    ".github/workflows/**",
+  ]) {
+    assert.doesNotMatch(pushTrigger[0], new RegExp(artifactPath.replace(/\*/g, "\\*")));
+  }
+  assert.match(
+    source,
+    /concurrency:\n  group: \$\{\{ github\.workflow \}\}-\$\{\{ github\.ref \}\}/
+  );
+  assert.match(source, /cancel-in-progress: true/);
+});
 
 test("#7307 quality.yml adds an advisory production build for release PR code changes", () => {
   const source = readQualityWorkflow();

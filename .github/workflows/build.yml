@@ -4,6 +4,16 @@ on:
   workflow_dispatch:
   push:
     branches: ["**"]
+    paths-ignore:
+      - "docs/**"
+      - "tests/**"
+      - "scripts/check/**"
+      - "config/quality/**"
+      - "**/*.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
