@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(
   path.join(os.tmpdir(), "omniroute-model-catalog-gateway-permissions-")
@@ -33,7 +34,7 @@ async function seedConnection(
     accessToken?: string;
   } = {}
 ) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: overrides.authType || "apikey",
     name: `${provider}-catalog-permissions`,
@@ -42,7 +43,7 @@ async function seedConnection(
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 function catalogIds(body: unknown): Set<string> {

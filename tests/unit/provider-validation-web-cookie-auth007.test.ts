@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // The validator probes the provider's /models endpoint via validationRead → safeOutboundFetch
 // → fetchWithTimeout, which reads `globalThis.fetch` dynamically at CALL time (#7058 — routed
@@ -37,7 +38,7 @@ test("should_return_AUTH_007_when_models_endpoint_returns_401", async () => {
 
   assert.equal(fetchCalls, 1, "the /models probe must be the mocked fetch, not the live network");
   assert.equal(result.valid, false);
-  assert.equal(result.errorCode, "AUTH_007");
+  assert.equal((result as LooseDeep).errorCode, "AUTH_007");
   assert.equal(result.error, "SESSION_EXPIRED");
 });
 
@@ -52,7 +53,7 @@ test("should_return_AUTH_007_when_models_endpoint_returns_403", async () => {
 
   assert.equal(fetchCalls, 1, "the /models probe must be the mocked fetch, not the live network");
   assert.equal(result.valid, false);
-  assert.equal(result.errorCode, "AUTH_007");
+  assert.equal((result as LooseDeep).errorCode, "AUTH_007");
   assert.equal(result.error, "SESSION_EXPIRED");
 });
 

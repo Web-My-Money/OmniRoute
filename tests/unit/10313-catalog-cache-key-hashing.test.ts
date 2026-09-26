@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-catalog-keyleak-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -61,7 +62,7 @@ test("catalog cache Map keys must not contain the raw bearer API key (#10313)", 
     const res = await v1ModelsCatalog.getUnifiedModelsResponse(request);
     assert.ok(res.status === 200 || res.status === 401 || res.status === 403);
   } finally {
-    probe.release();
+    (probe as LooseDeep).release();
   }
 
   const catalogKeys = probe.keys.filter(isCatalogCacheKey);
@@ -100,7 +101,7 @@ test("cache keys embed the sha256 digest of the secret, never the raw secret (#1
     assert.ok(resA.status === 200 || resA.status === 401 || resA.status === 403);
     assert.ok(resB.status === 200 || resB.status === 401 || resB.status === 403);
   } finally {
-    probe.release();
+    (probe as LooseDeep).release();
   }
 
   const catalogKeys = probe.keys.filter(isCatalogCacheKey);
@@ -118,14 +119,26 @@ test("cache keys embed the sha256 digest of the secret, never the raw secret (#1
   // The hashed fingerprint, not the raw secret, rides in the cache keys.
   const keysWithDigestA = catalogKeys.filter((k) => k.includes(digestA));
   const keysWithDigestB = catalogKeys.filter((k) => k.includes(digestB));
-  assert.ok(keysWithDigestA.length > 0, `expected a cache key embedding the fingerprint of A: ${catalogKeys.join(",")}`);
-  assert.ok(keysWithDigestB.length > 0, `expected a cache key embedding the fingerprint of B: ${catalogKeys.join(",")}`);
+  assert.ok(
+    keysWithDigestA.length > 0,
+    `expected a cache key embedding the fingerprint of A: ${catalogKeys.join(",")}`
+  );
+  assert.ok(
+    keysWithDigestB.length > 0,
+    `expected a cache key embedding the fingerprint of B: ${catalogKeys.join(",")}`
+  );
 
   // Raw secrets must never appear (issue #10313 root cause).
   assert.ok(!catalogKeys.some((k) => k.includes(rawA) || k.includes(rawB)));
 
   // Identical secrets ⇒ identical key (memoized reuse); different ⇒ distinct.
-  assert.ok(keysWithDigestA.every((k) => k === keysWithDigestA[0]), "all A keys must be identical");
-  assert.ok(keysWithDigestB.every((k) => k === keysWithDigestB[0]), "all B keys must be identical");
+  assert.ok(
+    keysWithDigestA.every((k) => k === keysWithDigestA[0]),
+    "all A keys must be identical"
+  );
+  assert.ok(
+    keysWithDigestB.every((k) => k === keysWithDigestB[0]),
+    "all B keys must be identical"
+  );
   assert.notEqual(keysWithDigestA[0], keysWithDigestB[0]);
 });

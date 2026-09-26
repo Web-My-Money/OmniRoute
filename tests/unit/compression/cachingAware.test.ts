@@ -104,7 +104,7 @@ describe("detectCachingContext", () => {
 describe("getCacheAwareStrategy", () => {
   it("downgrades aggressive to standard for caching provider with cache_control", () => {
     const ctx = { hasCacheControl: true, provider: "anthropic", isCachingProvider: true };
-    const result = getCacheAwareStrategy("aggressive", ctx);
+    const result = getCacheAwareStrategy("aggressive", ctx as unknown as CachingContext);
     assert.equal(result.strategy, "standard");
     assert.equal(result.skipSystemPrompt, true);
     assert.equal(result.deterministicOnly, true);
@@ -112,7 +112,7 @@ describe("getCacheAwareStrategy", () => {
 
   it("downgrades ultra to standard for caching provider with cache_control", () => {
     const ctx = { hasCacheControl: true, provider: "openai", isCachingProvider: true };
-    const result = getCacheAwareStrategy("ultra", ctx);
+    const result = getCacheAwareStrategy("ultra", ctx as unknown as CachingContext);
     assert.equal(result.strategy, "standard");
     assert.equal(result.skipSystemPrompt, true);
     assert.equal(result.deterministicOnly, true);
@@ -120,7 +120,7 @@ describe("getCacheAwareStrategy", () => {
 
   it("keeps standard strategy unchanged for caching provider with cache_control", () => {
     const ctx = { hasCacheControl: true, provider: "anthropic", isCachingProvider: true };
-    const result = getCacheAwareStrategy("standard", ctx);
+    const result = getCacheAwareStrategy("standard", ctx as unknown as CachingContext);
     assert.equal(result.strategy, "standard");
     assert.equal(result.skipSystemPrompt, true);
     assert.equal(result.deterministicOnly, true);
@@ -128,7 +128,7 @@ describe("getCacheAwareStrategy", () => {
 
   it("keeps strategy unchanged for non-caching provider", () => {
     const ctx = { hasCacheControl: true, provider: "deepseek", isCachingProvider: false };
-    const result = getCacheAwareStrategy("aggressive", ctx);
+    const result = getCacheAwareStrategy("aggressive", ctx as unknown as CachingContext);
     assert.equal(result.strategy, "aggressive");
     assert.equal(result.skipSystemPrompt, false);
     assert.equal(result.deterministicOnly, false);
@@ -139,7 +139,7 @@ describe("getCacheAwareStrategy", () => {
     // markers, but the cacheable prefix must still be preserved. isCachingProvider alone
     // is sufficient to skip the system prompt and downgrade prefix-compressing modes.
     const ctx = { hasCacheControl: false, provider: "anthropic", isCachingProvider: true };
-    const result = getCacheAwareStrategy("aggressive", ctx);
+    const result = getCacheAwareStrategy("aggressive", ctx as unknown as CachingContext);
     assert.equal(result.strategy, "standard");
     assert.equal(result.skipSystemPrompt, true);
     assert.equal(result.deterministicOnly, true);
@@ -147,7 +147,7 @@ describe("getCacheAwareStrategy", () => {
 
   it("returns none strategy unchanged", () => {
     const ctx = { hasCacheControl: false, provider: null, isCachingProvider: false };
-    const result = getCacheAwareStrategy("none", ctx);
+    const result = getCacheAwareStrategy("none", ctx as unknown as CachingContext);
     assert.equal(result.strategy, "none");
     assert.equal(result.skipSystemPrompt, false);
     assert.equal(result.deterministicOnly, false);

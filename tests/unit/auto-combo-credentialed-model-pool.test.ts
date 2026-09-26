@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-auto-model-pool-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -37,7 +38,7 @@ function antigravityCandidates(combo: VirtualComboResult): LogicalCandidate[] {
 
 async function seedConnections(firstExcludedModels?: string[]) {
   const tokenExpiresAt = new Date(Date.now() + 60_000).toISOString();
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     email: "antigravity-one@example.com",
@@ -46,14 +47,14 @@ async function seedConnections(firstExcludedModels?: string[]) {
     ...(firstExcludedModels
       ? { providerSpecificData: { excludedModels: firstExcludedModels } }
       : {}),
-  });
-  const second = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const second = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     email: "antigravity-two@example.com",
     accessToken: "fake-antigravity-access-token-two",
     tokenExpiresAt,
-  });
+  })) as JsonRecord & { id: string };
   return { first, second };
 }
 

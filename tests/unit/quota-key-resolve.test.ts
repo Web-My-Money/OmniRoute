@@ -14,6 +14,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-quota-key-resolve-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -82,12 +83,12 @@ test("resolveQuotaKeyScope: unknown pool id returns empty scope (no throw)", asy
 
 test("resolveQuotaKeyScope: valid pool returns its connectionId, provider, and group slug", async () => {
   // Seed a real provider connection
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "quota-key-test-conn",
     apiKey: "sk-test-quota-key-helper",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as Record<string, unknown>).id as string;
   assert.ok(connId, "connection should have an id");
 
@@ -104,18 +105,18 @@ test("resolveQuotaKeyScope: valid pool returns its connectionId, provider, and g
 });
 
 test("resolveQuotaKeyScope: multiple pools same provider deduplicates providers", async () => {
-  const conn1 = await providersDb.createProviderConnection({
+  const conn1 = (await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "apikey",
     name: "conn-anthro-1",
     apiKey: "sk-anthro-1",
-  });
-  const conn2 = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const conn2 = (await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "apikey",
     name: "conn-anthro-2",
     apiKey: "sk-anthro-2",
-  });
+  })) as JsonRecord & { id: string };
   const id1 = (conn1 as Record<string, unknown>).id as string;
   const id2 = (conn2 as Record<string, unknown>).id as string;
 
@@ -137,18 +138,18 @@ test("resolveQuotaKeyScope: multiple pools same provider deduplicates providers"
 });
 
 test("resolveQuotaKeyScope: multiple pools different providers (same group-demo)", async () => {
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "conn-oai",
     apiKey: "sk-oai",
-  });
-  const connB = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const connB = (await providersDb.createProviderConnection({
     provider: "gemini",
     authType: "apikey",
     name: "conn-gem",
     apiKey: "sk-gem",
-  });
+  })) as JsonRecord & { id: string };
   const idA = (connA as Record<string, unknown>).id as string;
   const idB = (connB as Record<string, unknown>).id as string;
 
@@ -181,12 +182,12 @@ test("resolveQuotaKeyScope: pool referencing non-existent connectionId is skippe
 });
 
 test("resolveQuotaKeyScope: mix of valid and invalid pool ids — only valid contribute", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "conn-mix",
     apiKey: "sk-mix",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as Record<string, unknown>).id as string;
   const pool = poolsDb.createPool({ connectionId: connId, name: "Pool Mix" });
 

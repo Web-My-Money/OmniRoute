@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-codex-defaults-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -29,7 +30,7 @@ test.after(async () => {
 });
 
 test("migration backfills Codex request defaults, preserves existing providerSpecificData, and is idempotent", async () => {
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "first@example.com",
@@ -38,8 +39,8 @@ test("migration backfills Codex request defaults, preserves existing providerSpe
       tag: "team-a",
       codexLimitPolicy: { use5h: false, useWeekly: true },
     },
-  });
-  const second = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const second = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "second@example.com",
@@ -48,8 +49,8 @@ test("migration backfills Codex request defaults, preserves existing providerSpe
       tag: "team-b",
       requestDefaults: { reasoningEffort: "high" },
     },
-  });
-  const untouched = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const untouched = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "third@example.com",
@@ -58,7 +59,7 @@ test("migration backfills Codex request defaults, preserves existing providerSpe
       tag: "team-c",
       requestDefaults: { reasoningEffort: "low", serviceTier: "priority" },
     },
-  });
+  })) as JsonRecord & { id: string };
 
   await settingsDb.updateSettings({ codexServiceTier: { enabled: true } });
 
@@ -94,7 +95,7 @@ test("migration backfills Codex request defaults, preserves existing providerSpe
 });
 
 test("provider connection persistence normalizes request defaults without dropping unrelated keys", async () => {
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "normalize@example.com",
@@ -108,7 +109,7 @@ test("provider connection persistence normalizes request defaults without droppi
         customFlag: "keep-me",
       },
     },
-  });
+  })) as JsonRecord & { id: string };
 
   (assert as any).deepEqual((created.providerSpecificData as any).requestDefaults, {
     reasoningEffort: "high",
@@ -135,12 +136,12 @@ test("provider connection persistence normalizes request defaults without droppi
 });
 
 test("migration does not treat explicit default global tier as legacy fast", async () => {
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "default-tier@example.com",
     providerSpecificData: { workspaceId: "ws-default" },
-  });
+  })) as JsonRecord & { id: string };
 
   await settingsDb.updateSettings({ codexServiceTier: { enabled: true, tier: "default" } });
 
@@ -150,8 +151,7 @@ test("migration does not treat explicit default global tier as legacy fast", asy
 
   assert.equal(firstRun.legacyFastEnabled, false);
   const providerSpecificData = byId.get(created.id)?.providerSpecificData as
-    | { requestDefaults?: unknown }
-    | undefined;
+    { requestDefaults?: unknown } | undefined;
   assert.deepEqual(providerSpecificData?.requestDefaults, {
     reasoningEffort: "medium",
   });

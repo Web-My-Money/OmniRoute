@@ -17,6 +17,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-rejected-usage-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -66,7 +67,7 @@ test("gate-rejected request is attributed to the api key in usage_history", asyn
   let rejected: Array<{ apiKeyName?: string | null }> = [];
   for (let i = 0; i < 50 && rejected.length === 0; i++) {
     const logs = await callLogs.getCallLogs({});
-    const list = (logs.logs ?? logs) as Array<{ apiKeyName?: string | null }>;
+    const list = ((logs as LooseDeep).logs ?? logs) as Array<{ apiKeyName?: string | null }>;
     rejected = (list ?? []).filter((l) => l.apiKeyName === "opencode-mac");
     if (rejected.length === 0) await new Promise((r) => setTimeout(r, 10));
   }
@@ -120,7 +121,7 @@ test("combo-exhausted rejection persists the client request body for dashboard i
   let rejected: { id: string; hasRequestBody: boolean } | undefined;
   for (let i = 0; i < 50 && !rejected; i++) {
     const logs = await callLogs.getCallLogs({});
-    const list = (logs.logs ?? logs) as Array<{ apiKeyName?: string | null }>;
+    const list = ((logs as LooseDeep).logs ?? logs) as Array<{ apiKeyName?: string | null }>;
     const found = (list ?? []).find((l) => l.apiKeyName === "request-body-test");
     if (found) rejected = found as unknown as { id: string; hasRequestBody: boolean };
     else await new Promise((r) => setTimeout(r, 10));
@@ -154,13 +155,13 @@ test("combo-exhausted rejection without a request body still logs cleanly (no re
   let rejected: { id: string } | undefined;
   for (let i = 0; i < 50 && !rejected; i++) {
     const logs = await callLogs.getCallLogs({});
-    const list = (logs.logs ?? logs) as Array<{ apiKeyName?: string | null }>;
+    const list = ((logs as LooseDeep).logs ?? logs) as Array<{ apiKeyName?: string | null }>;
     const found = (list ?? []).find((l) => l.apiKeyName === "no-body-test");
     if (found) rejected = found as unknown as { id: string };
     else await new Promise((r) => setTimeout(r, 10));
   }
   assert.ok(rejected, "expected a call_logs row even without a request body");
-  assert.equal(rejected.hasRequestBody, false);
+  assert.equal((rejected as LooseDeep).hasRequestBody, false);
 });
 
 test("summarizeComboAttemptedModels lists the models a combo was configured with", () => {

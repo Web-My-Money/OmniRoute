@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-vscode-token-routes-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -44,7 +45,7 @@ async function resetStorage() {
 }
 
 async function seedConnection(provider: string, overrides: Record<string, unknown> = {}) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: (overrides.authType as string) || "apikey",
     name: (overrides.name as string) || `${provider}-${Math.random().toString(16).slice(2, 8)}`,
@@ -53,7 +54,7 @@ async function seedConnection(provider: string, overrides: Record<string, unknow
     isActive: (overrides.isActive as boolean) ?? true,
     testStatus: (overrides.testStatus as string) || "active",
     providerSpecificData: (overrides.providerSpecificData as Record<string, unknown>) || {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {

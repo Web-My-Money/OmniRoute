@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-db-core-ext-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -94,7 +95,7 @@ test("getDriverInfo returns driver info object", async () => {
   const info = core.getDriverInfo();
   assert.ok(info === null || typeof info === "object");
   if (info) {
-    assert.ok(typeof info.driver === "string");
+    assert.ok(typeof (info as LooseDeep).driver === "string");
   }
 });
 

@@ -29,7 +29,7 @@ import pino from "pino";
 // Configure file logging BEFORE importing the logger (buildLogger runs at import time).
 const dir = mkdtempSync(join(tmpdir(), "omniroute-logger-6360-"));
 const logFile = join(dir, "logs", "application", "app.log");
-process.env.NODE_ENV = "production"; // JSON to file, simplest single-target-per-destination path
+(process.env as Record<string, string | undefined>).NODE_ENV = "production"; // JSON to file, simplest single-target-per-destination path
 process.env.APP_LOG_TO_FILE = "true";
 process.env.APP_LOG_FILE_PATH = logFile;
 process.env.APP_LOG_LEVEL = "debug";

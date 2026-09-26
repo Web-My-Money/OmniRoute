@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { adaptBodyForCompression } from "../../../open-sse/services/compression/bodyAdapter.ts";
 import { codexResponsesEngine } from "../../../open-sse/services/compression/engines/codexResponses/index.ts";
+import type { CompressionConfig } from "../../../open-sse/services/compression/types.ts";
 import {
   applyCompression,
   applyCompressionAsync,
@@ -162,7 +163,7 @@ describe("Responses tool-output compression", () => {
     );
 
     const stringPipeline = await applyCompressionAsync({ input }, "stacked", {
-      config: { ...config, stackedPipeline: ["codex-responses" as const] },
+      config: { ...config, stackedPipeline: ["codex-responses"] } as CompressionConfig,
     });
     assert.equal(stringPipeline.compressed, true);
     assert.deepEqual(stringPipeline.body, stacked.body);

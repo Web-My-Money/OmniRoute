@@ -40,6 +40,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // ── DB harness ───────────────────────────────────────────────────────────────
 // Use a stable per-file temp dir so DATA_DIR is set ONCE before any module
@@ -145,18 +146,18 @@ const PROVIDER_A = "openrouter";
 // ---------------------------------------------------------------------------
 
 test("D2.1: resolveQuotaKeyScope — pool with 2 same-provider connections returns both connectionIds in scope", async () => {
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: PROVIDER_A,
     authType: "apikey",
     name: "d21-conn-a",
     apiKey: "sk-d21-a",
-  });
-  const connB = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const connB = (await providersDb.createProviderConnection({
     provider: PROVIDER_A,
     authType: "apikey",
     name: "d21-conn-b",
     apiKey: "sk-d21-b",
-  });
+  })) as JsonRecord & { id: string };
   const idA = (connA as Record<string, unknown>).id as string;
   const idB = (connB as Record<string, unknown>).id as string;
 
@@ -190,12 +191,12 @@ test("D2.1: resolveQuotaKeyScope — pool with 2 same-provider connections retur
 // ---------------------------------------------------------------------------
 
 test("D2.2: resolveQuotaKeyScope — pool with empty connectionIds falls back to [connectionId]", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: PROVIDER_A,
     authType: "apikey",
     name: "d22-conn",
     apiKey: "sk-d22",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as Record<string, unknown>).id as string;
 
   // Create the pool normally (legacy style, single connectionId, no connectionIds arg).
@@ -240,18 +241,18 @@ test("D2.3: enforceQuotaShare — input connectionId matching a non-primary memb
   const { enforceQuotaShare } = await import("../../src/lib/quota/enforce.ts");
   const { listAllocationsForApiKey } = await import("../../src/lib/db/quotaPools.ts");
 
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: PROVIDER_A,
     authType: "apikey",
     name: "d23-conn-a",
     apiKey: "sk-d23-a",
-  });
-  const connB = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const connB = (await providersDb.createProviderConnection({
     provider: PROVIDER_A,
     authType: "apikey",
     name: "d23-conn-b",
     apiKey: "sk-d23-b",
-  });
+  })) as JsonRecord & { id: string };
   const idA = (connA as Record<string, unknown>).id as string;
   const idB = (connB as Record<string, unknown>).id as string;
 
@@ -297,18 +298,18 @@ test("D2.3: enforceQuotaShare — input connectionId matching a non-primary memb
 test("D2.4: enforceQuotaShare — input connectionId matching the PRIMARY member still resolves correctly", async () => {
   const { enforceQuotaShare } = await import("../../src/lib/quota/enforce.ts");
 
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: PROVIDER_A,
     authType: "apikey",
     name: "d24-conn-a",
     apiKey: "sk-d24-a",
-  });
-  const connB = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const connB = (await providersDb.createProviderConnection({
     provider: PROVIDER_A,
     authType: "apikey",
     name: "d24-conn-b",
     apiKey: "sk-d24-b",
-  });
+  })) as JsonRecord & { id: string };
   const idA = (connA as Record<string, unknown>).id as string;
   const idB = (connB as Record<string, unknown>).id as string;
 
@@ -343,18 +344,18 @@ test("D2.5: syncQuotaCombos — 2-connection same-provider pool creates one comb
   // Task 4: N same-provider connections must produce ONE combo per model with
   // ALL connections' steps + strategy "quota-share". The old behavior (single step
   // pinned to connA, strategy "priority") was the collision bug — last upsert won.
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: PROVIDER_A,
     authType: "apikey",
     name: "d25-conn-a",
     apiKey: "sk-d25-a",
-  });
-  const connB = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const connB = (await providersDb.createProviderConnection({
     provider: PROVIDER_A,
     authType: "apikey",
     name: "d25-conn-b",
     apiKey: "sk-d25-b",
-  });
+  })) as JsonRecord & { id: string };
   const idA = (connA as Record<string, unknown>).id as string;
   const idB = (connB as Record<string, unknown>).id as string;
 
@@ -430,18 +431,18 @@ test("D2.6: syncQuotaCombos — after removing connB from same-provider pool, re
   // After removing connB (pool → only connA), re-sync rebuilds each combo with
   // a single step pinned to connA. The combo names are unchanged (same provider/
   // model), so no prune happens — the combos are updated in-place.
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: PROVIDER_A,
     authType: "apikey",
     name: "d26-conn-a",
     apiKey: "sk-d26-a",
-  });
-  const connB = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const connB = (await providersDb.createProviderConnection({
     provider: PROVIDER_A,
     authType: "apikey",
     name: "d26-conn-b",
     apiKey: "sk-d26-b",
-  });
+  })) as JsonRecord & { id: string };
   const idA = (connA as Record<string, unknown>).id as string;
   const idB = (connB as Record<string, unknown>).id as string;
 

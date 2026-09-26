@@ -8,6 +8,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-ollama-403-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -27,13 +28,13 @@ async function resetStorage() {
 }
 
 async function seedOllamaCloud() {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "ollama-cloud",
     authType: "apikey",
     apiKey: "ollama-key",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.after(() => {

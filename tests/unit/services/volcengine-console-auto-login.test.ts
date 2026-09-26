@@ -115,7 +115,7 @@ function makeFakePlaywright() {
 }
 
 function fastService(fake: ReturnType<typeof makeFakePlaywright>) {
-  return new VolcengineConsoleAutoLoginService(async () => fake, {
+  return new VolcengineConsoleAutoLoginService(async () => fake as unknown as Promise<PwModule>, {
     pageSettleMs: 1,
     tabSwitchMs: 1,
     sendCodeSettleMs: 1,

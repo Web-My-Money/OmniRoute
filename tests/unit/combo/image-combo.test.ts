@@ -93,7 +93,7 @@ test("returns 400 when combo is not found", async () => {
     { model: "nonexistent-combo", prompt: "a cat" },
     createMockAuth(),
     Date.now(),
-    log
+    log as unknown as typeof import("D:/WMM_DEV_HUB/APPS_WORKSPACE/wmm-omniroute/src/sse/utils/logger")
   );
   assert.equal(response.status, 400);
   const body = await response.json();
@@ -115,7 +115,7 @@ test("returns 400 when combo has no image-capable targets", async () => {
     { model: "chat-only-combo", prompt: "a cat" },
     createMockAuth(),
     Date.now(),
-    log
+    log as unknown as typeof import("D:/WMM_DEV_HUB/APPS_WORKSPACE/wmm-omniroute/src/sse/utils/logger")
   );
   assert.equal(response.status, 400);
   const body = await response.json();
@@ -137,7 +137,7 @@ test("returns 400 when combo has no usable targets", async () => {
     { model: "empty-combo", prompt: "a cat" },
     createMockAuth(),
     Date.now(),
-    log
+    log as unknown as typeof import("D:/WMM_DEV_HUB/APPS_WORKSPACE/wmm-omniroute/src/sse/utils/logger")
   );
   assert.equal(response.status, 400);
 });
@@ -157,7 +157,7 @@ test("cannot resolve credentials for a combo with image models but no provider c
     { model: "img-no-conn", prompt: "a cat", n: 1 },
     createMockAuth(),
     Date.now(),
-    log
+    log as unknown as typeof import("D:/WMM_DEV_HUB/APPS_WORKSPACE/wmm-omniroute/src/sse/utils/logger")
   );
   // Should fail because no provider connection for "openai" exists
   assert.equal(response.status, 400);
@@ -185,7 +185,7 @@ test("correctly filters models: only image-registry models pass, chat-only model
     { model: "mixed-combo", prompt: "a cat" },
     createMockAuth(),
     Date.now(),
-    log
+    log as unknown as typeof import("D:/WMM_DEV_HUB/APPS_WORKSPACE/wmm-omniroute/src/sse/utils/logger")
   );
   // Should get 400 because no credentials exist, but the filtering
   // should have removed gpt-4o from consideration
@@ -214,13 +214,16 @@ test("non-combo bare model names pass through model resolution unchanged", async
     { model: "some-random-name", prompt: "a cat" },
     createMockAuth(),
     Date.now(),
-    log
+    log as unknown as typeof import("D:/WMM_DEV_HUB/APPS_WORKSPACE/wmm-omniroute/src/sse/utils/logger")
   );
   // Should get 400 since "some-random-name" is not a combo
   assert.equal(response.status, 400);
   const body = await response.json();
   const bodyStr = JSON.stringify(body);
-  assert.ok(bodyStr.includes("not found") || bodyStr.includes("not a valid"), "Combo not found error");
+  assert.ok(
+    bodyStr.includes("not found") || bodyStr.includes("not a valid"),
+    "Combo not found error"
+  );
 });
 
 test("provider/model format (with slash) is not treated as a combo name", async () => {
@@ -236,7 +239,7 @@ test("provider/model format (with slash) is not treated as a combo name", async 
     { model: "openai/gpt-image-2", prompt: "a cat" },
     createMockAuth(),
     Date.now(),
-    log
+    log as unknown as typeof import("D:/WMM_DEV_HUB/APPS_WORKSPACE/wmm-omniroute/src/sse/utils/logger")
   );
   assert.equal(response.status, 400);
   const body = await response.json();
@@ -269,7 +272,7 @@ test("all error responses from executeImageCombo sanitize stack traces", async (
       { model: scenario.comboName, prompt: "a cat" },
       createMockAuth(),
       Date.now(),
-      log
+      log as unknown as typeof import("D:/WMM_DEV_HUB/APPS_WORKSPACE/wmm-omniroute/src/sse/utils/logger")
     );
     assert.ok(response.status >= 400, `Scenario "${scenario.name}" returns error status`);
     const body = await response.json();

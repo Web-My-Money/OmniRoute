@@ -4,16 +4,28 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { ProviderCredentials } from "../../open-sse/executors/base.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-responses-handler-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
 
 const core = await import("../../src/lib/db/core.ts");
 const { handleResponsesCore } = await import("../../open-sse/handlers/responsesHandler.ts");
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+
+// handleResponsesCore returns Response | { success, response }; tests assert
+// the branch they exercised, so read it through this loose shape.
+type LooseCoreResult = JsonRecord & {
+  success?: boolean;
+  status?: number;
+  error?: string | null;
+  response?: Response;
+};
+const runResponses = async (...args: Parameters<typeof handleResponsesCore>) =>
+  (await handleResponsesCore(...args)) as LooseCoreResult;
 
 const originalFetch = globalThis.fetch;
 
-type JsonRecord = Record<string, unknown>;
 type CapturedBody = JsonRecord & {
   messages?: Array<JsonRecord & { content?: unknown; role?: unknown }>;
   params?: JsonRecord;
@@ -144,7 +156,7 @@ async function invokeResponsesCore({
 }: InvokeResponsesCoreOptions = {}) {
   const calls: CapturedCall[] = [];
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const call = {
       url: String(url),
       method: init.method || "GET",
@@ -156,7 +168,7 @@ async function invokeResponsesCore({
   };
 
   try {
-    const result = await handleResponsesCore({
+    const result = await runResponses({
       body: structuredClone(body),
       modelInfo: { provider, model, extendedContext: false },
       credentials: credentials || {
@@ -362,11 +374,8 @@ test("handleResponsesCore transforms Command Code executor SSE through Responses
           choices: [{ index: 0, delta }],
         })}\n\n`;
       return new Response(
-        [
-          chunk({ role: "assistant" }),
-          chunk({ content: "command" }),
-          chunk({}),
-        ].join("") + "data: [DONE]\n\n",
+        [chunk({ role: "assistant" }), chunk({ content: "command" }), chunk({})].join("") +
+          "data: [DONE]\n\n",
         { status: 200, headers: { "Content-Type": "text/event-stream" } }
       );
     },

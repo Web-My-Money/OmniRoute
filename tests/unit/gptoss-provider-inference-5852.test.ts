@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { getModelInfoCore } from "../../open-sse/services/model.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Bug #5852: resolveModelByProviderInference() in open-sse/services/model.ts had an
 // unconditional `/^gpt-/i` heuristic that fired for ANY model id starting with
@@ -28,15 +29,17 @@ test("gpt-oss-120b resolves into its cataloged open-weight providers, not openai
   // reports it as ambiguous (asking the caller to disambiguate with a provider/model
   // prefix) instead of silently defaulting to openai (which doesn't carry it → 404).
   assert.equal(info.errorType, "ambiguous_model");
-  assert.ok(Array.isArray(info.candidateProviders) && info.candidateProviders.length > 0);
   assert.ok(
-    info.candidateProviders.some((p: string) => KNOWN_GPT_OSS_120B_PROVIDERS.has(p)),
+    Array.isArray(info.candidateProviders) && (info as LooseDeep).candidateProviders.length > 0
+  );
+  (assert as LooseDeep).ok(
+    (info as LooseDeep).candidateProviders.some((p: string) => KNOWN_GPT_OSS_120B_PROVIDERS.has(p)),
     `expected at least one candidate from ${[...KNOWN_GPT_OSS_120B_PROVIDERS].join(
       ", "
     )}, got ${JSON.stringify(info.candidateProviders)}`
   );
-  assert.ok(
-    !info.candidateProviders.includes("openai"),
+  (assert as LooseDeep).ok(
+    !(info as LooseDeep).candidateProviders.includes("openai"),
     "openai must not be listed as a candidate for gpt-oss-120b"
   );
 });

@@ -15,6 +15,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-quota-combo-cli-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -52,12 +53,12 @@ test("syncQuotaCombos generates qtSd/ combos for a CLI provider (codex) via REGI
   const firstModelId = regModels.find((m) => typeof m.id === "string")?.id as string;
   assert.ok(firstModelId, "codex must have at least one model id");
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: CLI_PROVIDER,
     authType: "apikey",
     name: "codex-cli",
     apiKey: "sk-codex",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as Record<string, unknown>).id as string;
   const pool = poolsDb.createPool({ connectionId: connId, name: "Codex Quota" });
 

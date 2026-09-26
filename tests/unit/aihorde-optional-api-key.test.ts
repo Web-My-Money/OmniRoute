@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-aihorde-key-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -40,12 +41,12 @@ test("aihorde without a stored key still uses the synthetic no-auth path", async
 let registeredKeyConnectionId: string | undefined;
 
 test("aihorde prefers a stored API key over the anonymous fallback", async () => {
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "aihorde",
     authType: "apikey",
     name: "Horde kudos key",
     apiKey: "horde-registered-key-123",
-  });
+  })) as JsonRecord & { id: string };
   assert.ok(created?.id);
   registeredKeyConnectionId = created.id;
 
@@ -61,12 +62,12 @@ test("aihorde falls back to anonymous when the only stored key is rate-limited",
   assert.ok(registeredKeyConnectionId);
   await providersDb.updateProviderConnection(registeredKeyConnectionId, { isActive: false });
 
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "aihorde",
     authType: "apikey",
     name: "Horde cooling-down key",
     apiKey: "horde-cooling-down-key",
-  });
+  })) as JsonRecord & { id: string };
   assert.ok(created?.id);
   await providersDb.updateProviderConnection(created.id, {
     rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
@@ -80,12 +81,12 @@ test("aihorde falls back to anonymous when the only stored key is rate-limited",
 });
 
 test("aihorde falls back to anonymous when the only stored key is terminally banned", async () => {
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "aihorde",
     authType: "apikey",
     name: "Horde banned key",
     apiKey: "horde-banned-key",
-  });
+  })) as JsonRecord & { id: string };
   assert.ok(created?.id);
   await providersDb.updateProviderConnection(created.id, { testStatus: "banned" });
 
@@ -96,26 +97,26 @@ test("aihorde falls back to anonymous when the only stored key is terminally ban
 });
 
 test("aihorde rotates past an unhealthy stored key to the next healthy one", async () => {
-  const unhealthy = await providersDb.createProviderConnection({
+  const unhealthy = (await providersDb.createProviderConnection({
     provider: "aihorde",
     authType: "apikey",
     name: "Horde unhealthy key",
     apiKey: "horde-unhealthy-key",
     priority: 1,
-  });
+  })) as JsonRecord & { id: string };
   assert.ok(unhealthy?.id);
   await providersDb.updateProviderConnection(unhealthy.id, {
     rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
     testStatus: "unavailable",
   });
 
-  const healthy = await providersDb.createProviderConnection({
+  const healthy = (await providersDb.createProviderConnection({
     provider: "aihorde",
     authType: "apikey",
     name: "Horde healthy key",
     apiKey: "horde-healthy-key",
     priority: 2,
-  });
+  })) as JsonRecord & { id: string };
   assert.ok(healthy?.id);
 
   const creds = await getProviderCredentials("aihorde");

@@ -6,6 +6,7 @@ import {
   buildPipelineResponse,
   FITNESS_TIERS,
 } from "../../open-sse/services/autoCombo/pipelineRouter.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -181,7 +182,7 @@ test("handlePipelineCombo triggers pipeline for code prompts", async () => {
   assert.ok("stages" in result, "Result should have a stages field");
   assert.ok("fallback" in result, "Result should have a fallback field");
   assert.ok("reflectVerdict" in result, "Result should have a reflectVerdict field");
-  assert.ok(Array.isArray((result as Record<string, unknown>).stages));
+  assert.ok(Array.isArray((result as LooseDeep).stages));
 });
 
 // ---------------------------------------------------------------------------

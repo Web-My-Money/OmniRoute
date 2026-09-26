@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-grok-limits-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -141,7 +142,10 @@ test.after(() => {
 test("grok-cli fetches the fixed read-only surfaces with the full Grok client profile", async () => {
   const calls: FetchCall[] = [];
   const fixtureFetch = successFixtures();
-  const usage = await getUsage((async (input: string | URL | Request, init: RequestInit = {}) => {
+  const usage = await getUsage((async (
+    input: string | URL | Request,
+    init: MockRequestInit = {}
+  ) => {
     calls.push({ url: String(input), init });
     return fixtureFetch(input);
   }) as typeof fetch);
@@ -330,7 +334,10 @@ test("empty tiers retain the canonical user id for the auto-topup request", asyn
   for (const tier of [undefined, null, "", "   "]) {
     const calls: FetchCall[] = [];
     const fixture = successFixtures({ tier, userId: " canonical-user-id " });
-    const usage = await getUsage((async (input: string | URL | Request, init: RequestInit = {}) => {
+    const usage = await getUsage((async (
+      input: string | URL | Request,
+      init: MockRequestInit = {}
+    ) => {
       calls.push({ url: String(input), init });
       return fixture(input);
     }) as typeof fetch);

@@ -475,7 +475,14 @@ test("createResponsesApiTransformStream clears the keepalive timer when the stre
   const realSetInterval = globalThis.setInterval;
   const realClearInterval = globalThis.clearInterval;
   const live = new Set();
-  globalThis.setInterval = function (handler, timeout, ...args) {
+  (globalThis.setInterval as unknown as {
+    (handler: TimerHandler, timeout?: number, ...restArgs: unknown[]): number;
+    <TArgs extends unknown[]>(
+      callback: (...args: TArgs) => void,
+      delay?: number,
+      ...args: MakeVoidParameterOptional<TArgs>
+    ): Timeout;
+  }) = function (handler, timeout, ...args) {
     const id = realSetInterval(handler, timeout, ...args);
     live.add(id);
     return id;
@@ -517,7 +524,7 @@ test("createResponsesApiTransformStream keepalive self-clears when enqueue fails
   let capturedCallback = null;
   let capturedId = null;
   let cleared = false;
-  globalThis.setInterval = function (handler, timeout, ...args) {
+  globalThis.setInterval = function (handler, _timeout, ...args) {
     capturedCallback = handler;
     capturedId = realSetInterval(() => {}, 1 << 30, ...args); // inert real timer as the id
     return capturedId;

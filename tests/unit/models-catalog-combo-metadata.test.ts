@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-metadata-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -23,7 +25,7 @@ test.after(() => {
 });
 
 test("single-target combo preserves its direct model metadata", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: "codex-gpt-5.6-single-target-combo",
@@ -31,7 +33,7 @@ test("single-target combo preserves its direct model metadata", async () => {
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
   await combosDb.createCombo({
     name: "gpt-5.6-sol-combo",
     strategy: "auto",
@@ -57,7 +59,7 @@ test("single-target combo preserves its direct model metadata", async () => {
   ]) {
     assert.deepEqual(combo[field], direct[field], field);
   }
-  const comboCapabilities = combo.capabilities as Record<string, unknown>;
+  const comboCapabilities = combo.capabilities as LooseDeep;
   assert.equal(comboCapabilities.reasoning, true);
   assert.equal(comboCapabilities.supportsThinking, true);
   assert.equal(
@@ -73,7 +75,7 @@ test("single-target Codex combo advertises a larger model context override", asy
   assert.equal(contextOverrides.setModelContextOverride("codex", modelId, contextWindow), true);
 
   try {
-    await providersDb.createProviderConnection({
+    (await providersDb.createProviderConnection({
       provider: "codex",
       authType: "oauth",
       name: "codex-gpt-5.6-context-override-combo",
@@ -81,7 +83,7 @@ test("single-target Codex combo advertises a larger model context override", asy
       isActive: true,
       testStatus: "active",
       providerSpecificData: {},
-    });
+    })) as JsonRecord & { id: string };
     await combosDb.createCombo({
       name: "gpt-5.6-context-override-combo",
       strategy: "auto",
@@ -109,7 +111,7 @@ test("single-target Codex combo advertises a larger model context override", asy
 });
 
 test("single-target combo respects registry reasoning overrides before specs", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "command-code",
     authType: "apikey",
     name: "command-code-gpt-5.4-mini-combo",
@@ -117,7 +119,7 @@ test("single-target combo respects registry reasoning overrides before specs", a
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
   await combosDb.createCombo({
     name: "gpt-5.4-mini-command-code-combo",
     strategy: "auto",
@@ -132,7 +134,7 @@ test("single-target combo respects registry reasoning overrides before specs", a
 
   assert.equal(response.status, 200);
   assert.ok(combo);
-  const capabilities = combo.capabilities as Record<string, unknown>;
+  const capabilities = combo.capabilities as LooseDeep;
   assert.equal(typeof capabilities.reasoning, "boolean");
   assert.equal(typeof capabilities.thinking, "boolean");
   assert.equal(typeof capabilities.supportsThinking, "boolean");
@@ -159,22 +161,22 @@ test("reasoning_efforts overrides project exact native tiers to direct models an
   );
 
   try {
-    await providersDb.createProviderConnection({
+    (await providersDb.createProviderConnection({
       provider: "openai",
       authType: "apikey",
       name: "reasoning-efforts-openai-combo",
       apiKey: "openai-test-key",
       isActive: true,
       testStatus: "active",
-    });
-    await providersDb.createProviderConnection({
+    })) as JsonRecord & { id: string };
+    (await providersDb.createProviderConnection({
       provider: "anthropic",
       authType: "apikey",
       name: "reasoning-efforts-anthropic-combo",
       apiKey: "anthropic-test-key",
       isActive: true,
       testStatus: "active",
-    });
+    })) as JsonRecord & { id: string };
     await combosDb.createCombo({
       name: "reasoning-efforts-override-combo",
       strategy: "auto",
@@ -191,15 +193,8 @@ test("reasoning_efforts overrides project exact native tiers to direct models an
     assert.equal(response.status, 200);
     assert.ok(direct);
     assert.ok(combo);
-    assert.deepEqual((direct.capabilities as Record<string, unknown>).effort_tiers, [
-      "low",
-      "max",
-      "ultra",
-    ]);
-    assert.deepEqual((combo.capabilities as Record<string, unknown>).effort_tiers, [
-      "max",
-      "ultra",
-    ]);
+    assert.deepEqual((direct.capabilities as LooseDeep).effort_tiers, ["low", "max", "ultra"]);
+    assert.deepEqual((combo.capabilities as LooseDeep).effort_tiers, ["max", "ultra"]);
   } finally {
     capabilityOverrides.removeModelCapabilityOverride(openaiTarget, "reasoning_efforts");
     capabilityOverrides.removeModelCapabilityOverride(anthropicTarget, "reasoning_efforts");
@@ -218,14 +213,14 @@ test("compatible provider-node override reaches direct and combo metadata throug
     apiType: "chat",
     baseUrl: "https://example.com/v1",
   });
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: nodeId,
     authType: "api_key",
     name: "reasoning-override-connection",
     apiKey: "sk-test",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   await modelsDb.replaceSyncedAvailableModelsForConnection(nodeId, connection.id, [
     { id: modelId, name: "Native Reasoning Model" },
   ]);
@@ -264,16 +259,12 @@ test("compatible provider-node override reaches direct and combo metadata throug
   assert.ok(direct);
   assert.ok(combo);
   for (const item of [direct, combo]) {
-    assert.deepEqual((item.capabilities as Record<string, unknown>).effort_tiers, [
-      "low",
-      "max",
-      "ultra",
-    ]);
+    assert.deepEqual((item.capabilities as LooseDeep).effort_tiers, ["low", "max", "ultra"]);
   }
 });
 
 test("single-target combo reflects unblocked Antigravity Gemini reasoning", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "antigravity-gemini-reasoning-combo",
@@ -281,7 +272,7 @@ test("single-target combo reflects unblocked Antigravity Gemini reasoning", asyn
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
   await combosDb.createCombo({
     name: "antigravity-gemini-reasoning-combo",
     strategy: "auto",
@@ -296,7 +287,7 @@ test("single-target combo reflects unblocked Antigravity Gemini reasoning", asyn
 
   assert.equal(response.status, 200);
   assert.ok(combo);
-  const capabilities = combo.capabilities as Record<string, unknown>;
+  const capabilities = combo.capabilities as LooseDeep;
   assert.equal(capabilities.reasoning, true);
   assert.equal(capabilities.thinking, true);
   assert.equal(capabilities.supportsThinking, true);
@@ -319,22 +310,22 @@ test("malformed connection catalog rows are marked for strict fail-closed consum
 });
 
 test("dynamic-account combo advertises only efforts shared by every selectable connection", async () => {
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "grok-cli",
     authType: "oauth",
     name: "grok-4.6-dynamic-first",
     accessToken: "grok-first-token",
     isActive: true,
     testStatus: "active",
-  });
-  const second = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const second = (await providersDb.createProviderConnection({
     provider: "grok-cli",
     authType: "oauth",
     name: "grok-4.6-dynamic-second",
     accessToken: "grok-second-token",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   await modelsDb.replaceSyncedAvailableModelsForConnection("grok-cli", first.id, [
     {
       id: "grok-4.6",
@@ -384,7 +375,7 @@ test("dynamic-account combo advertises only efforts shared by every selectable c
   const capabilitiesFor = (comboId: string) => {
     const combo = body.data.find((item) => item.id === comboId);
     assert.ok(combo, comboId);
-    return combo.capabilities as Record<string, unknown>;
+    return combo.capabilities as LooseDeep;
   };
 
   assert.equal(response.status, 200);
@@ -392,14 +383,14 @@ test("dynamic-account combo advertises only efforts shared by every selectable c
   assert.deepEqual(capabilitiesFor("grok-pinned-combo").effort_tiers, ["low", "medium", "high"]);
   assert.deepEqual(capabilitiesFor("grok-allowlisted-combo").effort_tiers, ["medium", "high"]);
 
-  const unknown = await providersDb.createProviderConnection({
+  const unknown = (await providersDb.createProviderConnection({
     provider: "grok-cli",
     authType: "oauth",
     name: "grok-4.6-unknown-efforts",
     accessToken: "grok-unknown-token",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   await modelsDb.replaceSyncedAvailableModelsForConnection("grok-cli", unknown.id, [
     { id: "grok-4.6", name: "Grok 4.6" },
   ]);
@@ -425,10 +416,7 @@ test("dynamic-account combo advertises only efforts shared by every selectable c
     (item) => item.id === "grok-unknown-efforts-combo"
   );
   assert.ok(failClosedCombo);
-  assert.equal(
-    Object.hasOwn(failClosedCombo.capabilities as Record<string, unknown>, "effort_tiers"),
-    false
-  );
+  assert.equal(Object.hasOwn(failClosedCombo.capabilities as LooseDeep, "effort_tiers"), false);
 });
 
 test("provider-node combo intersects connection-scoped efforts behind its public prefix", async () => {
@@ -443,27 +431,30 @@ test("provider-node combo intersects connection-scoped efforts behind its public
     apiType: "chat",
     baseUrl: "https://example.com/v1",
   });
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: nodeId,
     authType: "api_key",
     name: "scoped-efforts-first",
     apiKey: "sk-first",
     isActive: true,
     testStatus: "active",
-  });
-  const second = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const second = (await providersDb.createProviderConnection({
     provider: nodeId,
     authType: "api_key",
     name: "scoped-efforts-second",
     apiKey: "sk-second",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   await modelsDb.replaceSyncedAvailableModelsForConnection(nodeId, first.id, [
-    { id: modelId, supportedThinkingEfforts: ["low", "high"] },
+    {
+      id: modelId,
+      supportedThinkingEfforts: ["low", "high"],
+    } as unknown as SyncedAvailableModelInput,
   ]);
   await modelsDb.replaceSyncedAvailableModelsForConnection(nodeId, second.id, [
-    { id: modelId, supportedThinkingEfforts: ["high"] },
+    { id: modelId, supportedThinkingEfforts: ["high"] } as unknown as SyncedAvailableModelInput,
   ]);
   await combosDb.createCombo({
     name: "provider-node-efforts-combo",
@@ -479,7 +470,7 @@ test("provider-node combo intersects connection-scoped efforts behind its public
 
   assert.equal(response.status, 200);
   assert.ok(combo);
-  assert.deepEqual((combo.capabilities as Record<string, unknown>).effort_tiers, ["high"]);
+  assert.deepEqual((combo.capabilities as LooseDeep).effort_tiers, ["high"]);
 });
 
 test("multi-target combo does not ignore a target with unknown reasoning metadata", async () => {
@@ -493,21 +484,25 @@ test("multi-target combo does not ignore a target with unknown reasoning metadat
       testStatus: "active",
     })
     .then((connection) =>
-      modelsDb.replaceSyncedAvailableModelsForConnection("grok-cli", connection.id, [
-        {
-          id: "grok-4.6",
-          supportedThinkingEfforts: ["low", "medium", "high"],
-        },
-      ])
+      modelsDb.replaceSyncedAvailableModelsForConnection(
+        "grok-cli",
+        connection.id as unknown as string,
+        [
+          {
+            id: "grok-4.6",
+            supportedThinkingEfforts: ["low", "medium", "high"],
+          },
+        ]
+      )
     );
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "github",
     authType: "api_key",
     name: "unknown-target-mixed-combo",
     apiKey: "ghp-test",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   await combosDb.createCombo({
     name: "known-and-unknown-efforts-combo",
     strategy: "auto",
@@ -522,26 +517,26 @@ test("multi-target combo does not ignore a target with unknown reasoning metadat
 
   assert.equal(response.status, 200);
   assert.ok(combo);
-  assert.equal(Object.hasOwn(combo.capabilities as Record<string, unknown>, "effort_tiers"), false);
+  assert.equal(Object.hasOwn(combo.capabilities as LooseDeep, "effort_tiers"), false);
 });
 
 test("mixed DeepSeek combos advertise the efforts accepted by every V4 target", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "deepseek",
     authType: "apikey",
     name: "deepseek-v4-combos",
     apiKey: "deepseek-test-key",
     isActive: true,
     testStatus: "active",
-  });
-  await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  (await providersDb.createProviderConnection({
     provider: "opencode-go",
     authType: "apikey",
     name: "opencode-go-deepseek-v4-combos",
     apiKey: "opencode-go-test-key",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   for (const modelId of ["deepseek-v4-flash", "deepseek-v4-pro"]) {
     await combosDb.createCombo({
       name: `${modelId}-combo`,
@@ -559,7 +554,7 @@ test("mixed DeepSeek combos advertise the efforts accepted by every V4 target", 
   for (const modelId of ["deepseek-v4-flash", "deepseek-v4-pro"]) {
     const combo = body.data.find((item) => item.id === `${modelId}-combo`);
     assert.ok(combo);
-    assert.deepEqual((combo.capabilities as Record<string, unknown>).effort_tiers, [
+    assert.deepEqual((combo.capabilities as LooseDeep).effort_tiers, [
       "none",
       "low",
       "high",
@@ -575,14 +570,14 @@ test("Ollama Cloud projects native efforts for base, tagged, and combo models", 
   const narrowModel = "gpt-oss:20b";
   const nativeEfforts = ["none", "low", "medium", "high", "max"];
   const narrowEfforts = ["low", "medium", "high"];
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name: "ollama-cloud-native-efforts",
     apiKey: "ollama-cloud-test-key",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   await modelsDb.replaceSyncedAvailableModelsForConnection(provider, connection.id, [
     { id: baseModel, name: "DeepSeek V4 Flash", supportsThinking: true },
     { id: taggedModel, name: "DeepSeek V4 Flash 0731", supportsThinking: true },
@@ -611,7 +606,7 @@ test("Ollama Cloud projects native efforts for base, tagged, and combo models", 
   const capabilitiesFor = (modelId: string) => {
     const model = body.data.find((item) => item.id === modelId);
     assert.ok(model, modelId);
-    return model.capabilities as Record<string, unknown>;
+    return model.capabilities as LooseDeep;
   };
 
   assert.equal(response.status, 200);

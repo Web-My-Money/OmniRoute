@@ -9,6 +9,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-adobe-firefly-edits-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -19,10 +20,8 @@ const providersDb = await import("../../src/lib/db/providers.ts");
 const apiKeysDb = await import("../../src/lib/db/apiKeys.ts");
 const imageEditRoute = await import("../../src/app/api/v1/images/edits/route.ts");
 const v1ModelsCatalog = await import("../../src/app/api/v1/models/catalog.ts");
-const {
-  ADOBE_FIREFLY_IMAGE_UPLOAD_URL,
-  ADOBE_FIREFLY_IMAGE_SUBMIT_URL,
-} = await import("../../open-sse/services/adobeFireflyClient.ts");
+const { ADOBE_FIREFLY_IMAGE_UPLOAD_URL, ADOBE_FIREFLY_IMAGE_SUBMIT_URL } =
+  await import("../../open-sse/services/adobeFireflyClient.ts");
 
 interface ErrorResponseBody {
   error: { message: string; code?: string };
@@ -46,7 +45,7 @@ async function resetStorage() {
 async function seedAdobeFireflyConnection(
   overrides: { apiKey?: string; rateLimitedUntil?: string | null } = {}
 ) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "adobe-firefly",
     authType: "apikey",
     name: "adobe-firefly-test",
@@ -54,7 +53,7 @@ async function seedAdobeFireflyConnection(
     isActive: true,
     testStatus: "active",
     rateLimitedUntil: overrides.rateLimitedUntil ?? null,
-  });
+  })) as JsonRecord & { id: string };
 }
 
 // Mirrors tests/unit/adobe-firefly.test.ts's userImsJwt() helper — a synthetic,
@@ -95,7 +94,7 @@ test("#8510 v1 image edit POST uploads Adobe Firefly reference images and dispat
   const uploadedIds: string[] = [];
   let submitBody: Record<string, unknown> | null = null;
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const stringUrl = String(url);
     if (stringUrl === ADOBE_FIREFLY_IMAGE_UPLOAD_URL) {
       const id = `blob-${uploadedIds.length + 1}`;
@@ -148,10 +147,7 @@ test("#8510 v1 image edit POST uploads Adobe Firefly reference images and dispat
     id: string;
   }>;
   assert.ok(Array.isArray(referenceBlobs), "generate-async payload must carry referenceBlobs");
-  assert.deepEqual(
-    referenceBlobs.map((r) => r.id).sort(),
-    [...uploadedIds].sort()
-  );
+  assert.deepEqual(referenceBlobs.map((r) => r.id).sort(), [...uploadedIds].sort());
 });
 
 test("#8510 v1 image edit POST rejects more than 4 Adobe Firefly reference images", async () => {
@@ -206,7 +202,9 @@ test("#8510 v1 image edit POST surfaces missing Adobe Firefly credentials", asyn
 });
 
 test("#8510 v1 image edit POST surfaces Adobe Firefly rate-limit sentinel", async () => {
-  await seedAdobeFireflyConnection({ rateLimitedUntil: new Date(Date.now() + 60_000).toISOString() });
+  await seedAdobeFireflyConnection({
+    rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
+  });
   globalThis.fetch = async () => {
     throw new Error("Rate-limited path must not reach upstream");
   };
@@ -228,3 +226,5 @@ test("#8510 v1 image edit POST surfaces Adobe Firefly rate-limit sentinel", asyn
   assert.match(body.error.message, /All accounts rate limited/);
   assert.ok(!body.error.message.includes("at /"));
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

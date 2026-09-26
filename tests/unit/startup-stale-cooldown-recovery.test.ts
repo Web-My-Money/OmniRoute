@@ -18,6 +18,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(
   path.join(os.tmpdir(), "omniroute-startup-cooldown-recovery-")
@@ -66,12 +67,12 @@ const JUST_PAST = Date.now() - 10_000; // -10 s
 // ─── tests ──────────────────────────────────────────────────────────────────
 
 test("clearStaleCrashCooldowns PRESERVES future transient cooldown on restart", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Future Cooldown",
     apiKey: "sk-test",
-  });
+  })) as JsonRecord & { id: string };
 
   await providersDb.updateProviderConnection(conn.id, {
     ...conn,
@@ -97,12 +98,12 @@ test("clearStaleCrashCooldowns PRESERVES future transient cooldown on restart", 
 });
 
 test("clearStaleCrashCooldowns clears past-dated transient cooldown on restart", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "apikey",
     name: "Past Cooldown",
     apiKey: "sk-anth",
-  });
+  })) as JsonRecord & { id: string };
 
   await providersDb.updateProviderConnection(conn.id, {
     ...conn,
@@ -122,12 +123,12 @@ test("clearStaleCrashCooldowns clears past-dated transient cooldown on restart",
 });
 
 test("clearStaleCrashCooldowns does NOT clear terminal states (banned)", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Banned Key",
     apiKey: "sk-banned",
-  });
+  })) as JsonRecord & { id: string };
 
   await providersDb.updateProviderConnection(conn.id, {
     ...conn,
@@ -148,11 +149,11 @@ test("clearStaleCrashCooldowns does NOT clear terminal states (banned)", async (
 });
 
 test("clearStaleCrashCooldowns does NOT clear terminal states (expired)", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "oauth",
     name: "Expired Token",
-  });
+  })) as JsonRecord & { id: string };
 
   await providersDb.updateProviderConnection(conn.id, {
     ...conn,
@@ -168,12 +169,12 @@ test("clearStaleCrashCooldowns does NOT clear terminal states (expired)", async 
 });
 
 test("clearStaleCrashCooldowns does NOT clear terminal states (credits_exhausted)", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Exhausted",
     apiKey: "sk-exhausted",
-  });
+  })) as JsonRecord & { id: string };
 
   await providersDb.updateProviderConnection(conn.id, {
     ...conn,
@@ -193,12 +194,12 @@ test("clearStaleCrashCooldowns does NOT clear terminal states (credits_exhausted
 });
 
 test("clearStaleCrashCooldowns returns cleared=0 when no transient cooldowns exist", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "gemini",
     authType: "apikey",
     name: "Clean",
     apiKey: "ai-key",
-  });
+  })) as JsonRecord & { id: string };
 
   const result = providersDb.clearStaleCrashCooldowns();
 
@@ -207,12 +208,12 @@ test("clearStaleCrashCooldowns returns cleared=0 when no transient cooldowns exi
 
 test("clearStaleCrashCooldowns handles mixed transient + terminal connections correctly", async () => {
   // Future transient — should be PRESERVED
-  const futureTransient = await providersDb.createProviderConnection({
+  const futureTransient = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Future Transient",
     apiKey: "sk-t1",
-  });
+  })) as JsonRecord & { id: string };
   await providersDb.updateProviderConnection(futureTransient.id, {
     ...futureTransient,
     rateLimitedUntil: new Date(FAR_FUTURE).toISOString(),
@@ -221,12 +222,12 @@ test("clearStaleCrashCooldowns handles mixed transient + terminal connections co
   });
 
   // Past transient — should be CLEARED
-  const pastTransient = await providersDb.createProviderConnection({
+  const pastTransient = (await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "apikey",
     name: "Past Transient",
     apiKey: "sk-t2",
-  });
+  })) as JsonRecord & { id: string };
   await providersDb.updateProviderConnection(pastTransient.id, {
     ...pastTransient,
     rateLimitedUntil: new Date(JUST_PAST).toISOString(),
@@ -235,12 +236,12 @@ test("clearStaleCrashCooldowns handles mixed transient + terminal connections co
   });
 
   // Terminal — must NOT be cleared
-  const terminal = await providersDb.createProviderConnection({
+  const terminal = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Banned",
     apiKey: "sk-banned",
-  });
+  })) as JsonRecord & { id: string };
   await providersDb.updateProviderConnection(terminal.id, {
     ...terminal,
     rateLimitedUntil: new Date(FAR_FUTURE).toISOString(),
@@ -262,8 +263,5 @@ test("clearStaleCrashCooldowns handles mixed transient + terminal connections co
 
   const updatedTerminal = await providersDb.getProviderConnectionById(terminal.id);
   assert.equal(updatedTerminal?.testStatus, "banned", "terminal connection untouched");
-  assert.ok(
-    updatedTerminal?.rateLimitedUntil,
-    "terminal rate_limited_until preserved"
-  );
+  assert.ok(updatedTerminal?.rateLimitedUntil, "terminal rate_limited_until preserved");
 });

@@ -13,9 +13,12 @@ import {
   getRemainingCooldownMs,
 } from "../../open-sse/services/providerCooldownTracker.ts";
 import { hasPerModelQuota } from "../../open-sse/services/accountFallback.ts";
+import { DEFAULT_RESILIENCE_SETTINGS } from "../../src/lib/resilience/settings.ts";
 
 const settings = {
+  ...DEFAULT_RESILIENCE_SETTINGS,
   providerCooldown: {
+    ...DEFAULT_RESILIENCE_SETTINGS.providerCooldown,
     enabled: true,
     minRetryCooldownMs: 1000,
     maxRetryCooldownMs: 60000,

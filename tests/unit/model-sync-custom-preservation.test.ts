@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(
   path.join(os.tmpdir(), "omniroute-model-sync-custom-preservation-")
@@ -25,13 +26,13 @@ test.after(() => {
 });
 
 test("model sync preserves response-only custom models during discovery", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: "Codex Custom Preservation",
     accessToken: "test-codex-token",
     providerSpecificData: { workspaceId: "workspace-custom-preservation" },
-  });
+  })) as JsonRecord & { id: string };
   await modelsDb.addCustomModel(
     "codex",
     "operator-private-codex",
@@ -64,7 +65,7 @@ test("model sync preserves response-only custom models during discovery", async 
       method: "POST",
       headers: scheduler.buildModelSyncInternalHeaders(),
     }),
-    { params: { id: connection.id } }
+    { params: Promise.resolve({ id: connection.id }) }
   );
 
   assert.equal(response.status, 200);

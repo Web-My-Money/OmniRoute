@@ -5,6 +5,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 const { VisionBridgeGuardrail, resolveVisionComboName } =
   await import("../../../src/lib/guardrails/visionBridge.ts");
@@ -27,7 +28,7 @@ let mockVisionResponse = "A beautiful sunset over the ocean";
 let shouldVisionFail = false;
 let visionCallCount = 0;
 
-function createGuardrail(options?: Parameters<typeof VisionBridgeGuardrail>[0]) {
+function createGuardrail(options?: ConstructorParameters<typeof VisionBridgeGuardrail>[0]) {
   return new VisionBridgeGuardrail({
     ...options,
     deps: {
@@ -402,7 +403,7 @@ test("VB-S01: reroutes non-vision model with images to best vision model", async
   assert.ok(imagePart, "original image_url part must be preserved for rerouted vision model");
 
   // Meta should indicate reroute occurred
-  const meta = result.meta as Record<string, unknown>;
+  const meta = result.meta as LooseDeep;
   assert.strictEqual(meta.rerouted, true);
   assert.strictEqual(meta.fromModel, "minimax/minimax-01");
   assert.ok(
@@ -658,7 +659,7 @@ test("VB-S10: returns meta with reroute info for individual non-vision model", a
   assert.ok(result.meta);
   assert.ok(typeof result.meta === "object");
 
-  const meta = result.meta as Record<string, unknown>;
+  const meta = result.meta as LooseDeep;
   assert.strictEqual(meta.rerouted, true);
   assert.strictEqual(meta.fromModel, "minimax/minimax-01");
   assert.ok(
@@ -820,7 +821,7 @@ test("VB-CRED-01: does NOT whole-request-reroute when original model has usable 
       "credentialed original model must not be whole-request-rerouted"
     );
   }
-  const meta = result.meta as Record<string, unknown> | undefined;
+  const meta = result.meta as LooseDeep | undefined;
   assert.notStrictEqual(meta?.rerouted, true, "must not set rerouted meta for credentialed model");
 });
 
@@ -888,7 +889,7 @@ test("VB-CRED-02: does NOT reroute to a vision model known to lack credentials",
 
   const result = await guardrail.preCall(payload, createContext({ model: "minimax/minimax-01" }));
   assert.strictEqual(result.block, false);
-  const meta = result.meta as Record<string, unknown> | undefined;
+  const meta = result.meta as LooseDeep | undefined;
   assert.notStrictEqual(meta?.rerouted, true, "must not reroute to unusable vision model");
 });
 

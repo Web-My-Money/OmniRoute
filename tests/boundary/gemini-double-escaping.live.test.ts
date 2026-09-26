@@ -7,6 +7,7 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const OMNIROUTE_URL = `${process.env.OMNIROUTE_URL}/v1`;
 const AUTH = `Bearer ${process.env.OMNIROUTE_API_KEY || ""}`;
@@ -116,7 +117,7 @@ async function fetchJson(
     throw new Error(`HTTP ${response.status}: ${await response.text()}`);
   }
 
-  return (await response.json()) as Record<string, unknown>;
+  return (await response.json()) as LooseDeep;
 }
 
 function verifyNoDoubleEscaping(content: string): void {
@@ -180,11 +181,9 @@ function findChatToolCall(
   name: string
 ): ChatToolCall | null {
   if (!message?.tool_calls || !Array.isArray(message.tool_calls)) return null;
-  const found = (message.tool_calls as Record<string, unknown>[]).find(
+  const found = (message.tool_calls as LooseDeep[]).find(
     (tc) =>
-      tc.function &&
-      typeof tc.function === "object" &&
-      (tc.function as Record<string, unknown>).name === name
+      tc.function && typeof tc.function === "object" && (tc.function as LooseDeep).name === name
   );
   return found && typeof found.function === "object" ? (found as unknown as ChatToolCall) : null;
 }
@@ -216,16 +215,12 @@ test(
 
     const response = await fetchJson(`${OMNIROUTE_URL}/chat/completions`, body);
     assert.ok(
-      Array.isArray((response as Record<string, unknown>).choices) &&
-        (response as Record<string, unknown>).choices.length > 0,
+      Array.isArray((response as LooseDeep).choices) && (response as LooseDeep).choices.length > 0,
       "should have choices"
     );
 
-    const choices = (response as Record<string, unknown>).choices as Record<string, unknown>[];
-    const toolCall = findChatToolCall(
-      choices[0]?.message as Record<string, unknown> | undefined,
-      "write"
-    );
+    const choices = (response as LooseDeep).choices as LooseDeep[];
+    const toolCall = findChatToolCall(choices[0]?.message as LooseDeep | undefined, "write");
     assert.ok(toolCall, "should have write tool call");
 
     const args = JSON.parse(toolCall.function.arguments);
@@ -302,11 +297,8 @@ test(
 
     const response = await fetchJson(`${OMNIROUTE_URL}/responses`, body);
 
-    assert.equal((response as Record<string, unknown>).status, "completed");
-    const output = ((response as Record<string, unknown>).output ?? []) as Record<
-      string,
-      unknown
-    >[];
+    assert.equal((response as LooseDeep).status, "completed");
+    const output = ((response as LooseDeep).output ?? []) as Record<string, unknown>[];
     const toolCall = findToolCallOutput(output, "write");
     assert.ok(toolCall, "should have write tool call");
 
@@ -342,7 +334,7 @@ test(
         event.event === "response.output_item.done" &&
         event.data?.item?.type === "function_call"
       ) {
-        doneArgs = event.data.item.arguments;
+        doneArgs = (event.data.item as LooseDeep).arguments;
       }
     }
 
@@ -374,12 +366,8 @@ test(
       stream: false,
     };
     const ccResp = await fetchJson(`${OMNIROUTE_URL}/chat/completions`, ccBody);
-    const ccChoices = (ccResp as Record<string, unknown>).choices as
-      Record<string, unknown>[] | undefined;
-    const ccToolCall = findChatToolCall(
-      ccChoices?.[0]?.message as Record<string, unknown> | undefined,
-      "write"
-    );
+    const ccChoices = (ccResp as LooseDeep).choices as Record<string, unknown>[] | undefined;
+    const ccToolCall = findChatToolCall(ccChoices?.[0]?.message as LooseDeep | undefined, "write");
     assert.ok(ccToolCall, "Chat Completions should have write tool call");
     const ccArgs = JSON.parse(ccToolCall.function.arguments);
 
@@ -393,10 +381,7 @@ test(
       stream: false,
     };
     const respResp = await fetchJson(`${OMNIROUTE_URL}/responses`, respBody);
-    const respOutput = ((respResp as Record<string, unknown>).output ?? []) as Record<
-      string,
-      unknown
-    >[];
+    const respOutput = ((respResp as LooseDeep).output ?? []) as Record<string, unknown>[];
     const respToolCall = findToolCallOutput(respOutput, "write");
     assert.ok(respToolCall, "Responses API should have write tool call");
     const respArgs = JSON.parse(respToolCall.arguments);
@@ -437,12 +422,8 @@ test("Chat Completions args survive round-trip through Responses API", { skip },
     stream: false,
   };
   const ccResp = await fetchJson(`${OMNIROUTE_URL}/chat/completions`, ccBody);
-  const ccChoices = (ccResp as Record<string, unknown>).choices as
-    Record<string, unknown>[] | undefined;
-  const ccToolCall = findChatToolCall(
-    ccChoices?.[0]?.message as Record<string, unknown> | undefined,
-    "write"
-  );
+  const ccChoices = (ccResp as LooseDeep).choices as Record<string, unknown>[] | undefined;
+  const ccToolCall = findChatToolCall(ccChoices?.[0]?.message as LooseDeep | undefined, "write");
   assert.ok(ccToolCall, "Chat Completions should have write tool call");
   const ccArgs = JSON.parse(ccToolCall.function.arguments);
   assert.equal(typeof ccArgs.content, "string");
@@ -494,15 +475,13 @@ test("Chat Completions args survive round-trip through Responses API", { skip },
   events.push(...r1, ...r2);
 
   // Extract the final arguments from the completed response
-  const completedEvent = events.find(
-    (e) => (e as Record<string, unknown>).event === "response.completed"
-  );
+  const completedEvent = events.find((e) => (e as LooseDeep).event === "response.completed");
   assert.ok(completedEvent, "should have response.completed");
 
-  const completedData = completedEvent as Record<string, unknown>;
-  const responseData = completedData.data as Record<string, unknown> | undefined;
-  const respData = responseData?.response as Record<string, unknown> | undefined;
-  const output = (respData?.output ?? []) as Record<string, unknown>[];
+  const completedData = completedEvent as LooseDeep;
+  const responseData = completedData.data as LooseDeep | undefined;
+  const respData = responseData?.response as LooseDeep | undefined;
+  const output = (respData?.output ?? []) as LooseDeep[];
   const respFc = findToolCallOutput(output, "write");
   assert.ok(respFc, "should have write in completed output");
 

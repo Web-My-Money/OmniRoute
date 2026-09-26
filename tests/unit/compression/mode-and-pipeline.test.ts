@@ -14,6 +14,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { applyCompression } from "@omniroute/open-sse/services/compression/strategySelector.ts";
 import { normalizeStackedPipeline } from "../../../src/lib/db/compression.ts";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 test("standard mode compresses even when cavemanConfig.enabled is false (B-MODE-ENGINE-DECOUPLE)", () => {
   const body = {
@@ -28,9 +29,14 @@ test("standard mode compresses even when cavemanConfig.enabled is false (B-MODE-
   };
   const res = applyCompression(body, "standard", {
     config: {
-      cavemanConfig: { enabled: false, compressRoles: ["user"], intensity: "full", minMessageLength: 0 },
+      cavemanConfig: {
+        enabled: false,
+        compressRoles: ["user"],
+        intensity: "full",
+        minMessageLength: 0,
+      },
     },
-  } as Record<string, unknown>);
+  } as LooseDeep);
   assert.ok(res.compressed, "standard mode must run caveman regardless of cavemanConfig.enabled");
 });
 
@@ -41,7 +47,7 @@ test("rtk mode compresses even when rtkConfig.enabled is false (B-MODE-ENGINE-DE
     ) + "\nERROR: boom";
   const res = applyCompression({ messages: [{ role: "tool", content }] }, "rtk", {
     config: { rtkConfig: { enabled: false, intensity: "standard", applyToToolResults: true } },
-  } as Record<string, unknown>);
+  } as LooseDeep);
   assert.ok(res.compressed, "rtk mode must run regardless of rtkConfig.enabled");
 });
 
@@ -56,7 +62,10 @@ test("normalizeStackedPipeline keeps headroom/ccr/session-dedup/llmlingua (B-PIP
   ]);
   const engines = pipe.map((s) => s.engine);
   for (const e of ["session-dedup", "ccr", "headroom", "llmlingua", "rtk"]) {
-    assert.ok(engines.includes(e), `${e} must survive normalize`);
+    assert.ok(engines.includes(e as unknown as CompressionEngineId), `${e} must survive normalize`);
   }
-  assert.ok(!engines.includes("bogus-engine"), "unknown engine ids are still dropped");
+  assert.ok(
+    !engines.includes("bogus-engine" as unknown as CompressionEngineId),
+    "unknown engine ids are still dropped"
+  );
 });

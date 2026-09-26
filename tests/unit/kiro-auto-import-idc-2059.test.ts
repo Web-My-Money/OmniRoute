@@ -35,6 +35,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ── Hermetic DATA_DIR so DB setup / requireLogin does not hit real disk ──────
 
@@ -152,7 +153,7 @@ function stubFetchForRefresh() {
 async function callGet(): Promise<{ status: number; body: Record<string, unknown> }> {
   const request = new Request("http://localhost/api/oauth/kiro/auto-import");
   const response = await GET(request);
-  const body = (await response.json()) as Record<string, unknown>;
+  const body = (await response.json()) as LooseDeep;
   return { status: response.status, body };
 }
 

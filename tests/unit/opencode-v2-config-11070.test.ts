@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const opencodeConfig = await import("../../src/shared/services/opencodeConfig.ts");
 
@@ -18,7 +19,10 @@ test("buildOpenCodeConfigDocument includes both V1 (provider) and V2 (providers)
   assert.equal(doc.providers.omniroute.package, "@opencode-ai/ai/providers/openai-compatible");
   assert.equal(doc.providers.omniroute.settings.baseURL, "http://localhost:20128/v1");
   assert.equal(doc.providers.omniroute.settings.apiKey, "{env:OMNIROUTE_API_KEY}");
-  assert.ok(doc.providers.omniroute.models["auto/best-coding"].limit, "V2 model limit must be present");
+  assert.ok(
+    doc.providers.omniroute.models["auto/best-coding"].limit,
+    "V2 model limit must be present"
+  );
 });
 
 test("mergeOpenCodeConfig preserves existing properties and updates both provider and providers", () => {
@@ -33,7 +37,7 @@ test("mergeOpenCodeConfig preserves existing properties and updates both provide
     models: ["auto/best-coding"],
   });
 
-  assert.equal(merged.customField, "keep-me");
+  assert.equal((merged as LooseDeep).customField, "keep-me");
   assert.ok(merged.provider?.omniroute);
   assert.ok(merged.providers?.omniroute);
   assert.equal(merged.providers.omniroute.settings.apiKey, "sk_test_key");

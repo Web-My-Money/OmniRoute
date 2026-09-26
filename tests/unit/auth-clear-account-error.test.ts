@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { looseCreds } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-auth-clear-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -10,6 +11,7 @@ process.env.DATA_DIR = TEST_DATA_DIR;
 const core = await import("../../src/lib/db/core.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
 const auth = await import("../../src/sse/services/auth.ts");
+const getCreds = looseCreds(auth.getProviderCredentials);
 
 async function resetStorage() {
   core.resetDbInstance();
@@ -25,7 +27,7 @@ test.after(() => {
 test("clearAccountError clears stale provider error metadata after recovery", async () => {
   await resetStorage();
 
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "recover@example.com",
@@ -38,9 +40,9 @@ test("clearAccountError clears stale provider error metadata after recovery", as
     errorCode: "refresh_failed",
     rateLimitedUntil: null,
     backoffLevel: 2,
-  });
+  })) as JsonRecord & { id: string };
 
-  const credentials = await auth.getProviderCredentials("codex");
+  const credentials = await getCreds("codex");
   assert.equal(credentials.connectionId, created.id);
   assert.equal(credentials.errorCode, "refresh_failed");
   assert.equal(credentials.lastErrorType, "token_refresh_failed");
@@ -60,13 +62,13 @@ test("clearAccountError clears stale provider error metadata after recovery", as
 test("clearAccountError is a no-op when the connection is already clean", async () => {
   await resetStorage();
 
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "already-clean",
     apiKey: "sk-clean",
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   await auth.clearAccountError((created as any).id, {
     connectionId: created.id,
@@ -87,7 +89,7 @@ test("clearAccountError is a no-op when the connection is already clean", async 
 test("clearRecoveredProviderState ignores empty payloads and clears recoverable connections", async () => {
   await resetStorage();
 
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "recover-state@example.com",
@@ -100,7 +102,7 @@ test("clearRecoveredProviderState ignores empty payloads and clears recoverable 
     errorCode: 503,
     rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
     backoffLevel: 2,
-  });
+  })) as JsonRecord & { id: string };
 
   await auth.clearRecoveredProviderState(null);
   await auth.clearRecoveredProviderState({});
@@ -132,15 +134,17 @@ test("clearRecoveredProviderState ignores empty payloads and clears recoverable 
 test("getProviderCredentials resolves provider aliases to canonical DB records", async () => {
   await resetStorage();
 
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "alias@example.com",
     accessToken: "access",
     refreshToken: "refresh",
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
-  const credentials = await auth.getProviderCredentials("cx");
+  const credentials = await getCreds("cx");
   assert.equal(credentials.connectionId, created.id);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

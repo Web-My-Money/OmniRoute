@@ -25,7 +25,7 @@ import {
   DEFAULT_ALLOWED_ORIGINS,
 } from "@/server/ws/liveServerAllowList";
 
-const EMPTY_ENV: NodeJS.ProcessEnv = {};
+const EMPTY_ENV: NodeJS.ProcessEnv = {} as NodeJS.ProcessEnv;
 
 describe("parseCsvEnv", () => {
   it("returns empty set for undefined", () => {

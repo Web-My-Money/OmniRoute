@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { tinyfishFetch } = await import("../../open-sse/executors/tinyfish-fetch.ts");
 
@@ -9,7 +10,7 @@ test("tinyfishFetch posts to api.fetch.tinyfish.ai with X-API-Key auth and a url
   const originalFetch = globalThis.fetch;
   let captured: { url: string; init: RequestInit } = { url: "", init: {} };
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = { url: String(url), init: init as RequestInit };
     return new Response(
       JSON.stringify({
@@ -149,7 +150,7 @@ test("tinyfishFetch maps 'html' format to the html request format", async () => 
   const originalFetch = globalThis.fetch;
   let capturedBody: Record<string, unknown> = {};
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     capturedBody = JSON.parse(String((init as RequestInit).body));
     return new Response(
       JSON.stringify({ results: [{ url: "https://example.com", text: "<html></html>" }] }),
@@ -175,7 +176,7 @@ test("tinyfishFetch falls back to markdown for unsupported 'links'/'screenshot' 
   const originalFetch = globalThis.fetch;
   let capturedBody: Record<string, unknown> = {};
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     capturedBody = JSON.parse(String((init as RequestInit).body));
     return new Response(
       JSON.stringify({ results: [{ url: "https://example.com", text: "content" }] }),

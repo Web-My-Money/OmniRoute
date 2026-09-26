@@ -1,6 +1,8 @@
 import test from "node:test";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 import os from "node:os";
 import path from "node:path";
 
@@ -50,8 +52,8 @@ test("DELETE /api/combos/[id] returns 409 for a qtSd/* combo and does NOT delete
     isHidden: true,
   });
 
-  const response = await comboRoute.DELETE(makeDeleteRequest(combo.id), {
-    params: Promise.resolve({ id: combo.id }),
+  const response = await comboRoute.DELETE(makeDeleteRequest((combo as LooseDeep).id), {
+    params: Promise.resolve({ id: (combo as LooseDeep).id }),
   });
 
   assert.equal(response.status, 409, "DELETE quota combo should return 409");
@@ -63,7 +65,7 @@ test("DELETE /api/combos/[id] returns 409 for a qtSd/* combo and does NOT delete
   );
 
   // Verify the combo was NOT deleted
-  const still = await combosDb.getComboById(combo.id);
+  const still = await combosDb.getComboById((combo as LooseDeep).id);
   assert.ok(still, "Quota combo must still exist after rejected DELETE");
 });
 
@@ -76,8 +78,11 @@ test("PUT /api/combos/[id] returns 409 for a qtSd/* combo and does NOT mutate it
   });
 
   const response = await comboRoute.PUT(
-    makePutRequest(combo.id, { name: "qtSd/groupdemo/openai/gpt-4o", strategy: "random" }),
-    { params: Promise.resolve({ id: combo.id }) }
+    makePutRequest((combo as LooseDeep).id, {
+      name: "qtSd/groupdemo/openai/gpt-4o",
+      strategy: "random",
+    }),
+    { params: Promise.resolve({ id: (combo as LooseDeep).id }) }
   );
 
   assert.equal(response.status, 409, "PUT quota combo should return 409");
@@ -89,7 +94,7 @@ test("PUT /api/combos/[id] returns 409 for a qtSd/* combo and does NOT mutate it
   );
 
   // Verify the combo was NOT mutated
-  const unchanged = await combosDb.getComboById(combo.id);
+  const unchanged = await combosDb.getComboById((combo as LooseDeep).id);
   assert.equal(
     unchanged?.strategy,
     "priority",
@@ -106,8 +111,8 @@ test("DELETE /api/combos/[id] succeeds for a regular (non-quota) combo", async (
     models: [{ provider: "openai", model: "gpt-4o" }],
   });
 
-  const response = await comboRoute.DELETE(makeDeleteRequest(combo.id), {
-    params: Promise.resolve({ id: combo.id }),
+  const response = await comboRoute.DELETE(makeDeleteRequest((combo as LooseDeep).id), {
+    params: Promise.resolve({ id: (combo as LooseDeep).id }),
   });
 
   assert.equal(response.status, 200, "DELETE regular combo should return 200");
@@ -116,7 +121,7 @@ test("DELETE /api/combos/[id] succeeds for a regular (non-quota) combo", async (
   assert.equal(body.success, true);
 
   // Verify the combo was actually deleted
-  const gone = await combosDb.getComboById(combo.id);
+  const gone = await combosDb.getComboById((combo as LooseDeep).id);
   assert.equal(gone, null, "Regular combo must be gone after DELETE");
 });
 
@@ -136,8 +141,8 @@ test("PUT merged state rejects partial updates that leave protected priority ref
     },
     { strategy: "priority", config: {} },
   ]) {
-    const response = await comboRoute.PUT(makePutRequest(combo.id, update), {
-      params: Promise.resolve({ id: combo.id }),
+    const response = await comboRoute.PUT(makePutRequest((combo as LooseDeep).id, update), {
+      params: Promise.resolve({ id: (combo as LooseDeep).id }),
     });
     assert.equal(response.status, 400);
   }
@@ -151,8 +156,11 @@ test("PUT merged state accepts dormant weighted protected refs", async () => {
     config: { nestedComboMode: "execute" },
   });
   const response = await comboRoute.PUT(
-    makePutRequest(combo.id, { strategy: "weighted", config: { nestedComboMode: "flatten" } }),
-    { params: Promise.resolve({ id: combo.id }) }
+    makePutRequest((combo as LooseDeep).id, {
+      strategy: "weighted",
+      config: { nestedComboMode: "flatten" },
+    }),
+    { params: Promise.resolve({ id: (combo as LooseDeep).id }) }
   );
   assert.equal(response.status, 200);
 });
@@ -165,12 +173,12 @@ test("PUT /api/combos/[id] succeeds for a regular (non-quota) combo", async () =
   });
 
   const response = await comboRoute.PUT(
-    makePutRequest(combo.id, {
+    makePutRequest((combo as LooseDeep).id, {
       name: "regular-editable-combo",
       strategy: "round-robin",
       models: [{ providerId: "openai", model: "gpt-4o" }],
     }),
-    { params: Promise.resolve({ id: combo.id }) }
+    { params: Promise.resolve({ id: (combo as LooseDeep).id }) }
   );
 
   assert.equal(response.status, 200, "PUT regular combo should return 200");
@@ -193,7 +201,7 @@ test("DELETE /api/combos/[id] returns 404 when combo does not exist", async () =
 
 test("combos page source filters isHidden from rendered list", async () => {
   const pageSource = fs.readFileSync(
-    new URL("../../src/app/(dashboard)/dashboard/combos/page.tsx", import.meta.url).pathname,
+    fileURLToPath(new URL("../../src/app/(dashboard)/dashboard/combos/page.tsx", import.meta.url)),
     "utf8"
   );
   assert.ok(

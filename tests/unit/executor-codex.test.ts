@@ -13,19 +13,30 @@ import {
   normalizeCodexTools,
   parseCodexQuotaHeaders,
 } from "../../open-sse/executors/codex.ts";
-import {
-  clearRememberedResponseFunctionCallsForTesting,
-  rememberResponseConversationState,
-  rememberResponseFunctionCalls,
-} from "../../open-sse/services/responsesToolCallState.ts";
 import { sanitizeReasoningEffortForProvider } from "../../open-sse/executors/base.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
+
+// Tests assert only the fields they populated; ExecutorExecuteResult is a wide
+// union, so transformRequest results are read through this loose shape.
+type LooseResult = JsonRecord & {
+  input?: JsonRecord[];
+  reasoning?: JsonRecord & { effort?: string; summary?: unknown };
+  response?: JsonRecord;
+  transformedBody?: JsonRecord;
+};
+const transformRequest = (
+  exec: CodexExecutor,
+  ...args: Parameters<CodexExecutor["transformRequest"]>
+): LooseResult => exec.transformRequest(...args) as LooseResult;
 import {
   DEFAULT_THINKING_CONFIG,
   setThinkingBudgetConfig,
   ThinkingMode,
 } from "../../open-sse/services/thinkingBudget.ts";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 import { runWithCapture } from "../../open-sse/utils/providerRequestLogging.ts";
 import { CODEX_CHAT_DEFAULT_INSTRUCTIONS } from "../../open-sse/config/codexInstructions.ts";
+import { wrapLoose } from "../helpers/looseTypes.ts";
 
 type MockCodexWebSocket = {
   send: (data: string) => void;
@@ -39,7 +50,7 @@ function getRecord(value: unknown): Record<string, unknown> {
   assert.equal(typeof value, "object");
   assert.notEqual(value, null);
   assert.equal(Array.isArray(value), false);
-  return value as Record<string, unknown>;
+  return value as LooseDeep;
 }
 
 test.afterEach(() => {
@@ -234,11 +245,11 @@ test("CodexExecutor.transformRequest injects default instructions, clamps reason
     user: "cursor",
   };
 
-  const result = executor.transformRequest("gpt-5-mini-xhigh", body, false, {
+  const result = transformRequest(executor, "gpt-5-mini-xhigh", body, false, {
     requestEndpointPath: "/responses",
   });
 
-  assert.deepEqual([result.stream, result.store], [true, false]);
+  assert.deepEqual([(result as LooseDeep).stream, result.store], [true, false]);
   assert.equal(result.instructions.length > 0, true);
   assert.deepEqual(result.reasoning, { effort: "high", summary: "auto" });
   assert.deepEqual(result.include, ["reasoning.encrypted_content"]);
@@ -284,7 +295,7 @@ test("CodexExecutor.transformRequest non-passthrough allowlist strips all residu
     _internal_marker: true,
   };
 
-  const result = executor.transformRequest("gpt-5.5", body, false, {
+  const result = transformRequest(executor, "gpt-5.5", body, false, {
     requestEndpointPath: "/responses",
   });
 
@@ -322,7 +333,8 @@ test("CodexExecutor.transformRequest non-passthrough allowlist strips all residu
 
 test("CodexExecutor.transformRequest normalizes max reasoning_effort to xhigh", () => {
   const executor = new CodexExecutor();
-  const result = executor.transformRequest(
+  const result = transformRequest(
+    executor,
     "gpt-5.5",
     {
       model: "gpt-5.5",
@@ -359,7 +371,7 @@ test("CodexExecutor.transformRequest sends neutral instructions for bare chat re
     stream: false,
   };
 
-  const result = executor.transformRequest("gpt-5.5-medium", body, false, {
+  const result = transformRequest(executor, "gpt-5.5-medium", body, false, {
     requestEndpointPath: "/responses",
   });
 
@@ -377,7 +389,7 @@ test("CodexExecutor.transformRequest preserves compact requests and native passt
     instructions: "keep this",
     stream: false,
   };
-  const result = executor.transformRequest("gpt-5.3-codex", body, false, {
+  const result = transformRequest(executor, "gpt-5.3-codex", body, false, {
     requestEndpointPath: "/responses/compact",
     providerSpecificData: {
       requestDefaults: { serviceTier: "priority" },
@@ -394,7 +406,7 @@ test("CodexExecutor.transformRequest preserves compact requests and native passt
 
 test("CodexExecutor.transformRequest applies flex request default service tier", () => {
   const executor = new CodexExecutor();
-  const result = executor.transformRequest("gpt-5.5", { input: "hello" }, false, {
+  const result = transformRequest(executor, "gpt-5.5", { input: "hello" }, false, {
     requestEndpointPath: "/responses",
     providerSpecificData: {
       requestDefaults: { serviceTier: "flex" },
@@ -414,7 +426,7 @@ test("CodexExecutor.transformRequest preserves store-enabled responses state whe
     stream: false,
   };
 
-  const result = executor.transformRequest("gpt-5.3-codex", body, false, {
+  const result = transformRequest(executor, "gpt-5.3-codex", body, false, {
     requestEndpointPath: "/responses",
     providerSpecificData: {
       openaiStoreEnabled: true,
@@ -436,7 +448,7 @@ test("CodexExecutor.transformRequest strips store from compact requests even whe
     stream: false,
   };
 
-  const result = executor.transformRequest("gpt-5.3-codex", body, false, {
+  const result = transformRequest(executor, "gpt-5.3-codex", body, false, {
     requestEndpointPath: "/responses/compact",
     providerSpecificData: {
       openaiStoreEnabled: true,
@@ -502,7 +514,7 @@ test("CodexExecutor.transformRequest preserves commentary and strips orphan summ
     stream: false,
   };
 
-  const result = executor.transformRequest("gpt-5.5-low", body, false, {
+  const result = transformRequest(executor, "gpt-5.5-low", body, false, {
     requestEndpointPath: "/responses",
   });
 
@@ -550,7 +562,8 @@ test("CodexExecutor.transformRequest preserves active opaque reasoning with a su
     summary: [{ type: "summary_text", text: "Display summary" }],
   };
 
-  const result = executor.transformRequest(
+  const result = transformRequest(
+    executor,
     "gpt-5.5-low",
     {
       _nativeCodexPassthrough: true,
@@ -572,7 +585,8 @@ test("CodexExecutor.transformRequest preserves orphan summaries when store is en
     summary: [{ type: "summary_text", text: "Display summary" }],
   };
 
-  const result = executor.transformRequest(
+  const result = transformRequest(
+    executor,
     "gpt-5.5-low",
     {
       _nativeCodexPassthrough: true,
@@ -592,7 +606,8 @@ test("CodexExecutor.transformRequest preserves orphan summaries when store is en
 
 test("CodexExecutor.transformRequest still strips assistant commentary outside native passthrough", () => {
   const executor = new CodexExecutor();
-  const result = executor.transformRequest(
+  const result = transformRequest(
+    executor,
     "gpt-5.5-low",
     {
       input: [
@@ -632,7 +647,8 @@ test("CodexExecutor.transformRequest still strips assistant commentary outside n
 
 test("CodexExecutor.transformRequest inserts missing function_call_output items", () => {
   const executor = new CodexExecutor();
-  const result = executor.transformRequest(
+  const result = transformRequest(
+    executor,
     "gpt-5.5-xhigh",
     {
       _nativeCodexPassthrough: true,
@@ -679,7 +695,8 @@ test("CodexExecutor.transformRequest inserts missing function_call_output items"
 
 test("CodexExecutor.transformRequest inserts missing custom_tool_call_output items (#8932)", () => {
   const executor = new CodexExecutor();
-  const result = executor.transformRequest(
+  const result = transformRequest(
+    executor,
     "gpt-5.5-xhigh",
     {
       _nativeCodexPassthrough: true,
@@ -720,7 +737,8 @@ test("CodexExecutor.transformRequest inserts missing custom_tool_call_output ite
 
 test("CodexExecutor.transformRequest preserves native assistant commentary before mapping messages to input", () => {
   const executor = new CodexExecutor();
-  const result = executor.transformRequest(
+  const result = transformRequest(
+    executor,
     "gpt-5.5-low",
     {
       _nativeCodexPassthrough: true,
@@ -769,7 +787,7 @@ test("CodexExecutor.transformRequest does not locally replay previous_response_i
     stream: false,
   };
 
-  const result = executor.transformRequest("gpt-5.5-low", body, false, {
+  const result = transformRequest(executor, "gpt-5.5-low", body, false, {
     requestEndpointPath: "/responses",
   });
 
@@ -784,7 +802,8 @@ test("CodexExecutor.transformRequest does not locally replay previous_response_i
 });
 test("CodexExecutor.transformRequest applies per-connection reasoning and service tier defaults", () => {
   const executor = new CodexExecutor();
-  const result = executor.transformRequest(
+  const result = transformRequest(
+    executor,
     "gpt-5.3-codex",
     { model: "gpt-5.3-codex", input: [] },
     false,
@@ -804,7 +823,8 @@ test("CodexExecutor.transformRequest applies per-connection reasoning and servic
 
 test("CodexExecutor.transformRequest keeps explicit request values ahead of connection defaults", () => {
   const executor = new CodexExecutor();
-  const result = executor.transformRequest(
+  const result = transformRequest(
+    executor,
     "gpt-5.3-codex",
     {
       model: "gpt-5.3-codex",
@@ -829,7 +849,8 @@ test("CodexExecutor.transformRequest keeps explicit request values ahead of conn
 
 test("CodexExecutor.transformRequest lets model suffix beat connection reasoning defaults", () => {
   const executor = new CodexExecutor();
-  const result = executor.transformRequest(
+  const result = transformRequest(
+    executor,
     "gpt-5.3-codex-high",
     { model: "gpt-5.3-codex-high", input: [] },
     false,
@@ -848,7 +869,8 @@ test("CodexExecutor.transformRequest lets model suffix beat connection reasoning
 
 test("CodexExecutor.transformRequest keeps gpt-5.5 as the model and applies xhigh reasoning", () => {
   const executor = new CodexExecutor();
-  const result = executor.transformRequest(
+  const result = transformRequest(
+    executor,
     "gpt-5.5-xhigh",
     { model: "gpt-5.5-xhigh", input: [] },
     false,
@@ -861,7 +883,8 @@ test("CodexExecutor.transformRequest keeps gpt-5.5 as the model and applies xhig
 
 test("CodexExecutor.transformRequest keeps GPT 5.3 Codex reasoning in Responses shape", () => {
   const executor = new CodexExecutor();
-  const transformed = executor.transformRequest(
+  const transformed = transformRequest(
+    executor,
     "gpt-5.3-codex",
     {
       model: "gpt-5.3-codex",
@@ -878,7 +901,7 @@ test("CodexExecutor.transformRequest keeps GPT 5.3 Codex reasoning in Responses 
     "codex",
     "gpt-5.3-codex",
     null
-  ) as Record<string, unknown>;
+  ) as LooseDeep;
   const reasoning = getRecord(sanitized.reasoning);
 
   assert.equal(sanitized.model, "gpt-5.3-codex");
@@ -888,7 +911,8 @@ test("CodexExecutor.transformRequest keeps GPT 5.3 Codex reasoning in Responses 
 
 test("CodexExecutor.transformRequest passes GPT 5.6 Luna xhigh reasoning through unchanged", () => {
   const executor = new CodexExecutor();
-  const transformed = executor.transformRequest(
+  const transformed = transformRequest(
+    executor,
     "gpt-5.6-luna",
     {
       model: "gpt-5.6-luna",
@@ -906,7 +930,7 @@ test("CodexExecutor.transformRequest passes GPT 5.6 Luna xhigh reasoning through
     "codex",
     "gpt-5.6-luna",
     null
-  ) as Record<string, unknown>;
+  ) as LooseDeep;
   const reasoning = getRecord(sanitized.reasoning);
 
   assert.equal(sanitized.model, "gpt-5.6-luna");
@@ -920,7 +944,8 @@ test("CodexExecutor.transformRequest passes GPT 5.6 Luna xhigh reasoning through
 
 test("CodexExecutor.transformRequest omits client metadata for compact requests", () => {
   const executor = new CodexExecutor();
-  const result = executor.transformRequest(
+  const result = transformRequest(
+    executor,
     "gpt-5.5",
     {
       model: "gpt-5.5",
@@ -957,7 +982,7 @@ test("CodexExecutor.execute falls back to HTTP when websocket transport is unava
     });
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gpt-5.5-xhigh",
       body: { model: "gpt-5.5-xhigh", input: [{ role: "user", content: "hello" }] },
       stream: true,
@@ -1022,7 +1047,7 @@ test("CodexExecutor.execute captures the exact websocket request body before sen
       },
     })
   );
-  await result.response.text();
+  await (result as LooseDeep).response.text();
 
   assert.ok(sent);
   const sentBody = JSON.parse(sent);
@@ -1048,7 +1073,7 @@ test("CodexExecutor.execute adds CLI-like session identity headers without chang
   };
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gpt-5.5",
       body: {
         model: "gpt-5.5",
@@ -1062,7 +1087,7 @@ test("CodexExecutor.execute adds CLI-like session identity headers without chang
       },
     });
 
-    const meta = (capturedBody?.client_metadata as Record<string, unknown>) || {};
+    const meta = (capturedBody?.client_metadata as LooseDeep) || {};
     const turnMetadata = JSON.parse(capturedHeaders?.get("x-codex-turn-metadata") || "{}");
     assert.equal(result.response.status, 200);
     assert.notEqual(capturedHeaders?.get("session_id"), "conversation-1");
@@ -1100,7 +1125,7 @@ test("CodexExecutor.execute skips identity headers for unsafe session ids", asyn
   };
 
   try {
-    await executor.execute({
+    await wrapLoose(executor).execute({
       model: "gpt-5.5",
       body: {
         model: "gpt-5.5",
@@ -1123,7 +1148,8 @@ test("CodexExecutor.execute skips identity headers for unsafe session ids", asyn
 
 test("CodexExecutor.transformRequest preserves namespace MCP tools and hosted tool types", () => {
   const executor = new CodexExecutor();
-  const result = executor.transformRequest(
+  const result = transformRequest(
+    executor,
     "gpt-5.6-sol",
     {
       model: "gpt-5.6-sol",
@@ -1175,7 +1201,8 @@ test("CodexExecutor.transformRequest preserves namespace MCP tools and hosted to
 
 test("CodexExecutor.transformRequest preserves native Codex custom tools", () => {
   const executor = new CodexExecutor();
-  const result = executor.transformRequest(
+  const result = transformRequest(
+    executor,
     "gpt-5.5",
     {
       _nativeCodexPassthrough: true,
@@ -1222,7 +1249,8 @@ test("CodexExecutor.transformRequest preserves native Codex custom tools", () =>
 
 test("CodexExecutor.transformRequest defaults translated function strict without changing native payloads", () => {
   const executor = new CodexExecutor();
-  const translated = executor.transformRequest(
+  const translated = transformRequest(
+    executor,
     "gpt-5.5",
     {
       model: "gpt-5.5",
@@ -1240,7 +1268,8 @@ test("CodexExecutor.transformRequest defaults translated function strict without
   const translatedTool = (translated.tools as Array<Record<string, unknown>>)[0];
   assert.equal(translatedTool.strict, false);
 
-  const native = executor.transformRequest(
+  const native = transformRequest(
+    executor,
     "gpt-5.5",
     {
       _nativeCodexPassthrough: true,
@@ -1260,7 +1289,8 @@ test("CodexExecutor.transformRequest defaults translated function strict without
   const nativeTool = (native.tools as Array<Record<string, unknown>>)[0];
   assert.equal(nativeTool.strict, undefined);
 
-  const explicit = executor.transformRequest(
+  const explicit = transformRequest(
+    executor,
     "gpt-5.5",
     {
       model: "gpt-5.5",
@@ -1283,7 +1313,8 @@ test("CodexExecutor.transformRequest defaults translated function strict without
 
 test("CodexExecutor.transformRequest still drops custom tools outside native passthrough", () => {
   const executor = new CodexExecutor();
-  const result = executor.transformRequest(
+  const result = transformRequest(
+    executor,
     "gpt-5.5",
     {
       model: "gpt-5.5",
@@ -1331,7 +1362,8 @@ test("CodexExecutor.transformRequest does not apply connection reasoning default
   const executor = new CodexExecutor();
   setThinkingBudgetConfig({ mode: ThinkingMode.AUTO });
 
-  const noDefaults = executor.transformRequest(
+  const noDefaults = transformRequest(
+    executor,
     "gpt-5.3-codex",
     { model: "gpt-5.3-codex", input: [] },
     false,
@@ -1343,7 +1375,8 @@ test("CodexExecutor.transformRequest does not apply connection reasoning default
       },
     }
   );
-  const explicit = executor.transformRequest(
+  const explicit = transformRequest(
+    executor,
     "gpt-5.3-codex",
     { model: "gpt-5.3-codex", input: [], reasoning_effort: "high" },
     false,

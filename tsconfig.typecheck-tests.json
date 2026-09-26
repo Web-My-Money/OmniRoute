@@ -5,6 +5,8 @@
     "incremental": false
   },
   "include": [
+    "src/types/global.d.ts",
+    "electron/types.d.ts",
     "tests/**/*.ts",
     "tests/**/*.tsx",
     "src/**/__tests__/**/*.ts",
@@ -30,6 +32,7 @@
     "_ideia",
     "_mono_repo",
     "_references",
-    "tests/e2e/**"
+    "tests/e2e/**",
+    "tests/load"
   ]
 }

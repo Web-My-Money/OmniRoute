@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-alibaba-image-media-"));
 
@@ -81,7 +83,7 @@ test("All five Alibaba image models use the Alibaba multimodal endpoint and key"
   const originalFetch = globalThis.fetch;
   const captures = [];
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captures.push({
       url: String(url),
       headers: options.headers,
@@ -102,7 +104,7 @@ test("All five Alibaba image models use the Alibaba multimodal endpoint and key"
 
   try {
     for (const model of IMAGE_PROVIDERS.alibaba.models.map((entry) => entry.id)) {
-      const result = await handleImageGeneration({
+      const result = await looseAsync(handleImageGeneration)({
         body: {
           model: `alibaba/${model}`,
           prompt: "A cinematic horse portrait",
@@ -147,7 +149,7 @@ test("All five Alibaba image models use the Alibaba multimodal endpoint and key"
 });
 
 test("Alibaba rejects image models outside its own allowlist", async () => {
-  const result = await handleImageGeneration({
+  const result = await looseAsync(handleImageGeneration)({
     body: {
       model: "alibaba/wan2.7-image-pro",
       prompt: "wrong catalog",

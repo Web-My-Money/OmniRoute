@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { resolveModelAliasWithSeedFallback } from "../../src/lib/modelAliasResolver";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Hermetic test: isolate DATA_DIR so the alias lookup reads an EMPTY
 // modelAliases namespace (fresh install state) instead of the operator's live
@@ -62,7 +63,11 @@ test("resolveModelAliasWithSeedFallback: unmapped-but-seeded alias resolves (401
 test("resolveModelAliasWithSeedFallback: export name is distinct from the sync resolveModelAlias", async () => {
   const mod = await import("../../src/lib/modelAliasResolver");
   assert.equal(typeof mod.resolveModelAliasWithSeedFallback, "function");
-  assert.equal(mod.resolveModelAlias, undefined, "must not export the colliding sync name");
+  assert.equal(
+    (mod as LooseDeep).resolveModelAlias,
+    undefined,
+    "must not export the colliding sync name"
+  );
 });
 
 test("resolveModelAliasWithSeedFallback: preserves model name when a combo exists with the same name", async () => {

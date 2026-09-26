@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
-const { handleDesignerWebImageGeneration } = await import(
-  "../../open-sse/handlers/imageGeneration/providers/designerWeb.ts"
-);
+const { handleDesignerWebImageGeneration } =
+  await import("../../open-sse/handlers/imageGeneration/providers/designerWeb.ts");
 
 /**
  * `stepDesignerWebPoll` classifies an unrecognized upstream body as a terminal
@@ -36,7 +36,7 @@ const BASE = {
 
 test("a 200 with an unrecognized body is a terminal 502, not a retry", async () => {
   let calls = 0;
-  const result = await handleDesignerWebImageGeneration({
+  const result = await looseAsync(handleDesignerWebImageGeneration)({
     ...BASE,
     body: { prompt: "a cat astronaut", timeout_ms: 5_000, poll_interval_ms: 1 },
     fetchImpl: async () => {
@@ -56,7 +56,7 @@ test("a 200 with neither images nor polling metadata does not fall through to 50
   // cannot use", 504 says "the upstream never finished". A timeout_ms generous
   // enough to allow several polls proves the 502 came from classification, not
   // from the deadline.
-  const result = await handleDesignerWebImageGeneration({
+  const result = await looseAsync(handleDesignerWebImageGeneration)({
     ...BASE,
     body: { prompt: "a cat astronaut", timeout_ms: 10_000, poll_interval_ms: 1 },
     fetchImpl: async () => jsonResponse(200, { polling_response: {} }),

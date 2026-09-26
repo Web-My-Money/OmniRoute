@@ -9,6 +9,7 @@ process.env.DATA_DIR = TEST_DATA_DIR;
 
 const coreDb = await import("../../src/lib/db/core.ts");
 const registeredKeysDb = await import("../../src/lib/db/registeredKeys.ts");
+import { looseSync } from "../helpers/looseTypes.ts";
 
 async function resetStorage() {
   coreDb.resetDbInstance();
@@ -25,8 +26,10 @@ test.after(() => {
   fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
 });
 
+const issueRegisteredKeyLoose = looseSync(registeredKeysDb.issueRegisteredKey);
+
 test("registered keys issue, validate, consume budget and revoke correctly", () => {
-  const issued = registeredKeysDb.issueRegisteredKey({
+  const issued = issueRegisteredKeyLoose({
     name: "Primary key",
     provider: "openai",
     accountId: "acct-1",
@@ -47,13 +50,13 @@ test("registered keys issue, validate, consume budget and revoke correctly", () 
 });
 
 test("registered keys honor idempotency and list filters", () => {
-  const first = registeredKeysDb.issueRegisteredKey({
+  const first = issueRegisteredKeyLoose({
     name: "Idempotent",
     provider: "anthropic",
     accountId: "acct-2",
     idempotencyKey: "idem-1",
   });
-  const second = registeredKeysDb.issueRegisteredKey({
+  const second = issueRegisteredKeyLoose({
     name: "Duplicate request",
     provider: "anthropic",
     accountId: "acct-2",
@@ -78,7 +81,7 @@ test("registered keys enforce provider and account quota limits", () => {
     hourlyIssueLimit: 1,
   });
 
-  const created = registeredKeysDb.issueRegisteredKey({
+  const created = issueRegisteredKeyLoose({
     name: "Quota limited",
     provider: "openai",
     accountId: "acct-3",

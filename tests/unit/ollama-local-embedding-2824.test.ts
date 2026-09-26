@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-ollama-embedding-2824-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -42,7 +43,7 @@ test("ollama-local model names parse with the provider prefix", () => {
 test("ollama-local routes the default host without credentials", async () => {
   const originalFetch = globalThis.fetch;
   let captured: { url: string; body: Record<string, unknown> } | null = null;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       body: JSON.parse(String(options.body || "{}")) as Record<string, unknown>,
@@ -182,7 +183,7 @@ test("ollama-local service hydrates the configured connection host without requi
 
   const originalFetch = globalThis.fetch;
   let captured: { url: string; headers: Record<string, string> } | null = null;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: (options.headers as Record<string, string>) || {},

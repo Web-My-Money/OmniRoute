@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-video-novita-"));
 
@@ -105,7 +107,13 @@ test("normalizeNovitaVideoParams tolerates missing/invalid fields", () => {
 test("buildNovitaSubmitBody omits unset optional fields", () => {
   assert.deepEqual(buildNovitaSubmitBody({ prompt: "hello" }), { prompt: "hello" });
   assert.deepEqual(
-    buildNovitaSubmitBody({ prompt: "hello", negativePrompt: "bad", duration: 5, width: 832, height: 480 }),
+    buildNovitaSubmitBody({
+      prompt: "hello",
+      negativePrompt: "bad",
+      duration: 5,
+      width: 832,
+      height: 480,
+    }),
     { prompt: "hello", negative_prompt: "bad", duration: 5, width: 832, height: 480 }
   );
 });
@@ -160,7 +168,7 @@ test("handleVideoGeneration submits + polls a Novita task and returns mp4 URL", 
   let submitRequest;
 
   globalThis.setTimeout = immediateTimeout;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
 
     if (stringUrl === SUBMIT_URL) {
@@ -183,7 +191,7 @@ test("handleVideoGeneration submits + polls a Novita task and returns mp4 URL", 
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: {
         model: "novita/wan-t2v",
         prompt: "a neon city in the rain",
@@ -209,7 +217,7 @@ test("handleVideoGeneration submits + polls a Novita task and returns mp4 URL", 
 });
 
 test("handleVideoGeneration rejects Novita requests without credentials", async () => {
-  const result = await handleVideoGeneration({
+  const result = await looseAsync(handleVideoGeneration)({
     body: { model: "novita/wan-t2v", prompt: "x" },
     credentials: null,
     log: null,
@@ -225,7 +233,7 @@ test("handleVideoGeneration surfaces an error when Novita returns no task_id", a
   globalThis.fetch = async () => jsonResponse({ message: "Invalid API key" }, 401);
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: { model: "novita/wan-t2v", prompt: "x" },
       credentials: { apiKey: "bad-key" },
       log: null,
@@ -258,7 +266,7 @@ test("handleVideoGeneration returns 502 when the Novita task FAILED", async () =
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: { model: "novita/wan-t2v", prompt: "x" },
       credentials: { apiKey: "novita-key" },
       log: null,
@@ -297,7 +305,7 @@ test("handleVideoGeneration returns 504 when the Novita task never completes", a
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: {
         model: "novita/wan-t2v",
         prompt: "x",

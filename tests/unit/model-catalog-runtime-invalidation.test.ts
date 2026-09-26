@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(
   path.join(os.tmpdir(), "omniroute-model-catalog-runtime-invalidation-")
@@ -31,7 +32,7 @@ async function resetStorage() {
 }
 
 async function seedOpenAiConnection() {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "openai-catalog-invalidation",
@@ -39,7 +40,7 @@ async function seedOpenAiConnection() {
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 function catalogRequest() {

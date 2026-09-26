@@ -23,6 +23,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-plimits-scope-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -63,12 +64,12 @@ test("non-Antigravity cache entry is returned verbatim (junk quota key survives)
   // An active openai connection whose credentials would be decrypted by the old
   // unconditional scan. Under the fix it is never fetched — the entry must still pass
   // through unchanged.
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "api_key",
     name: "OpenAI key",
     apiKey: "sk-test-openai",
-  });
+  })) as JsonRecord & { id: string };
   const quotas = { "definitely-not-a-real-model": { used: 1, limit: 10 } };
   providerLimitsDb.setProviderLimitsCache((conn as { id: string }).id, cacheEntry(quotas));
 
@@ -80,7 +81,7 @@ test("non-Antigravity cache entry is returned verbatim (junk quota key survives)
 });
 
 test("Antigravity cache entry is still sanitized (non-user-callable quota key dropped)", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "Antigravity acct",
@@ -88,7 +89,7 @@ test("Antigravity cache entry is still sanitized (non-user-callable quota key dr
     accessToken: "ag-access",
     refreshToken: "ag-refresh",
     expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
-  });
+  })) as JsonRecord & { id: string };
   // `credits` is always allowed; the junk model id is not user-callable → dropped.
   const quotas = {
     credits: { used: 5, limit: 100 },

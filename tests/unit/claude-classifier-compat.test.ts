@@ -18,6 +18,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-claude-classifier-compat-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -204,7 +205,7 @@ test("handler: claudeClassifierCompat=auto short-circuits WITHOUT calling upstre
   }) as typeof fetch;
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body: structuredClone(CLASSIFIER_BODY),
       modelInfo: { provider: "openai", model: "gpt-4o-mini", extendedContext: false },
       credentials: { apiKey: "sk-test", providerSpecificData: {} },
@@ -244,7 +245,7 @@ test("handler: claudeClassifierCompat=auto emits <severity>0</severity> for the 
   }) as typeof fetch;
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body: structuredClone(SEVERITY_CLASSIFIER_BODY),
       modelInfo: { provider: "openai", model: "gpt-4o-mini", extendedContext: false },
       credentials: { apiKey: "sk-test", providerSpecificData: {} },

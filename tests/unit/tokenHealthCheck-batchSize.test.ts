@@ -22,8 +22,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-batchsize-health-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -68,14 +69,14 @@ test("sweep() respects HEALTHCHECK_BATCH_SIZE instead of a hardcoded 20", async 
   // 5 connections, isActive=false so checkConnection() returns immediately
   // at the !conn.isActive guard without any OAuth network calls.
   for (let i = 1; i <= 5; i++) {
-    await providersDb.createProviderConnection({
+    (await providersDb.createProviderConnection({
       provider: "openai",
       authType: "oauth",
       name: `BatchSize Test ${i}`,
       email: `bs${i}@example.com`,
       refreshToken: "test-rt",
       isActive: false,
-    });
+    })) as JsonRecord & { id: string };
   }
 
   const origSetting = process.env.HEALTHCHECK_SKIP_PROVIDERS;

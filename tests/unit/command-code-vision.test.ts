@@ -14,6 +14,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-cmd-code-vision-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -43,7 +44,7 @@ type FetchCall = { url: string; init: Record<string, unknown>; body: Record<stri
 
 function captureFetch(response: Response) {
   const calls: FetchCall[] = [];
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({
       url: String(url),
       init: init as Record<string, unknown>,
@@ -125,10 +126,7 @@ test("image_url parts pass through unchanged (text + image preserved)", async ()
   assert.equal(content.length, 2);
   assert.equal(content[0].type, "text");
   assert.equal(content[1].type, "image_url", "image_url part preserved as-is");
-  assert.equal(
-    (content[1].image_url as { url: string }).url,
-    "data:image/png;base64,iVBORw0KGgo="
-  );
+  assert.equal((content[1].image_url as { url: string }).url, "data:image/png;base64,iVBORw0KGgo=");
 });
 
 test("Anthropic Messages-style source image blocks pass through unchanged", async () => {
@@ -161,7 +159,10 @@ test("Anthropic Messages-style source image blocks pass through unchanged", asyn
   assert.equal(content.length, 2, "text + image parts preserved");
   assert.equal(content[1].type, "image");
   assert.equal((content[1].source as { type: string }).type, "base64");
-  assert.equal((content[1].source as { data: string }).data, "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
+  assert.equal(
+    (content[1].source as { data: string }).data,
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+  );
 });
 
 test("Anthropic source.url image block passes through unchanged", async () => {

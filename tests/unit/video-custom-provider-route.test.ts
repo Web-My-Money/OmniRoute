@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-video-custom-route-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -60,12 +62,12 @@ test("video route uses OpenAI-compatible handler for custom provider with videos
   );
 
   // Create a provider connection with the custom base URL
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "custom-video-provider",
     authType: "apikey",
     apiKey: "custom-key",
     providerSpecificData: { baseUrl: "https://custom.example.com/v1/videos/generations" },
-  });
+  })) as JsonRecord & { id: string };
 
   let captured: { url: string; body: unknown; headers: unknown } | null = null;
 
@@ -113,7 +115,7 @@ test("video route uses OpenAI-compatible handler for custom provider with videos
   // Verify the upstream call went to the custom provider's base URL
   assert.ok(captured, "fetch should have been called");
   assert.equal(captured!.url, "https://custom.example.com/v1/videos/generations");
-  assert.equal(captured!.headers.Authorization, "Bearer custom-key");
+  assert.equal((captured!.headers as LooseDeep).Authorization, "Bearer custom-key");
   assert.deepEqual(captured!.body, {
     model: "super-video-v1",
     prompt: "a cat playing piano",
@@ -185,12 +187,12 @@ test("video route dispatches submit→poll job flow for custom model with agnes-
     { preset: "agnes-video-job" }
   );
 
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "custom-job-provider",
     authType: "apikey",
     apiKey: "custom-key",
     providerSpecificData: { baseUrl: "https://custom.example.com" },
-  });
+  })) as JsonRecord & { id: string };
 
   const calls: Array<{
     url: string;
@@ -275,12 +277,12 @@ test("video route returns 502 when job preset reports failed status", async () =
     { preset: "agnes-video-job" }
   );
 
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "custom-job-provider-fail",
     authType: "apikey",
     apiKey: "custom-fail-key",
     providerSpecificData: { baseUrl: "https://custom.example.com" },
-  });
+  })) as JsonRecord & { id: string };
 
   globalThis.fetch = (async (url: unknown, init?: RequestInit) => {
     if (String(url).endsWith("/v1/videos")) {
@@ -327,12 +329,12 @@ test("video route returns 502 for unknown generationConfig preset", async () => 
     { preset: "no-such-preset" }
   );
 
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "custom-job-provider-bad",
     authType: "apikey",
     apiKey: "custom-bad-key",
     providerSpecificData: { baseUrl: "https://custom.example.com" },
-  });
+  })) as JsonRecord & { id: string };
 
   const response = await videoRoute.POST(
     new Request("http://localhost/api/v1/videos/generations", {

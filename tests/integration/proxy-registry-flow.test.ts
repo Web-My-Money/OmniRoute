@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-proxy-registry-flow-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -94,12 +95,12 @@ test("integration: proxy create with inline assignment is atomic and clears lega
 test("integration: proxy registry full flow works and enforces safe delete", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "proxy-flow-account",
     apiKey: "sk-flow-test",
-  });
+  })) as JsonRecord & { id: string };
 
   const createRes = await proxySettingsRoute.POST(
     new Request("http://localhost/api/settings/proxies", {

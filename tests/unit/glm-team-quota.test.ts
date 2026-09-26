@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import { buildGlmQuotaFetch, getGlmTeamQuotaConfig } from "../../open-sse/config/glmProvider.ts";
 import { getGlmUsage } from "../../open-sse/services/usage/glm.ts";
 import { assignGlmTeamQuotaProviderData } from "../../src/app/(dashboard)/dashboard/providers/[id]/components/modals/glmTeamQuotaProviderData.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEAM_QUOTA_RESPONSE = {
   code: 200,
@@ -180,7 +181,7 @@ describe("assignGlmTeamQuotaProviderData", () => {
 describe("getGlmUsage team quota parsing", () => {
   it("parses numeric percentage fields from team quota response", async () => {
     const originalFetch = globalThis.fetch;
-    globalThis.fetch = async (url, init = {}) => {
+    globalThis.fetch = async (url, init: MockRequestInit = {}) => {
       assert.match(String(url), /open\.bigmodel\.cn\/api\/monitor\/usage\/quota\/limit\?type=2/);
       assert.equal(
         (init as { headers: Record<string, string> }).headers["bigmodel-organization"],

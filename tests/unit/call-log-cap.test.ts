@@ -176,13 +176,13 @@ test("saveCallLog stores only summary metadata in SQLite and writes detailed art
 });
 
 test("getCallLogs resolves raw account labels from provider connections", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: "logs.user@example.com",
     email: "logs.user@example.com",
     accessToken: "token",
-  });
+  })) as JsonRecord & { id: string };
 
   insertCallLog({
     id: "masked-account-log",
@@ -776,3 +776,5 @@ test("getCallLogs and getCallLogById expose combo target identifiers", async () 
   assert.equal(detail?.comboStepId, "step-openai-secondary");
   assert.equal(detail?.comboExecutionKey, "router-fixed-accounts:1:step-openai-secondary");
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

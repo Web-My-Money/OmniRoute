@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-nvidia-410-model-scope-"));
 
@@ -33,7 +34,7 @@ async function resetStorage() {
 }
 
 async function seedNvidiaConnection() {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "nvidia",
     authType: "apikey",
     name: "nvidia-410-model-scope",
@@ -41,7 +42,7 @@ async function seedNvidiaConnection() {
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {
@@ -114,7 +115,7 @@ test("non-per-model provider keeps 410 connection-scoped", async () => {
     "plain OpenAI API-key connections are not per-model quota providers"
   );
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "openai-410-connection-scope",
@@ -122,7 +123,7 @@ test("non-per-model provider keeps 410 connection-scoped", async () => {
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await auth.markAccountUnavailable(
     connection.id,
@@ -155,7 +156,7 @@ test("other per-model providers retain existing 410 connection scope", async () 
     "Gemini provides a non-NVIDIA per-model control case"
   );
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "gemini",
     authType: "apikey",
     name: "gemini-410-control",
@@ -163,7 +164,7 @@ test("other per-model providers retain existing 410 connection scope", async () 
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await auth.markAccountUnavailable(
     connection.id,

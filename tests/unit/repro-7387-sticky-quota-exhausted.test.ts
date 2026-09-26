@@ -83,7 +83,10 @@ test("#7387: sticky pin releases a QUOTA-EXHAUSTED account whose testStatus/rate
 
   recordStickyBinding(hash, "conn-codex-exhausted"); // turn 1: served successfully
 
-  const result = await applySessionStickiness(targets, messages); // turn 2+: quota now exhausted
+  const result = await applySessionStickiness(
+    targets as unknown as ResolvedComboTarget[],
+    messages
+  ); // turn 2+: quota now exhausted
 
   assert.equal(result.stuck, false, "sticky pin must release once quota is exhausted (#7387)");
   assert.equal(result.targets[0].connectionId, "conn-healthy");
@@ -101,7 +104,10 @@ test("#7387: sticky pin stays bound when the connection is healthy and NOT quota
 
   recordStickyBinding(hash, "conn-codex-ok");
 
-  const result = await applySessionStickiness(targets, messages);
+  const result = await applySessionStickiness(
+    targets as unknown as ResolvedComboTarget[],
+    messages
+  );
 
   assert.equal(result.stuck, true);
   assert.equal(result.targets[0].connectionId, "conn-codex-ok");

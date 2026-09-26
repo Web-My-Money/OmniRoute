@@ -1,6 +1,7 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import type { ExecuteInput } from "../../open-sse/executors/base.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const mod = await import("../../open-sse/executors/felo-web.ts");
 const { REGISTRY } = await import("../../open-sse/config/providerRegistry.ts");
@@ -56,8 +57,10 @@ function feloStreamResponse(answerSnapshots: string[], includeSourcesEvent = fal
   return new Response(stream, { status: 200, headers: { "content-type": "text/event-stream" } });
 }
 
-function mockFetch(handler: (url: string, init: RequestInit) => Response | Promise<Response>): void {
-  globalThis.fetch = (async (input: RequestInfo | URL, init: RequestInit = {}) => {
+function mockFetch(
+  handler: (url: string, init: RequestInit) => Response | Promise<Response>
+): void {
+  globalThis.fetch = (async (input: RequestInfo | URL, init: MockRequestInit = {}) => {
     const url = String(input);
     calls.push({ url, init });
     return handler(url, init);
@@ -186,7 +189,10 @@ describe("FeloWebExecutor — pure helpers", () => {
         data: { type: "final_contexts", data: { sources: [{ link: "https://x", title: "X" }] } },
       }),
     })}`;
-    assert.deepEqual(parseFeloStreamLine(line, "prev"), { newText: null, nextPreviousText: "prev" });
+    assert.deepEqual(parseFeloStreamLine(line, "prev"), {
+      newText: null,
+      nextPreviousText: "prev",
+    });
   });
 
   it("accumulateFeloStreamText: replays a full stream body into the final text", () => {
@@ -224,7 +230,8 @@ describe("FeloWebExecutor — execute() happy path (mocked fetch)", () => {
   it("POSTs the thread payload, GETs the stream, and returns non-streaming OpenAI JSON", async () => {
     mockFetch((url) => {
       if (url === FELO_THREADS_URL) return threadsResponse("sk-abc");
-      if (url === feloStreamUrl("sk-abc")) return feloStreamResponse(["Hel", "Hello", "Hello there"], true);
+      if (url === feloStreamUrl("sk-abc"))
+        return feloStreamResponse(["Hel", "Hello", "Hello there"], true);
       throw new Error(`unexpected fetch: ${url}`);
     });
 

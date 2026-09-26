@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { buildOAuthConnectionCreatePayload } from "../../src/lib/oauth/connectionPersistence.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Regression for #5326: a freshly created OAuth connection (e.g. antigravity) used
 // to persist only `expiresAt`, leaving `tokenExpiresAt` null. The dashboard token
@@ -27,16 +28,12 @@ test("buildOAuthConnectionCreatePayload mirrors expiresAt into tokenExpiresAt (#
   assert.equal(payload.tokenExpiresAt, expiresAt);
   assert.equal(payload.tokenExpiresAt, payload.expiresAt);
   // tokenData fields are still carried through.
-  assert.equal(payload.accessToken, "at-123");
-  assert.equal(payload.refreshToken, "rt-123");
+  assert.equal((payload as LooseDeep).accessToken, "at-123");
+  assert.equal((payload as LooseDeep).refreshToken, "rt-123");
 });
 
 test("buildOAuthConnectionCreatePayload keeps tokenExpiresAt null when expiry is unknown", () => {
-  const payload = buildOAuthConnectionCreatePayload(
-    "antigravity",
-    { accessToken: "at-456" },
-    null
-  );
+  const payload = buildOAuthConnectionCreatePayload("antigravity", { accessToken: "at-456" }, null);
 
   assert.equal(payload.expiresAt, null);
   assert.equal(payload.tokenExpiresAt, null);

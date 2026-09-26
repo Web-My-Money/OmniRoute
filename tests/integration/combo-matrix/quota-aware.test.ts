@@ -23,9 +23,8 @@ const { BaseExecutor, combosDb, handleChat, buildRequest, seedConnection, resetS
 // Import quota / headroom seam hooks — must occur after the harness initialises
 // the DB so the module-level singletons inside quotaStrategies.ts are already live.
 const { registerQuotaFetcher } = await import("../../../open-sse/services/quotaPreflight.ts");
-const { __setHeadroomSaturationFetcherForTests } = await import(
-  "../../../open-sse/services/combo/quotaStrategies.ts"
-);
+const { __setHeadroomSaturationFetcherForTests } =
+  await import("../../../open-sse/services/combo/quotaStrategies.ts");
 
 function body(model: string) {
   return { model, stream: false, messages: [{ role: "user", content: "quota-aware route" }] };
@@ -65,7 +64,10 @@ test("reset-aware: exhausted connection (limitReached) demoted — second target
   // Register AFTER seedConnection so connection objects are available.
   // The fetcher is keyed on provider name; connectionId is passed but we return
   // the same bad quota regardless so any openai connection is deprioritised.
-  registerQuotaFetcher("openai", async (_connId) => ({ limitReached: true }));
+  registerQuotaFetcher(
+    "openai",
+    async (_connId) => ({ limitReached: true }) as unknown as Promise<QuotaInfo>
+  );
 
   await combosDb.createCombo({
     name: "m-reset-aware",

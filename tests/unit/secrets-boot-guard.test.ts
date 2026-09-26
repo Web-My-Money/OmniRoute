@@ -21,19 +21,19 @@ function readSource(relativePath: string): string {
 // ── validateSecrets rules ────────────────────────────────────────────────────
 
 test("validateSecrets: a strong API_KEY_SECRET and unset JWT_SECRET is valid", () => {
-  const result = validateSecrets({ API_KEY_SECRET: "a".repeat(32) });
+  const result = validateSecrets({ API_KEY_SECRET: "a".repeat(32) } as NodeJS.ProcessEnv);
   assert.equal(result.valid, true);
   assert.deepEqual(result.errors, []);
 });
 
 test("validateSecrets: a missing API_KEY_SECRET is an error (the only required rule)", () => {
-  const result = validateSecrets({});
+  const result = validateSecrets({} as NodeJS.ProcessEnv);
   assert.equal(result.valid, false);
   assert.ok(result.errors.some((e) => e.name === "API_KEY_SECRET"));
 });
 
 test("validateSecrets: an API_KEY_SECRET shorter than 16 chars is an error", () => {
-  const result = validateSecrets({ API_KEY_SECRET: "short" });
+  const result = validateSecrets({ API_KEY_SECRET: "short" } as NodeJS.ProcessEnv);
   assert.equal(result.valid, false);
   assert.ok(result.errors.some((e) => e.name === "API_KEY_SECRET"));
 });
@@ -41,13 +41,15 @@ test("validateSecrets: an API_KEY_SECRET shorter than 16 chars is an error", () 
 test("validateSecrets: a known-weak but long-enough API_KEY_SECRET is a warning, not an error", () => {
   // "endpoint-proxy-api-key-secret" is 30 chars — long enough to reach the
   // known-weak check specifically, not the length check.
-  const result = validateSecrets({ API_KEY_SECRET: "endpoint-proxy-api-key-secret" });
+  const result = validateSecrets({
+    API_KEY_SECRET: "endpoint-proxy-api-key-secret",
+  } as NodeJS.ProcessEnv);
   assert.equal(result.valid, true, "known-weak values are a warning, not a hard error");
   assert.ok(result.warnings.some((w) => w.name === "API_KEY_SECRET"));
 });
 
 test("validateSecrets: JWT_SECRET is optional — a missing one is not an error", () => {
-  const result = validateSecrets({ API_KEY_SECRET: "a".repeat(32) });
+  const result = validateSecrets({ API_KEY_SECRET: "a".repeat(32) } as NodeJS.ProcessEnv);
   assert.equal(result.valid, true);
   assert.equal(
     result.errors.some((e) => e.name === "JWT_SECRET"),

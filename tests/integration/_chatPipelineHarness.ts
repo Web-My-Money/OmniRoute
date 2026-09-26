@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 export async function createChatPipelineHarness(prefix) {
   const testDataDir = fs.mkdtempSync(path.join(os.tmpdir(), `omniroute-${prefix}-`));
@@ -303,8 +304,11 @@ export async function createChatPipelineHarness(prefix) {
     fs.rmSync(testDataDir, { recursive: true, force: true });
   }
 
-  async function seedConnection(provider: string, overrides: SeedConnectionOverrides = {}) {
-    return providersDb.createProviderConnection({
+  async function seedConnection(
+    provider: string,
+    overrides: SeedConnectionOverrides = {}
+  ): Promise<JsonRecord & { id: string }> {
+    const conn = (await providersDb.createProviderConnection({
       provider,
       authType: "apikey",
       name: overrides.name || `${provider}-primary`,
@@ -314,7 +318,8 @@ export async function createChatPipelineHarness(prefix) {
       priority: overrides.priority,
       rateLimitedUntil: overrides.rateLimitedUntil,
       providerSpecificData: overrides.providerSpecificData || {},
-    });
+    })) as JsonRecord & { id: string };
+    return conn;
   }
 
   async function seedApiKey({

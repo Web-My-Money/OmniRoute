@@ -17,8 +17,8 @@ const searchRoute = await import("../../src/app/api/skills/skillssh/route.ts");
 const installRoute = await import("../../src/app/api/skills/skillssh/install/route.ts");
 
 function clearSkillRegistry() {
-  skillRegistry.registeredSkills?.clear?.();
-  skillRegistry.versionCache?.clear?.();
+  skillRegistry["registeredSkills"]?.clear?.();
+  skillRegistry["versionCache"]?.clear?.();
 }
 
 function resetStorage() {

@@ -25,7 +25,7 @@ const noOverride = (): string | undefined => undefined;
 describe("resolveAdaptiveVirtualLanesFlag", () => {
   it('env "1" enables and reports env, winning over a DB override', () => {
     const state = resolveAdaptiveVirtualLanesFlag({
-      env: { [ADAPTIVE_VIRTUAL_LANES_FLAG_KEY]: "1" },
+      env: { [ADAPTIVE_VIRTUAL_LANES_FLAG_KEY]: "1" } as NodeJS.ProcessEnv,
       getOverride: () => "false",
     });
     assert.deepEqual(state, { enabled: true, source: "env" });
@@ -33,7 +33,7 @@ describe("resolveAdaptiveVirtualLanesFlag", () => {
 
   it('env "true" enables (runtime-compatible truthiness)', () => {
     const state = resolveAdaptiveVirtualLanesFlag({
-      env: { [ADAPTIVE_VIRTUAL_LANES_FLAG_KEY]: "true" },
+      env: { [ADAPTIVE_VIRTUAL_LANES_FLAG_KEY]: "true" } as NodeJS.ProcessEnv,
       getOverride: noOverride,
     });
     assert.deepEqual(state, { enabled: true, source: "env" });
@@ -41,7 +41,7 @@ describe("resolveAdaptiveVirtualLanesFlag", () => {
 
   it('env "0" is an explicit off that still wins over the DB', () => {
     const state = resolveAdaptiveVirtualLanesFlag({
-      env: { [ADAPTIVE_VIRTUAL_LANES_FLAG_KEY]: "0" },
+      env: { [ADAPTIVE_VIRTUAL_LANES_FLAG_KEY]: "0" } as NodeJS.ProcessEnv,
       getOverride: () => "true",
     });
     assert.deepEqual(state, { enabled: false, source: "env" });
@@ -52,7 +52,7 @@ describe("resolveAdaptiveVirtualLanesFlag", () => {
       env: emptyEnv,
       getOverride: () => "true",
     });
-    assert.deepEqual(state, { enabled: true, source: "db" });
+    assert.deepEqual(state, { enabled: true, source: "db" } as NodeJS.ProcessEnv);
   });
 
   it('DB override "1" enables when env is absent', () => {
@@ -60,7 +60,7 @@ describe("resolveAdaptiveVirtualLanesFlag", () => {
       env: emptyEnv,
       getOverride: () => "1",
     });
-    assert.deepEqual(state, { enabled: true, source: "db" });
+    assert.deepEqual(state, { enabled: true, source: "db" } as NodeJS.ProcessEnv);
   });
 
   it("DB override disables when env is absent", () => {
@@ -68,7 +68,7 @@ describe("resolveAdaptiveVirtualLanesFlag", () => {
       env: emptyEnv,
       getOverride: () => "false",
     });
-    assert.deepEqual(state, { enabled: false, source: "db" });
+    assert.deepEqual(state, { enabled: false, source: "db" } as NodeJS.ProcessEnv);
   });
 
   it("defaults to disabled when neither env nor DB is set", () => {
@@ -76,7 +76,7 @@ describe("resolveAdaptiveVirtualLanesFlag", () => {
       env: emptyEnv,
       getOverride: noOverride,
     });
-    assert.deepEqual(state, { enabled: false, source: "default" });
+    assert.deepEqual(state, { enabled: false, source: "default" } as NodeJS.ProcessEnv);
   });
 });
 

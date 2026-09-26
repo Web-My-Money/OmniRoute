@@ -78,7 +78,13 @@ async function readJsonFileWithRetry(filePath, attempts = 100) {
 }
 
 function createFakeChild(pid) {
-  const child = new EventEmitter();
+  const child = new EventEmitter() as EventEmitter & {
+    stdout: PassThrough;
+    stderr: PassThrough;
+    pid: number;
+    killed: boolean;
+    kill(signal?: string): boolean;
+  };
   child.stdout = new PassThrough();
   child.stderr = new PassThrough();
   child.pid = pid;

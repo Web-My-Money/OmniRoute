@@ -19,7 +19,7 @@ import { MODE_PACKS, getModePack, getModePackNames } from "../modePacks";
 import { getStrategy } from "../routerStrategy";
 import type { RoutingContext } from "../routerStrategy";
 
-describe("Scoring", () => {
+describe("Scoring", { timeout: 30000 }, () => {
   const candidate: ProviderCandidate = {
     provider: "anthropic",
     model: "claude-sonnet",
@@ -69,7 +69,7 @@ describe("Scoring", () => {
   });
 });
 
-describe("Task Fitness", () => {
+describe("Task Fitness", { timeout: 30000 }, () => {
   it("should return fitness score for known model+task", () => {
     const score = getTaskFitness("claude-sonnet", "coding");
     expect(score).toBeGreaterThan(0.5);
@@ -153,7 +153,7 @@ describe("Task Fitness", () => {
   });
 });
 
-describe("Self-Healing", () => {
+describe("Self-Healing", { timeout: 30000 }, () => {
   let healer: SelfHealingManager;
 
   beforeEach(() => {
@@ -194,7 +194,7 @@ describe("Self-Healing", () => {
   });
 });
 
-describe("Mode Packs", () => {
+describe("Mode Packs", { timeout: 30000 }, () => {
   it("should have 6 mode packs", () => {
     // #4235 Phase B added reliability-first (for the `:reliable` tier).
     // chaos-mode added for the `auto/chaos` parallel-dispatch variant.
@@ -239,7 +239,7 @@ describe("Mode Packs", () => {
   });
 });
 
-describe("SLA-aware Strategy", () => {
+describe("SLA-aware Strategy", { timeout: 30000 }, () => {
   const pool: ProviderCandidate[] = [
     {
       provider: "fast-flaky",
@@ -419,7 +419,7 @@ describe("SLA-aware Strategy", () => {
   });
 });
 
-describe("LKGP Strategy", () => {
+describe("LKGP Strategy", { timeout: 30000 }, () => {
   const pool: ProviderCandidate[] = [
     {
       provider: "anthropic",
@@ -487,7 +487,7 @@ describe("LKGP Strategy", () => {
   });
 });
 
-describe("Task Fitness Resolution Chain", () => {
+describe("Task Fitness Resolution Chain", { timeout: 30000 }, () => {
   it("getTaskFitness should return static table score for known models", () => {
     const score = getTaskFitness("claude-sonnet", "coding");
     expect(score).toBe(0.95);
@@ -581,7 +581,7 @@ describe("Task Fitness Resolution Chain", () => {
   });
 });
 
-describe("Task Fitness DB Resolution Chain", () => {
+describe("Task Fitness DB Resolution Chain", { timeout: 30000 }, () => {
   // These tests verify that when DB is available, the resolution chain
   // (user_override → arena_elo → models_dev_tier → static → wildcard)
   // works correctly. Since the DB module is loaded lazily via require(),

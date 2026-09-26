@@ -87,5 +87,8 @@ test("combo resource 404 never records model lockout or provider cooldown", asyn
       `${model} must remain available after a request-resource 404`
     );
   }
-  assert.equal(isProviderInCooldown(provider, undefined, settings), false);
+  assert.equal(
+    isProviderInCooldown(provider, undefined, settings as unknown as ResilienceSettings),
+    false
+  );
 });

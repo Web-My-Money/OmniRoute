@@ -5,6 +5,7 @@ import {
   applyCompression,
   applyStackedCompression,
 } from "../../../open-sse/services/compression/index.ts";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 describe("compression pipeline integration", () => {
   it("runs stacked compression in RTK then Caveman order", () => {
@@ -97,10 +98,10 @@ describe("compression pipeline integration", () => {
     const content = (result.body.messages as typeof body.messages)[0].content;
 
     assert.equal(result.stats?.engine, "stacked");
-    assert.ok(Array.isArray(content));
-    assert.match(content[0].text ?? "", /first repeated tool line/);
-    assert.match(content[2].text ?? "", /second repeated tool line/);
-    assert.notEqual(content[0].text, content[2].text);
+    assert.ok((Array as LooseDeep).isArray(content));
+    assert.match((content[0] as LooseDeep).text ?? "", /first repeated tool line/);
+    assert.match((content[2] as LooseDeep).text ?? "", /second repeated tool line/);
+    assert.notEqual(content[0].text, (content[2] as LooseDeep).text);
     assert.deepEqual(content[1], imagePart);
   });
 });

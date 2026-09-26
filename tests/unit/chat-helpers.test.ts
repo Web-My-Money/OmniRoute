@@ -4,6 +4,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import net from "node:net";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-chat-helpers-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -32,8 +34,8 @@ async function resetStorage() {
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
-async function seedConnection(provider, overrides = {}) {
-  return providersDb.createProviderConnection({
+async function seedConnection(provider, overrides: JsonRecord = {}) {
+  return (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name: overrides.name || `${provider}-helper-${Math.random().toString(16).slice(2, 8)}`,
@@ -42,7 +44,7 @@ async function seedConnection(provider, overrides = {}) {
     testStatus: overrides.testStatus || "active",
     providerSpecificData: overrides.providerSpecificData || {},
     defaultModel: overrides.defaultModel,
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {
@@ -546,8 +548,8 @@ test("executeChatWithBreaker converts proxy fast-fail errors", async () => {
       comboExecutionKey: null,
     });
 
-    assert.equal(proxyResult.result.status, 502);
-    assert.match(String(proxyResult.result.error || ""), /Proxy unreachable/);
+    assert.equal((proxyResult as LooseDeep).result.status, 502);
+    assert.match(String((proxyResult as LooseDeep).result.error || ""), /Proxy unreachable/);
   } finally {
     globalThis.fetch = originalFetch;
   }

@@ -18,6 +18,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import crypto from "node:crypto";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
+import type { RadarReferralsCacheEntry } from "../../src/lib/radar/referralsSync.ts";
 
 // ---------------------------------------------------------------------------
 // Generate ephemeral Ed25519 keypair for testing
@@ -116,7 +118,7 @@ test("RadarReferralsFeedSchema: rejects wrong schemaVersion", () => {
 
 test("RadarReferralsFeedSchema: rejects missing referrals section", () => {
   const feed = baseReferralsFeed();
-  delete (feed as Record<string, unknown>).referrals;
+  delete (feed as LooseDeep).referrals;
   const result = referralsFeedSchema.RadarReferralsFeedSchema.safeParse(feed);
   assert.equal(
     result.success,
@@ -208,7 +210,7 @@ test("syncRadarReferrals: valid signature => cache updated, payload byte-identic
   const feed = baseReferralsFeed();
   const bytes = feedBytes(feed);
   const sig = signBytes(bytes);
-  const cacheStore: referralsSync.RadarReferralsCacheEntry[] = [];
+  const cacheStore: RadarReferralsCacheEntry[] = [];
 
   const result = await referralsSync.syncRadarReferrals({
     getFlag: () => true,
@@ -317,7 +319,7 @@ test("syncRadarReferrals: same generatedAt with a new served tier replaces the c
   ];
   const bytes = feedBytes(feed);
   const sig = signBytes(bytes);
-  const cacheStore: referralsSync.RadarReferralsCacheEntry[] = [];
+  const cacheStore: RadarReferralsCacheEntry[] = [];
 
   const result = await referralsSync.syncRadarReferrals({
     getFlag: () => true,
@@ -378,7 +380,7 @@ test("syncRadarReferrals: newer generatedAt than cache => updated", async () => 
   const feed = baseReferralsFeed("2026-08-07T13:00:00.000Z"); // newer
   const bytes = feedBytes(feed);
   const sig = signBytes(bytes);
-  const cacheStore: referralsSync.RadarReferralsCacheEntry[] = [];
+  const cacheStore: RadarReferralsCacheEntry[] = [];
 
   const result = await referralsSync.syncRadarReferrals({
     getFlag: () => true,
@@ -414,7 +416,7 @@ test("syncRadarReferrals: two identical fetches (no cache between) produce ident
   const feed = baseReferralsFeed();
   const bytes = feedBytes(feed);
   const sig = signBytes(bytes);
-  const cacheStore: referralsSync.RadarReferralsCacheEntry[] = [];
+  const cacheStore: RadarReferralsCacheEntry[] = [];
 
   const run = () =>
     referralsSync.syncRadarReferrals({
@@ -447,7 +449,7 @@ test("syncRadarReferrals: two identical fetches (no cache between) produce ident
 test("syncRadarReferrals: header 'community' => cache + result use community", async () => {
   const bytes = feedBytes(baseReferralsFeed());
   const sig = signBytes(bytes);
-  const cacheStore: referralsSync.RadarReferralsCacheEntry[] = [];
+  const cacheStore: RadarReferralsCacheEntry[] = [];
 
   const result = await referralsSync.syncRadarReferrals({
     getFlag: () => true,
@@ -473,7 +475,7 @@ test("syncRadarReferrals: header 'community' => cache + result use community", a
 test("syncRadarReferrals: header 'live' (supporter key) => cache + result use live", async () => {
   const bytes = feedBytes(baseReferralsFeed());
   const sig = signBytes(bytes);
-  const cacheStore: referralsSync.RadarReferralsCacheEntry[] = [];
+  const cacheStore: RadarReferralsCacheEntry[] = [];
 
   const result = await referralsSync.syncRadarReferrals({
     getFlag: () => true,
@@ -499,7 +501,7 @@ test("syncRadarReferrals: header 'live' (supporter key) => cache + result use li
 test("syncRadarReferrals: header absent => falls back to 'community' (no body tier field to fall back to)", async () => {
   const bytes = feedBytes(baseReferralsFeed());
   const sig = signBytes(bytes);
-  const cacheStore: referralsSync.RadarReferralsCacheEntry[] = [];
+  const cacheStore: RadarReferralsCacheEntry[] = [];
 
   const result = await referralsSync.syncRadarReferrals({
     getFlag: () => true,
@@ -522,7 +524,7 @@ test("syncRadarReferrals: header absent => falls back to 'community' (no body ti
 test("syncRadarReferrals: garbage tier header => never trusted, falls back to 'community'", async () => {
   const bytes = feedBytes(baseReferralsFeed());
   const sig = signBytes(bytes);
-  const cacheStore: referralsSync.RadarReferralsCacheEntry[] = [];
+  const cacheStore: RadarReferralsCacheEntry[] = [];
 
   const result = await referralsSync.syncRadarReferrals({
     getFlag: () => true,

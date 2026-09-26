@@ -13,6 +13,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-apikey-spacing-sync-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -39,12 +40,12 @@ test.after(() => {
 });
 
 async function createGlmApiKeyConnection(i: number) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "apikey",
     name: `GLM Spacing ${i}`,
     apiKey: `glm-spacing-key-${i}`,
-  });
+  })) as JsonRecord & { id: string };
 }
 
 function glmQuotaResponse() {

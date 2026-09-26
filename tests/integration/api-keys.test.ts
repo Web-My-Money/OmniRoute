@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { makeManagementSessionRequest } from "../helpers/managementSession.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-api-keys-route-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -267,7 +268,7 @@ test("POST /api/keys triggers cloud sync when cloud mode is enabled", async () =
   await createManagementKey();
   const originalFetch = globalThis.fetch;
   const calls = [];
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     calls.push({ url, options });
     return Response.json({ changes: { apiKeys: 1 } });
   };

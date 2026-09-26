@@ -5,8 +5,9 @@ import http from "node:http";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-token-healthcheck-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -59,7 +60,7 @@ test("GitHub access-token health demotes only a verified 401 and stores no secre
         : new Response(responseSecret, { status })) as typeof fetch;
 
     try {
-      const connection = await providersDb.createProviderConnection({
+      const connection = (await providersDb.createProviderConnection({
         provider: "github",
         authType: "oauth",
         name: `GitHub ${status}`,
@@ -71,7 +72,7 @@ test("GitHub access-token health demotes only a verified 401 and stores no secre
           copilotToken: "existing-copilot-secret",
           copilotTokenExpiresAt: Math.floor(Date.now() / 1000) + 3600,
         },
-      });
+      })) as JsonRecord & { id: string };
 
       await tokenHealthCheck.checkConnection({
         ...connection,
@@ -104,7 +105,7 @@ test("GitHub access-token health keeps network failures active", async () => {
   }) as typeof fetch;
 
   try {
-    const connection = await providersDb.createProviderConnection({
+    const connection = (await providersDb.createProviderConnection({
       provider: "github",
       authType: "oauth",
       name: "GitHub network",
@@ -116,7 +117,7 @@ test("GitHub access-token health keeps network failures active", async () => {
         copilotToken: "existing-copilot-secret",
         copilotTokenExpiresAt: Math.floor(Date.now() / 1000) + 3600,
       },
-    });
+    })) as JsonRecord & { id: string };
 
     await tokenHealthCheck.checkConnection({
       ...connection,
@@ -334,7 +335,7 @@ test("checkConnection uses the resolved proxy payload when refreshing tokens", a
             clientSecret: "healthcheck-client-secret",
           },
           async () => {
-            const connection = await providersDb.createProviderConnection({
+            const connection = (await providersDb.createProviderConnection({
               provider: providerId,
               authType: "oauth",
               name: "Healthcheck Proxy Account",
@@ -342,7 +343,7 @@ test("checkConnection uses the resolved proxy payload when refreshing tokens", a
               accessToken: "stale-access-token",
               refreshToken: "refresh-token-123",
               isActive: true,
-            });
+            })) as JsonRecord & { id: string };
 
             await settingsDb.setProxyForLevel("key", (connection as any).id, {
               type: "http",
@@ -407,7 +408,7 @@ test("checkConnection uses the latest stored refresh token instead of a stale sw
           clientSecret: "snapshot-client-secret",
         },
         async () => {
-          const connection = await providersDb.createProviderConnection({
+          const connection = (await providersDb.createProviderConnection({
             provider: providerId,
             authType: "oauth",
             name: "Snapshot Account",
@@ -415,7 +416,7 @@ test("checkConnection uses the latest stored refresh token instead of a stale sw
             accessToken: "snapshot-access-old",
             refreshToken: "snapshot-refresh-old",
             isActive: true,
-          });
+          })) as JsonRecord & { id: string };
 
           const staleCheckTime = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
           await providersDb.updateProviderConnection((connection as any).id, {
@@ -463,7 +464,7 @@ test("checkConnection skips interval refresh when token expiry is known and stil
           clientSecret: "known-expiry-client-secret",
         },
         async () => {
-          const connection = await providersDb.createProviderConnection({
+          const connection = (await providersDb.createProviderConnection({
             provider: providerId,
             authType: "oauth",
             name: "Known Expiry Account",
@@ -472,7 +473,7 @@ test("checkConnection skips interval refresh when token expiry is known and stil
             refreshToken: "known-expiry-refresh",
             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
             isActive: true,
-          });
+          })) as JsonRecord & { id: string };
 
           const staleCheckTime = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
           await providersDb.updateProviderConnection((connection as any).id, {
@@ -527,7 +528,7 @@ test("checkConnection skips providers listed in OMNIROUTE_HEALTHCHECK_SKIP_PROVI
           clientSecret: "skip-client-secret",
         },
         async () => {
-          const connection = await providersDb.createProviderConnection({
+          const connection = (await providersDb.createProviderConnection({
             provider: providerId,
             authType: "oauth",
             name: "Skip-list Account",
@@ -535,7 +536,7 @@ test("checkConnection skips providers listed in OMNIROUTE_HEALTHCHECK_SKIP_PROVI
             accessToken: "stale-access-token",
             refreshToken: "refresh-token-skip",
             isActive: true,
-          });
+          })) as JsonRecord & { id: string };
 
           // The connection is due for refresh (no known expiry, never checked).
           // With the provider listed, the proactive sweep must skip it entirely —
@@ -590,7 +591,7 @@ test("checkConnection preserves refresh_token for non-rotating providers on unre
           clientSecret: "nonrotating-client-secret",
         },
         async () => {
-          const connection = await providersDb.createProviderConnection({
+          const connection = (await providersDb.createProviderConnection({
             provider: providerId,
             authType: "oauth",
             name: "Non-rotating Account",
@@ -601,7 +602,7 @@ test("checkConnection preserves refresh_token for non-rotating providers on unre
             // so execution reaches the deactivation branch that used to null the token.
             expiresAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
             isActive: true,
-          });
+          })) as JsonRecord & { id: string };
 
           await tokenHealthCheck.checkConnection(connection);
 
@@ -647,7 +648,7 @@ for (const providerId of ["antigravity"]) {
         // (not a per-provider tokenUrl), so redirect that hardcoded endpoint.
         OAUTH_ENDPOINTS.google.token = `${tokenServer.url}/token`;
         try {
-          const connection = await providersDb.createProviderConnection({
+          const connection = (await providersDb.createProviderConnection({
             provider: providerId,
             authType: "oauth",
             name: `${providerId} Account`,
@@ -658,7 +659,7 @@ for (const providerId of ["antigravity"]) {
             // so execution reaches the deactivation branch.
             expiresAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
             isActive: true,
-          });
+          })) as JsonRecord & { id: string };
 
           await tokenHealthCheck.checkConnection(connection);
 

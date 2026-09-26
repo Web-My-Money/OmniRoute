@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-probe-7740-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -43,7 +44,7 @@ test("#7740: orphaned provider connection (id removed from catalog) keeps surfac
     "sanity: phind must already be absent from the live catalog"
   );
 
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "phind",
     authType: "apikey",
     name: "Legacy Phind key",
@@ -60,7 +61,7 @@ test("#7740: orphaned provider connection (id removed from catalog) keeps surfac
         },
       },
     },
-  });
+  })) as JsonRecord & { id: string };
   assert.ok(created?.id, "connection must be created");
 
   const all = await providersDb.getProviderConnections({});

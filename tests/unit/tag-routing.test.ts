@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-tag-routing-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -41,14 +43,14 @@ async function resetStorage() {
 }
 
 async function seedConnection(provider: string, name: string, tags: string[]) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name,
     apiKey: `sk-${name}`,
     providerSpecificData: { tags },
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {
@@ -98,7 +100,7 @@ test("handleComboChat filters priority targets by metadata.tags using any-match 
       attempts.push({
         model: modelStr,
         allowedConnectionIds: Array.isArray(target?.allowedConnectionIds)
-          ? target.allowedConnectionIds
+          ? (target as LooseDeep).allowedConnectionIds
           : null,
       });
       return okResponse(modelStr);

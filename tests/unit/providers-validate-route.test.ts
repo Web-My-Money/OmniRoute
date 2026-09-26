@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-providers-validate-route-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -88,7 +89,7 @@ test("providers validate route forwards baseUrl to built-in specialty validators
   await resetStorage();
 
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     if (String(url) === "https://us.inference.heroku.com/v1/chat/completions") {
       assert.equal(init.headers.Authorization, "Bearer heroku-key");
       return new Response(JSON.stringify({ error: "bad request" }), { status: 400 });
@@ -174,7 +175,7 @@ test("providers validate route allows a local baseUrl by default (#5066 local-fi
   delete process.env.OMNIROUTE_ALLOW_LOCAL_PROVIDER_URLS; // default ON
 
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(String(url), "http://127.0.0.1:3264/api/v1/chat/completions");
     return new Response(JSON.stringify({ error: "bad request" }), { status: 400 });
   };
@@ -239,7 +240,7 @@ test("providers validate route allows private baseUrl values when opt-in env is 
   process.env.OMNIROUTE_ALLOW_PRIVATE_PROVIDER_URLS = "true";
 
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(String(url), "http://127.0.0.1:8080/v1/chat/completions");
     assert.equal(init.headers.Authorization, "Bearer heroku-key");
     return new Response(JSON.stringify({ error: "bad request" }), { status: 400 });

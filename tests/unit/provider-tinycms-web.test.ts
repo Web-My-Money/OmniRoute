@@ -18,6 +18,7 @@ import { WEB_COOKIE_PROVIDERS } from "../../src/shared/constants/providers/web-c
 import { REGISTRY } from "../../open-sse/config/providers/index.ts";
 import { getExecutor, TinyCmsExecutor } from "../../open-sse/executors/index.ts";
 import { setupDomMocks, type DomMockRestore } from "../../open-sse/executors/tinycmsSigner.ts";
+import { wrapLoose } from "../helpers/looseTypes.ts";
 
 // tinycmsSigner.ts intentionally does NOT install its window/document/canvas
 // shims as a module-load side effect (see setupDomMocks() there) — doing so
@@ -143,7 +144,7 @@ test("TinyCmsExecutor can be instantiated", () => {
 
 test("TinyCmsExecutor returns 401 when UUID is missing", async () => {
   const executor = new TinyCmsExecutor();
-  const result = await executor.execute({
+  const result = await wrapLoose(executor).execute({
     model: "gpt-5-free",
     body: { messages: [{ role: "user", content: "hi" }] },
     stream: false,
@@ -161,7 +162,7 @@ test("TinyCmsExecutor returns 401 when UUID is missing", async () => {
 
 test("TinyCmsExecutor returns 401 when UUID does not start with 'R'", async () => {
   const executor = new TinyCmsExecutor();
-  const result = await executor.execute({
+  const result = await wrapLoose(executor).execute({
     model: "gpt-5-free",
     body: { messages: [{ role: "user", content: "hi" }] },
     stream: false,
@@ -248,7 +249,7 @@ test("initTinyCmsWasm is idempotent (calling twice does not throw)", async () =>
 
 test("TinyCmsExecutor sanitizes errors (no stack traces in error response)", async () => {
   const executor = new TinyCmsExecutor();
-  const result = await executor.execute({
+  const result = await wrapLoose(executor).execute({
     model: "gpt-5-free",
     body: { messages: [{ role: "user", content: "hi" }] },
     stream: false,

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-deepseek-efforts-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -47,14 +48,14 @@ test("DeepSeek registries declare none/low/high/max on both V4 models", () => {
 });
 
 test("DeepSeek catalog exposes only the declared effort aliases", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "deepseek",
     authType: "apikey",
     name: "deepseek-efforts",
     apiKey: "deepseek-test-key",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   const response = await v1ModelsCatalog.getUnifiedModelsResponse(
     new Request("http://localhost/api/v1/models")
@@ -73,14 +74,14 @@ test("DeepSeek catalog exposes only the declared effort aliases", async () => {
 });
 
 test("OpenCode Go catalog derives the declared V4 effort aliases from base models", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "opencode-go",
     authType: "apikey",
     name: "opencode-go-deepseek-efforts",
     apiKey: "opencode-go-test-key",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   const response = await v1ModelsCatalog.getUnifiedModelsResponse(
     new Request("http://localhost/api/v1/models")
@@ -101,14 +102,14 @@ test("OpenCode Go catalog derives the declared V4 effort aliases from base model
   }
 });
 test("Crof synced reasoning metadata exposes exactly none/low/medium/high/max aliases", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "crof",
     authType: "apikey",
     name: "crof-live-efforts",
     apiKey: "crof-test-key",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   const modelId = "crof-live-reasoning-model";
 
   await modelDiscovery.persistDiscoveredModels("crof", connection.id, [
@@ -135,14 +136,14 @@ test("Crof synced reasoning metadata exposes exactly none/low/medium/high/max al
 });
 
 test("Crof static GLM 5.2 effort aliases survive a stale synced cache", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "crof",
     authType: "apikey",
     name: "crof-stale-glm-5-2",
     apiKey: "crof-stale-glm-5-2-key",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   await modelsDb.replaceSyncedAvailableModelsForConnection("crof", connection.id, [
     {
@@ -173,14 +174,14 @@ test("Crof static GLM 5.2 effort aliases survive a stale synced cache", async ()
 });
 
 test("Crof synced effort aliases resolve to the base model at request time", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "crof",
     authType: "apikey",
     name: "crof-runtime-efforts",
     apiKey: "crof-runtime-key",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   const modelId = "crof-runtime-reasoning-model";
 
   await modelDiscovery.persistDiscoveredModels("crof", connection.id, [
@@ -238,14 +239,14 @@ test("non-DeepSeek static reasoning models do not advertise unresolvable effort 
   // cheaperinference declares deepseek-v4-flash/pro with supportsReasoning: true
   // but no supportedThinkingEfforts — the catalog must NOT synthesize
   // cheaperinference/deepseek-v4-flash-{low,high,...} ids for them (#9485 review #1).
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "cheaperinference",
     authType: "apikey",
     name: "cheaperinference-blast-radius",
     apiKey: "cheaperinference-test-key",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   const response = await v1ModelsCatalog.getUnifiedModelsResponse(
     new Request("http://localhost/api/v1/models")

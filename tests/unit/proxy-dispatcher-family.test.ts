@@ -151,7 +151,7 @@ describe("proxyDispatcher CONNECT tunneling (undici 8.6+ proxyTunnel)", () => {
       const dispatcher = createProxyDispatcher(`http://127.0.0.1:${proxyPort}`);
       const res = await undiciFetch(`http://127.0.0.1:${targetPort}/token`, {
         method: "POST",
-        // @ts-expect-error undici dispatcher option
+        //
         dispatcher,
         signal: AbortSignal.timeout(3000),
       });

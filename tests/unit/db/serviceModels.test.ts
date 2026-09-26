@@ -12,7 +12,7 @@ import path from "node:path";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-service-models-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 process.env.DISABLE_SQLITE_AUTO_BACKUP = "true";
 
 const core = await import("../../../src/lib/db/core.ts");

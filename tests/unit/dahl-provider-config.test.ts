@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { APIKEY_PROVIDERS_GATEWAYS } from "../../src/shared/constants/providers/apikey/gateways.ts";
 import { APIKEY_PROVIDERS } from "../../src/shared/constants/providers/apikey/index.ts";
 import { NOAUTH_PROVIDERS } from "../../src/shared/constants/providers/noauth.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("dahl is registered in APIKEY_PROVIDERS_GATEWAYS with managedAccount", () => {
   const dahl = APIKEY_PROVIDERS_GATEWAYS.dahl;
@@ -22,5 +23,5 @@ test("dahl is accessible via the merged APIKEY_PROVIDERS barrel", () => {
 });
 
 test("dahl is NOT in NOAUTH_PROVIDERS (uses real apiKey, not synthetic)", () => {
-  assert.equal(NOAUTH_PROVIDERS.dahl, undefined, "dahl must not be noAuth");
+  assert.equal((NOAUTH_PROVIDERS as LooseDeep).dahl, undefined, "dahl must not be noAuth");
 });

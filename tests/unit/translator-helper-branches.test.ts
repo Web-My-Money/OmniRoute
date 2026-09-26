@@ -1,11 +1,19 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { wrapLoose } from "../helpers/looseTypes.ts";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const schemaCoercion = await import("../../open-sse/translator/helpers/schemaCoercion.ts");
 const openaiHelper = await import("../../open-sse/translator/helpers/openaiHelper.ts");
 const claudeHelper = await import("../../open-sse/translator/helpers/claudeHelper.ts");
 const geminiHelper = await import("../../open-sse/translator/helpers/geminiHelper.ts");
 const toolCallHelper = await import("../../open-sse/translator/helpers/toolCallHelper.ts");
+const claudeHelperLoose = wrapLoose(claudeHelper);
+const geminiHelperLoose = wrapLoose(geminiHelper);
+const openaiHelperLoose = wrapLoose(openaiHelper);
+const toolCallHelperLoose = wrapLoose(toolCallHelper);
+const schemaCoercionLoose = wrapLoose(schemaCoercion);
 const { FORMATS } = await import("../../open-sse/translator/formats.ts");
 const { translateRequest } = await import("../../open-sse/translator/index.ts");
 const {
@@ -17,7 +25,7 @@ const {
 const { clearModelsDevCapabilities, saveModelsDevCapabilities } =
   await import("../../src/lib/modelsDevSync.ts");
 
-function buildCapability(overrides = {}) {
+function buildCapability(overrides: JsonRecord = {}) {
   return {
     tool_call: null,
     reasoning: null,
@@ -47,7 +55,7 @@ test.afterEach(() => {
 });
 
 test("schemaCoercion recursively coerces schema numeric fields across object variants", () => {
-  const result = schemaCoercion.coerceSchemaNumericFields({
+  const result = schemaCoercionLoose.coerceSchemaNumericFields({
     minimum: "1",
     maxItems: "5",
     properties: {
@@ -99,34 +107,34 @@ test("schemaCoercion recursively coerces schema numeric fields across object var
   assert.equal((result as any).then.maximum, 17);
   assert.equal((result as any).else.minItems, 18);
 
-  assert.equal(schemaCoercion.coerceSchemaNumericFields("unchanged"), "unchanged");
-  assert.deepEqual(schemaCoercion.coerceSchemaNumericFields(["2", { minimum: "3" }]), [
+  assert.equal(schemaCoercionLoose.coerceSchemaNumericFields("unchanged"), "unchanged");
+  assert.deepEqual(schemaCoercionLoose.coerceSchemaNumericFields(["2", { minimum: "3" }]), [
     "2",
     { minimum: 3 },
   ]);
 });
 
 test("schemaCoercion sanitizes descriptions, tool schemas, tool ids and deepseek reasoning placeholders", () => {
-  const sanitizedOpenAI = schemaCoercion.sanitizeToolDescription({
+  const sanitizedOpenAI = schemaCoercionLoose.sanitizeToolDescription({
     type: "function",
     function: { name: "weather", description: 42 },
   });
   (assert as any).equal((sanitizedOpenAI as any).function.description, "42");
 
-  const sanitizedClaude = schemaCoercion.sanitizeToolDescription({
+  const sanitizedClaude = schemaCoercionLoose.sanitizeToolDescription({
     name: "weather",
     description: null,
   });
   assert.equal((sanitizedClaude as any).description, "");
 
-  const sanitizedGemini = schemaCoercion.sanitizeToolDescription({
+  const sanitizedGemini = schemaCoercionLoose.sanitizeToolDescription({
     functionDeclarations: [{ name: "one", description: 12 }, { name: "two" }],
   });
   assert.equal((sanitizedGemini as any).functionDeclarations[0].description, "12");
   assert.equal((sanitizedGemini as any).functionDeclarations[1].name, "two");
-  assert.equal(schemaCoercion.sanitizeToolDescription("plain"), "plain");
+  assert.equal(schemaCoercionLoose.sanitizeToolDescription("plain"), "plain");
 
-  const coercedTools = schemaCoercion.coerceToolSchemas([
+  const coercedTools = schemaCoercionLoose.coerceToolSchemas([
     {
       type: "function",
       function: { parameters: { minimum: "4" } },
@@ -148,18 +156,18 @@ test("schemaCoercion sanitizes descriptions, tool schemas, tool ids and deepseek
   assert.equal(coercedTools[2].parameters.maximum, 9);
   assert.equal(coercedTools[3].functionDeclarations[0].parameters.minLength, 1);
   assert.equal(coercedTools[4], "untouched");
-  assert.equal(schemaCoercion.coerceToolSchemas("not-array"), "not-array");
+  assert.equal(schemaCoercionLoose.coerceToolSchemas("not-array"), "not-array");
 
-  const descriptionList = schemaCoercion.sanitizeToolDescriptions([{ description: 7 }, "raw"]);
+  const descriptionList = schemaCoercionLoose.sanitizeToolDescriptions([{ description: 7 }, "raw"]);
   assert.equal(descriptionList[0].description, "7");
   assert.equal(descriptionList[1], "raw");
-  assert.equal(schemaCoercion.sanitizeToolDescriptions("raw"), "raw");
+  assert.equal(schemaCoercionLoose.sanitizeToolDescriptions("raw"), "raw");
 
-  assert.equal(schemaCoercion.sanitizeToolId("call.abc:123"), "call_abc_123");
-  assert.match(schemaCoercion.sanitizeToolId(""), /^tool_[a-z0-9_]+$/);
-  assert.match(schemaCoercion.sanitizeToolId(undefined), /^tool_[a-z0-9_]+$/);
+  assert.equal(schemaCoercionLoose.sanitizeToolId("call.abc:123"), "call_abc_123");
+  assert.match(String(schemaCoercionLoose.sanitizeToolId("")), /^tool_[a-z0-9_]+$/);
+  assert.match(String(schemaCoercionLoose.sanitizeToolId(undefined)), /^tool_[a-z0-9_]+$/);
 
-  const injected = schemaCoercion.injectEmptyReasoningContentForToolCalls(
+  const injected = schemaCoercionLoose.injectEmptyReasoningContentForToolCalls(
     [
       { role: "assistant", tool_calls: [{ id: "call_1" }] },
       { role: "assistant", tool_calls: [{ id: "call_2" }], reasoning_content: "keep" },
@@ -172,7 +180,7 @@ test("schemaCoercion sanitizes descriptions, tool schemas, tool ids and deepseek
   assert.equal(injected[1].reasoning_content, "keep");
   assert.equal(injected[2].reasoning_content, undefined);
   assert.equal(
-    schemaCoercion.injectEmptyReasoningContentForToolCalls(
+    schemaCoercionLoose.injectEmptyReasoningContentForToolCalls(
       [{ role: "assistant" }],
       "openai",
       "gpt-4o"
@@ -221,7 +229,7 @@ test("openaiHelper filters content, normalizes tools and removes OpenAI-incompat
     anthropic_version: "2023-06-01",
   };
 
-  const result = openaiHelper.filterToOpenAIFormat(body);
+  const result = openaiHelperLoose.filterToOpenAIFormat(body) as LooseDeep;
 
   assert.equal(result.messages.length, 3);
   assert.equal(result.messages[2].reasoning_content, "plan first");
@@ -240,44 +248,50 @@ test("openaiHelper filters content, normalizes tools and removes OpenAI-incompat
 });
 
 test("openaiHelper keeps unmatched tool choices and deletes empty tools arrays", () => {
-  const autoChoice = openaiHelper.filterToOpenAIFormat({
+  const autoChoice = openaiHelperLoose.filterToOpenAIFormat({
     messages: [{ role: "assistant", content: "" }],
     tools: [],
     tool_choice: { type: "auto" },
   });
-  assert.equal(autoChoice.tool_choice, "auto");
+  assert.equal((autoChoice as LooseDeep).tool_choice, "auto");
   assert.equal("tools" in autoChoice, false);
 
-  const requiredChoice = openaiHelper.filterToOpenAIFormat({
+  const requiredChoice = openaiHelperLoose.filterToOpenAIFormat({
     messages: [{ role: "assistant", content: "" }],
     tool_choice: { type: "any" },
   });
-  assert.equal(requiredChoice.tool_choice, "required");
+  assert.equal((requiredChoice as LooseDeep).tool_choice, "required");
 
   const untouched = { metadata: { keep: false } };
-  assert.deepEqual(openaiHelper.filterToOpenAIFormat(untouched), {
+  assert.deepEqual(openaiHelperLoose.filterToOpenAIFormat(untouched), {
     metadata: { keep: false },
   });
 });
 
 test("claudeHelper validates content, ordering and request preparation branches", () => {
-  assert.equal(claudeHelper.hasValidContent({ content: " hello " }), true);
-  assert.equal(claudeHelper.hasValidContent({ content: [{ type: "tool_use", id: "call" }] }), true);
+  assert.equal(claudeHelperLoose.hasValidContent({ content: " hello " }), true);
   assert.equal(
-    claudeHelper.hasValidContent({ content: [{ type: "thinking", thinking: "reasoning" }] }),
+    claudeHelperLoose.hasValidContent({ content: [{ type: "tool_use", id: "call" }] }),
     true
   );
   assert.equal(
-    claudeHelper.hasValidContent({ content: [{ type: "redacted_thinking", data: "opaque" }] }),
+    claudeHelperLoose.hasValidContent({ content: [{ type: "thinking", thinking: "reasoning" }] }),
     true
   );
-  assert.equal(claudeHelper.hasValidContent({ content: [{ type: "text", text: "   " }] }), false);
+  assert.equal(
+    claudeHelperLoose.hasValidContent({ content: [{ type: "redacted_thinking", data: "opaque" }] }),
+    true
+  );
+  assert.equal(
+    claudeHelperLoose.hasValidContent({ content: [{ type: "text", text: "   " }] }),
+    false
+  );
 
-  assert.deepEqual(claudeHelper.fixToolUseOrdering([{ role: "user", content: "single" }]), [
+  assert.deepEqual(claudeHelperLoose.fixToolUseOrdering([{ role: "user", content: "single" }]), [
     { role: "user", content: "single" },
   ]);
 
-  const reordered = claudeHelper.fixToolUseOrdering([
+  const reordered = claudeHelperLoose.fixToolUseOrdering([
     {
       role: "assistant",
       content: [
@@ -297,7 +311,7 @@ test("claudeHelper validates content, ordering and request preparation branches"
   // splitMisplacedToolResults: a tool_result whose tool_use_id was already
   // emitted by an earlier assistant turn is moved into the preceding user
   // message. The trailing tool_use survives on the assistant side. (#2815)
-  const split = claudeHelper.splitMisplacedToolResults([
+  const split = claudeHelperLoose.splitMisplacedToolResults([
     { role: "user", content: [{ type: "text", text: "q" }] },
     { role: "assistant", content: [{ type: "tool_use", id: "call_x", name: "Read", input: {} }] },
     {
@@ -317,7 +331,7 @@ test("claudeHelper validates content, ordering and request preparation branches"
 
   // tool_result whose id has not been seen earlier is dropped — moving it
   // would just shift the 400 to "unexpected tool_use_id".
-  const droppedOrphan = claudeHelper.splitMisplacedToolResults([
+  const droppedOrphan = claudeHelperLoose.splitMisplacedToolResults([
     { role: "user", content: [{ type: "text", text: "q" }] },
     {
       role: "assistant",
@@ -332,7 +346,7 @@ test("claudeHelper validates content, ordering and request preparation branches"
     { role: "assistant", content: [{ type: "tool_use", id: "self-ref", name: "Read", input: {} }] },
   ]);
 
-  const prepared = claudeHelper.prepareClaudeRequest(
+  const prepared = claudeHelperLoose.prepareClaudeRequest(
     {
       system: [
         { type: "text", text: "one", cache_control: { type: "ephemeral" } },
@@ -409,7 +423,7 @@ test("claudeHelper validates content, ordering and request preparation branches"
   assert.equal(prepared.tools[0].cache_control, undefined);
   assert.deepEqual(prepared.tools[1].cache_control, { type: "ephemeral", ttl: "1h" });
 
-  const preserved = claudeHelper.prepareClaudeRequest(
+  const preserved = claudeHelperLoose.prepareClaudeRequest(
     {
       messages: [
         {
@@ -427,9 +441,9 @@ test("claudeHelper validates content, ordering and request preparation branches"
 });
 
 test("geminiHelper converts content, safely parses JSON and cleans complex schemas", () => {
-  assert.deepEqual(geminiHelper.convertOpenAIContentToParts("hello"), [{ text: "hello" }]);
+  assert.deepEqual(geminiHelperLoose.convertOpenAIContentToParts("hello"), [{ text: "hello" }]);
   assert.deepEqual(
-    geminiHelper.convertOpenAIContentToParts([
+    geminiHelperLoose.convertOpenAIContentToParts([
       { type: "text", text: "hello" },
       { type: "image_url", image_url: { url: "data:image/png;base64,abc" } },
       { type: "file_url", file_url: { url: "not-a-data-url" } },
@@ -438,19 +452,19 @@ test("geminiHelper converts content, safely parses JSON and cleans complex schem
   );
 
   assert.equal(
-    geminiHelper.extractTextContent([
+    geminiHelperLoose.extractTextContent([
       { type: "text", text: "A" },
       { type: "image_url", image_url: { url: "https://example.com" } },
       { type: "text", text: "B" },
     ]),
     "AB"
   );
-  assert.equal(geminiHelper.extractTextContent({ no: "text" }), "");
-  assert.deepEqual(geminiHelper.tryParseJSON('{"ok":true}'), { ok: true });
-  assert.equal(geminiHelper.tryParseJSON("{broken"), null);
-  assert.equal(geminiHelper.tryParseJSON(42), 42);
-  assert.match(geminiHelper.generateRequestId(), /^agent-/);
-  assert.match(geminiHelper.generateSessionId(), /^-/);
+  assert.equal(geminiHelperLoose.extractTextContent({ no: "text" }), "");
+  assert.deepEqual(geminiHelperLoose.tryParseJSON('{"ok":true}'), { ok: true });
+  assert.equal(geminiHelperLoose.tryParseJSON("{broken"), null);
+  assert.equal(geminiHelperLoose.tryParseJSON(42), 42);
+  assert.match(String(geminiHelperLoose.generateRequestId()), /^agent-/);
+  assert.match(String(geminiHelperLoose.generateSessionId()), /^-/);
 
   const schema = {
     type: ["null", "object"],
@@ -471,7 +485,7 @@ test("geminiHelper converts content, safely parses JSON and cleans complex schem
     examples: ["remove"],
   };
 
-  const cleaned = geminiHelper.cleanJSONSchemaForAntigravity(schema);
+  const cleaned = geminiHelperLoose.cleanJSONSchemaForAntigravity(schema);
   assert.equal(cleaned.type, "array");
   assert.deepEqual(cleaned.required.sort(), ["a", "b"]);
   assert.equal(cleaned.properties.a.minLength, undefined);
@@ -484,7 +498,7 @@ test("geminiHelper converts content, safely parses JSON and cleans complex schem
   assert.equal(cleaned.default, undefined);
   assert.equal(cleaned.examples, undefined);
 
-  const placeholder = geminiHelper.cleanJSONSchemaForAntigravity({
+  const placeholder = geminiHelperLoose.cleanJSONSchemaForAntigravity({
     type: "object",
     properties: {},
   });
@@ -496,7 +510,7 @@ test("toolCallHelper normalizes ids, links tool responses and inserts missing to
   let randomCalls = 0;
   Math.random = () => ((randomCalls++ % 50) + 1) / 100;
 
-  const body = toolCallHelper.ensureToolCallIds(
+  const body = toolCallHelperLoose.ensureToolCallIds(
     {
       messages: [
         {
@@ -519,7 +533,7 @@ test("toolCallHelper normalizes ids, links tool responses and inserts missing to
   assert.match(body.messages[1].tool_call_id, /^[a-zA-Z0-9]{9}$/);
   assert.match(body.messages[2].tool_call_id, /^[a-zA-Z0-9]{9}$/);
 
-  const missingResponseFixed = toolCallHelper.fixMissingToolResponses({
+  const missingResponseFixed = toolCallHelperLoose.fixMissingToolResponses({
     messages: [
       {
         role: "assistant",
@@ -541,31 +555,33 @@ test("toolCallHelper normalizes ids, links tool responses and inserts missing to
   assert.equal(missingResponseFixed.messages[1].tool_call_id, "call_a");
   assert.equal(missingResponseFixed.messages[1].content, "");
   assert.deepEqual(
-    toolCallHelper.getToolCallIds({
+    toolCallHelperLoose.getToolCallIds({
       role: "assistant",
       tool_calls: [{ id: "call_a" }],
       content: [{ type: "tool_use", id: "call_b" }],
     }),
     ["call_a", "call_b"]
   );
-  assert.equal(toolCallHelper.getToolCallIds({ role: "user" }).length, 0);
+  assert.equal(toolCallHelperLoose.getToolCallIds({ role: "user" }).length, 0);
   assert.equal(
-    toolCallHelper.hasToolResults({ role: "tool", tool_call_id: "call_a" }, ["call_a"]),
+    toolCallHelperLoose.hasToolResults({ role: "tool", tool_call_id: "call_a" }, ["call_a"]),
     true
   );
   assert.equal(
-    toolCallHelper.hasToolResults(
+    toolCallHelperLoose.hasToolResults(
       { role: "user", content: [{ type: "tool_result", tool_use_id: "call_b" }] },
       ["call_b"]
     ),
     true
   );
-  assert.equal(toolCallHelper.hasToolResults({ role: "user", content: [] }, []), false);
-  assert.deepEqual(toolCallHelper.fixMissingToolResponses({ messages: null }), { messages: null });
+  assert.equal(toolCallHelperLoose.hasToolResults({ role: "user", content: [] }, []), false);
+  assert.deepEqual(toolCallHelperLoose.fixMissingToolResponses({ messages: null }), {
+    messages: null,
+  });
 });
 
 test("fixMissingToolResponses inserts Claude tool_result block when assistant uses Claude shape", () => {
-  const fixed = toolCallHelper.fixMissingToolResponses({
+  const fixed = toolCallHelperLoose.fixMissingToolResponses({
     messages: [
       { role: "user", content: [{ type: "text", text: "do it" }] },
       {
@@ -591,7 +607,7 @@ test("fixMissingToolResponses inserts Claude tool_result block when assistant us
 });
 
 test("fixMissingToolResponses keeps OpenAI role:tool when assistant uses OpenAI tool_calls", () => {
-  const fixed = toolCallHelper.fixMissingToolResponses({
+  const fixed = toolCallHelperLoose.fixMissingToolResponses({
     messages: [
       {
         role: "assistant",
@@ -612,14 +628,14 @@ test("fixMissingToolResponses keeps OpenAI role:tool when assistant uses OpenAI 
 });
 
 test("fallbackToolCallId returns the right id shape with and without an index", () => {
-  const noIndex = toolCallHelper.fallbackToolCallId();
+  const noIndex = toolCallHelperLoose.fallbackToolCallId();
   assert.match(
     noIndex,
     /^call_\d+$/,
     "no-index form must be `call_<ts>` (matches kiro/openai-responses fallback shape)"
   );
 
-  const withIndex = toolCallHelper.fallbackToolCallId(2);
+  const withIndex = toolCallHelperLoose.fallbackToolCallId(2);
   assert.match(
     withIndex,
     /^call_2_\d+$/,
@@ -627,7 +643,7 @@ test("fallbackToolCallId returns the right id shape with and without an index", 
   );
 
   // index 0 is falsy but defined — must still produce the indexed form, not the no-index form.
-  const zeroIndex = toolCallHelper.fallbackToolCallId(0);
+  const zeroIndex = toolCallHelperLoose.fallbackToolCallId(0);
   assert.match(zeroIndex, /^call_0_\d+$/, "index 0 must use the indexed form, not the bare form");
 });
 

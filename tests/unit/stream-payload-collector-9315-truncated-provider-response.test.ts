@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const collector = await import("../../open-sse/utils/streamPayloadCollector.ts");
 
@@ -53,12 +54,22 @@ test("buildStreamSummaryFromEvents loses tool_calls and finish_reason when colle
     object: "chat.completion.chunk",
     created: 1,
     model: "test-model",
-    choices: [{
-      index: 0, delta: {
-        role: "assistant",
-        tool_calls: [{ index: 0, id: "call_1", type: "function", function: { name: "Bash", arguments: "{}" } }],
+    choices: [
+      {
+        index: 0,
+        delta: {
+          role: "assistant",
+          tool_calls: [
+            {
+              index: 0,
+              id: "call_1",
+              type: "function",
+              function: { name: "Bash", arguments: "{}" },
+            },
+          ],
+        },
       },
-    }],
+    ],
   });
   c.push({
     id: "chatcmpl-test",
@@ -74,11 +85,11 @@ test("buildStreamSummaryFromEvents loses tool_calls and finish_reason when colle
     events,
     "openai",
     "test-model"
-  ) as Record<string, unknown> | null;
+  ) as LooseDeep | null;
 
   // Verify data loss from truncated events
   const choices = summaryFromEvents?.choices as Array<Record<string, unknown>> | undefined;
-  const message = choices?.[0]?.message as Record<string, unknown> | undefined;
+  const message = choices?.[0]?.message as LooseDeep | undefined;
 
   // Tool calls and finish_reason were DROPPED — summary has no tool_calls and wrong finish_reason
   const hasToolCalls = Array.isArray(message?.tool_calls) && message.tool_calls.length > 0;
@@ -96,8 +107,8 @@ test("buildStreamSummaryFromEvents loses tool_calls and finish_reason when colle
   // Verify the dropped events count
   const buildResult = c.build();
   assert.ok(
-    (buildResult as Record<string, unknown>)._droppedEvents === 2,
-    `Expected 2 dropped events, got ${JSON.stringify((buildResult as Record<string, unknown>)._droppedEvents)}`
+    (buildResult as LooseDeep)._droppedEvents === 2,
+    `Expected 2 dropped events, got ${JSON.stringify((buildResult as LooseDeep)._droppedEvents)}`
   );
 
   // Build provider payload the NEW way (from responseBody directly, same as client path)
@@ -108,7 +119,14 @@ test("buildStreamSummaryFromEvents loses tool_calls and finish_reason when colle
           role: "assistant",
           content: "chunk-0 chunk-1 chunk-2 [...snip...] chunk-47 final piece ",
           reasoning_content: "deep reasoning ",
-          tool_calls: [{ index: 0, id: "call_1", type: "function", function: { name: "Bash", arguments: "{}" } }],
+          tool_calls: [
+            {
+              index: 0,
+              id: "call_1",
+              type: "function",
+              function: { name: "Bash", arguments: "{}" },
+            },
+          ],
         },
         finish_reason: "tool_calls",
       },
@@ -117,7 +135,7 @@ test("buildStreamSummaryFromEvents loses tool_calls and finish_reason when colle
     _streamed: true,
   };
   const buildFromResponse = c.build(responseBody, { includeEvents: false });
-  const summary = (buildFromResponse as Record<string, unknown>).summary as Record<string, unknown> | null;
+  const summary = (buildFromResponse as LooseDeep).summary as LooseDeep | null;
 
   // Verify ALL data is present with responseBody approach
   assert.ok(summary !== null, "summary should not be null");
@@ -171,10 +189,12 @@ test("providerPayload built from responseBody retains all data regardless of col
     events,
     "openai",
     "test-model"
-  ) as Record<string, unknown> | null;
-  const choicesFromEvents = summaryFromEvents?.choices as Array<Record<string, unknown>> | undefined;
-  const messageFromEvents = choicesFromEvents?.[0]?.message as Record<string, unknown> | undefined;
-  const contentFromEvents = typeof messageFromEvents?.content === "string" ? messageFromEvents.content : "";
+  ) as LooseDeep | null;
+  const choicesFromEvents = summaryFromEvents?.choices as
+    Array<Record<string, unknown>> | undefined;
+  const messageFromEvents = choicesFromEvents?.[0]?.message as LooseDeep | undefined;
+  const contentFromEvents =
+    typeof messageFromEvents?.content === "string" ? messageFromEvents.content : "";
   // finish_reason was dropped so it defaults to "stop" anyway — checking content
   assert.ok(
     !contentFromEvents.includes("you?"),
@@ -196,9 +216,12 @@ test("providerPayload built from responseBody retains all data regardless of col
     _streamed: true,
   };
   const buildFromResponse = c.build(responseBody, { includeEvents: false });
-  const summary = (buildFromResponse as Record<string, unknown>).summary as Record<string, unknown> | null;
+  const summary = (buildFromResponse as LooseDeep).summary as LooseDeep | null;
   assert.ok(summary !== null);
-  const s = summary as Record<string, unknown>;
-  assert.equal((s.choices as Array<Record<string, unknown>>)[0].message.content, "hello world how are you?");
+  const s = summary as LooseDeep;
+  assert.equal(
+    ((s.choices as Array<Record<string, unknown>>)[0].message as LooseDeep).content,
+    "hello world how are you?"
+  );
   assert.equal((s.choices as Array<Record<string, unknown>>)[0].finish_reason, "stop");
 });

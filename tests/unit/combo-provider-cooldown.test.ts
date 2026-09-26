@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import { normalizeHeaders } from "../../open-sse/utils/headers.ts";
 import { createChatPipelineHarness } from "../integration/_chatPipelineHarness.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const harness = await createChatPipelineHarness("combo-provider-cooldown");
 const {
@@ -14,12 +15,8 @@ const {
   seedConnection,
   settingsDb,
 } = harness;
-const { preScreenTargets } = await import(
-  "../../open-sse/services/combo.ts"
-);
-const { getCircuitBreaker } = await import(
-  "../../src/shared/utils/circuitBreaker.ts"
-);
+const { preScreenTargets } = await import("../../open-sse/services/combo.ts");
+const { getCircuitBreaker } = await import("../../src/shared/utils/circuitBreaker.ts");
 
 test.beforeEach(async () => {
   await resetStorage();
@@ -55,7 +52,7 @@ test("combo failover skips the cooled provider target on the next request", asyn
   let openaiCalls = 0;
   let claudeCalls = 0;
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     const headers = normalizeHeaders(init.headers);
     const authHeader = headers.authorization ?? headers.Authorization;
     const apiKeyHeader = headers["x-api-key"] ?? headers["X-Api-Key"];

@@ -20,6 +20,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-stick-resp-7270-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -39,9 +40,30 @@ function rrCombo(name: string) {
     strategy: "round-robin",
     config: { maxRetries: 0 },
     models: [
-      { kind: "model", provider: "codex", providerId: "codex", model: "m-a", connectionId: "conn-A", id: `${name}-0` },
-      { kind: "model", provider: "codex", providerId: "codex", model: "m-b", connectionId: "conn-B", id: `${name}-1` },
-      { kind: "model", provider: "glm-cn", providerId: "glm-cn", model: "m-c", connectionId: "conn-C", id: `${name}-2` },
+      {
+        kind: "model",
+        provider: "codex",
+        providerId: "codex",
+        model: "m-a",
+        connectionId: "conn-A",
+        id: `${name}-0`,
+      },
+      {
+        kind: "model",
+        provider: "codex",
+        providerId: "codex",
+        model: "m-b",
+        connectionId: "conn-B",
+        id: `${name}-1`,
+      },
+      {
+        kind: "model",
+        provider: "glm-cn",
+        providerId: "glm-cn",
+        model: "m-c",
+        connectionId: "conn-C",
+        id: `${name}-2`,
+      },
     ],
   };
 }
@@ -154,7 +176,7 @@ test("an .input-shaped Responses body yields a stable, non-null stickiness key",
   const body = responsesBody(rrCombo("k"), "First turn of the conversation");
   // Old behavior: deriveMessageHash(body.messages) is null (bug).
   assert.equal(
-    stick.deriveMessageHash(body.messages as never),
+    stick.deriveMessageHash((body as LooseDeep).messages as never),
     null,
     "body.messages is absent on the Responses API — the old key source is null"
   );

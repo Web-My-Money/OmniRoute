@@ -5,11 +5,10 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
-const {
-  isClaudeWireFormatModel,
-  ensureBase64ImagesForClaudeWire,
-} = await import("../../../src/lib/guardrails/visionBridgeHelpers.ts");
+const { isClaudeWireFormatModel, ensureBase64ImagesForClaudeWire } =
+  await import("../../../src/lib/guardrails/visionBridgeHelpers.ts");
 
 test("isClaudeWireFormatModel: true for anthropic and claude-format registry providers", () => {
   assert.strictEqual(isClaudeWireFormatModel("anthropic/claude-sonnet-4"), true);
@@ -28,7 +27,7 @@ test("isClaudeWireFormatModel: false for openai-format providers", () => {
 });
 
 test("ensureBase64ImagesForClaudeWire: passthrough for non-claude-wire models", async () => {
-  const body = {
+  const body: LooseDeep = {
     model: "openai/gpt-4o-mini",
     messages: [
       {
@@ -46,7 +45,7 @@ test("ensureBase64ImagesForClaudeWire: passthrough for non-claude-wire models", 
 
 test("ensureBase64ImagesForClaudeWire: keeps data-URI images as-is", async () => {
   const dataUri = "data:image/png;base64,iVBORw0KGgo=";
-  const body = {
+  const body: LooseDeep = {
     model: "zai/glm-5",
     messages: [
       {
@@ -56,12 +55,13 @@ test("ensureBase64ImagesForClaudeWire: keeps data-URI images as-is", async () =>
     ],
   };
   const out = await ensureBase64ImagesForClaudeWire(body, "zai/glm-5");
-  const part = out.messages[0].content[0];
+  const part = (out as LooseDeep).messages[0].content[0];
   assert.strictEqual(part.image_url.url, dataUri);
 });
 
 test("ensureBase64ImagesForClaudeWire: resolves remote URLs to base64 for claude-wire targets", async () => {
-  const pngBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+  const pngBase64 =
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () =>
     new Response(new Uint8Array(Buffer.from(pngBase64, "base64")), {
@@ -70,7 +70,7 @@ test("ensureBase64ImagesForClaudeWire: resolves remote URLs to base64 for claude
     });
 
   try {
-    const body = {
+    const body: LooseDeep = {
       model: "zai/glm-5",
       messages: [
         {
@@ -92,8 +92,8 @@ test("ensureBase64ImagesForClaudeWire: resolves remote URLs to base64 for claude
         })
     );
     const part = out.messages[0].content[1];
-    assert.ok(
-      part.image_url.url.startsWith("data:image/png;base64,"),
+    (assert as LooseDeep).ok(
+      (part as LooseDeep).image_url.url.startsWith("data:image/png;base64,"),
       "remote URL must be resolved to a base64 data URI"
     );
     assert.ok(part.image_url.url.includes(pngBase64));
@@ -109,7 +109,7 @@ test("ensureBase64ImagesForClaudeWire: fail-open when the remote fetch fails", a
   };
 
   try {
-    const body = {
+    const body: LooseDeep = {
       model: "zai/glm-5",
       messages: [
         {
@@ -121,7 +121,7 @@ test("ensureBase64ImagesForClaudeWire: fail-open when the remote fetch fails", a
     const out = await ensureBase64ImagesForClaudeWire(body, "zai/glm-5", async () => {
       throw new Error("network down");
     });
-    const part = out.messages[0].content[0];
+    const part = (out as LooseDeep).messages[0].content[0];
     assert.strictEqual(part.image_url.url, "https://example.com/cat.png");
   } finally {
     globalThis.fetch = originalFetch;

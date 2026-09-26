@@ -18,6 +18,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-vb-combo-reroute-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -45,7 +46,7 @@ test.after(() => {
   fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
 });
 
-async function createCombo(name, models, overrides = {}) {
+async function createCombo(name, models, overrides: JsonRecord = {}) {
   return combosDb.createCombo({
     name,
     models,

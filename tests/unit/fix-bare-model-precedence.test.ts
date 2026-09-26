@@ -3,15 +3,15 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-bare-precedence-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
 
 const core = await import("../../src/lib/db/core.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
-const { CODEX_NATIVE_UNPREFIXED_MODELS, getModelInfoCore } = await import(
-  "../../open-sse/services/model.ts"
-);
+const { CODEX_NATIVE_UNPREFIXED_MODELS, getModelInfoCore } =
+  await import("../../open-sse/services/model.ts");
 
 // #FIX: bare Codex-default model ids must route to the `codex` provider
 // (chatgpt.com OAuth) when no provider prefix is supplied, even when other
@@ -27,12 +27,12 @@ const { CODEX_NATIVE_UNPREFIXED_MODELS, getModelInfoCore } = await import(
 // `codex-auto-review`) still resolve to codex with no connection at all —
 // there is no alternative to preempt — so those cases seed nothing.
 async function seedActiveCodexConnection() {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "codex@example.com",
     providerSpecificData: { workspaceId: "ws-precedence" },
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.after(() => {

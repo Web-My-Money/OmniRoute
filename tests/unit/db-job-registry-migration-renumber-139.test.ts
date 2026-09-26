@@ -54,7 +54,7 @@ test("job registry previously applied on 139 is rehomed so CCR can claim that sl
       INSERT INTO _omniroute_migrations (version, name) VALUES ('139', 'job_registry');
     `);
 
-    assert.equal(runMigrations(db), 1);
+    assert.equal(runMigrations(db as unknown as SqliteAdapter), 1);
     assert.deepEqual(
       db.prepare("SELECT version, name FROM _omniroute_migrations ORDER BY version").all(),
       [
@@ -97,7 +97,7 @@ test("untracked Job Registry tables do not suppress pending migration 146", () =
       VALUES ('139', 'ccr_blocks');
     `);
 
-    assert.equal(runMigrations(db), 1);
+    assert.equal(runMigrations(db as unknown as SqliteAdapter), 1);
 
     assert.deepEqual(
       db.prepare("SELECT version, name FROM _omniroute_migrations ORDER BY version").all(),

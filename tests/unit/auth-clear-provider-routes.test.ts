@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-auth-routes-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -38,7 +39,7 @@ async function resetStorage() {
 }
 
 async function seedOpenAIConnection(email) {
-  return await providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     email,
@@ -51,7 +52,7 @@ async function seedOpenAIConnection(email) {
     errorCode: "refresh_failed",
     rateLimitedUntil: null,
     backoffLevel: 2,
-  });
+  })) as JsonRecord & { id: string };
 }
 
 async function readConnection(id) {
@@ -179,7 +180,7 @@ test("embeddings route uses provider node id for compatible provider credentials
     baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
   });
 
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: providerNode.id,
     authType: "apikey",
     email: null,
@@ -192,7 +193,7 @@ test("embeddings route uses provider node id for compatible provider credentials
     errorCode: "refresh_failed",
     rateLimitedUntil: null,
     backoffLevel: 2,
-  });
+  })) as JsonRecord & { id: string };
 
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async (url, init) => {

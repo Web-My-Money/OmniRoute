@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-proxy-registry-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -14,9 +15,8 @@ const proxiesDb = await import("../../src/lib/db/proxies.ts");
 const settingsDb = await import("../../src/lib/db/settings.ts");
 const apiKeysDb = await import("../../src/lib/db/apiKeys.ts");
 const proxiesRoute = await import("../../src/app/api/settings/proxies/route.ts");
-const { createProxyRegistrySchema, updateProxyRegistrySchema } = await import(
-  "../../src/shared/validation/schemas.ts"
-);
+const { createProxyRegistrySchema, updateProxyRegistrySchema } =
+  await import("../../src/shared/validation/schemas.ts");
 
 async function resetStorage() {
   delete process.env.INITIAL_PASSWORD;
@@ -137,12 +137,12 @@ test("updateProxyAndAssign clears stored credentials when blanks are explicitly 
 test("specific registry account assignment takes precedence over legacy key proxy config", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "registry-precedence",
     apiKey: "sk-test",
-  });
+  })) as JsonRecord & { id: string };
 
   await settingsDb.setProxyForLevel("key", (conn as any).id, {
     type: "http",
@@ -175,12 +175,12 @@ test("specific registry account assignment takes precedence over legacy key prox
 test("legacy proxy config migration imports global/provider/key assignments", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "legacy-import",
     apiKey: "sk-test-legacy",
-  });
+  })) as JsonRecord & { id: string };
 
   await settingsDb.setProxyForLevel("global", null, {
     type: "http",
@@ -300,12 +300,12 @@ test("resolveProxyForProvider returns null when neither registry nor legacy conf
 test("resolveProxyForConnection uses apiKey proxy before account-level proxy", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "api-key-proxy",
     apiKey: "sk-apikey-proxy",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as any).id;
 
   const accountProxy = await proxiesDb.createProxy({
@@ -347,12 +347,12 @@ test("resolveProxyForConnection uses apiKey proxy before account-level proxy", a
 test("resolveProxyForConnection falls through when apiKey has no proxy_id", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "fallthrough-test",
     apiKey: "sk-fallthrough",
-  });
+  })) as JsonRecord & { id: string };
 
   const accountProxy = await proxiesDb.createProxy({
     name: "Account Proxy",
@@ -373,18 +373,18 @@ test("resolveProxyForConnection falls through when apiKey has no proxy_id", asyn
 test("connection proxy toggle gates account assignments and invalidates cached resolutions", async () => {
   await resetStorage();
 
-  const directConnection = await providersDb.createProviderConnection({
+  const directConnection = (await providersDb.createProviderConnection({
     provider: "proxy-toggle-test-provider",
     authType: "apikey",
     name: "Direct Account",
     apiKey: "sk-direct-account",
-  });
-  const proxiedConnection = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const proxiedConnection = (await providersDb.createProviderConnection({
     provider: "proxy-toggle-test-provider",
     authType: "apikey",
     name: "Proxied Account",
     apiKey: "sk-proxied-account",
-  });
+  })) as JsonRecord & { id: string };
 
   const poolProxy = await proxiesDb.createProxy({
     name: "Pool Proxy",
@@ -444,12 +444,12 @@ test("per-connection proxy 'direct' bypass overrides a configured GLOBAL proxy (
   // assignment left over from another test in the shared process cannot resolve at
   // step 6/8 and mask the GLOBAL precondition we are asserting (mirrors the hermetic
   // unique-provider pattern used by the "connection proxy toggle gates" test above).
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "proxy-global-bypass-2996-provider",
     authType: "apikey",
     name: "Global Bypass Account",
     apiKey: "sk-global-bypass",
-  });
+  })) as JsonRecord & { id: string };
 
   // No per-connection assignment: the connection should inherit the GLOBAL proxy.
   const globalResolved = await settingsDb.resolveProxyForConnection((connection as any).id);
@@ -481,12 +481,12 @@ test("per-connection proxy 'direct' bypass overrides a configured GLOBAL proxy (
 test("provider connection proxy toggle fields round-trip as booleans", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Boolean Toggle Account",
     apiKey: "sk-toggle-roundtrip",
-  });
+  })) as JsonRecord & { id: string };
 
   const updated = await providersDb.updateProviderConnection((connection as any).id, {
     proxyEnabled: false,

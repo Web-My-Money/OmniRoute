@@ -1,8 +1,10 @@
 import test from "node:test";
+import type { ModelCapabilityEntry } from "../../src/lib/modelsDevSync/transform.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-routing-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -92,7 +94,10 @@ function streamResponse(chunks: any[]) {
   });
 }
 
-function capabilityEntry(limitContext: unknown, overrides: Record<string, unknown> = {}) {
+function capabilityEntry(
+  limitContext: number | null,
+  overrides: Partial<ModelCapabilityEntry> = {}
+): ModelCapabilityEntry {
   return {
     tool_call: true,
     reasoning: false,
@@ -2399,20 +2404,20 @@ test("handleComboChat auto strategy honors LKGP after filtering to tool-capable 
 });
 
 test("handleComboChat auto strategy preserves selected same-provider connection identity", async () => {
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "OpenAI A",
     apiKey: "sk-auto-conn-a",
     defaultModel: "gpt-4o-mini",
-  });
-  const connB = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const connB = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "OpenAI B",
     apiKey: "sk-auto-conn-b",
     defaultModel: "gpt-4o-mini",
-  });
+  })) as JsonRecord & { id: string };
   touchSession("sticky-auto-session", connB.id);
 
   const calls: Array<{ modelStr: string; connectionId: string | null | undefined }> = [];

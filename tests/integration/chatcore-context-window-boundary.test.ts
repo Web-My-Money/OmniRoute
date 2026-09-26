@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-ctx-boundary-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -41,11 +43,11 @@ test("chatCore integration: over-window request is rejected before dispatch when
     autoTriggerTokens: 0,
   });
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const body = {
     model,
@@ -76,7 +78,7 @@ test("chatCore integration: over-window request is rejected before dispatch when
   };
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body,
       modelInfo: { provider, model },
       credentials: { apiKey: "test-key" },

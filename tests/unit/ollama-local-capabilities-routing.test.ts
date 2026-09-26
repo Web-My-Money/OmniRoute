@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-ollama-capabilities-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -28,7 +29,7 @@ function resetStorage() {
 }
 
 async function seedOllamaConnection(baseUrl = "http://127.0.0.1:11434/v1", priority = 1) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "ollama-local",
     authType: "apikey",
     name: "Ollama test host",
@@ -37,7 +38,7 @@ async function seedOllamaConnection(baseUrl = "http://127.0.0.1:11434/v1", prior
     testStatus: "active",
     priority,
     providerSpecificData: { baseUrl },
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(resetStorage);
@@ -57,7 +58,7 @@ test("Ollama discovery maps /api/show capabilities into connection-scoped model 
   };
   const calledUrls: string[] = [];
 
-  globalThis.fetch = async (input, init = {}) => {
+  globalThis.fetch = async (input, init: MockRequestInit = {}) => {
     const url = String(input);
     calledUrls.push(url);
     if (url.endsWith("/v1/models")) {
@@ -203,3 +204,5 @@ test("Ollama embedding model routes through its advertising connection", async (
   assert.equal(response.status, 200, await response.text());
   assert.equal(capturedUrl, "http://127.0.0.1:11436/v1/embeddings");
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

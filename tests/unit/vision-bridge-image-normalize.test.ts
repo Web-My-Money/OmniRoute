@@ -58,7 +58,7 @@ test("remote image fetched for the claude-wire self-call is downscaled to the lo
     })) as unknown as typeof fetch;
 
   const result = await ensureBase64ImagesForClaudeWire(
-    bodyWithRemoteImage("https://example.com/big.png"),
+    bodyWithRemoteImage("https://example.com/big.png") as unknown as RequestBody,
     CLAUDE_WIRE_MODEL,
     fetchImpl
   );
@@ -84,7 +84,7 @@ test("remote non-image bytes pass through untouched (fail-open, no normalization
     })) as unknown as typeof fetch;
 
   const result = await ensureBase64ImagesForClaudeWire(
-    bodyWithRemoteImage("https://example.com/junk.bin"),
+    bodyWithRemoteImage("https://example.com/junk.bin") as unknown as RequestBody,
     CLAUDE_WIRE_MODEL,
     fetchImpl
   );

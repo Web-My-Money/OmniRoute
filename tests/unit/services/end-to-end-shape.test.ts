@@ -23,7 +23,7 @@ import path from "node:path";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-e2e-shape-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 process.env.DISABLE_SQLITE_AUTO_BACKUP = "true";
 process.env.NINEROUTER_PORT = "20130";
 
@@ -115,8 +115,9 @@ function assertServiceStatusShape(body: unknown, expectedTool: string): void {
 describe("9router — response shapes", () => {
   describe("GET /api/services/9router/status", () => {
     it("200 response has enriched status shape including installedVersion and apiKeyMasked", async () => {
-      const { GET } =
-        await import("../../../src/app/api/services/9router/status/route.ts?t=shape-status-1");
+      const { GET } = await import(
+        "../../../src/app/api/services/9router/status/route.ts" + "?t=shape-status-1"
+      );
       const res = await GET();
       assert.equal(res.status, 200);
       const body = await jsonBody(res);
@@ -158,8 +159,9 @@ describe("9router — response shapes", () => {
       mock.method(sup, "start", async () => makeRunningStatus("9router", 20130));
       registerSupervisor(sup);
 
-      const { POST } =
-        await import("../../../src/app/api/services/9router/start/route.ts?t=shape-start-1");
+      const { POST } = await import(
+        "../../../src/app/api/services/9router/start/route.ts" + "?t=shape-start-1"
+      );
       const res = await POST();
       assert.equal(res.status, 200);
       const body = await jsonBody(res);
@@ -172,8 +174,9 @@ describe("9router — response shapes", () => {
     it("409 response has error shape when service is not_installed", async () => {
       await upsertVersionManagerTool({ tool: "9router", status: "not_installed" });
 
-      const { POST } =
-        await import("../../../src/app/api/services/9router/start/route.ts?t=shape-start-2");
+      const { POST } = await import(
+        "../../../src/app/api/services/9router/start/route.ts" + "?t=shape-start-2"
+      );
       const res = await POST();
       assert.equal(res.status, 409);
       const body = await jsonBody(res);
@@ -210,8 +213,9 @@ describe("9router — response shapes", () => {
       });
       registerSupervisor(sup);
 
-      const { POST } =
-        await import("../../../src/app/api/services/9router/start/route.ts?t=shape-start-3");
+      const { POST } = await import(
+        "../../../src/app/api/services/9router/start/route.ts" + "?t=shape-start-3"
+      );
       const res = await POST();
       assert.equal(res.status, 503);
       const body = await jsonBody(res);
@@ -227,8 +231,9 @@ describe("9router — response shapes", () => {
   describe("POST /api/services/9router/stop", () => {
     it("200 response has { tool, state } shape when supervisor is absent", async () => {
       // No supervisor registered — stop falls back gracefully.
-      const { POST } =
-        await import("../../../src/app/api/services/9router/stop/route.ts?t=shape-stop-1");
+      const { POST } = await import(
+        "../../../src/app/api/services/9router/stop/route.ts" + "?t=shape-stop-1"
+      );
       const res = await POST();
       assert.equal(res.status, 200);
       const body = await jsonBody(res);
@@ -264,8 +269,9 @@ describe("9router — response shapes", () => {
       mock.method(sup, "stop", async () => makeStoppedStatus("9router", 20130));
       registerSupervisor(sup);
 
-      const { POST } =
-        await import("../../../src/app/api/services/9router/stop/route.ts?t=shape-stop-2");
+      const { POST } = await import(
+        "../../../src/app/api/services/9router/stop/route.ts" + "?t=shape-stop-2"
+      );
       const res = await POST();
       assert.equal(res.status, 200);
       const body = await jsonBody(res);
@@ -278,8 +284,9 @@ describe("9router — response shapes", () => {
 
   describe("POST /api/services/9router/install", () => {
     it("400 response has error shape for invalid JSON", async () => {
-      const { POST } =
-        await import("../../../src/app/api/services/9router/install/route.ts?t=shape-install-1");
+      const { POST } = await import(
+        "../../../src/app/api/services/9router/install/route.ts" + "?t=shape-install-1"
+      );
       const req = new Request("http://localhost/api/services/9router/install", {
         method: "POST",
         body: "not-json",
@@ -317,8 +324,9 @@ describe("9router — response shapes", () => {
 describe("cliproxy — response shapes", () => {
   describe("GET /api/services/cliproxy/status", () => {
     it("200 response has ServiceStatus shape plus installedVersion and updateAvailable", async () => {
-      const { GET } =
-        await import("../../../src/app/api/services/cliproxy/status/route.ts?t=shape-cliproxy-status-1");
+      const { GET } = await import(
+        "../../../src/app/api/services/cliproxy/status/route.ts" + "?t=shape-cliproxy-status-1"
+      );
       const res = await GET();
       assert.equal(res.status, 200);
       const body = await jsonBody(res);
@@ -356,8 +364,9 @@ describe("cliproxy — response shapes", () => {
       mock.method(sup, "start", async () => makeRunningStatus("cliproxy", 8317));
       registerSupervisor(sup);
 
-      const { POST } =
-        await import("../../../src/app/api/services/cliproxy/start/route.ts?t=shape-cliproxy-start-1");
+      const { POST } = await import(
+        "../../../src/app/api/services/cliproxy/start/route.ts" + "?t=shape-cliproxy-start-1"
+      );
       const res = await POST();
       assert.equal(res.status, 200);
       const body = await jsonBody(res);
@@ -370,8 +379,9 @@ describe("cliproxy — response shapes", () => {
     it("409 response has error shape when service is not_installed", async () => {
       await upsertVersionManagerTool({ tool: "cliproxy", status: "not_installed" });
 
-      const { POST } =
-        await import("../../../src/app/api/services/cliproxy/start/route.ts?t=shape-cliproxy-start-2");
+      const { POST } = await import(
+        "../../../src/app/api/services/cliproxy/start/route.ts" + "?t=shape-cliproxy-start-2"
+      );
       const res = await POST();
       assert.equal(res.status, 409);
       const body = await jsonBody(res);
@@ -386,8 +396,9 @@ describe("cliproxy — response shapes", () => {
 
   describe("POST /api/services/cliproxy/stop", () => {
     it("200 response has { tool, state } shape when supervisor is absent", async () => {
-      const { POST } =
-        await import("../../../src/app/api/services/cliproxy/stop/route.ts?t=shape-cliproxy-stop-1");
+      const { POST } = await import(
+        "../../../src/app/api/services/cliproxy/stop/route.ts" + "?t=shape-cliproxy-stop-1"
+      );
       const res = await POST();
       assert.equal(res.status, 200);
       const body = await jsonBody(res);
@@ -419,8 +430,9 @@ describe("cliproxy — response shapes", () => {
       mock.method(sup, "stop", async () => makeStoppedStatus("cliproxy", 8317));
       registerSupervisor(sup);
 
-      const { POST } =
-        await import("../../../src/app/api/services/cliproxy/stop/route.ts?t=shape-cliproxy-stop-2");
+      const { POST } = await import(
+        "../../../src/app/api/services/cliproxy/stop/route.ts" + "?t=shape-cliproxy-stop-2"
+      );
       const res = await POST();
       assert.equal(res.status, 200);
       const body = await jsonBody(res);
@@ -433,8 +445,9 @@ describe("cliproxy — response shapes", () => {
 
   describe("POST /api/services/cliproxy/install", () => {
     it("400 response has error shape for invalid JSON", async () => {
-      const { POST } =
-        await import("../../../src/app/api/services/cliproxy/install/route.ts?t=shape-cliproxy-install-1");
+      const { POST } = await import(
+        "../../../src/app/api/services/cliproxy/install/route.ts" + "?t=shape-cliproxy-install-1"
+      );
       const req = new Request("http://localhost/api/services/cliproxy/install", {
         method: "POST",
         body: "not-json",
@@ -468,10 +481,12 @@ describe("cliproxy — response shapes", () => {
 
 describe("Cross-service shape consistency", () => {
   it("both services produce identical top-level keys in 200 status response", async () => {
-    const { GET: getRouter } =
-      await import("../../../src/app/api/services/9router/status/route.ts?t=shape-cross-1");
-    const { GET: getCliproxy } =
-      await import("../../../src/app/api/services/cliproxy/status/route.ts?t=shape-cross-2");
+    const { GET: getRouter } = await import(
+      "../../../src/app/api/services/9router/status/route.ts" + "?t=shape-cross-1"
+    );
+    const { GET: getCliproxy } = await import(
+      "../../../src/app/api/services/cliproxy/status/route.ts" + "?t=shape-cross-2"
+    );
 
     const [r1, r2] = await Promise.all([getRouter(), getCliproxy()]);
     assert.equal(r1.status, 200);
@@ -500,10 +515,12 @@ describe("Cross-service shape consistency", () => {
   });
 
   it("stop routes for both services return { tool, state } at minimum", async () => {
-    const { POST: stop9r } =
-      await import("../../../src/app/api/services/9router/stop/route.ts?t=shape-cross-stop-1");
-    const { POST: stopCp } =
-      await import("../../../src/app/api/services/cliproxy/stop/route.ts?t=shape-cross-stop-2");
+    const { POST: stop9r } = await import(
+      "../../../src/app/api/services/9router/stop/route.ts" + "?t=shape-cross-stop-1"
+    );
+    const { POST: stopCp } = await import(
+      "../../../src/app/api/services/cliproxy/stop/route.ts" + "?t=shape-cross-stop-2"
+    );
 
     const [r1, r2] = await Promise.all([stop9r(), stopCp()]);
     assert.equal(r1.status, 200);
@@ -523,10 +540,12 @@ describe("Cross-service shape consistency", () => {
 
   it("error responses never contain stack trace (hard rule #12)", async () => {
     // Trigger a 400 from install with invalid JSON on both services.
-    const { POST: install9r } =
-      await import("../../../src/app/api/services/9router/install/route.ts?t=shape-cross-err-1");
-    const { POST: installCp } =
-      await import("../../../src/app/api/services/cliproxy/install/route.ts?t=shape-cross-err-2");
+    const { POST: install9r } = await import(
+      "../../../src/app/api/services/9router/install/route.ts" + "?t=shape-cross-err-1"
+    );
+    const { POST: installCp } = await import(
+      "../../../src/app/api/services/cliproxy/install/route.ts" + "?t=shape-cross-err-2"
+    );
 
     const badReq = () =>
       new Request("http://localhost/install", {

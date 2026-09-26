@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { firecrawlFetch } = await import("../../open-sse/executors/firecrawl-fetch.ts");
 
@@ -61,7 +62,7 @@ test("firecrawlFetch allows missing apiKey when FIRECRAWL_BASE_URL is custom", a
     const originalFetch = globalThis.fetch;
     let capturedHeaders: Record<string, string> = {};
 
-    globalThis.fetch = async (_url, init = {}) => {
+    globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
       capturedHeaders = (init as RequestInit).headers as Record<string, string>;
       return new Response(JSON.stringify({ data: { markdown: "# Self-hosted" } }), {
         status: 200,
@@ -112,9 +113,9 @@ test("firecrawlFetch honors FIRECRAWL_TIMEOUT_MS override", async () => {
     async () => {
       const originalFetch = globalThis.fetch;
 
-      globalThis.fetch = async (_url, init = {}) => {
+      globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
         const signal = (init as RequestInit).signal;
-        return new Promise((resolve, reject) => {
+        return new Promise<Response>((resolve, reject) => {
           const timer = setTimeout(
             () =>
               resolve(

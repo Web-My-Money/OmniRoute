@@ -4,6 +4,7 @@ import {
   extractSystemRoleMessages,
   relocateDirectiveOnlyMessages,
 } from "../../open-sse/handlers/chatCore.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Claude Code 2.1.154+ clients send directives as system-role messages with an
 // empty content array and a message-level output_config. Anthropic rejects the
@@ -15,7 +16,7 @@ import {
 // Measured in production: 122x 400 in one hour on the offical-claude combo.
 
 test("relocateDirectiveOnlyMessages moves a directive-only messages[0] past the first real turn", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [
       { role: "system", content: [], output_config: { effort: "high" } },
       { role: "user", content: "hello" },
@@ -31,7 +32,7 @@ test("relocateDirectiveOnlyMessages moves a directive-only messages[0] past the 
 });
 
 test("relocateDirectiveOnlyMessages skips consecutive system messages to find the real turn", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [
       { role: "system", content: [], output_config: { effort: "high" } },
       { role: "system", content: "mid-conversation context" },
@@ -48,7 +49,7 @@ test("relocateDirectiveOnlyMessages skips consecutive system messages to find th
 });
 
 test("relocateDirectiveOnlyMessages drops an empty system message without output_config at messages[0]", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [
       { role: "system", content: [] },
       { role: "user", content: "hello" },
@@ -60,7 +61,7 @@ test("relocateDirectiveOnlyMessages drops an empty system message without output
 });
 
 test("relocateDirectiveOnlyMessages folds output_config to top level when no real turn exists", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [{ role: "system", content: [], output_config: { effort: "xhigh" } }],
   };
   relocateDirectiveOnlyMessages(payload);
@@ -69,7 +70,7 @@ test("relocateDirectiveOnlyMessages folds output_config to top level when no rea
 });
 
 test("relocateDirectiveOnlyMessages keeps an existing top-level output_config untouched", () => {
-  const payload = {
+  const payload: LooseDeep = {
     output_config: { effort: "low" },
     messages: [{ role: "system", content: [], output_config: { effort: "xhigh" } }],
   };
@@ -79,7 +80,7 @@ test("relocateDirectiveOnlyMessages keeps an existing top-level output_config un
 });
 
 test("relocateDirectiveOnlyMessages is a no-op for a normal user first message", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [
       { role: "user", content: "hello" },
       { role: "system", content: [], output_config: { effort: "high" } },
@@ -94,7 +95,7 @@ test("relocateDirectiveOnlyMessages is a no-op for a normal user first message",
 });
 
 test("relocateDirectiveOnlyMessages relocates a directive after an empty system message", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [
       { role: "system", content: [] },
       { role: "system", content: [], output_config: { effort: "high" } },
@@ -109,7 +110,7 @@ test("relocateDirectiveOnlyMessages relocates a directive after an empty system 
 });
 
 test("relocateDirectiveOnlyMessages relocates consecutive directives in order", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [
       { role: "system", content: [], output_config: { effort: "high" } },
       { role: "system", content: [], output_config: { effort: "low" } },
@@ -126,7 +127,7 @@ test("relocateDirectiveOnlyMessages relocates consecutive directives in order", 
 });
 
 test("relocateDirectiveOnlyMessages walks past a text system message to find the anchor", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [
       { role: "system", content: [], output_config: { effort: "high" } },
       { role: "system", content: "real system prompt" },
@@ -142,7 +143,7 @@ test("relocateDirectiveOnlyMessages walks past a text system message to find the
 });
 
 test("relocateDirectiveOnlyMessages is a no-op for a system message with text content", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [
       { role: "system", content: "real system prompt" },
       { role: "user", content: "hello" },
@@ -154,19 +155,19 @@ test("relocateDirectiveOnlyMessages is a no-op for a system message with text co
 });
 
 test("relocateDirectiveOnlyMessages handles a non-array messages field", () => {
-  const payload = { messages: "not-an-array" };
+  const payload: LooseDeep = { messages: "not-an-array" };
   relocateDirectiveOnlyMessages(payload);
   assert.equal(payload.messages, "not-an-array");
 });
 
 test("relocateDirectiveOnlyMessages handles an empty messages array", () => {
-  const payload = { messages: [] };
+  const payload: LooseDeep = { messages: [] };
   relocateDirectiveOnlyMessages(payload);
   assert.equal(payload.messages.length, 0);
 });
 
 test("relocateDirectiveOnlyMessages handles developer-role directives too", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [
       { role: "developer", content: [], output_config: { format: { type: "json_schema" } } },
       { role: "user", content: "hello" },
@@ -182,7 +183,7 @@ test("relocateDirectiveOnlyMessages handles developer-role directives too", () =
 });
 
 test("extractSystemRoleMessages preserves the output_config of directive-only messages", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [
       { role: "system", content: "Memory context: foo" },
       { role: "system", content: [], output_config: { effort: "high" } },
@@ -197,7 +198,7 @@ test("extractSystemRoleMessages preserves the output_config of directive-only me
 });
 
 test("extractSystemRoleMessages keeps an existing top-level output_config", () => {
-  const payload = {
+  const payload: LooseDeep = {
     output_config: { effort: "low" },
     messages: [
       { role: "system", content: [], output_config: { effort: "high" } },
@@ -210,7 +211,7 @@ test("extractSystemRoleMessages keeps an existing top-level output_config", () =
 });
 
 test("extractSystemRoleMessages folds output_config even when the message also has text", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [
       {
         role: "system",
@@ -227,7 +228,7 @@ test("extractSystemRoleMessages folds output_config even when the message also h
 });
 
 test("extractSystemRoleMessages keeps the first directive output_config among several", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [
       { role: "system", content: [], output_config: { effort: "high" } },
       { role: "system", content: [], output_config: { effort: "low" } },
@@ -240,7 +241,7 @@ test("extractSystemRoleMessages keeps the first directive output_config among se
 });
 
 test("extractSystemRoleMessages folds output_config for string-content messages too", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [
       { role: "system", content: "String content", output_config: { effort: "high" } },
       { role: "user", content: "hello" },
@@ -253,7 +254,7 @@ test("extractSystemRoleMessages folds output_config for string-content messages 
 });
 
 test("relocateDirectiveOnlyMessages does not throw on a null first message", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [null, { role: "user", content: "hello" }],
   };
   assert.doesNotThrow(() => relocateDirectiveOnlyMessages(payload));
@@ -261,7 +262,7 @@ test("relocateDirectiveOnlyMessages does not throw on a null first message", () 
 });
 
 test("relocateDirectiveOnlyMessages does not throw on a null anchor candidate", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [
       { role: "system", content: [], output_config: { effort: "high" } },
       null,
@@ -278,7 +279,7 @@ test("relocateDirectiveOnlyMessages does not throw on a null anchor candidate", 
 });
 
 test("relocateDirectiveOnlyMessages drops plain empties but keeps text system messages with no real turn", () => {
-  const payload = {
+  const payload: LooseDeep = {
     messages: [
       { role: "system", content: [] },
       { role: "system", content: "keep me" },

@@ -6,6 +6,7 @@ import {
   type Capture,
   type ProviderRequestPrepared,
 } from "../../open-sse/utils/providerRequestLogging.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 test("runWithCapture captures the actual JSON provider fetch body", async () => {
   const originalFetch = globalThis.fetch;
@@ -20,7 +21,7 @@ test("runWithCapture captures the actual JSON provider fetch body", async () => 
     },
   };
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     sentBodies.push(JSON.parse(String(init.body)));
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,

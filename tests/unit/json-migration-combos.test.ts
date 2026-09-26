@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-json-migration-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -76,13 +78,13 @@ test("runJsonMigration preserves exported snapshots and camelCase connection att
 
 test("usage snapshots survive an export, connection deletion, and import round trip", async () => {
   const db = core.getDbInstance();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "member@example.com",
     displayName: "Production Codex",
     providerSpecificData: { workspaceId: "team", chatgptUserId: "user-a" },
-  });
+  })) as JsonRecord & { id: string };
   await usageHistory.saveRequestUsage({
     provider: "codex",
     model: "gpt-5.5",
@@ -144,7 +146,6 @@ test("runJsonMigration normalizes legacy combo strategy names at the import boun
   assert.equal(byId.get("combo-unknown").strategy, "priority");
 });
 
-
 test("runJsonMigration rejects invalid combo invariants atomically", () => {
   const db = core.getDbInstance();
 
@@ -165,7 +166,7 @@ test("runJsonMigration rejects invalid combo invariants atomically", () => {
     /target 1 \(zai\/glm-5\) violates its invariant/
   );
 
-  assert.equal(db.prepare("SELECT COUNT(*) count FROM combos").get().count, 0);
+  assert.equal((db.prepare("SELECT COUNT(*) count FROM combos").get() as LooseDeep).count, 0);
   assert.equal(
     db
       .prepare("SELECT value FROM key_value WHERE namespace = ? AND key = ?")

@@ -18,8 +18,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-refresh-cursor-route-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -145,7 +146,7 @@ async function withCursorEnv<T>(fn: (env: CursorEnv) => Promise<T>): Promise<T> 
 }
 
 async function createCursorConnection(overrides: Record<string, unknown> = {}) {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "cursor",
     authType: "oauth",
     email: `cursor-route-${Math.random()}@example.com`,
@@ -154,7 +155,7 @@ async function createCursorConnection(overrides: Record<string, unknown> = {}) {
     isActive: true,
     testStatus: "active",
     ...overrides,
-  });
+  })) as JsonRecord & { id: string };
   return getId(connection);
 }
 
@@ -221,14 +222,14 @@ test(
 );
 
 test("non-Cursor connection -> 400", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "oauth",
     email: "not-cursor@example.com",
     accessToken: "token",
     refreshToken: "refresh",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
   const id = getId(connection);
 
   const res = await callRoute(id);

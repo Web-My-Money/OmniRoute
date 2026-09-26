@@ -1,4 +1,5 @@
 import test from "node:test";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 import assert from "node:assert/strict";
 
 const {
@@ -66,10 +67,15 @@ test("configure picker keeps preferences isolated per remote context", () => {
     },
   };
   assert.deepEqual(
-    rankPreferredModels("codex", ["local/model", "remote/model"], preferences, "remote"),
+    rankPreferredModels(
+      "codex",
+      ["local/model", "remote/model"],
+      preferences as LooseDeep,
+      "remote"
+    ),
     ["remote/model", "local/model"]
   );
-  assert.deepEqual(getModelPreferenceState("codex", preferences, "local"), {
+  assert.deepEqual(getModelPreferenceState("codex", preferences as LooseDeep, "local"), {
     favorites: ["local/model"],
     recent: [],
   });

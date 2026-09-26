@@ -4,6 +4,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 // Regression tests for #5128 — one-click relay deployments (Deno + Cloudflare +
 // Vercel) broken in v3.8.37. Four distinct, independently-reproducible bugs:
@@ -84,7 +85,7 @@ test("#5128C: Cloudflare worker upload sends an accepted script Content-Type", a
   const realFetch = globalThis.fetch;
   let requestContentType: string | undefined;
   let scriptPartContentType: string | undefined;
-  globalThis.fetch = (async (input: unknown, init: RequestInit = {}) => {
+  globalThis.fetch = (async (input: unknown, init: MockRequestInit = {}) => {
     const url = String(input);
     if (init.method === "PUT" && url.includes("/workers/scripts/")) {
       // #6416: the upload body is a raw multipart Buffer (not a FormData
@@ -144,7 +145,7 @@ test("#6416: Cloudflare worker script body is Service Worker syntax (no top-leve
   const realFetch = globalThis.fetch;
   let capturedScriptBody = "";
   let capturedMetadata: Record<string, unknown> | undefined;
-  globalThis.fetch = (async (input: unknown, init: RequestInit = {}) => {
+  globalThis.fetch = (async (input: unknown, init: MockRequestInit = {}) => {
     const url = String(input);
     if (init.method === "PUT" && url.includes("/workers/scripts/") && !url.includes("/subdomain")) {
       const bodyText = Buffer.isBuffer(init.body)

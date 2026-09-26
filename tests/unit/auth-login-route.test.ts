@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
+import { NextRequest } from "next/server";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-auth-login-route-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -26,9 +28,9 @@ async function resetStorage() {
 
 test.beforeEach(async () => {
   await resetStorage();
-  loginRoute.authRouteInternals.getCookieStore = async () => ({
+  loginRoute.authRouteInternals.getCookieStore = (async () => ({
     set() {},
-  });
+  })) as unknown as typeof loginRoute.authRouteInternals.getCookieStore;
 });
 
 test.afterEach(() => {
@@ -47,7 +49,7 @@ test.after(() => {
 
 test("auth login route returns 400 for malformed JSON bodies", async () => {
   const response = await loginRoute.POST(
-    new Request("http://localhost/api/auth/login", {
+    new NextRequest("http://localhost/api/auth/login", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: "a��",
@@ -65,7 +67,7 @@ test("auth login route returns 400 for malformed JSON bodies", async () => {
 
 test("auth login route returns needsSetup when no management password is configured", async () => {
   const response = await loginRoute.POST(
-    new Request("http://localhost/api/auth/login", {
+    new NextRequest("http://localhost/api/auth/login", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ password: "missing-password" }),
@@ -87,7 +89,7 @@ test("auth login route lazily migrates INITIAL_PASSWORD to a persisted hash befo
   });
 
   const response = await loginRoute.POST(
-    new Request("http://localhost/api/auth/login", {
+    new NextRequest("http://localhost/api/auth/login", {
       method: "POST",
       headers: { "content-type": "application/json", "x-forwarded-proto": "https" },
       body: JSON.stringify({ password: "bootstrap-secret" }),
@@ -102,7 +104,7 @@ test("auth login route lazily migrates INITIAL_PASSWORD to a persisted hash befo
   assert.equal(
     await managementPassword.verifyManagementPassword(
       "bootstrap-secret",
-      (settings as Record<string, unknown>).password as string
+      (settings as LooseDeep).password as string
     ),
     true
   );
@@ -116,7 +118,7 @@ test("auth login route sets a bounded maxAge on the auth_token cookie (Seg3)", a
   });
 
   const response = await loginRoute.POST(
-    new Request("http://localhost/api/auth/login", {
+    new NextRequest("http://localhost/api/auth/login", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ password: "bootstrap-secret" }),
@@ -143,7 +145,7 @@ test("auth login route returns 403 when OIDC password login is disabled", async 
   });
 
   const response = await loginRoute.POST(
-    new Request("http://localhost/api/auth/login", {
+    new NextRequest("http://localhost/api/auth/login", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ password: "bootstrap-secret" }),

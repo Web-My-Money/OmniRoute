@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-embeddings-"));
 
@@ -12,7 +13,7 @@ test("handleEmbedding routes prefixed models and forwards optional fields", asyn
   const originalFetch = globalThis.fetch;
   const calls = [];
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     calls.push({
       url: String(url),
       headers: options.headers,
@@ -63,7 +64,7 @@ test("handleEmbedding supports resolved local providers without auth and preserv
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers,
@@ -117,7 +118,7 @@ test("handleEmbedding routes Upstage embedding models through the embedding endp
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers,

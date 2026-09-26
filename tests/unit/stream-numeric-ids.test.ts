@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-stream-numeric-ids-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -232,7 +233,9 @@ test("createSSEStream responses passthrough coerces numeric ids to strings", asy
   assert.equal(typeof added.item.call_id, "string");
   assert.equal(added.item.call_id, "654");
 
-  const delta = payloads.find((payload) => payload.type === "response.function_call_arguments.delta");
+  const delta = payloads.find(
+    (payload) => payload.type === "response.function_call_arguments.delta"
+  );
   assert.equal(typeof delta.response_id, "string");
   assert.equal(delta.response_id, "987");
   assert.equal(typeof delta.item_id, "string");
@@ -481,7 +484,7 @@ test("createSSEStream Claude passthrough does not normalize numeric ids", async 
     ],
     {
       mode: "passthrough",
-      sourceFormat: FORMATS.ANTHROPIC,
+      sourceFormat: (FORMATS as LooseDeep).ANTHROPIC,
       provider: "anthropic",
       model: "claude-3-5-sonnet-20241022",
       body: { messages: [{ role: "user", content: "hello" }] },

@@ -45,6 +45,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import Database from "better-sqlite3";
+import { looseCreds } from "../helpers/looseTypes.ts";
 
 // NOTE: every module that transitively touches src/lib/db/core.ts (which
 // resolves DATA_DIR at MODULE-LOAD time, not lazily) must be imported
@@ -62,7 +63,9 @@ const settingsDb = await import("../../src/lib/db/settings.ts");
 const apiKeysDb = await import("../../src/lib/db/apiKeys.ts");
 const affinityDb = await import("../../src/lib/db/sessionAccountAffinity.ts");
 const auth = await import("../../src/sse/services/auth.ts");
-const { resolveSessionAffinityTtlMs } = await import("../../src/sse/services/sessionAffinityPin.ts");
+const getCreds = looseCreds(auth.getProviderCredentials);
+const { resolveSessionAffinityTtlMs } =
+  await import("../../src/sse/services/sessionAffinityPin.ts");
 const { DefaultExecutor } = await import("../../open-sse/executors/default.ts");
 
 async function resetStorage() {
@@ -73,15 +76,16 @@ async function resetStorage() {
 }
 
 async function seedConnection(provider: string, overrides: Record<string, unknown> = {}) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: (overrides.authType as string) || "api_key",
     name: (overrides.name as string) || `${provider}-${Math.random().toString(16).slice(2, 8)}`,
-    accessToken: (overrides.accessToken as string) || `at-${Math.random().toString(16).slice(2, 10)}`,
+    accessToken:
+      (overrides.accessToken as string) || `at-${Math.random().toString(16).slice(2, 10)}`,
     isActive: (overrides.isActive as boolean) ?? true,
     testStatus: (overrides.testStatus as string) || "active",
     providerSpecificData: (overrides.providerSpecificData as Record<string, unknown>) || {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {
@@ -102,11 +106,15 @@ test("#7274 a non-Codex provider with sessionAffinityTtlMs > 0 persists and reus
   const connectionA = await seedConnection("glm", { name: "glm-affinity-a" });
   const connectionB = await seedConnection("glm", { name: "glm-affinity-b" });
 
-  const request1 = await auth.getProviderCredentials("glm", null, null, "glm-4.6", {
+  const request1 = await getCreds("glm", null, null, "glm-4.6", {
     sessionKey: "session-generic",
     forcedConnectionId: connectionA.id,
   });
-  assert.equal(request1?.connectionId, connectionA.id, "first request pins to the forced connection");
+  assert.equal(
+    request1?.connectionId,
+    connectionA.id,
+    "first request pins to the forced connection"
+  );
   assert.equal(
     affinityDb.getSessionAccountAffinity("session-generic", "glm", 60_000)?.connectionId,
     connectionA.id,
@@ -116,7 +124,7 @@ test("#7274 a non-Codex provider with sessionAffinityTtlMs > 0 persists and reus
   // Same session, a different forcedConnectionId (as combo re-scoring would
   // produce) — the existing pin must win, exactly like the Codex-only #5903
   // behavior, but now for a generic provider.
-  const request2 = await auth.getProviderCredentials("glm", null, null, "glm-4.6", {
+  const request2 = await getCreds("glm", null, null, "glm-4.6", {
     sessionKey: "session-generic",
     forcedConnectionId: connectionB.id,
   });
@@ -133,13 +141,13 @@ test("#7274 a non-Codex provider stays unpinned when sessionAffinityTtlMs is 0 (
   const connectionA = await seedConnection("anthropic", { name: "anthropic-no-affinity-a" });
   const connectionB = await seedConnection("anthropic", { name: "anthropic-no-affinity-b" });
 
-  const request1 = await auth.getProviderCredentials("anthropic", null, null, "claude-opus-4-8", {
+  const request1 = await getCreds("anthropic", null, null, "claude-opus-4-8", {
     sessionKey: "session-disabled",
     forcedConnectionId: connectionA.id,
   });
   assert.equal(request1?.connectionId, connectionA.id);
 
-  const request2 = await auth.getProviderCredentials("anthropic", null, null, "claude-opus-4-8", {
+  const request2 = await getCreds("anthropic", null, null, "claude-opus-4-8", {
     sessionKey: "session-disabled",
     forcedConnectionId: connectionB.id,
   });
@@ -172,7 +180,7 @@ test("#7274 resolveSessionAffinityTtlMs prefers the new generic key over the leg
 
 test("#7274 resolveSessionAffinityTtlMs now applies to any provider, not just codex", () => {
   const ttl = resolveSessionAffinityTtlMs("openai", {}, { sessionAffinityTtlMs: 45_000 });
-  assert.equal(ttl, 45_000, "the provider !== \"codex\" early-return must be gone");
+  assert.equal(ttl, 45_000, 'the provider !== "codex" early-return must be gone');
 });
 
 // ── 2b. raw-SQL migration: additive, idempotent carry-over ──────────────────
@@ -200,7 +208,9 @@ test("#7274 migration 124 carries codexSessionAffinityTtlMs over to sessionAffin
     db.exec(migrationSql);
 
     const row = db
-      .prepare("SELECT value FROM key_value WHERE namespace = 'settings' AND key = 'sessionAffinityTtlMs'")
+      .prepare(
+        "SELECT value FROM key_value WHERE namespace = 'settings' AND key = 'sessionAffinityTtlMs'"
+      )
       .get() as { value: string } | undefined;
     assert.equal(row?.value, "60000", "the generic key must carry the old value over");
 
@@ -209,13 +219,19 @@ test("#7274 migration 124 carries codexSessionAffinityTtlMs over to sessionAffin
         "SELECT value FROM key_value WHERE namespace = 'settings' AND key = 'codexSessionAffinityTtlMs'"
       )
       .get() as { value: string } | undefined;
-    assert.equal(oldRow?.value, "60000", "the migration is additive — the old key/row is not deleted");
+    assert.equal(
+      oldRow?.value,
+      "60000",
+      "the migration is additive — the old key/row is not deleted"
+    );
 
     // Idempotency: re-running the migration (as the runner would on a replay)
     // must not throw and must not change the already-carried-over value.
     assert.doesNotThrow(() => db.exec(migrationSql));
     const rowAfterReplay = db
-      .prepare("SELECT value FROM key_value WHERE namespace = 'settings' AND key = 'sessionAffinityTtlMs'")
+      .prepare(
+        "SELECT value FROM key_value WHERE namespace = 'settings' AND key = 'sessionAffinityTtlMs'"
+      )
       .get() as { value: string } | undefined;
     assert.equal(rowAfterReplay?.value, "60000");
   } finally {
@@ -242,7 +258,9 @@ test("#7274 migration 124 is a no-op when the operator never configured the lega
 
     assert.doesNotThrow(() => db.exec(migrationSql));
     const row = db
-      .prepare("SELECT value FROM key_value WHERE namespace = 'settings' AND key = 'sessionAffinityTtlMs'")
+      .prepare(
+        "SELECT value FROM key_value WHERE namespace = 'settings' AND key = 'sessionAffinityTtlMs'"
+      )
       .get();
     assert.equal(row, undefined, "no row should be created when there was nothing to carry over");
   } finally {
@@ -289,3 +307,5 @@ test("#7274 CHARACTERIZATION: x-session-id IS forwarded upstream by DefaultExecu
     "documents current behavior: x-session-id is forwarded, unlike the other two session headers"
   );
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

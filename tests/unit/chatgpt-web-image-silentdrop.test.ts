@@ -12,13 +12,13 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-cgptweb-silentdrop-"));
 
 const { detectImageResolutionFailure } = await import("../../open-sse/executors/chatgpt-web.ts");
-const { handleChatGptWebImageGeneration } = await import(
-  "../../open-sse/handlers/imageGeneration/providers/chatgptWeb.ts"
-);
+const { handleChatGptWebImageGeneration } =
+  await import("../../open-sse/handlers/imageGeneration/providers/chatgptWeb.ts");
 
 function fakeExecutor(jsonBody: object, status = 200) {
   return {
@@ -49,7 +49,7 @@ test("detectImageResolutionFailure: true only when a pointer existed but none re
 });
 
 test("handler surfaces a specific 502 when the image was generated but not retrievable", async () => {
-  const res = await handleChatGptWebImageGeneration({
+  const res = await looseAsync(handleChatGptWebImageGeneration)({
     ...baseArgs,
     executorFactory: () =>
       fakeExecutor({
@@ -69,7 +69,7 @@ test("handler surfaces a specific 502 when the image was generated but not retri
 });
 
 test("handler keeps the generic 502 when no image was generated at all", async () => {
-  const res = await handleChatGptWebImageGeneration({
+  const res = await looseAsync(handleChatGptWebImageGeneration)({
     ...baseArgs,
     executorFactory: () =>
       fakeExecutor({
@@ -83,7 +83,7 @@ test("handler keeps the generic 502 when no image was generated at all", async (
 
 test("handler returns success when the executor produced image markdown", async () => {
   const url = "/v1/chatgpt-web/image/abcdef0123456789";
-  const res = await handleChatGptWebImageGeneration({
+  const res = await looseAsync(handleChatGptWebImageGeneration)({
     ...baseArgs,
     executorFactory: () =>
       fakeExecutor({

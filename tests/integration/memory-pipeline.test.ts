@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { mock } from "node:test";
 
 import { createChatPipelineHarness } from "./_chatPipelineHarness.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const harness = await createChatPipelineHarness("memory-pipeline");
 
@@ -12,6 +13,7 @@ const { extractFactsFromText } = await import("../../src/lib/memory/extraction.t
 const { retrieveMemories } = await import("../../src/lib/memory/retrieval.ts");
 const { invalidateMemorySettingsCache } = await import("../../src/lib/memory/settings.ts");
 const { injectMemory, formatMemoryContext } = await import("../../src/lib/memory/injection.ts");
+import type { MemoryType } from "../../src/lib/memory/types.ts";
 const {
   BaseExecutor,
   buildOpenAIResponse,
@@ -78,7 +80,7 @@ test("first request proceeds without injected context when the store is empty", 
   await enableMemory();
 
   const fetchCalls = [];
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     fetchCalls.push(init.body ? JSON.parse(String(init.body)) : null);
     return buildOpenAIResponse("No memory yet");
   };
@@ -142,7 +144,7 @@ test("later requests inject retrieved memories into upstream messages", async ()
   await createMemory({
     apiKeyId: apiKey.id,
     sessionId: "session-inject",
-    type: "factual",
+    type: "factual" as MemoryType,
     key: "preference:concise",
     content: "User prefers concise answers.",
     metadata: {},
@@ -150,7 +152,7 @@ test("later requests inject retrieved memories into upstream messages", async ()
   });
 
   const fetchCalls = [];
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     fetchCalls.push(init.body ? JSON.parse(String(init.body)) : null);
     return buildOpenAIResponse("Memory injected");
   };
@@ -180,7 +182,7 @@ test("memory search ranks query-relevant memories first", async () => {
   await memoryTools.omniroute_memory_add.handler({
     apiKeyId: apiKey.id,
     sessionId: "search",
-    type: "factual",
+    type: "factual" as MemoryType,
     key: "pref:language",
     content: "The user writes TypeScript services every day.",
     metadata: {},
@@ -188,7 +190,7 @@ test("memory search ranks query-relevant memories first", async () => {
   await memoryTools.omniroute_memory_add.handler({
     apiKeyId: apiKey.id,
     sessionId: "search",
-    type: "factual",
+    type: "factual" as MemoryType,
     key: "pref:hobby",
     content: "The user enjoys gardening on weekends.",
     metadata: {},
@@ -196,7 +198,7 @@ test("memory search ranks query-relevant memories first", async () => {
   await memoryTools.omniroute_memory_add.handler({
     apiKeyId: apiKey.id,
     sessionId: "search",
-    type: "factual",
+    type: "factual" as MemoryType,
     key: "pref:stack",
     content: "TypeScript and Node.js are the preferred backend stack.",
     metadata: {},
@@ -223,7 +225,7 @@ test("MCP memory tools fall back to caller principal id when apiKeyId is omitted
   try {
     const added = await memoryTools.omniroute_memory_add.handler({
       sessionId: "mcp-auto",
-      type: "factual",
+      type: "factual" as MemoryType,
       key: "pref:auto-owner",
       content: "Written without an explicit apiKeyId.",
       metadata: {},
@@ -265,7 +267,7 @@ test("MCP memory tools reject explicit apiKeyId that does not match caller princ
     const added = await memoryTools.omniroute_memory_add.handler({
       apiKeyId: "principal-b",
       sessionId: "mcp-mismatch",
-      type: "factual",
+      type: "factual" as MemoryType,
       key: "pref:cross-tenant",
       content: "Must not leak into another principal's store.",
       metadata: {},
@@ -311,7 +313,7 @@ test("memory injection respects the configured token budget", async () => {
   await createMemory({
     apiKeyId: apiKey.id,
     sessionId: "budget",
-    type: "factual",
+    type: "factual" as MemoryType,
     key: "older",
     content: "Older preference that should be trimmed when the context budget is tight.",
     metadata: {},
@@ -321,7 +323,7 @@ test("memory injection respects the configured token budget", async () => {
   await createMemory({
     apiKeyId: apiKey.id,
     sessionId: "budget",
-    type: "factual",
+    type: "factual" as MemoryType,
     key: "newer",
     content: "Newest preference should fit first.",
     metadata: {},
@@ -329,7 +331,7 @@ test("memory injection respects the configured token budget", async () => {
   });
 
   const fetchCalls = [];
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     fetchCalls.push(init.body ? JSON.parse(String(init.body)) : null);
     return buildOpenAIResponse("Budget respected");
   };
@@ -362,7 +364,7 @@ test("disabled memory skips both extraction and injection", async () => {
   });
 
   const fetchCalls = [];
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     fetchCalls.push(init.body ? JSON.parse(String(init.body)) : null);
     return buildOpenAIResponse("I prefer dark mode.");
   };
@@ -395,7 +397,7 @@ test("memory clear removes all stored memories for an API key", async () => {
   await memoryTools.omniroute_memory_add.handler({
     apiKeyId: apiKey.id,
     sessionId: "clear",
-    type: "factual",
+    type: "factual" as MemoryType,
     key: "pref:one",
     content: "First memory",
     metadata: {},
@@ -403,7 +405,7 @@ test("memory clear removes all stored memories for an API key", async () => {
   await memoryTools.omniroute_memory_add.handler({
     apiKeyId: apiKey.id,
     sessionId: "clear",
-    type: "episodic",
+    type: "episodic" as MemoryType,
     key: "event:two",
     content: "Second memory",
     metadata: {},
@@ -522,7 +524,7 @@ test("retrieval→injection: retrieveMemories feeds into injectMemory context", 
   await createMemory({
     apiKeyId: apiKey.id,
     sessionId: "retrieval-inject-test",
-    type: "factual",
+    type: "factual" as MemoryType,
     key: "pref:editor",
     content: "User prefers VS Code.",
     metadata: {},
@@ -531,7 +533,7 @@ test("retrieval→injection: retrieveMemories feeds into injectMemory context", 
   await createMemory({
     apiKeyId: apiKey.id,
     sessionId: "retrieval-inject-test",
-    type: "factual",
+    type: "factual" as MemoryType,
     key: "pref:lang",
     content: "User works with TypeScript.",
     metadata: {},
@@ -552,7 +554,7 @@ test("retrieval→injection: retrieveMemories feeds into injectMemory context", 
     model: "openai/gpt-4o-mini",
     messages: [{ role: "user", content: "What editor do I use?" }],
   };
-  const injected = injectMemory(request, memories, "openai");
+  const injected = injectMemory(request as unknown as ChatRequest, memories, "openai");
 
   // 4. Verify injection
   assert.ok(injected.messages.length > request.messages.length, "should prepend memory message");
@@ -600,7 +602,7 @@ test("full pipeline: extract → store → retrieve → inject end-to-end", asyn
     model: "openai/gpt-4o-mini",
     messages: [{ role: "user", content: "What are my preferences?" }],
   };
-  const injected = injectMemory(request, memories, "openai");
+  const injected = injectMemory(request as unknown as ChatRequest, memories, "openai");
 
   // 5. Full pipeline assertions
   assert.equal(injected.messages[0].role, "system");
@@ -611,7 +613,7 @@ test("full pipeline: extract → store → retrieve → inject end-to-end", asyn
   assert.equal(injected.messages.length, 2, "system memory + original user message");
 
   // 6. Verify for non-system providers (o1-mini) — should inject as user message
-  const injectedForO1 = injectMemory(request, memories, "o1-mini");
+  const injectedForO1 = injectMemory(request as unknown as ChatRequest, memories, "o1-mini");
   assert.equal(injectedForO1.messages[0].role, "user", "o1-mini should get user-role memory");
   assert.match(injectedForO1.messages[0].content, /Memory context:/);
 });
@@ -629,7 +631,7 @@ test("logging verification: observability logs fire during pipeline operations",
     const mem = await createMemory({
       apiKeyId: apiKey.id,
       sessionId: "log-test",
-      type: "factual",
+      type: "factual" as MemoryType,
       key: "pref:logging",
       content: "User likes verbose logging.",
       metadata: {},
@@ -650,10 +652,10 @@ test("logging verification: observability logs fire during pipeline operations",
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: "Test" }],
     };
-    injectMemory(request, memories, "openai");
+    injectMemory(request as unknown as ChatRequest, memories, "openai");
 
     // 4. injectMemory with empty memories should trigger "memory.injection.skipped"
-    injectMemory(request, [], "openai");
+    injectMemory(request as unknown as ChatRequest, [], "openai");
 
     // 5. Verify that logs were emitted (console.log/debug were called)
     const allCalls = [...logSpy.mock.calls, ...debugSpy.mock.calls];

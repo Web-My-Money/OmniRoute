@@ -16,6 +16,7 @@ import {
   getAntigravityRemainingCredits,
   updateAntigravityRemainingCredits,
 } from "../../open-sse/executors/antigravity.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ── Credit balance cache tests ────────────────────────────────────────────────
 
@@ -86,8 +87,9 @@ describe("accountId key consistency: executor vs fetcher derivation", () => {
     const credentials = { sub: "sub-only-123" };
     const providerSpecificData = { sub: "sub-only-123" };
 
-    const executorAccountId = credentials.email || credentials.sub || "unknown";
-    const fetcherAccountId = providerSpecificData.email || providerSpecificData.sub || "unknown";
+    const executorAccountId = (credentials as LooseDeep).email || credentials.sub || "unknown";
+    const fetcherAccountId =
+      (providerSpecificData as LooseDeep).email || providerSpecificData.sub || "unknown";
 
     assert.equal(executorAccountId, "sub-only-123");
     assert.equal(fetcherAccountId, "sub-only-123");
@@ -98,8 +100,12 @@ describe("accountId key consistency: executor vs fetcher derivation", () => {
     const credentials = {};
     const providerSpecificData = {};
 
-    const executorAccountId = credentials.email || credentials.sub || "unknown";
-    const fetcherAccountId = providerSpecificData.email || providerSpecificData.sub || "unknown";
+    const executorAccountId =
+      (credentials as LooseDeep).email || (credentials as LooseDeep).sub || "unknown";
+    const fetcherAccountId =
+      (providerSpecificData as LooseDeep).email ||
+      (providerSpecificData as LooseDeep).sub ||
+      "unknown";
 
     assert.equal(executorAccountId, "unknown");
     assert.equal(fetcherAccountId, "unknown");

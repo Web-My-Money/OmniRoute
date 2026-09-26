@@ -22,6 +22,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { CatalogPayload } from "../../src/app/api/v1/models/catalogCache.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-catalog-genrace-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -38,15 +39,15 @@ function makeRequest() {
   return new Request("http://localhost/v1/models");
 }
 
-function makePayload(body: string): catalogCache.CatalogPayload {
+function makePayload(body: string): CatalogPayload {
   return { body, headers: { "content-type": "application/json" }, status: 200, cacheTTL: 60_000 };
 }
 
 /** A builder whose single in-flight promise resolves only when release() is called. */
 function deferredBuilder(body: string) {
-  let release!: (payload: catalogCache.CatalogPayload) => void;
+  let release!: (payload: CatalogPayload) => void;
   let calls = 0;
-  const gate = new Promise<catalogCache.CatalogPayload>((resolve) => {
+  const gate = new Promise<CatalogPayload>((resolve) => {
     release = resolve;
   });
   const builder = () => {

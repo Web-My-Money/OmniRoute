@@ -16,6 +16,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-testmodel-compression-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -78,7 +80,7 @@ async function runChatCore(opts: {
   };
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body: {
         model: opts.model,
         stream: false,
@@ -119,11 +121,11 @@ test("chatCore: x-omniroute-compression: off suppresses Output Styles injection 
     },
   });
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   // Sanity check: WITHOUT the opt-out header, the globally-enabled style still injects (proves
   // the fixture actually exercises Output Styles, so the assertion below is meaningful).
@@ -185,11 +187,11 @@ test("chatCore: a per-key opt-out wins over request headers and Output Styles (#
     },
   });
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const enabled = await runChatCore({
     provider,

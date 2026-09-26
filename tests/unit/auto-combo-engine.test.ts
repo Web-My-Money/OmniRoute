@@ -9,8 +9,8 @@ const healer = getSelfHealingManager();
 const originalRandom = Math.random;
 
 function resetHealer() {
-  healer.exclusions.clear();
-  healer.incidentMode = false;
+  healer["exclusions"].clear();
+  healer["incidentMode"] = false;
 }
 
 const baseConfig = {
@@ -62,7 +62,7 @@ test("selectProvider infers coding intent from prompt messages when taskType is 
     },
   ];
 
-  const result = selectProvider(baseConfig, candidates, "default", [
+  const result = selectProvider(baseConfig as unknown as AutoComboConfig, candidates, "default", [
     {
       role: "user",
       content: "Refactor this TypeScript function and debug the code path for me.",

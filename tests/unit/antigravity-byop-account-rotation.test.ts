@@ -43,7 +43,7 @@ async function createAntigravityAccount(options: {
   refreshToken: string;
   priority?: number;
 }) {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: options.name,
@@ -55,7 +55,7 @@ async function createAntigravityAccount(options: {
     isActive: true,
     testStatus: "active",
     priority: options.priority,
-  });
+  })) as JsonRecord & { id: string };
   assert(connection && typeof connection.id === "string");
   return connection;
 }
@@ -251,3 +251,5 @@ test("Antigravity BYOP with no sibling account surfaces the actionable 422 and e
     clearAntigravityProjectCache();
   }
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

@@ -8,6 +8,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-vertex-404-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -24,13 +25,13 @@ async function resetStorage() {
 }
 
 async function seedVertex() {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "vertex",
     authType: "apikey",
     apiKey: "vertex-key",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.after(() => {

@@ -10,6 +10,7 @@ const { MoonshotExecutor } = await import("../../open-sse/executors/moonshot.ts"
 const { DoubaoWebExecutor } = await import("../../open-sse/executors/doubao-web.ts");
 const { QwenWebExecutor } = await import("../../open-sse/executors/qwen-web.ts");
 const { getExecutor, hasSpecializedExecutor } = await import("../../open-sse/executors/index.ts");
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -76,8 +77,8 @@ function mockFetchCapture(status = 200, responseBody?: ReadableStream | string) 
 
   globalThis.fetch = async (url: MockFetchInput, opts?: MockFetchInit) => {
     capturedUrl = String(url);
-    capturedHeaders = opts?.headers || {};
-    capturedBody = opts?.body || null;
+    (capturedHeaders as unknown as Record<string, string>) = opts?.headers || {};
+    (capturedBody as unknown as string) = opts?.body || null;
     return new Response(body || "", {
       status,
       headers: { "Content-Type": "text/event-stream; charset=utf-8" },
@@ -235,7 +236,7 @@ test("HuggingChat: streaming returns SSE chunks", async () => {
 
   try {
     const executor = new HuggingChatExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       model: "meta-llama/Llama-3.3-70B-Instruct",
     });
@@ -279,7 +280,7 @@ test("HuggingChat: sends current web data payload with the root parent id", asyn
 
   try {
     const executor = new HuggingChatExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       model: "meta-llama/Llama-3.3-70B-Instruct",
     });
@@ -319,7 +320,7 @@ test("HuggingChat: carries create response Set-Cookie into message send", async 
       return mockHuggingChatConversationDetail();
     }
 
-    sendCookie = opts.headers.Cookie;
+    sendCookie = (opts.headers as LooseDeep).Cookie;
     return new Response(
       mockJSONLStream([JSON.stringify({ type: "finalAnswer", text: "Hello world" })]),
       {
@@ -331,7 +332,7 @@ test("HuggingChat: carries create response Set-Cookie into message send", async 
 
   try {
     const executor = new HuggingChatExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       credentials: { apiKey: "hf-chat=stale-session; token=login-token" },
       model: "baidu/ERNIE-4.5-VL-424B-A47B-Base-PT",
@@ -375,7 +376,7 @@ test("HuggingChat: default model is a current concrete catalog model", async () 
 
   try {
     const executor = new HuggingChatExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       model: "",
     });
@@ -409,7 +410,7 @@ test("HuggingChat: message send errors include sanitized upstream details", asyn
 
   try {
     const executor = new HuggingChatExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       stream: false,
     });
@@ -444,7 +445,7 @@ test("HuggingChat: message send errors preserve the attempted send payload", asy
 
   try {
     const executor = new HuggingChatExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       model: "baidu/ERNIE-4.5-VL-424B-A47B-Base-PT",
       stream: false,
@@ -493,7 +494,7 @@ test("HuggingChat: non-streaming returns JSON completion", async () => {
 
   try {
     const executor = new HuggingChatExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       stream: false,
     });
@@ -517,7 +518,7 @@ test("HuggingChat: error response returns error result", async () => {
   };
   try {
     const executor = new HuggingChatExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       credentials: { apiKey: "bad-cookie" },
     });
@@ -538,7 +539,7 @@ test("HuggingChat: encrypted credential blob fails before upstream fetch", async
 
   try {
     const executor = new HuggingChatExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       credentials: { apiKey: "enc:v1:fake-iv:fake-ciphertext:fake-tag" },
     });
@@ -576,7 +577,7 @@ test("Poe Web: non-streaming returns JSON completion", async () => {
   const restore = mockFetchCapture(200, mockResponse);
   try {
     const executor = new PoeWebExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       stream: false,
     });
@@ -615,7 +616,7 @@ test("Venice Web: streaming passes through SSE", async () => {
   const restore = mockFetchCapture(200, mockSSEStream(sseData));
   try {
     const executor = new VeniceWebExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       model: "venice-default",
     });
@@ -645,7 +646,7 @@ test("v0 Vercel Web: streaming passes through SSE", async () => {
   const restore = mockFetchCapture(200, mockSSEStream(sseData));
   try {
     const executor = new V0VercelWebExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       model: "v0-default",
     });
@@ -677,7 +678,7 @@ test("Kimi Web: targets www.kimi.ai (international)", async () => {
   const restore = mockFetchCapture(200);
   try {
     const executor = new KimiWebExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       model: "k2d6",
       credentials: { apiKey: "kimi-auth=eyJ.eyJzdWI.signature" },
@@ -697,7 +698,7 @@ test("Kimi Web: targets www.kimi.ai (international)", async () => {
 
 test("Kimi Web: missing JWT returns a 400 before fetching", async () => {
   const executor = new KimiWebExecutor();
-  const result = await executor.execute({
+  const result: LooseDeep = await executor.execute({
     ...noopExecuteInput,
     model: "k2d6",
     credentials: { apiKey: "" },
@@ -709,7 +710,7 @@ test("Kimi Web: error response returns error result", async () => {
   const restore = mockFetchCapture(401, "Unauthorized");
   try {
     const executor = new KimiWebExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       model: "k2d6",
       credentials: { apiKey: "kimi-auth=eyJ.eyJzdWI.signature" },
@@ -731,7 +732,7 @@ test("Doubao Web: streaming converts Dola SSE chunks", async () => {
   const restore = mockFetchCapture(200, mockSSEStream(sseData));
   try {
     const executor = new DoubaoWebExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       model: "dola-speed",
       credentials: { apiKey: "sessionid=sid; ttwid=tt; s_v_web_id=verify_abc" },
@@ -757,7 +758,7 @@ test("Doubao Web: Dola Pro returns final answer after reasoning boundary", async
   const restore = mockFetchCapture(200, mockSSEStream(sseData));
   try {
     const executor = new DoubaoWebExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       model: "dola-pro",
       stream: false,
@@ -777,7 +778,7 @@ test("Doubao Web: error response returns error result", async () => {
   const restore = mockFetchCapture(502, "Bad Gateway");
   try {
     const executor = new DoubaoWebExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       credentials: { apiKey: "sessionid=sid; ttwid=tt; s_v_web_id=verify_abc" },
     });
@@ -803,7 +804,7 @@ test("All executors handle Cookie: prefix", async () => {
   const original = globalThis.fetch;
   let lastHeaders: Record<string, string> = {};
   globalThis.fetch = async (_url: MockFetchInput, opts?: MockFetchInit) => {
-    lastHeaders = opts?.headers || {};
+    (lastHeaders as unknown as Record<string, string>) = opts?.headers || {};
     // Poe expects JSON response with chatWithBot
     const body = JSON.stringify({ data: { chatWithBot: { text: "ok" } } });
     return new Response(body, {
@@ -840,7 +841,7 @@ test("All executors handle bare cookie value", async () => {
   const original = globalThis.fetch;
   let lastHeaders: Record<string, string> = {};
   globalThis.fetch = async (_url: MockFetchInput, opts?: MockFetchInit) => {
-    lastHeaders = opts?.headers || {};
+    (lastHeaders as unknown as Record<string, string>) = opts?.headers || {};
     // Poe expects JSON response with chatWithBot
     const body = JSON.stringify({ data: { chatWithBot: { text: "ok" } } });
     return new Response(body, {
@@ -878,7 +879,7 @@ test("HuggingChat: respects abort signal", async () => {
 
   try {
     const executor = new HuggingChatExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       ...noopExecuteInput,
       signal: controller.signal,
     });

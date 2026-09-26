@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-copilot-retired-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -59,14 +60,14 @@ test("GitHub Copilot readers hide retired models from legacy synced caches", asy
 });
 
 test("provider inference does not route retired Gemini models to GitHub Copilot", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "github",
     authType: "oauth",
     name: "copilot-retired-routing",
     accessToken: "github-test-token",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   const db = core.getDbInstance();
   db.prepare(
     "INSERT INTO key_value (namespace, key, value) VALUES ('syncedAvailableModels', ?, ?)"

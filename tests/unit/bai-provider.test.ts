@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const { APIKEY_PROVIDERS } = await import("../../src/shared/constants/providers.ts");
 const { PROVIDER_ENDPOINTS } = await import("../../src/shared/constants/config.ts");
@@ -90,12 +91,12 @@ interface ModelsBody {
 
 test("b.ai import fetches the live /v1/models catalog", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "bai",
     authType: "apikey",
     name: "bai-live",
     apiKey: "bai-key",
-  });
+  })) as JsonRecord & { id: string };
 
   let fetched = false;
   const originalFetch = globalThis.fetch;
@@ -130,12 +131,12 @@ test("b.ai import fetches the live /v1/models catalog", async () => {
 
 test("b.ai import falls back to an empty local catalog when live fetch fails", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "bai",
     authType: "apikey",
     name: "bai-fallback",
     apiKey: "bai-key-2",
-  });
+  })) as JsonRecord & { id: string };
 
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => new Response("bad gateway", { status: 502 });

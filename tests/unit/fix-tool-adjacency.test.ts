@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { fixToolPairs, fixToolAdjacency, stripTrailingAssistantOrphanToolUse } =
   await import("../../open-sse/services/contextManager.ts");
@@ -25,9 +26,9 @@ test("fixToolAdjacency: removes tool_use when next message has no matching tool_
 
   const fixed = fixToolAdjacency(messages);
   // toolu_abc should be removed because next message doesn't have tool_result for it
-  const assistantContent = fixed[1].content;
-  const toolUseBlocks = assistantContent.filter((b) => b.type === "tool_use");
-  assert.equal(toolUseBlocks.length, 0);
+  const assistantContent = (fixed[1] as LooseDeep).content;
+  const toolUseBlocks = (assistantContent as LooseDeep).filter((b) => b.type === "tool_use");
+  assert.equal((toolUseBlocks as LooseDeep).length, 0);
   assert.equal(assistantContent.length, 1); // only text remains
 });
 
@@ -48,8 +49,8 @@ test("fixToolAdjacency: keeps tool_use when next message has matching tool_resul
   ];
 
   const fixed = fixToolAdjacency(messages);
-  const assistantContent = fixed[1].content;
-  const toolUseBlocks = assistantContent.filter((b) => b.type === "tool_use");
+  const assistantContent = (fixed[1] as LooseDeep).content;
+  const toolUseBlocks = (assistantContent as LooseDeep).filter((b) => b.type === "tool_use");
   assert.equal(toolUseBlocks.length, 1);
   assert.equal(toolUseBlocks[0].id, "toolu_abc");
 });
@@ -84,8 +85,8 @@ test("fixToolAdjacency: handles OpenAI format tool role messages", () => {
   ];
 
   const fixed = fixToolAdjacency(messages);
-  const assistantContent = fixed[1].content;
-  const toolUseBlocks = assistantContent.filter((b) => b.type === "tool_use");
+  const assistantContent = (fixed[1] as LooseDeep).content;
+  const toolUseBlocks = (assistantContent as LooseDeep).filter((b) => b.type === "tool_use");
   assert.equal(toolUseBlocks.length, 1); // kept because next message matches
 });
 

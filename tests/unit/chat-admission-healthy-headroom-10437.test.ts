@@ -14,6 +14,7 @@ import {
   ChatAdmissionController,
   admitChatStructure,
 } from "../../src/shared/middleware/chatBodyAdmission.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 function heavyBody() {
   return {
@@ -66,9 +67,9 @@ test("#10437: the healthy-heap fast path admits only a bounded headroom budget, 
     "once the headroom budget is exhausted, further healthy-heap requests must be shed, not silently admitted"
   );
   for (const r of rejected) {
-    if (r.admit) continue;
-    assert.equal(r.response.status, 503);
-    const payload = await r.response.json();
+    if ((r as LooseDeep).admit) continue;
+    assert.equal((r.response as LooseDeep).status, 503);
+    const payload = await (r as LooseDeep).response.json();
     assert.equal(payload.error.code, "chat_admission_busy");
     assert.equal(payload.error.reason, "structure_limit");
   }
@@ -95,7 +96,11 @@ test("#10437: healthyHeadroom=0 disables the fast-path bypass entirely — every
     queueMs: 0,
   });
 
-  assert.equal(result.admit, false, "with a zero headroom budget, a busy healthy-heap request must be shed");
+  assert.equal(
+    result.admit,
+    false,
+    "with a zero headroom budget, a busy healthy-heap request must be shed"
+  );
   if (!result.admit) assert.equal(result.response.status, 503);
   primary.release();
 });
@@ -111,7 +116,11 @@ test("#10437: the healthy-heap headroom budget still lets legitimate agent fan-o
     controller,
     heapPressureCheck: heapHealthy,
   });
-  assert.equal(result.admit, true, "at least the default headroom budget must admit a healthy-heap request");
+  assert.equal(
+    result.admit,
+    true,
+    "at least the default headroom budget must admit a healthy-heap request"
+  );
   if (result.admit) result.lease?.release();
   primary.release();
 });

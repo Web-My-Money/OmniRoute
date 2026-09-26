@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-provider-limits-proxy-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -32,7 +33,7 @@ async function withMockedFetch(fetchImpl: typeof fetch, fn: () => Promise<void>)
 }
 
 async function createClaudeOAuthConnection() {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "oauth",
     name: `Claude Provider Limits ${Date.now()} ${Math.random()}`,
@@ -40,7 +41,7 @@ async function createClaudeOAuthConnection() {
     accessToken: "claude-access-token",
     refreshToken: "claude-refresh-token",
     expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-  });
+  })) as JsonRecord & { id: string };
 }
 
 function claudeUsageResponse() {
@@ -132,7 +133,7 @@ test("Claude provider limits fail closed when an account proxy is unreachable", 
 });
 
 test("non-Claude OAuth provider limits fail closed when an account proxy is unreachable", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "github",
     authType: "oauth",
     name: `GitHub Provider Limits ${Date.now()} ${Math.random()}`,
@@ -140,7 +141,7 @@ test("non-Claude OAuth provider limits fail closed when an account proxy is unre
     accessToken: "github-access-token",
     refreshToken: "github-refresh-token",
     expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-  });
+  })) as JsonRecord & { id: string };
   const connectionId = (connection as any).id;
   const directFetchUrls: string[] = [];
 

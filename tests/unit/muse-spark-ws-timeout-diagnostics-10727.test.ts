@@ -77,7 +77,7 @@ class OpensThenSilentWebSocket {
   constructor(url: string) {
     this.url = url;
     setTimeout(() => {
-      this.readyState = WebSocket.OPEN;
+      (this.readyState as unknown as 0) = WebSocket.OPEN;
       this.onopen?.();
     }, 0);
   }

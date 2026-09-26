@@ -32,12 +32,15 @@ test("PATCH changes one field and leaves the rest of the combo alone", async () 
     system_message: "keep me",
   });
 
-  const response = await comboRoute.PATCH(patch(combo.id, { strategy: "round-robin" }), {
-    params: Promise.resolve({ id: combo.id }),
-  });
+  const response = await comboRoute.PATCH(
+    patch(combo.id as unknown as string, { strategy: "round-robin" }),
+    {
+      params: Promise.resolve({ id: combo.id }),
+    }
+  );
   assert.equal(response.status, 200);
 
-  const stored = (await combosDb.getComboById(combo.id)) as {
+  const stored = (await combosDb.getComboById(combo.id as unknown as string)) as {
     strategy?: string;
     system_message?: string;
     models?: unknown[];

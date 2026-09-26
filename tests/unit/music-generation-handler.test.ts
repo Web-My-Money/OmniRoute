@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-music-"));
 
@@ -15,7 +17,7 @@ function immediateTimeout(callback, _ms, ...args) {
 }
 
 test("handleMusicGeneration rejects invalid model strings", async () => {
-  const result = await handleMusicGeneration({
+  const result = await looseAsync(handleMusicGeneration)({
     body: { model: "invalid-music-model", prompt: "x" },
     credentials: null,
     log: null,
@@ -27,7 +29,7 @@ test("handleMusicGeneration rejects invalid model strings", async () => {
 });
 
 test("handleMusicGeneration treats unknown provider prefixes as invalid music models", async () => {
-  const result = await handleMusicGeneration({
+  const result = await looseAsync(handleMusicGeneration)({
     body: { model: "mystery/model-1", prompt: "x" },
     credentials: null,
     log: null,
@@ -44,7 +46,7 @@ test("handleMusicGeneration executes ComfyUI audio workflow and normalizes wav o
   let promptBody;
 
   globalThis.setTimeout = immediateTimeout;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
 
     if (stringUrl === "http://localhost:8188/prompt") {
@@ -78,7 +80,7 @@ test("handleMusicGeneration executes ComfyUI audio workflow and normalizes wav o
   };
 
   try {
-    const result = await handleMusicGeneration({
+    const result = await looseAsync(handleMusicGeneration)({
       body: {
         model: "comfyui/musicgen-medium",
         prompt: "ambient synth",
@@ -109,7 +111,7 @@ test("handleMusicGeneration polls KIE music tasks and returns audio URLs", async
   let createBody;
   let pollUrl = "";
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
 
     if (stringUrl === "https://api.kie.ai/api/v1/generate") {
@@ -140,7 +142,7 @@ test("handleMusicGeneration polls KIE music tasks and returns audio URLs", async
   };
 
   try {
-    const result = await handleMusicGeneration({
+    const result = await looseAsync(handleMusicGeneration)({
       body: {
         model: "kie/V4",
         prompt: "relaxing piano ambience",
@@ -175,7 +177,7 @@ test("handleMusicGeneration rejects unsupported provider formats", async () => {
   };
 
   try {
-    const result = await handleMusicGeneration({
+    const result = await looseAsync(handleMusicGeneration)({
       body: { model: "fakeprovider/broken-model", prompt: "x" },
       credentials: null,
       log: null,
@@ -210,7 +212,7 @@ test("handleMusicGeneration returns unknown provider when registry lookup disapp
     },
   });
 
-  const result = await handleMusicGeneration({
+  const result = await looseAsync(handleMusicGeneration)({
     body: { model: "flakyprovider/ghost-model", prompt: "x" },
     credentials: null,
     log: null,
@@ -228,7 +230,7 @@ test("handleMusicGeneration returns provider errors for ComfyUI failures and log
   let promptBody;
 
   globalThis.setTimeout = immediateTimeout;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
 
     if (stringUrl === "http://localhost:8188/prompt") {
@@ -262,7 +264,7 @@ test("handleMusicGeneration returns provider errors for ComfyUI failures and log
   };
 
   try {
-    const result = await handleMusicGeneration({
+    const result = await looseAsync(handleMusicGeneration)({
       body: {
         model: "comfyui/musicgen-medium",
         prompt: "slow piano",

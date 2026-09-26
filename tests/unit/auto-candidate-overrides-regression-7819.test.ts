@@ -15,6 +15,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-7819-regression-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -48,18 +49,18 @@ test.after(async () => {
 });
 
 async function seedTwoGlmConnections() {
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "apikey",
     name: "GLM Account 1",
     apiKey: "glm-test-key-1",
-  });
-  const second = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const second = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "apikey",
     name: "GLM Account 2",
     apiKey: "glm-test-key-2",
-  });
+  })) as JsonRecord & { id: string };
   return { first, second };
 }
 

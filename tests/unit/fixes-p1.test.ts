@@ -14,6 +14,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import net from "node:net";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const isWindows = process.platform === "win32";
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-fixes-"));
@@ -80,7 +82,7 @@ test("token refresh dedupe key avoids collision for same-prefix tokens", async (
   const originalFetch = globalThis.fetch;
   const requests = [];
 
-  globalThis.fetch = async (_url, options = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     const refreshToken = options.body?.get?.("refresh_token") || "unknown";
     requests.push(refreshToken);
     return new Response(
@@ -189,13 +191,15 @@ test("shutdown route uses SIGTERM for graceful shutdown", async () => {
     calls.push({ pid, signal });
     return true;
   };
-  globalThis.setTimeout = (callback) => {
+  globalThis.setTimeout = ((callback: () => void) => {
     callback();
     return 0;
-  };
+  }) as unknown as typeof setTimeout;
 
   try {
-    const response = await shutdownRoute.POST();
+    const response = await shutdownRoute.POST(
+      new Request("http://localhost/api/shutdown", { method: "POST" })
+    );
     assert.equal(response.status, 200);
     assert.deepEqual(calls, [{ pid: process.pid, signal: "SIGTERM" }]);
   } finally {
@@ -213,13 +217,15 @@ test("restart route uses SIGTERM for graceful restart", async () => {
     calls.push({ pid, signal });
     return true;
   };
-  globalThis.setTimeout = (callback) => {
+  globalThis.setTimeout = ((callback: () => void) => {
     callback();
     return 0;
-  };
+  }) as unknown as typeof setTimeout;
 
   try {
-    const response = await restartRoute.POST();
+    const response = await restartRoute.POST(
+      new Request("http://localhost/api/restart", { method: "POST" })
+    );
     assert.equal(response.status, 200);
     assert.deepEqual(calls, [{ pid: process.pid, signal: "SIGTERM" }]);
   } finally {
@@ -247,13 +253,13 @@ test("unlinkFileWithRetry retries EBUSY/EPERM and eventually succeeds", async ()
       attempts++;
       if (attempts === 1) {
         const err = new Error("busy");
-        err.code = "EBUSY";
+        (err as LooseDeep).code = "EBUSY";
         seenCodes.push(err.code);
         throw err;
       }
       if (attempts === 2) {
         const err = new Error("perm");
-        err.code = "EPERM";
+        (err as LooseDeep).code = "EPERM";
         seenCodes.push(err.code);
         throw err;
       }
@@ -276,12 +282,12 @@ test("unlinkFileWithRetry retries EBUSY/EPERM and eventually succeeds", async ()
 test("provider connection persists rateLimitProtection across reopen", async () => {
   await resetStorage();
 
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "rl-test",
     apiKey: "sk-test",
-  });
+  })) as JsonRecord & { id: string };
 
   await providersDb.updateProviderConnection((created as any).id, { rateLimitProtection: true });
 
@@ -353,13 +359,13 @@ test('provider connection migration adds "group" column for existing databases',
 test("resolveProxyForConnection applies combo proxy for object/string model entries", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "oauth",
     email: "combo-test@example.com",
     accessToken: "access",
     refreshToken: "refresh",
-  });
+  })) as JsonRecord & { id: string };
 
   const combo = await combosDb.createCombo({
     id: "combo-proxy-test",
@@ -659,3 +665,5 @@ test("proxy test route handles invalid proxy ports and uses stored proxy config 
   assert.equal(proxyIdBody.success, false);
   assert.equal(proxyIdBody.proxyUrl, "http://127.0.0.1:1");
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

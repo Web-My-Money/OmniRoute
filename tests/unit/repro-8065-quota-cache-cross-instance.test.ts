@@ -18,16 +18,19 @@ test("#8065 a renewed quota written by one module instance is invisible to anoth
   const connectionId = "conn-codex-8065";
 
   // Instance R: simulates auth.ts's routing/credential-selection chunk.
-  const quotaCacheR = await import("../../src/domain/quotaCache.ts?instance=R");
+  const quotaCacheR = await import("../../src/domain/quotaCache.ts" + "?instance=R");
   quotaCacheR.setQuotaCache(connectionId, "codex", {
     session: { remainingPercentage: 0, resetAt: new Date(Date.now() + 5 * 86400000).toISOString() },
   });
   assert.equal(quotaCacheR.isQuotaExhaustedForRequest(connectionId, "codex"), true);
 
   // Instance W: simulates providerLimitsSyncScheduler's instrumentation-node.ts chunk.
-  const quotaCacheW = await import("../../src/domain/quotaCache.ts?instance=W");
+  const quotaCacheW = await import("../../src/domain/quotaCache.ts" + "?instance=W");
   quotaCacheW.setQuotaCache(connectionId, "codex", {
-    session: { remainingPercentage: 100, resetAt: new Date(Date.now() + 7 * 86400000).toISOString() },
+    session: {
+      remainingPercentage: 100,
+      resetAt: new Date(Date.now() + 7 * 86400000).toISOString(),
+    },
   });
   assert.equal(quotaCacheW.isQuotaExhaustedForRequest(connectionId, "codex"), false);
 

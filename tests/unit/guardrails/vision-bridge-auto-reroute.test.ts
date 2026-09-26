@@ -9,6 +9,7 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 const { VisionBridgeGuardrail } = await import("../../../src/lib/guardrails/visionBridge.ts");
 const { resetGuardrailsForTests } = await import("../../../src/lib/guardrails/registry.ts");
@@ -82,10 +83,10 @@ test("VB-REROUTE-AUTO: auto/best-vision resolves through the router pool and rer
   assert.strictEqual(result.block, false);
   assert.strictEqual(visionCallCount, 0, "describe path must not run when a vision target exists");
   assert.ok(result.modifiedPayload, "payload must be modified");
-  const body = result.modifiedPayload as Record<string, unknown>;
+  const body = result.modifiedPayload as LooseDeep;
   // The reroute points the request at the resolved vision model from the pool.
   assert.notStrictEqual(body.model, "deepseek/deepseek-chat");
-  assert.deepEqual((result.meta as Record<string, unknown>).rerouted, true);
+  assert.deepEqual((result.meta as LooseDeep).rerouted, true);
 });
 
 test("VB-REROUTE-AUTO: falls back to describe only when the ENTIRE vision pool is unusable", async () => {
@@ -98,6 +99,6 @@ test("VB-REROUTE-AUTO: falls back to describe only when the ENTIRE vision pool i
 
   assert.strictEqual(result.block, false);
   assert.strictEqual(visionCallCount, 1, "describe path must run when no vision target is usable");
-  const body = result.modifiedPayload as Record<string, unknown>;
+  const body = result.modifiedPayload as LooseDeep;
   assert.strictEqual(body.model, "deepseek/deepseek-chat");
 });

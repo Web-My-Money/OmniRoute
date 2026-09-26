@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // #10460: DATA_DIR must be assigned BEFORE any transitive DB import. The
 // accountFallback.ts import below statically imports `@/lib/db/providers`, which
@@ -1622,13 +1623,13 @@ async function resetStorage10460() {
 }
 
 async function seedConn10460(provider: string): Promise<string> {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     apiKey: `${provider}-key-10460`,
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   return (conn as Record<string, unknown>).id as string;
 }
 

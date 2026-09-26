@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // #6301: importing a DISTINCT Codex/ChatGPT OAuth auth.json is falsely detected as
 // "already exists" when it shares the same account/workspace id but has a different
@@ -16,8 +17,6 @@ process.env.STORAGE_ENCRYPTION_KEY = "codex-import-userid-dedup-test-key";
 const core = await import("../../src/lib/db/core.ts");
 const { parseAndValidateCodexAuth, createConnectionFromAuthFile } =
   await import("../../src/lib/oauth/utils/codexAuthImport.ts");
-
-type JsonRecord = Record<string, unknown>;
 
 function buildJwt(payload: JsonRecord): string {
   const header = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT" })).toString("base64url");
@@ -108,7 +107,7 @@ test("Codex auth import ignores matching non-OAuth connections", async () => {
   const parsed = parseAndValidateCodexAuth(
     buildAuthFile("acct-shared", "user-alice", "alice@example.com")
   );
-  const nonOauth = await providersDb.createProviderConnection({
+  const nonOauth = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "access_token",
     accessToken: "website-access-token",
@@ -117,7 +116,7 @@ test("Codex auth import ignores matching non-OAuth connections", async () => {
       workspaceId: parsed.accountId,
       chatgptUserId: parsed.userId,
     },
-  });
+  })) as JsonRecord & { id: string };
 
   const imported = await createConnectionFromAuthFile(parsed, {});
 
@@ -173,16 +172,16 @@ test("same workspace AND same user stays one connection when the email changes",
 
 test("an email-less legacy workspace can promote when a user ID appears", async () => {
   const providersDb = await import("../../src/lib/db/providers.ts");
-  const legacy = await providersDb.createProviderConnection({
+  const legacy = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     providerSpecificData: { workspaceId: "acct-shared" },
-  });
-  const promoted = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const promoted = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     providerSpecificData: { workspaceId: "acct-shared", chatgptUserId: "user-alice" },
-  });
+  })) as JsonRecord & { id: string };
 
   assert.equal(promoted.id, legacy.id);
 });
@@ -204,20 +203,20 @@ test("same workspace and email but different users remain separate", async () =>
 test("Codex auth import promotes the compatible email legacy row and leaves its peer untouched", async () => {
   const providersDb = await import("../../src/lib/db/providers.ts");
   const usageHistory = await import("../../src/lib/usage/usageHistory.ts");
-  const alice = await providersDb.createProviderConnection({
+  const alice = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "alice@example.com",
     displayName: "Alice history",
     providerSpecificData: { workspaceId: "acct-shared" },
-  });
-  const bob = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const bob = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "bob@example.com",
     displayName: "Bob history",
     providerSpecificData: { workspaceId: "acct-shared" },
-  });
+  })) as JsonRecord & { id: string };
   await usageHistory.saveRequestUsage({
     provider: "codex",
     model: "gpt-5.5",
@@ -262,19 +261,19 @@ test("Codex auth import promotes the compatible email legacy row and leaves its 
 test("an established Codex user prevents an email-less legacy row from absorbing another user", async () => {
   const providersDb = await import("../../src/lib/db/providers.ts");
   const usageHistory = await import("../../src/lib/usage/usageHistory.ts");
-  const alice = await providersDb.createProviderConnection({
+  const alice = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "alice@example.com",
     displayName: "Alice history",
     providerSpecificData: { workspaceId: "acct-shared", chatgptUserId: "user-alice" },
-  });
-  const legacy = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const legacy = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     displayName: "Legacy history",
     providerSpecificData: { workspaceId: "acct-shared" },
-  });
+  })) as JsonRecord & { id: string };
   await usageHistory.saveRequestUsage({
     provider: "codex",
     model: "gpt-5.5",
@@ -333,14 +332,14 @@ test("legacy workspace/email identity promotes to a user identity without losing
   const providersDb = await import("../../src/lib/db/providers.ts");
   const usageHistory = await import("../../src/lib/usage/usageHistory.ts");
 
-  const legacy = await providersDb.createProviderConnection({
+  const legacy = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "alice@example.com",
     displayName: "Historic label",
     apiKey: "preserved-legacy-api-key",
     providerSpecificData: { workspaceId: "acct-shared" },
-  });
+  })) as JsonRecord & { id: string };
   await usageHistory.saveRequestUsage({
     provider: "codex",
     model: "gpt-5.5",
@@ -349,7 +348,7 @@ test("legacy workspace/email identity promotes to a user identity without losing
     timestamp: "2026-01-01T00:00:00.000Z",
   });
 
-  const result = await providersDb.createProviderConnection({
+  const result = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "alice@example.com",
@@ -357,7 +356,7 @@ test("legacy workspace/email identity promotes to a user identity without losing
     refreshToken: "safe-promotion-refresh-token",
     idToken: "safe-promotion-id-token",
     providerSpecificData: { workspaceId: "acct-shared", chatgptUserId: "user-alice" },
-  });
+  })) as JsonRecord & { id: string };
   await usageHistory.saveRequestUsage({
     provider: "codex",
     model: "gpt-5.5",
@@ -398,12 +397,12 @@ test("legacy workspace/email identity promotes to a user identity without losing
 
 test("partial legacy identity promotion preserves credentials encrypted under another key", async () => {
   const providersDb = await import("../../src/lib/db/providers.ts");
-  const legacy = await providersDb.createProviderConnection({
+  const legacy = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "alice@example.com",
     providerSpecificData: { workspaceId: "acct-shared" },
-  });
+  })) as JsonRecord & { id: string };
   const [accessToken, refreshToken, idToken] = encryptWithStorageKey("codex-import-key-a", [
     "legacy-access",
     "legacy-refresh",
@@ -423,7 +422,7 @@ test("partial legacy identity promotion preserves credentials encrypted under an
     id_token: idToken,
   };
 
-  const promoted = await providersDb.createProviderConnection({
+  const promoted = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "alice@example.com",
@@ -432,7 +431,7 @@ test("partial legacy identity promotion preserves credentials encrypted under an
       workspaceId: "acct-shared",
       chatgptUserId: "user-alice",
     },
-  });
+  })) as JsonRecord & { id: string };
 
   assert.equal(promoted?.accessToken, undefined);
   assert.equal(promoted?.refreshToken, undefined);
@@ -451,13 +450,13 @@ test("partial legacy identity promotion preserves credentials encrypted under an
 test("failed legacy promotion rolls back both provider and usage identity", async () => {
   const providersDb = await import("../../src/lib/db/providers.ts");
   const usageHistory = await import("../../src/lib/usage/usageHistory.ts");
-  const legacy = await providersDb.createProviderConnection({
+  const legacy = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "alice@example.com",
     displayName: "Historic label",
     providerSpecificData: { workspaceId: "acct-shared" },
-  });
+  })) as JsonRecord & { id: string };
   await usageHistory.saveRequestUsage({
     provider: "codex",
     model: "gpt-5.5",

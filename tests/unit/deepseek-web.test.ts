@@ -492,7 +492,7 @@ test("execute: maps model to deepseek_r1 with thinking", async () => {
     let capturedBody = null;
     const origFetch = globalThis.fetch;
     globalThis.fetch = async (url, opts) => {
-      const resp = await origFetch(url, opts);
+      const resp = await origFetch(String(url), opts);
       if (url.toString().includes("/chat/completion")) {
         capturedBody = JSON.parse(opts.body);
       }
@@ -676,7 +676,7 @@ test("execute: passes search_enabled from body", async () => {
     let capturedBody = null;
     const origFetch = globalThis.fetch;
     globalThis.fetch = async (url, opts) => {
-      const resp = await origFetch(url, opts);
+      const resp = await origFetch(String(url), opts);
       if (url.toString().includes("/chat/completion")) {
         capturedBody = JSON.parse(opts.body);
       }
@@ -702,7 +702,7 @@ test("execute: search_enabled defaults to false", async () => {
     let capturedBody = null;
     const origFetch = globalThis.fetch;
     globalThis.fetch = async (url, opts) => {
-      const resp = await origFetch(url, opts);
+      const resp = await origFetch(String(url), opts);
       if (url.toString().includes("/chat/completion")) {
         capturedBody = JSON.parse(opts.body);
       }
@@ -730,7 +730,7 @@ test("execute: thinking_enabled from body overrides model mapping", async () => 
     let capturedBody = null;
     const origFetch = globalThis.fetch;
     globalThis.fetch = async (url, opts) => {
-      const resp = await origFetch(url, opts);
+      const resp = await origFetch(String(url), opts);
       if (url.toString().includes("/chat/completion")) {
         capturedBody = JSON.parse(opts.body);
       }
@@ -758,7 +758,7 @@ test("execute: passes ref_file_ids from body", async () => {
     let capturedBody = null;
     const origFetch = globalThis.fetch;
     globalThis.fetch = async (url, opts) => {
-      const resp = await origFetch(url, opts);
+      const resp = await origFetch(String(url), opts);
       if (url.toString().includes("/chat/completion")) {
         capturedBody = JSON.parse(opts.body);
       }
@@ -789,7 +789,7 @@ test("execute: maps expert model with thinking", async () => {
     let capturedBody = null;
     const origFetch = globalThis.fetch;
     globalThis.fetch = async (url, opts) => {
-      const resp = await origFetch(url, opts);
+      const resp = await origFetch(String(url), opts);
       if (url.toString().includes("/chat/completion")) {
         capturedBody = JSON.parse(opts.body);
       }

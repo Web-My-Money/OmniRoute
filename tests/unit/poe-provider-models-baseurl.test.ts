@@ -11,6 +11,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-poe-models-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -39,7 +40,7 @@ test.after(async () => {
 });
 
 test("provider models route resolves the built-in Poe registry base URL instead of failing with 'No base URL configured for provider' (#8082)", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "poe",
     authType: "apikey",
     name: "poe-8082",
@@ -49,7 +50,7 @@ test("provider models route resolves the built-in Poe registry base URL instead 
     // Mirrors the built-in provider's UI: no baseUrl field is exposed for Poe,
     // so providerSpecificData never carries one.
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 
   const seenRequests: Array<{ url: string; authorization: string | null }> = [];
   globalThis.fetch = async (url, init) => {

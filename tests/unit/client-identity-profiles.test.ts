@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // DefaultExecutor transitively touches the DB layer (provider/key rotation
 // lookups) at import/call time. Point DATA_DIR at an isolated temp dir
@@ -81,7 +83,7 @@ test("a selected profile's headers land in providerSpecificData.customHeaders", 
   };
 
   assert.equal(providerSpecificData.customHeaders["User-Agent"], "codex_cli_rs/0.149.0");
-  assert.equal(providerSpecificData.customHeaders.originator, "codex_cli_rs");
+  assert.equal((providerSpecificData.customHeaders as LooseDeep).originator, "codex_cli_rs");
   assert.equal(providerSpecificData.customHeaders["X-Operator-Set"], "keep-me");
 });
 
@@ -145,7 +147,7 @@ test("DefaultExecutor.execute sends the selected profile's headers for a compati
   const originalFetch = globalThis.fetch;
   let capturedHeaders: Record<string, string> = {};
 
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     capturedHeaders = (init.headers as Record<string, string>) || {};
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,

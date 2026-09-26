@@ -3,15 +3,14 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-9204-agy-reimport-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
 
 const core = await import("../../src/lib/db/core.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
-const { createConnectionFromAgyToken } = await import(
-  "../../src/lib/oauth/utils/agyAuthImport.ts"
-);
+const { createConnectionFromAgyToken } = await import("../../src/lib/oauth/utils/agyAuthImport.ts");
 
 test.after(() => {
   core.resetDbInstance();
@@ -19,7 +18,7 @@ test.after(() => {
 });
 
 test("#9204: reimporting an inactive Antigravity CLI account reactivates it", async () => {
-  const existing = await providersDb.createProviderConnection({
+  const existing = (await providersDb.createProviderConnection({
     provider: "agy",
     authType: "oauth",
     email: "reporter@example.test",
@@ -28,7 +27,7 @@ test("#9204: reimporting an inactive Antigravity CLI account reactivates it", as
     expiresAt: new Date(Date.now() - 60_000).toISOString(),
     isActive: false,
     testStatus: "expired",
-  });
+  })) as JsonRecord & { id: string };
 
   await createConnectionFromAgyToken(
     {
@@ -49,5 +48,8 @@ test("#9204: reimporting an inactive Antigravity CLI account reactivates it", as
   assert.equal(stored?.isActive, true, "a successful reimport must reactivate the account");
 
   const active = await providersDb.getProviderConnections({ provider: "agy", isActive: true });
-  assert.deepEqual(active.map((connection) => connection.id), [existing.id]);
+  assert.deepEqual(
+    active.map((connection) => connection.id),
+    [existing.id]
+  );
 });

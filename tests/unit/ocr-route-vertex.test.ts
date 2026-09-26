@@ -5,6 +5,7 @@ import {
   resolveOcrCredentials,
   resolveVertexOcrAccessToken,
 } from "../../src/app/api/v1/ocr/route.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ── resolveOcrCredentials — vertex-deepseek-ocr project/location resolution ─
 // Mirrors the Azure DI pattern (providerSpecificData.baseUrl → top-level
@@ -19,8 +20,8 @@ test("resolveOcrCredentials builds the Vertex endpoint URL from explicit provide
     providerSpecificData: { project: "proj-explicit", region: "europe-west4" },
   };
   const resolved = resolveOcrCredentials(credentials, "vertex-deepseek-ocr");
-  assert.equal(
-    resolved.baseUrl,
+  (assert as LooseDeep).equal(
+    (resolved as LooseDeep).baseUrl,
     "https://aiplatform.googleapis.com/v1/projects/proj-explicit/locations/europe-west4/endpoints/openapi/chat/completions"
   );
 });
@@ -28,8 +29,8 @@ test("resolveOcrCredentials builds the Vertex endpoint URL from explicit provide
 test("resolveOcrCredentials defaults the Vertex region to us-central1 when unset", () => {
   const credentials = { apiKey: "ya29.tok", providerSpecificData: { project: "proj-1" } };
   const resolved = resolveOcrCredentials(credentials, "vertex-deepseek-ocr");
-  assert.equal(
-    resolved.baseUrl,
+  (assert as LooseDeep).equal(
+    (resolved as LooseDeep).baseUrl,
     "https://aiplatform.googleapis.com/v1/projects/proj-1/locations/us-central1/endpoints/openapi/chat/completions"
   );
 });
@@ -43,8 +44,8 @@ test("resolveOcrCredentials derives the Vertex project from a Service Account JS
     }),
   };
   const resolved = resolveOcrCredentials(credentials, "vertex-deepseek-ocr");
-  assert.equal(
-    resolved.baseUrl,
+  (assert as LooseDeep).equal(
+    (resolved as LooseDeep).baseUrl,
     "https://aiplatform.googleapis.com/v1/projects/proj-from-sa/locations/us-central1/endpoints/openapi/chat/completions"
   );
 });
@@ -73,7 +74,7 @@ test("resolveOcrCredentials is unaffected for non-vertex providers (mistral, azu
     providerSpecificData: { baseUrl: "https://r.cognitiveservices.azure.com" },
   };
   assert.equal(
-    resolveOcrCredentials(azure, "azure-document-intelligence").baseUrl,
+    (resolveOcrCredentials(azure, "azure-document-intelligence") as LooseDeep).baseUrl,
     "https://r.cognitiveservices.azure.com"
   );
 });

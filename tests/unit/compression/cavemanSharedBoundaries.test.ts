@@ -28,13 +28,19 @@ test("SHARED_BOUNDARIES covers multi-step ordered sequences", () => {
 });
 
 test("buildCavemanOutputInstruction includes SHARED_BOUNDARIES text", () => {
-  const instruction = buildCavemanOutputInstruction({ enabled: true, intensity: "full" });
+  const instruction = buildCavemanOutputInstruction({
+    enabled: true,
+    intensity: "full",
+  } as unknown as CavemanOutputModeConfig);
   assert.ok(instruction.includes(SHARED_BOUNDARIES), "instruction must embed SHARED_BOUNDARIES");
 });
 
 test("buildCavemanOutputInstruction includes persistence clause for all intensities", () => {
   for (const intensity of ["lite", "full", "ultra"] as const) {
-    const instr = buildCavemanOutputInstruction({ enabled: true, intensity });
+    const instr = buildCavemanOutputInstruction({
+      enabled: true,
+      intensity,
+    } as unknown as CavemanOutputModeConfig);
     assert.match(
       instr,
       /active every response|until user asks/i,

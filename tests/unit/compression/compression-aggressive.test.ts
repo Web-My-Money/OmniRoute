@@ -10,6 +10,7 @@ import type {
   AggressiveConfig,
   CompressionConfig,
 } from "../../../open-sse/services/compression/types.ts";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 function makeMessages(count: number): Array<{ role: string; content: string }> {
   return Array.from({ length: count }, (_, i) => ({
@@ -32,7 +33,7 @@ describe("Integration: strategySelector → aggressive pipeline", () => {
       aggressive: DEFAULT_AGGRESSIVE_CONFIG,
     };
 
-    const result = applyCompression(body as Record<string, unknown>, "aggressive", {
+    const result = applyCompression(body as LooseDeep, "aggressive", {
       model: "test-model",
       config,
     });
@@ -40,7 +41,7 @@ describe("Integration: strategySelector → aggressive pipeline", () => {
     assert.ok(result.compressed !== undefined);
     assert.ok(result.stats !== null);
     assert.equal(result.stats!.mode, "aggressive");
-    assert.ok(Array.isArray((result.body as Record<string, unknown>).messages));
+    assert.ok(Array.isArray((result.body as LooseDeep).messages));
   });
 
   it("applyCompression with mode='aggressive' returns unchanged for empty messages", () => {
@@ -55,7 +56,7 @@ describe("Integration: strategySelector → aggressive pipeline", () => {
       aggressive: DEFAULT_AGGRESSIVE_CONFIG,
     };
 
-    const result = applyCompression(body as Record<string, unknown>, "aggressive", {
+    const result = applyCompression(body as LooseDeep, "aggressive", {
       model: "test-model",
       config,
     });
@@ -68,18 +69,18 @@ describe("Integration: strategySelector → aggressive pipeline", () => {
     const messages = makeMessages(20);
     const body = { messages };
 
-    const result = applyCompression(body as Record<string, unknown>, "off");
+    const result = applyCompression(body as LooseDeep, "off");
 
     assert.equal(result.compressed, false);
     assert.equal(result.stats, null);
-    assert.deepEqual((result.body as Record<string, unknown>).messages, messages);
+    assert.deepEqual((result.body as LooseDeep).messages, messages);
   });
 
   it("applyCompression with mode='lite' still works after aggressive addition", () => {
     const messages = makeMessages(10);
     const body = { messages };
 
-    const result = applyCompression(body as Record<string, unknown>, "lite");
+    const result = applyCompression(body as LooseDeep, "lite");
 
     // Lite mode should still work — no regression
     assert.ok(result.compressed !== undefined);

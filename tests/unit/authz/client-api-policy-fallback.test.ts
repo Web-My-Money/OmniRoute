@@ -11,6 +11,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import Module from "node:module";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 // ─── Mock validateApiKey via require interception (so the dynamic import in
 // the policy module returns our stub instead of hitting the real DB module) ─
@@ -18,25 +19,27 @@ import Module from "node:module";
 type ValidateFn = (key: string) => boolean | Promise<boolean>;
 let mockValidateApiKey: ValidateFn = () => false;
 
-const originalResolve = (Module as unknown as { _resolveFilename: typeof Module._resolveFilename })
-  ._resolveFilename;
+const originalResolve = (Module as LooseDeep)._resolveFilename;
 
 // Intercept require() / import() resolution for the apiKeys DB module and
 // substitute it for our stub. This runs only for the exact path the policy
 // imports — production code paths are unaffected.
 const POLICY_IMPORT_TARGET = "src/lib/db/apiKeys";
 
-(Module as unknown as { _resolveFilename: typeof Module._resolveFilename })._resolveFilename =
-  function patched(this: unknown, request: string, ...rest: unknown[]) {
-    if (request.includes(POLICY_IMPORT_TARGET)) {
-      // Resolve to a stub file we create below
-      const stubPath = new URL("./__stub_apiKeys.mjs", import.meta.url).pathname;
-      // @ts-expect-error - rest spread to original
-      return originalResolve.call(this, stubPath, ...rest);
-    }
-    // @ts-expect-error - rest spread to original
-    return originalResolve.call(this, request, ...rest);
-  };
+(Module as LooseDeep)._resolveFilename = function patched(
+  this: unknown,
+  request: string,
+  ...rest: unknown[]
+) {
+  if (request.includes(POLICY_IMPORT_TARGET)) {
+    // Resolve to a stub file we create below
+    const stubPath = new URL("./__stub_apiKeys.mjs", import.meta.url).pathname;
+    //
+    return originalResolve.call(this, stubPath, ...rest);
+  }
+  //
+  return originalResolve.call(this, request, ...rest);
+};
 
 // Write the stub file ad-hoc (Node's loader needs a real file)
 import fs from "node:fs";
@@ -65,7 +68,7 @@ test.after(() => {
   } catch {
     /* ignore */
   }
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   if (ORIGINAL_DATA_DIR === undefined) delete process.env.DATA_DIR;
   else process.env.DATA_DIR = ORIGINAL_DATA_DIR;
 });
@@ -235,9 +238,7 @@ test("#3504 — empty 'Bearer ' Authorization falls through to the URL path toke
   process.env.REQUIRE_API_KEY = "true";
   const policy = await loadPolicy();
   const headers = new Headers({ authorization: "Bearer " });
-  const out = await policy.evaluate(
-    ctx(headers, "/api/v1/vscode/sk-url-token/chat/completions")
-  );
+  const out = await policy.evaluate(ctx(headers, "/api/v1/vscode/sk-url-token/chat/completions"));
   assert.equal(out.allow, false);
   if (!out.allow) {
     assert.equal(out.status, 401);
@@ -253,9 +254,7 @@ test("#3504 — a non-Bearer scheme (Basic) also falls through to the URL token"
   process.env.REQUIRE_API_KEY = "true";
   const policy = await loadPolicy();
   const headers = new Headers({ authorization: "Basic Zm9vOmJhcg==" });
-  const out = await policy.evaluate(
-    ctx(headers, "/api/v1/vscode/sk-url-token/chat/completions")
-  );
+  const out = await policy.evaluate(ctx(headers, "/api/v1/vscode/sk-url-token/chat/completions"));
   assert.equal(out.allow, false);
   if (!out.allow) assert.equal(out.message, "Invalid API key");
 });

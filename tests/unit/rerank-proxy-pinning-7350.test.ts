@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 /**
  * #7350 — rerank egressed directly instead of honoring the connection's proxy, so a
@@ -31,7 +33,7 @@ const originalFetch = globalThis.fetch;
 /** Captures the proxy URL visible inside the dispatch context at fetch time. */
 function stubFetch(seen: { proxyUrl: string | null | undefined }[], gate?: () => Promise<void>) {
   globalThis.fetch = (async () => {
-    seen.push({ proxyUrl: proxyFetch.getCurrentProxyUrlForTests?.() ?? undefined });
+    seen.push({ proxyUrl: (proxyFetch as LooseDeep).getCurrentProxyUrlForTests?.() ?? undefined });
     if (gate) await gate();
     return new Response(
       JSON.stringify({ data: [{ index: 0, relevance_score: 0.9 }], model: "rerank-2" }),
@@ -48,12 +50,12 @@ test.after(() => {
 
 test("#7350 handleRerank routes the upstream call through the connection's pinned proxy", async () => {
   core.resetDbInstance();
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "voyage",
     authType: "apikey",
     name: "voyage-proxied",
     apiKey: "pa-test-key",
-  });
+  })) as JsonRecord & { id: string };
   const proxy = await proxiesDb.createProxy({
     name: "Rerank Egress Proxy",
     type: "http",

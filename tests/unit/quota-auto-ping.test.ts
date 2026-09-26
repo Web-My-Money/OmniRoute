@@ -13,6 +13,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { QuotaAutoPingDeps } from "../../src/lib/services/quotaAutoPing.ts";
 
 // This module transitively imports src/lib/db/core.ts (via @/lib/localDb),
 // which lazily opens the DB singleton on first use. Point DATA_DIR at a throwaway
@@ -32,13 +33,13 @@ test.after(() => {
 const NOW_ISO = "2026-01-01T12:00:00.000Z";
 const NOW_MS = new Date(NOW_ISO).getTime();
 
-function baseDeps(overrides = {}) {
+function baseDeps(overrides: Partial<QuotaAutoPingDeps> = {}) {
   const calls = {
     updateProviderConnection: [],
     executorExecute: [],
     getExecutor: [],
   };
-  const deps = {
+  const deps: QuotaAutoPingDeps = {
     getSettings: async () => ({ codexAutoPing: { connections: { "codex-1": true } } }),
     getProviderConnections: async ({ provider }) =>
       provider === "codex"

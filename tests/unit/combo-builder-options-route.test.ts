@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-builder-options-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -20,7 +22,7 @@ async function resetStorage() {
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
-async function seedConnection(provider, overrides = {}) {
+async function seedConnection(provider, overrides: JsonRecord = {}) {
   const payload = {
     provider,
     authType: overrides.authType || "apikey",
@@ -37,9 +39,9 @@ async function seedConnection(provider, overrides = {}) {
   };
 
   if (overrides.name !== undefined) {
-    payload.name = overrides.name;
+    (payload as LooseDeep).name = overrides.name;
   } else if ((overrides.authType || "apikey") !== "oauth") {
-    payload.name = `${provider}-${Math.random().toString(16).slice(2, 8)}`;
+    (payload as LooseDeep).name = `${provider}-${Math.random().toString(16).slice(2, 8)}`;
   }
 
   return providersDb.createProviderConnection(payload);

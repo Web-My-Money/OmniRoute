@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { looseCreds } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-auth-terminal-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -10,6 +11,7 @@ process.env.DATA_DIR = TEST_DATA_DIR;
 const core = await import("../../src/lib/db/core.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
 const auth = await import("../../src/sse/services/auth.ts");
+const getCreds = looseCreds(auth.getProviderCredentials);
 const accountFallback = await import("../../open-sse/services/accountFallback.ts");
 
 async function resetStorage() {
@@ -26,23 +28,23 @@ test.after(() => {
 test("getProviderCredentials skips credits_exhausted connections", async () => {
   await resetStorage();
 
-  const exhausted = await providersDb.createProviderConnection({
+  const exhausted = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-exhausted",
     isActive: true,
     testStatus: "credits_exhausted",
-  });
+  })) as JsonRecord & { id: string };
 
-  const healthy = await providersDb.createProviderConnection({
+  const healthy = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-healthy",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
-  const selected = await auth.getProviderCredentials("openai");
+  const selected = await getCreds("openai");
   assert.ok(selected);
   assert.equal(selected.connectionId, healthy.id);
   assert.notEqual(selected.connectionId, exhausted.id);
@@ -51,15 +53,15 @@ test("getProviderCredentials skips credits_exhausted connections", async () => {
 test("getProviderCredentials reports allExpired when all active connections are terminal", async () => {
   await resetStorage();
 
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-only-exhausted",
     isActive: true,
     testStatus: "credits_exhausted",
-  });
+  })) as JsonRecord & { id: string };
 
-  const selected = await auth.getProviderCredentials("openai");
+  const selected = await getCreds("openai");
   assert.equal(selected?.allExpired, true);
   assert.equal(selected?.expiredStatus, "credits_exhausted");
   assert.equal(selected?.expiredCount, 1);
@@ -68,7 +70,7 @@ test("getProviderCredentials reports allExpired when all active connections are 
 test("getProviderCredentials reports allExpired for isActive grok-cli with testStatus expired (#7611)", async () => {
   await resetStorage();
 
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "grok-cli",
     authType: "oauth",
     accessToken: "gcli-access-token",
@@ -76,9 +78,9 @@ test("getProviderCredentials reports allExpired for isActive grok-cli with testS
     testStatus: "expired",
     errorCode: "no_refresh_token",
     lastError: "No refresh token available — re-authenticate this account.",
-  });
+  })) as JsonRecord & { id: string };
 
-  const selected = await auth.getProviderCredentials("grok-cli");
+  const selected = await getCreds("grok-cli");
   assert.equal(selected?.allExpired, true);
   assert.equal(selected?.expiredStatus, "expired");
   assert.equal(selected?.expiredCount, 1);
@@ -88,16 +90,16 @@ test("getProviderCredentials reports allExpired for isActive grok-cli with testS
 test("getProviderCredentials can reuse a locally suppressed connection for combo live tests", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-live-test",
     isActive: true,
     testStatus: "credits_exhausted",
     rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
-  });
+  })) as JsonRecord & { id: string };
 
-  const selected = await auth.getProviderCredentials("openai", null, null, null, {
+  const selected = await getCreds("openai", null, null, null, {
     allowSuppressedConnections: true,
     bypassQuotaPolicy: true,
   });
@@ -109,14 +111,14 @@ test("getProviderCredentials can reuse a locally suppressed connection for combo
 test("markAccountUnavailable does not overwrite terminal status", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-terminal",
     isActive: true,
     testStatus: "credits_exhausted",
     lastError: "insufficient_quota",
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await auth.markAccountUnavailable(
     (conn as any).id,
@@ -136,13 +138,13 @@ test("markAccountUnavailable does not overwrite terminal status", async () => {
 test("markAccountUnavailable marks 401 connections as expired without adding cooldown", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-expired",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await auth.markAccountUnavailable(
     (conn as any).id,
@@ -162,13 +164,13 @@ test("markAccountUnavailable marks 401 connections as expired without adding coo
 test("markAccountUnavailable marks 402 connections as credits_exhausted without adding cooldown", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-credits",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await auth.markAccountUnavailable(
     (conn as any).id,
@@ -188,13 +190,13 @@ test("markAccountUnavailable marks 402 connections as credits_exhausted without 
 test("markAccountUnavailable treats API-key 403 as a recoverable cooldown", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "apikey",
     apiKey: "sk-recoverable",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await auth.markAccountUnavailable(
     (conn as any).id,
@@ -215,13 +217,13 @@ test("markAccountUnavailable treats API-key 403 as a recoverable cooldown", asyn
 test("markAccountUnavailable keeps Grok Web alias 403 errors mode-local", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "grok-web",
     authType: "cookie",
     apiKey: "sso=grok-cookie",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await auth.markAccountUnavailable(
     (conn as any).id,
@@ -244,13 +246,13 @@ test("markAccountUnavailable keeps Grok Web alias 403 errors mode-local", async 
 test("markAccountUnavailable keeps project-route 403 errors non-terminal", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-project-route",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await auth.markAccountUnavailable(
     (conn as any).id,
@@ -271,13 +273,13 @@ test("markAccountUnavailable keeps project-route 403 errors non-terminal", async
 test("markAccountUnavailable keeps oauth-invalid 401 errors non-terminal", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-oauth-invalid",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await auth.markAccountUnavailable(
     (conn as any).id,
@@ -294,3 +296,5 @@ test("markAccountUnavailable keeps oauth-invalid 401 errors non-terminal", async
   assert.equal(after.lastErrorType, "oauth_invalid_token");
   assert.ok(!after.rateLimitedUntil);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

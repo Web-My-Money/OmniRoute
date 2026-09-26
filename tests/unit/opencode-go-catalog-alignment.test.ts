@@ -10,6 +10,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { opencode_goProvider } =
   await import("../../open-sse/config/providers/registry/opencode/go/index.ts");
@@ -46,9 +47,7 @@ test("opencode-go preserves the pre-existing minimax-m3 and qwen routing via tar
   // Routing through the /messages endpoint is OmniRoute's declarative
   // equivalent of upstream's MESSAGES_FORMAT_MODELS set; the alignment
   // change must not regress this.
-  const byId = new Map(
-    (opencode_goProvider.models ?? []).map((m) => [m.id, m as Record<string, unknown>])
-  );
+  const byId = new Map((opencode_goProvider.models ?? []).map((m) => [m.id, m as LooseDeep]));
   assert.equal(byId.get("minimax-m3")?.targetFormat, "claude");
   assert.equal(byId.get("qwen3.7-max")?.targetFormat, "claude");
 });

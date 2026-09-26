@@ -83,7 +83,7 @@ test.after(() => {
 
 test("PUT /api/plugins/[name]/config — malformed JSON body returns 400 (was 500)", async () => {
   const req = malformedJsonRequest("http://localhost/api/plugins/demo/config", "PUT");
-  const res = await pluginConfigRoute.PUT(req, {
+  const res = await pluginConfigRoute.PUT(req as unknown as NextRequest, {
     params: Promise.resolve({ name: "demo" }),
   });
 
@@ -104,7 +104,7 @@ test("PUT /api/plugins/[name]/config — valid body does NOT 400 on parse (404 f
     { config: { foo: "bar" } },
     "PUT"
   );
-  const res = await pluginConfigRoute.PUT(req, {
+  const res = await pluginConfigRoute.PUT(req as unknown as NextRequest, {
     params: Promise.resolve({ name: "does-not-exist" }),
   });
 

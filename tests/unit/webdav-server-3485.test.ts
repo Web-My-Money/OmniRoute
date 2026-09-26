@@ -253,10 +253,7 @@ test("verifyBasicAuth: empty header returns false", async () => {
 
 test("verifyBasicAuth: non-Basic scheme returns false", async () => {
   const { verifyBasicAuth } = await importHandler();
-  assert.equal(
-    verifyBasicAuth("Bearer some-token", "alice", "s3cr3t"),
-    false
-  );
+  assert.equal(verifyBasicAuth("Bearer some-token", "alice", "s3cr3t"), false);
 });
 
 test("verifyBasicAuth: malformed base64 returns false", async () => {
@@ -372,7 +369,15 @@ test("buildPropfindXml: escapes XML special chars in names", async () => {
 test("buildPropfindXml: file entry has no D:collection resourcetype", async () => {
   const { buildPropfindXml } = await importHandler();
   const xml = buildPropfindXml(
-    [{ name: "note.md", href: "/api/v1/webdav/note.md", isDir: false, size: 99, mtime: new Date() }],
+    [
+      {
+        name: "note.md",
+        href: "/api/v1/webdav/note.md",
+        isDir: false,
+        size: 99,
+        mtime: new Date(),
+      },
+    ],
     "/api/v1/webdav/"
   );
   // File should have empty resourcetype, not a collection
@@ -443,7 +448,10 @@ async function webdavRequest(opts: {
   try {
     const handler = await importHandler();
     const req = fakeReq(opts.method, opts.url, opts.headers || {}, opts.body || null);
-    return captureRes(req, (r, s) => handler.maybeHandleWebdav(r, s));
+    return captureRes(
+      req,
+      (r, s) => handler.maybeHandleWebdav(r, s) as unknown as Promise<boolean>
+    );
   } finally {
     if (origDataDir === undefined) {
       delete process.env.DATA_DIR;

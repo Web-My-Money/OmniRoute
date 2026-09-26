@@ -14,7 +14,7 @@ import { mock } from "node:test";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-lifecycle-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 process.env.DISABLE_SQLITE_AUTO_BACKUP = "true";
 
 // Bootstrap DB
@@ -64,7 +64,9 @@ test.after(() => {
 test("GET /status returns not_installed when no installer version", async () => {
   await updateVersionManagerTool("9router", { installedVersion: null, status: "not_installed" });
 
-  const { GET } = await import("../../../src/app/api/services/9router/status/route.ts?t=status-1");
+  const { GET } = await import(
+    "../../../src/app/api/services/9router/status/route.ts" + "?t=status-1"
+  );
   const resp = await GET();
   assert.equal(resp.status, 200);
   const body = await resp.json();
@@ -75,7 +77,9 @@ test("GET /status returns not_installed when no installer version", async () => 
 });
 
 test("GET /status returns enriched shape", async () => {
-  const { GET } = await import("../../../src/app/api/services/9router/status/route.ts?t=status-2");
+  const { GET } = await import(
+    "../../../src/app/api/services/9router/status/route.ts" + "?t=status-2"
+  );
   const resp = await GET();
   assert.equal(resp.status, 200);
   const body = await resp.json();
@@ -90,7 +94,9 @@ test("GET /status returns enriched shape", async () => {
 test("POST /start returns 409 when not_installed", async () => {
   await updateVersionManagerTool("9router", { status: "not_installed", installedVersion: null });
 
-  const { POST } = await import("../../../src/app/api/services/9router/start/route.ts?t=start-1");
+  const { POST } = await import(
+    "../../../src/app/api/services/9router/start/route.ts" + "?t=start-1"
+  );
   const resp = await POST();
   assert.equal(resp.status, 409);
   const body = await resp.json();
@@ -119,7 +125,9 @@ test("POST /start returns 200 when already running", async () => {
   registerSupervisor(sup);
   await updateVersionManagerTool("9router", { status: "stopped", installedVersion: "0.4.59" });
 
-  const { POST } = await import("../../../src/app/api/services/9router/start/route.ts?t=start-2");
+  const { POST } = await import(
+    "../../../src/app/api/services/9router/start/route.ts" + "?t=start-2"
+  );
   const resp = await POST();
   assert.equal(resp.status, 200);
   const body = await resp.json();
@@ -132,7 +140,9 @@ test("POST /start returns 200 when already running", async () => {
 
 test("POST /stop returns stopped even if supervisor absent", async () => {
   // Remove from registry by re-importing fresh
-  const { POST } = await import("../../../src/app/api/services/9router/stop/route.ts?t=stop-1");
+  const { POST } = await import(
+    "../../../src/app/api/services/9router/stop/route.ts" + "?t=stop-1"
+  );
   const resp = await POST();
   assert.equal(resp.status, 200);
   const body = await resp.json();
@@ -166,8 +176,9 @@ test("POST /auto-start toggles DB field", async () => {
 });
 
 test("POST /auto-start returns 400 for invalid body", async () => {
-  const { POST } =
-    await import("../../../src/app/api/services/9router/auto-start/route.ts?t=as-bad");
+  const { POST } = await import(
+    "../../../src/app/api/services/9router/auto-start/route.ts" + "?t=as-bad"
+  );
   const req = new Request("http://localhost", {
     method: "POST",
     body: JSON.stringify({ enabled: "yes" }), // should be boolean

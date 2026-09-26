@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-compression-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -72,11 +74,11 @@ test("chatCore integration: compressContext called proactively when context exce
   };
 
   // Create provider connection
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
   const connectionId = connection.id;
 
   // Mock fetch to capture the request
@@ -98,7 +100,7 @@ test("chatCore integration: compressContext called proactively when context exce
   };
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body,
       modelInfo: { provider, model },
       credentials: { apiKey: "test-key" },
@@ -146,11 +148,11 @@ test("chatCore integration: disabled prompt compression leaves combo override re
     comboOverrides: { "disabled-compression-combo": "lite" },
   });
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   await combosDb.createCombo({
     name: "disabled-compression-combo",
@@ -209,7 +211,7 @@ test("chatCore integration: disabled prompt compression leaves combo override re
   };
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body,
       modelInfo: { provider, model },
       credentials: { apiKey: "test-key" },
@@ -270,11 +272,11 @@ test("chatCore integration: compressContext NOT called when context is below 85%
   );
 
   // Create provider connection
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
   const connectionId = connection.id;
 
   // Mock fetch to capture the request
@@ -296,7 +298,7 @@ test("chatCore integration: compressContext NOT called when context is below 85%
   };
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body,
       modelInfo: { provider, model },
       credentials: { apiKey: "test-key" },
@@ -352,11 +354,11 @@ test("chatCore integration: compression preserves message structure", async () =
   };
 
   // Create provider connection
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
   const connectionId = connection.id;
 
   // Mock fetch to capture the request
@@ -378,7 +380,7 @@ test("chatCore integration: compression preserves message structure", async () =
   };
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body,
       modelInfo: { provider, model },
       credentials: { apiKey: "test-key" },
@@ -431,11 +433,11 @@ test("chatCore integration: compression handles tool messages", async () => {
   };
 
   // Create provider connection
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
   const connectionId = connection.id;
 
   // Mock fetch to capture the request
@@ -457,7 +459,7 @@ test("chatCore integration: compression handles tool messages", async () => {
   };
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body,
       modelInfo: { provider, model },
       credentials: { apiKey: "test-key" },
@@ -500,11 +502,11 @@ test("chatCore integration: combo requests run proactive compression before Kiro
     autoTriggerTokens: 0,
   });
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
   const connectionId = connection.id;
 
   await combosDb.createCombo({
@@ -552,7 +554,7 @@ test("chatCore integration: combo requests run proactive compression before Kiro
   };
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body,
       modelInfo: { provider, model },
       credentials: { apiKey: "test-key" },
@@ -618,11 +620,11 @@ test("chatCore integration: assigned compression combo applies language packs an
     },
   });
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const routingCombo = await combosDb.createCombo({
     name: "assigned-compression-combo",
@@ -666,7 +668,7 @@ test("chatCore integration: assigned compression combo applies language packs an
   };
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body: {
         model: "combo/assigned-compression-combo",
         stream: false,
@@ -738,11 +740,11 @@ test("chatCore integration: default stacked compression combo applies for unassi
     isDefault: true,
   });
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   let capturedBody: { messages?: Array<{ role?: string; content?: string }> } | null = null;
   globalThis.fetch = async (_url: string | URL | Request, init?: RequestInit) => {
@@ -762,7 +764,7 @@ test("chatCore integration: default stacked compression combo applies for unassi
   };
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body: {
         model,
         stream: false,
@@ -825,11 +827,11 @@ test.skip("chatCore integration: seeded default combo runs RTK before Caveman", 
     },
   });
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   let capturedBody: { messages?: Array<{ role?: string; content?: string }> } | null = null;
   globalThis.fetch = async (_url: string | URL | Request, init?: RequestInit) => {
@@ -849,7 +851,7 @@ test.skip("chatCore integration: seeded default combo runs RTK before Caveman", 
   };
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body: {
         model,
         stream: false,
@@ -907,11 +909,11 @@ test("chatCore integration: modular compression records analytics row best-effor
     autoTriggerTokens: 0,
   });
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const body = {
     model,
@@ -937,7 +939,7 @@ test("chatCore integration: modular compression records analytics row best-effor
     );
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body,
       modelInfo: { provider, model },
       credentials: { apiKey: "test-key" },
@@ -991,11 +993,11 @@ test("chatCore integration: caveman output mode skipped when compression is glob
     },
   });
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   let capturedBody: any = null;
   globalThis.fetch = async (_url: string | URL | Request, init?: RequestInit) => {
@@ -1015,7 +1017,7 @@ test("chatCore integration: caveman output mode skipped when compression is glob
   };
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body: {
         model,
         stream: false,
@@ -1061,11 +1063,11 @@ test("chatCore integration: caveman output mode injected when both compression a
     },
   });
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   let capturedBody: any = null;
   globalThis.fetch = async (_url: string | URL | Request, init?: RequestInit) => {
@@ -1085,7 +1087,7 @@ test("chatCore integration: caveman output mode injected when both compression a
   };
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body: {
         model,
         stream: false,

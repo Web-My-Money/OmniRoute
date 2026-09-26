@@ -3,10 +3,11 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { RadarFeedSchema } from "../../src/lib/radar/feedSchema.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const fixture = JSON.parse(
   readFileSync(new URL("../fixtures/radar-feed-canonical.json", import.meta.url), "utf8")
-) as Record<string, unknown>;
+) as LooseDeep;
 
 test("canonical fixture carries D25 localized setup and accepts localized quirks", () => {
   const localized = structuredClone(fixture) as {

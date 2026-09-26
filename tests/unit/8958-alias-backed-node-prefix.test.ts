@@ -21,6 +21,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-8958-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -53,7 +54,7 @@ async function seedCompatibleNodeWithAlias() {
     chatPath: "/v1/chat/completions",
     modelsPath: "/v1/models",
   });
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: NODE_ID,
     authType: "apikey",
     name: "fta-conn",
@@ -65,7 +66,7 @@ async function seedCompatibleNodeWithAlias() {
       chatPath: "/v1/chat/completions",
       modelsPath: "/v1/models",
     },
-  });
+  })) as JsonRecord & { id: string };
 
   // Synced entry — produces the correct `fta/opc/big-pickle` row.
   await modelsDb.replaceSyncedAvailableModelsForConnection(

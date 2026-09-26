@@ -15,6 +15,8 @@ import {
   parseSSEToOpenAIResponse,
   parseSSEToResponsesOutput,
 } from "../../open-sse/handlers/sseParser.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("getModelInfoCore resolves unique non-openai unprefixed model", async () => {
   const info = await getModelInfoCore("claude-sonnet-4-5-20250929", {});
@@ -110,7 +112,7 @@ test("DefaultExecutor execute honors connection-level custom User-Agent", async 
   const originalFetch = globalThis.fetch;
   let capturedHeaders = null;
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     capturedHeaders = (init as any).headers || null;
     return new Response(JSON.stringify({ id: "chatcmpl-test" }), { status: 200 });
   };
@@ -312,7 +314,7 @@ test("CodexExecutor preserves native responses payloads for Codex passthrough", 
   assert.equal(transformed.instructions, "custom system prompt");
   assert.equal(transformed.store, false);
   assert.deepEqual(transformed.metadata, { source: "codex-client" });
-  assert.equal(transformed.reasoning.effort, "high");
+  assert.equal((transformed.reasoning as LooseDeep).effort, "high");
   assert.equal(transformed.reasoning_effort, undefined);
   assert.ok(!("_nativeCodexPassthrough" in transformed));
 });

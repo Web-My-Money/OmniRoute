@@ -4,6 +4,7 @@
 // The executor must flatten OpenAI-style content parts into their text before sending.
 import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const mod = await import("../../open-sse/executors/qwen-web.ts");
 
@@ -41,7 +42,7 @@ afterEach(() => {
 describe("QwenWebExecutor — structured (array) content serialization", () => {
   it("flattens OpenAI-style content parts to text (no '[object Object]')", async () => {
     const calls: FetchCall[] = [];
-    globalThis.fetch = (async (url: string | URL | Request, init: RequestInit = {}) => {
+    globalThis.fetch = (async (url: string | URL | Request, init: MockRequestInit = {}) => {
       calls.push({ url: String(url), init: init as { method?: string; body?: string } });
       if (String(url).includes("/api/v2/chats/new")) return chatCreatedResponse();
       return sseResponse([

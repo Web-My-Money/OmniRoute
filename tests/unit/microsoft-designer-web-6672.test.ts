@@ -13,13 +13,14 @@ import {
 } from "../../open-sse/handlers/imageGeneration/providers/designerWeb.ts";
 import { WEB_COOKIE_PROVIDERS } from "../../src/shared/constants/providers/web-cookie.ts";
 import { IMAGE_PROVIDERS } from "../../open-sse/config/imageRegistry.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 // --- Registry entries -------------------------------------------------
 
 test("microsoft-designer-web is registered in WEB_COOKIE_PROVIDERS with a webCookie risk notice", () => {
-  const entry = (WEB_COOKIE_PROVIDERS as Record<string, unknown>)["microsoft-designer-web"];
+  const entry = (WEB_COOKIE_PROVIDERS as LooseDeep)["microsoft-designer-web"];
   assert.ok(entry, "microsoft-designer-web must exist in WEB_COOKIE_PROVIDERS");
   assert.equal(entry.id, "microsoft-designer-web");
   assert.equal(entry.subscriptionRisk, true);
@@ -28,7 +29,7 @@ test("microsoft-designer-web is registered in WEB_COOKIE_PROVIDERS with a webCoo
 });
 
 test("microsoft-designer-web is registered in IMAGE_PROVIDERS with the designer-web format", () => {
-  const entry = (IMAGE_PROVIDERS as Record<string, unknown>)["microsoft-designer-web"];
+  const entry = (IMAGE_PROVIDERS as LooseDeep)["microsoft-designer-web"];
   assert.ok(entry, "microsoft-designer-web must exist in IMAGE_PROVIDERS");
   assert.equal(entry.format, "designer-web");
   assert.match(entry.baseUrl, /designerapp\.officeapps\.live\.com/);
@@ -38,7 +39,10 @@ test("microsoft-designer-web is registered in IMAGE_PROVIDERS with the designer-
 // --- Public credential (Hard Rule #11) ---------------------------------
 
 test("microsoft_designer_client_id embedded default decodes to the public Designer ClientId", () => {
-  assert.equal(resolvePublicCred("microsoft_designer_client_id"), "b5c2664a-7e9b-4a7a-8c9a-cd2c52dcf621");
+  assert.equal(
+    resolvePublicCred("microsoft_designer_client_id"),
+    "b5c2664a-7e9b-4a7a-8c9a-cd2c52dcf621"
+  );
 });
 
 test("designerWeb.ts never embeds the raw ClientId literal (Hard Rule #11)", () => {
@@ -85,7 +89,10 @@ test("buildDesignerWebFormBody encodes prompt, mapped size, fixed batch size, an
 
 test("parseDesignerWebResponse: ready state extracts thumbnail image URLs", () => {
   const parsed = parseDesignerWebResponse({
-    image_urls_thumbnail: [{ ImageUrl: "https://example.com/a.png" }, { ImageUrl: "https://example.com/b.png" }],
+    image_urls_thumbnail: [
+      { ImageUrl: "https://example.com/a.png" },
+      { ImageUrl: "https://example.com/b.png" },
+    ],
   });
   assert.equal(parsed.status, "ready");
   assert.deepEqual(parsed.imageUrls, ["https://example.com/a.png", "https://example.com/b.png"]);
@@ -117,7 +124,7 @@ function jsonResponse(status: number, body: unknown) {
 }
 
 test("handleDesignerWebImageGeneration returns 400 when prompt is missing", async () => {
-  const result = await handleDesignerWebImageGeneration({
+  const result = await looseAsync(handleDesignerWebImageGeneration)({
     model: "dall-e-3",
     provider: "microsoft-designer-web",
     providerConfig: { baseUrl: "https://designerapp.officeapps.live.com/designerapp/DallE.ashx" },
@@ -130,7 +137,7 @@ test("handleDesignerWebImageGeneration returns 400 when prompt is missing", asyn
 });
 
 test("handleDesignerWebImageGeneration returns 401 when access_token is missing", async () => {
-  const result = await handleDesignerWebImageGeneration({
+  const result = await looseAsync(handleDesignerWebImageGeneration)({
     model: "dall-e-3",
     provider: "microsoft-designer-web",
     providerConfig: { baseUrl: "https://designerapp.officeapps.live.com/designerapp/DallE.ashx" },
@@ -144,7 +151,7 @@ test("handleDesignerWebImageGeneration returns 401 when access_token is missing"
 
 test("handleDesignerWebImageGeneration succeeds immediately when the first response is already ready", async () => {
   let calls = 0;
-  const result = await handleDesignerWebImageGeneration({
+  const result = await looseAsync(handleDesignerWebImageGeneration)({
     model: "dall-e-3",
     provider: "microsoft-designer-web",
     providerConfig: { baseUrl: "https://designerapp.officeapps.live.com/designerapp/DallE.ashx" },
@@ -164,7 +171,7 @@ test("handleDesignerWebImageGeneration succeeds immediately when the first respo
 
 test("handleDesignerWebImageGeneration polls until ready, bounded by poll_interval_ms/timeout_ms", async () => {
   let calls = 0;
-  const result = await handleDesignerWebImageGeneration({
+  const result = await looseAsync(handleDesignerWebImageGeneration)({
     model: "dall-e-3",
     provider: "microsoft-designer-web",
     providerConfig: { baseUrl: "https://designerapp.officeapps.live.com/designerapp/DallE.ashx" },
@@ -188,7 +195,7 @@ test("handleDesignerWebImageGeneration polls until ready, bounded by poll_interv
 });
 
 test("handleDesignerWebImageGeneration surfaces a sanitized error on a non-OK upstream response", async () => {
-  const result = await handleDesignerWebImageGeneration({
+  const result = await looseAsync(handleDesignerWebImageGeneration)({
     model: "dall-e-3",
     provider: "microsoft-designer-web",
     providerConfig: { baseUrl: "https://designerapp.officeapps.live.com/designerapp/DallE.ashx" },
@@ -202,7 +209,7 @@ test("handleDesignerWebImageGeneration surfaces a sanitized error on a non-OK up
 });
 
 test("handleDesignerWebImageGeneration times out cleanly when the upstream never becomes ready", async () => {
-  const result = await handleDesignerWebImageGeneration({
+  const result = await looseAsync(handleDesignerWebImageGeneration)({
     model: "dall-e-3",
     provider: "microsoft-designer-web",
     providerConfig: { baseUrl: "https://designerapp.officeapps.live.com/designerapp/DallE.ashx" },

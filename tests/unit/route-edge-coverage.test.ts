@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { makeManagementSessionRequest } from "../helpers/managementSession.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-route-edges-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -50,7 +51,20 @@ async function createManagementKey() {
   return apiKeysDb.createApiKey("management", MACHINE_ID);
 }
 
-function makeRequest(url, { method = "GET", token, body, headers } = {}) {
+function makeRequest(
+  url: string,
+  {
+    method = "GET",
+    token,
+    body,
+    headers,
+  }: {
+    method?: string;
+    token?: string;
+    body?: JsonRecord;
+    headers?: Record<string, string>;
+  } = {}
+) {
   const requestHeaders = new Headers(headers);
   if (token) {
     requestHeaders.set("authorization", `Bearer ${token}`);
@@ -71,7 +85,7 @@ async function seedOpenAIConnection({
   provider = "openai",
   rateLimitedUntil = null,
 } = {}) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     email,
@@ -85,7 +99,7 @@ async function seedOpenAIConnection({
     rateLimitedUntil,
     backoffLevel: 2,
     proxyEnabled: false,
-  });
+  })) as JsonRecord & { id: string };
 }
 
 async function withPrepareFailure(match, message, fn) {
@@ -151,7 +165,7 @@ test("api keys route covers auth, create, masking, pagination fallback and cloud
 
   const originalFetch = globalThis.fetch;
   const fetchCalls = [];
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     fetchCalls.push({ url: String(url), options });
     return Response.json({ changes: { apiKeys: 1 } });
   };
@@ -229,12 +243,12 @@ test("api keys route rejects invalid payloads and malformed JSON", async () => {
 });
 
 test("settings proxy route covers full config, resolve, validation, delete and global fallback", async () => {
-  const providerConnection = await providersDb.createProviderConnection({
+  const providerConnection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "provider-conn",
     apiKey: "sk-openai",
-  });
+  })) as JsonRecord & { id: string };
 
   const invalidJson = await settingsProxyRoute.PUT(
     new Request("http://localhost/api/settings/proxy", {
@@ -957,7 +971,7 @@ test("embeddings route supports local provider nodes without credentials and enf
 
   const localFetchCalls = [];
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     localFetchCalls.push({
       url: String(url),
       headers: init.headers,
@@ -1172,16 +1186,16 @@ test("embeddings route handles responses provider nodes, invalid local nodes, an
     apiType: "chat",
     baseUrl: "http://localhost:7791/v1",
   });
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "remoteprefix",
     authType: "apikey",
     name: "remoteprefix-key",
     apiKey: "sk-remoteprefix",
-  });
+  })) as JsonRecord & { id: string };
 
   const originalFetch = globalThis.fetch;
   const fetchCalls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: init.headers,
@@ -1238,3 +1252,5 @@ test("embeddings route handles responses provider nodes, invalid local nodes, an
     globalThis.fetch = originalFetch;
   }
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

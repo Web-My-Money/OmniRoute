@@ -29,7 +29,10 @@ describe("#6479/#6491 — null-stats step no longer silently dropped from the pi
     };
 
     const pipeline = [{ engine: "session-dedup" }, { engine: "rtk" }, { engine: "caveman" }];
-    const result = applyStackedCompression(body, pipeline);
+    const result = applyStackedCompression(
+      body,
+      pipeline as unknown as (string | CompressionPipelineStep)[]
+    );
 
     const engines = result.stats?.engineBreakdown?.map((e) => e.engine) ?? [];
     const warnings = result.stats?.validationWarnings ?? [];
@@ -66,7 +69,10 @@ describe("#6479/#6491 — null-stats step no longer silently dropped from the pi
     };
 
     const pipeline = [{ engine: "ccr" }];
-    const result = applyStackedCompression(body, pipeline);
+    const result = applyStackedCompression(
+      body,
+      pipeline as unknown as (string | CompressionPipelineStep)[]
+    );
 
     const engines = result.stats?.engineBreakdown?.map((e) => e.engine) ?? [];
     const warnings = result.stats?.validationWarnings ?? [];
@@ -98,6 +104,9 @@ describe("#6479/#6491 — null-stats step no longer silently dropped from the pi
 
     const result = applyStackedCompression(bigBody, [{ engine: "ccr" }]);
     const engines = result.stats?.engineBreakdown?.map((e) => e.engine) ?? [];
-    assert.ok(engines.includes("ccr"), `expected 'ccr' in engineBreakdown (control), got ${JSON.stringify(engines)}`);
+    assert.ok(
+      engines.includes("ccr"),
+      `expected 'ccr' in engineBreakdown (control), got ${JSON.stringify(engines)}`
+    );
   });
 });

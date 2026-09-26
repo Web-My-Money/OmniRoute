@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { looseCreds } from "../helpers/looseTypes.ts";
 
 const {
   isRetryablePreOutputTransportError,
@@ -21,6 +22,7 @@ const core = await import("../../src/lib/db/core.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
 const quotaCache = await import("../../src/domain/quotaCache.ts");
 const auth = await import("../../src/sse/services/auth.ts");
+const getCreds = looseCreds(auth.getProviderCredentials);
 
 async function resetStorage() {
   core.resetDbInstance();
@@ -33,7 +35,7 @@ function futureIso(ms = 60_000) {
 }
 
 async function seedConnection(provider: string, overrides: Record<string, unknown> = {}) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: overrides.authType || "oauth",
     name: overrides.name || `${provider}-${Math.random().toString(16).slice(2, 8)}`,
@@ -46,7 +48,7 @@ async function seedConnection(provider: string, overrides: Record<string, unknow
     lastErrorType: overrides.lastErrorType,
     errorCode: overrides.errorCode,
     providerSpecificData: overrides.providerSpecificData || {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {
@@ -234,10 +236,12 @@ test("#9708: getProviderCredentials does not report all-quota 429 when a sibling
     session: { remainingPercentage: 0, resetAt },
   });
 
-  const result = await auth.getProviderCredentials("codex");
+  const result = await getCreds("codex");
   assert.equal(result.allRateLimited, true);
   assert.notEqual(result.lastErrorCode, 429);
   assert.equal(result.lastErrorCode, 503);
   assert.match(String(result.lastError), /temporarily unavailable after upstream 507/i);
   assert.equal(isTransportCooldownErrorCode(507), true);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

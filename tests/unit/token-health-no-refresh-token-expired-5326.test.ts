@@ -3,8 +3,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-hc-no-refresh-5326-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -54,7 +55,7 @@ test.after(async () => {
 test("checkConnection marks refresh-capable provider with no refresh token as expired (#5326)", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "Antigravity No-Refresh Account",
@@ -63,7 +64,7 @@ test("checkConnection marks refresh-capable provider with no refresh token as ex
     refreshToken: null,
     testStatus: "active",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   await tokenHealthCheck.checkConnection(connection);
 
@@ -79,7 +80,7 @@ test("checkConnection marks refresh-capable provider with no refresh token as ex
 test("checkConnection leaves a connection WITH a refresh token untouched (#5326)", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "Antigravity Healthy Account",
@@ -90,7 +91,7 @@ test("checkConnection leaves a connection WITH a refresh token untouched (#5326)
     tokenExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     testStatus: "active",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   await tokenHealthCheck.checkConnection(connection);
 
@@ -104,7 +105,7 @@ test("checkConnection leaves a connection WITH a refresh token untouched (#5326)
 test("checkConnection leaves a non-refresh provider with no refresh token untouched (#5326)", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "custom-no-refresh-support-5326", // not in supportsTokenRefresh + no tokenUrl/refreshUrl
     authType: "oauth",
     name: "Non-refresh Provider Account",
@@ -113,7 +114,7 @@ test("checkConnection leaves a non-refresh provider with no refresh token untouc
     refreshToken: null,
     testStatus: "active",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   await tokenHealthCheck.checkConnection(connection);
 
@@ -135,7 +136,7 @@ test("checkConnection keeps GitHub Copilot access-token-only connections active"
     )) as typeof fetch;
 
   try {
-    const connection = await providersDb.createProviderConnection({
+    const connection = (await providersDb.createProviderConnection({
       provider: "github",
       authType: "oauth",
       name: "GitHub Access Token Account",
@@ -147,7 +148,7 @@ test("checkConnection keeps GitHub Copilot access-token-only connections active"
       },
       testStatus: "active",
       isActive: true,
-    });
+    })) as JsonRecord & { id: string };
 
     await tokenHealthCheck.checkConnection(connection);
 
@@ -173,7 +174,7 @@ test("checkConnection clears stale no_refresh_token state for usable GitHub Copi
     )) as typeof fetch;
 
   try {
-    const connection = await providersDb.createProviderConnection({
+    const connection = (await providersDb.createProviderConnection({
       provider: "github",
       authType: "oauth",
       name: "GitHub False Expired Account",
@@ -187,7 +188,7 @@ test("checkConnection clears stale no_refresh_token state for usable GitHub Copi
       errorCode: "no_refresh_token",
       lastError: "No refresh token available — re-authenticate this account.",
       isActive: true,
-    });
+    })) as JsonRecord & { id: string };
 
     await tokenHealthCheck.checkConnection(connection);
 
@@ -210,7 +211,7 @@ test("checkConnection clears stale no_refresh_token state for usable GitHub Copi
 test("checkConnection still skips a GitHub Copilot connection expired for a non-no_refresh_token reason (#8182 boundary)", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "github",
     authType: "oauth",
     name: "GitHub Genuinely Expired Account",
@@ -224,7 +225,7 @@ test("checkConnection still skips a GitHub Copilot connection expired for a non-
     errorCode: "invalid_grant",
     lastError: "Manually invalidated by operator.",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   await tokenHealthCheck.checkConnection(connection);
 

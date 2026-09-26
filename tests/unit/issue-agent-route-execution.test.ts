@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR =
   process.env.DATA_DIR ??
@@ -22,14 +23,14 @@ async function resetStorage() {
 }
 
 async function seedOpenAiConnection() {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "issue-agent-route-test",
     apiKey: "sk-issue-agent-route-test",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {
@@ -47,7 +48,7 @@ test.afterEach(() => {
 test("issue-agent live triage traverses the normal chat-completions POST route", async () => {
   await seedOpenAiConnection();
   const fetchCalls: Array<{ url: string; init: RequestInit }> = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({ url: String(url), init });
     return Response.json({
       id: "chatcmpl-issue-agent-route",
@@ -133,3 +134,5 @@ test("issue-agent preserves the normal chat route provider failure response", as
     "the original upstream error message must survive through the issue-agent execution wrapper"
   );
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

@@ -18,6 +18,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-10085-compat-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -67,7 +68,7 @@ async function seedSecondNode() {
 test("a connection stored under the GENERIC type id is reachable when chat resolves the uuid node id (#10085)", async () => {
   await resetStorage();
   await seedNode();
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai-compatible-chat", // generic type id, NOT the uuid node id
     authType: "apikey",
     apiKey: "sk-test-10085",
@@ -76,7 +77,7 @@ test("a connection stored under the GENERIC type id is reachable when chat resol
     testStatus: "active",
     priority: 1,
     providerSpecificData: { prefix: NODE_PREFIX, baseUrl: "https://example.test/v1" },
-  });
+  })) as JsonRecord & { id: string };
 
   const creds = await auth.getProviderCredentials(NODE_ID);
 
@@ -91,7 +92,7 @@ test("a connection stored under the GENERIC type id is reachable when chat resol
 test("the bridge works in the other direction too: a uuid-stored connection is reachable via the generic type id", async () => {
   await resetStorage();
   await seedNode();
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: NODE_ID, // concrete uuid node id
     authType: "apikey",
     apiKey: "sk-test-10085-b",
@@ -100,7 +101,7 @@ test("the bridge works in the other direction too: a uuid-stored connection is r
     testStatus: "active",
     priority: 1,
     providerSpecificData: { prefix: NODE_PREFIX, baseUrl: "https://example.test/v1" },
-  });
+  })) as JsonRecord & { id: string };
 
   const creds = await auth.getProviderCredentials("openai-compatible-chat");
 
@@ -115,7 +116,7 @@ test("a concrete second node does not inherit the first node's generic credentia
   await resetStorage();
   await seedNode();
   await seedSecondNode();
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai-compatible-chat",
     authType: "apikey",
     apiKey: "sk-test-10085-node-a",
@@ -128,7 +129,7 @@ test("a concrete second node does not inherit the first node's generic credentia
       prefix: NODE_PREFIX,
       baseUrl: "https://example-a.test/v1",
     },
-  });
+  })) as JsonRecord & { id: string };
 
   const creds = await auth.getProviderCredentials(NODE_B_ID);
 
@@ -142,7 +143,7 @@ test("a concrete second node does not inherit the first node's generic credentia
 test("control: a connection stored under the uuid node id is found by a uuid node id lookup", async () => {
   await resetStorage();
   await seedNode();
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: NODE_ID,
     authType: "apikey",
     apiKey: "sk-test-10085-c",
@@ -151,7 +152,7 @@ test("control: a connection stored under the uuid node id is found by a uuid nod
     testStatus: "active",
     priority: 1,
     providerSpecificData: { prefix: NODE_PREFIX, baseUrl: "https://example.test/v1" },
-  });
+  })) as JsonRecord & { id: string };
 
   assert.ok(await auth.getProviderCredentials(NODE_ID));
 });
@@ -159,7 +160,7 @@ test("control: a connection stored under the uuid node id is found by a uuid nod
 test("control: a connection stored under the uuid node id is found via prefix lookup", async () => {
   await resetStorage();
   await seedNode();
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: NODE_ID,
     authType: "apikey",
     apiKey: "sk-test-10085-d",
@@ -168,7 +169,7 @@ test("control: a connection stored under the uuid node id is found via prefix lo
     testStatus: "active",
     priority: 1,
     providerSpecificData: { prefix: NODE_PREFIX, baseUrl: "https://example.test/v1" },
-  });
+  })) as JsonRecord & { id: string };
 
   assert.ok(await auth.getProviderCredentials(NODE_PREFIX));
 });
@@ -176,7 +177,7 @@ test("control: a connection stored under the uuid node id is found via prefix lo
 test("the bridge does not make unrelated generic types findable", async () => {
   await resetStorage();
   await seedNode();
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai-compatible-chat",
     authType: "apikey",
     apiKey: "sk-test-10085-e",
@@ -185,7 +186,7 @@ test("the bridge does not make unrelated generic types findable", async () => {
     testStatus: "active",
     priority: 1,
     providerSpecificData: { prefix: NODE_PREFIX, baseUrl: "https://example.test/v1" },
-  });
+  })) as JsonRecord & { id: string };
 
   // A different generic type (responses, not chat) must stay unrelated.
   assert.equal(await auth.getProviderCredentials("openai-compatible-responses"), null);
@@ -214,7 +215,7 @@ test(
     await seedSecondNode();
     // Connection is scoped to node A specifically (stored under A's concrete
     // uuid id, with A's own baseUrl) -- NOT under the bare generic type.
-    await providersDb.createProviderConnection({
+    (await providersDb.createProviderConnection({
       provider: NODE_ID,
       authType: "apikey",
       apiKey: "sk-test-10434-node-a",
@@ -223,7 +224,7 @@ test(
       testStatus: "active",
       priority: 1,
       providerSpecificData: { prefix: NODE_PREFIX, baseUrl: "https://example.test/v1" },
-    });
+    })) as JsonRecord & { id: string };
 
     // A lookup by the BARE generic type (no concrete node id) must not
     // resolve to node A's connection: two nodes (A and B) share the derived

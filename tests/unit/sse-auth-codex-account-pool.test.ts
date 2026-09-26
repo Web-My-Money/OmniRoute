@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { looseCreds } from "../helpers/looseTypes.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-sse-auth-codex-pool-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -11,6 +13,8 @@ process.env.API_KEY_SECRET ||= "sse-auth-codex-pool-test-secret";
 const core = await import("../../src/lib/db/core.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
 const auth = await import("../../src/sse/services/auth.ts");
+const getCreds = looseCreds(auth.getProviderCredentials);
+const getCredsPreflight = looseCreds(auth.getProviderCredentialsWithQuotaPreflight);
 
 async function resetStorage() {
   core.resetDbInstance();
@@ -23,7 +27,7 @@ function futureIso(ms = 60_000) {
 }
 
 async function seedCodexConnection(overrides: Record<string, unknown>) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     apiKey: null,
@@ -31,7 +35,7 @@ async function seedCodexConnection(overrides: Record<string, unknown>) {
     testStatus: "active",
     providerSpecificData: {},
     ...overrides,
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {
@@ -70,25 +74,18 @@ test("Codex Spark preflight cooldown leaves normal models on the same parent sel
     };
   });
 
-  const spark = await auth.getProviderCredentialsWithQuotaPreflight(
-    "codex",
-    null,
-    null,
-    "gpt-5.3-codex-spark"
-  );
-  const normal = await auth.getProviderCredentialsWithQuotaPreflight(
-    "codex",
-    null,
-    null,
-    "gpt-5.5"
-  );
+  const spark = await getCredsPreflight("codex", null, null, "gpt-5.3-codex-spark");
+  const normal = await getCredsPreflight("codex", null, null, "gpt-5.5");
   const persisted = await providersDb.getProviderConnectionById(connection.id);
 
   assert.equal(spark.allRateLimited, true);
   assert.equal(normal.connectionId, connection.id);
   assert.equal(persisted.rateLimitedUntil, undefined);
   assert.equal(persisted.testStatus, "active");
-  assert.equal(persisted.providerSpecificData.codexScopeRateLimitedUntil.spark, resetAt);
+  assert.equal(
+    (persisted.providerSpecificData as LooseDeep).codexScopeRateLimitedUntil.spark,
+    resetAt
+  );
 });
 
 test("Codex preflight skips a blocked parent and selects a healthy sibling parent", async () => {
@@ -127,19 +124,17 @@ test("Codex preflight skips a blocked parent and selects a healthy sibling paren
     };
   });
 
-  const selected = await auth.getProviderCredentialsWithQuotaPreflight(
-    "codex",
-    null,
-    null,
-    "gpt-5.3-codex-spark"
-  );
+  const selected = await getCredsPreflight("codex", null, null, "gpt-5.3-codex-spark");
   const blockedAfter = await providersDb.getProviderConnectionById(blocked.id);
 
   assert.equal(selected.connectionId, healthy.id);
   assert.deepEqual(preflightCalls, [blocked.id, healthy.id]);
   assert.equal(blockedAfter.rateLimitedUntil, undefined);
   assert.equal(blockedAfter.testStatus, "active");
-  assert.equal(blockedAfter.providerSpecificData.codexScopeRateLimitedUntil.spark, resetAt);
+  assert.equal(
+    (blockedAfter.providerSpecificData as LooseDeep).codexScopeRateLimitedUntil.spark,
+    resetAt
+  );
 });
 
 test("Codex preflight returns allRateLimited only after checking every exhausted parent", async () => {
@@ -173,12 +168,7 @@ test("Codex preflight returns allRateLimited only after checking every exhausted
     };
   });
 
-  const selected = await auth.getProviderCredentialsWithQuotaPreflight(
-    "codex",
-    null,
-    null,
-    "gpt-5.3-codex-spark"
-  );
+  const selected = await getCredsPreflight("codex", null, null, "gpt-5.3-codex-spark");
   const firstAfter = await providersDb.getProviderConnectionById(first.id);
   const secondAfter = await providersDb.getProviderConnectionById(second.id);
 
@@ -187,7 +177,10 @@ test("Codex preflight returns allRateLimited only after checking every exhausted
   for (const connection of [firstAfter, secondAfter]) {
     assert.equal(connection.rateLimitedUntil, undefined);
     assert.equal(connection.testStatus, "active");
-    assert.equal(connection.providerSpecificData.codexScopeRateLimitedUntil.spark, resetAt);
+    assert.equal(
+      (connection.providerSpecificData as LooseDeep).codexScopeRateLimitedUntil.spark,
+      resetAt
+    );
   }
 });
 
@@ -213,7 +206,7 @@ test("getProviderCredentials reports cooldown only from the forced Codex parent"
     },
   });
 
-  const selected = await auth.getProviderCredentials("codex", null, null, "codex-spark-mini", {
+  const selected = await getCreds("codex", null, null, "codex-spark-mini", {
     forcedConnectionId: forced.id,
   });
 
@@ -237,8 +230,8 @@ test("Codex parent authentication failures block both virtual children without c
     "codex",
     "gpt-5.3-codex-spark"
   );
-  const spark = await auth.getProviderCredentials("codex", null, null, "gpt-5.3-codex-spark");
-  const normal = await auth.getProviderCredentials("codex", null, null, "gpt-5.5");
+  const spark = await getCreds("codex", null, null, "gpt-5.3-codex-spark");
+  const normal = await getCreds("codex", null, null, "gpt-5.5");
   const inventory = await providersDb.getProviderConnections({ provider: "codex" });
 
   assert.equal(unavailable.shouldFallback, true);
@@ -267,8 +260,8 @@ test("markAccountUnavailable stores Codex scope-specific cooldowns without a glo
     "codex-spark-mini"
   );
   const updated = await providersDb.getProviderConnectionById(connection.id);
-  const selected = await auth.getProviderCredentials("codex", null, null, "codex-spark-mini");
-  const normalSelected = await auth.getProviderCredentials("codex", null, null, "gpt-5.3-codex");
+  const selected = await getCreds("codex", null, null, "codex-spark-mini");
+  const normalSelected = await getCreds("codex", null, null, "gpt-5.3-codex");
 
   assert.equal(result.shouldFallback, true);
   assert.ok(result.cooldownMs > 0);
@@ -277,7 +270,7 @@ test("markAccountUnavailable stores Codex scope-specific cooldowns without a glo
   assert.equal(updated.lastError, parentBefore.lastError);
   assert.equal(updated.errorCode, parentBefore.errorCode);
   assert.equal(updated.backoffLevel, parentBefore.backoffLevel);
-  assert.ok(updated.providerSpecificData.codexScopeRateLimitedUntil.spark);
+  assert.ok((updated.providerSpecificData as LooseDeep).codexScopeRateLimitedUntil.spark);
   assert.equal(selected.allRateLimited, true);
   assert.equal(normalSelected.connectionId, connection.id);
 });
@@ -309,3 +302,5 @@ test("markAccountUnavailable keeps model-less Codex 429 state off the parent", a
   assert.equal(updated.backoffLevel, parentBefore.backoffLevel);
   assert.deepEqual(updated.providerSpecificData, parentBefore.providerSpecificData);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

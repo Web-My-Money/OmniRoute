@@ -33,11 +33,12 @@ describe("healthMonitor", () => {
 
   describe("checkHealth", () => {
     it("should return healthy for 200 with models", async () => {
-      globalThis.fetch = async () => ({
-        ok: true,
-        status: 200,
-        json: async () => ({ data: [{ id: "m1" }, { id: "m2" }] }),
-      });
+      globalThis.fetch = async () =>
+        ({
+          ok: true,
+          status: 200,
+          json: async () => ({ data: [{ id: "m1" }, { id: "m2" }] }),
+        }) as unknown as Response;
       const r = await mod.checkHealth("http://127.0.0.1:8317");
       assert.equal(r.healthy, true);
       assert.equal(r.modelCount, 2);
@@ -46,11 +47,12 @@ describe("healthMonitor", () => {
     });
 
     it("should return unhealthy for non-200", async () => {
-      globalThis.fetch = async () => ({
-        ok: false,
-        status: 503,
-        json: async () => ({}),
-      });
+      globalThis.fetch = async () =>
+        ({
+          ok: false,
+          status: 503,
+          json: async () => ({}),
+        }) as unknown as Response;
       const r = await mod.checkHealth("http://127.0.0.1:8317");
       assert.equal(r.healthy, false);
       assert.equal(r.modelCount, 0);
@@ -67,11 +69,12 @@ describe("healthMonitor", () => {
     });
 
     it("should handle non-array data.data", async () => {
-      globalThis.fetch = async () => ({
-        ok: true,
-        status: 200,
-        json: async () => ({ data: "not-array" }),
-      });
+      globalThis.fetch = async () =>
+        ({
+          ok: true,
+          status: 200,
+          json: async () => ({ data: "not-array" }),
+        }) as unknown as Response;
       const r = await mod.checkHealth("http://127.0.0.1:8317");
       assert.equal(r.healthy, true);
       assert.equal(r.modelCount, 0);
@@ -81,7 +84,7 @@ describe("healthMonitor", () => {
       let capturedUrl;
       globalThis.fetch = async (url) => {
         capturedUrl = url;
-        return { ok: true, status: 200, json: async () => ({ data: [] }) };
+        return { ok: true, status: 200, json: async () => ({ data: [] }) } as unknown as Response;
       };
       await mod.checkHealth("http://127.0.0.1:8317", "/health");
       assert.ok(capturedUrl.includes("/health"));
@@ -91,7 +94,7 @@ describe("healthMonitor", () => {
       let capturedUrl;
       globalThis.fetch = async (url) => {
         capturedUrl = url;
-        return { ok: true, status: 200, json: async () => ({ data: [] }) };
+        return { ok: true, status: 200, json: async () => ({ data: [] }) } as unknown as Response;
       };
       await mod.checkHealth("http://127.0.0.1:8317");
       assert.ok(capturedUrl.includes("/v1/models"));
@@ -107,11 +110,12 @@ describe("healthMonitor", () => {
     });
 
     it("should return unhealthy for 500", async () => {
-      globalThis.fetch = async () => ({
-        ok: false,
-        status: 500,
-        json: async () => ({}),
-      });
+      globalThis.fetch = async () =>
+        ({
+          ok: false,
+          status: 500,
+          json: async () => ({}),
+        }) as unknown as Response;
       const r = await mod.checkHealth("http://127.0.0.1:8317");
       assert.equal(r.healthy, false);
       assert.equal(r.error, "HTTP 500");
@@ -120,11 +124,12 @@ describe("healthMonitor", () => {
 
   describe("startMonitoring / stopMonitoring / isMonitoring", () => {
     it("should start and stop monitoring", () => {
-      globalThis.fetch = async () => ({
-        ok: true,
-        status: 200,
-        json: async () => ({ data: [] }),
-      });
+      globalThis.fetch = async () =>
+        ({
+          ok: true,
+          status: 200,
+          json: async () => ({ data: [] }),
+        }) as unknown as Response;
       mod.startMonitoring("tool-a", "http://127.0.0.1:8317", 60_000);
       assert.equal(mod.isMonitoring("tool-a"), true);
       mod.stopMonitoring("tool-a");
@@ -132,11 +137,12 @@ describe("healthMonitor", () => {
     });
 
     it("should replace previous monitoring on re-start", () => {
-      globalThis.fetch = async () => ({
-        ok: true,
-        status: 200,
-        json: async () => ({ data: [] }),
-      });
+      globalThis.fetch = async () =>
+        ({
+          ok: true,
+          status: 200,
+          json: async () => ({ data: [] }),
+        }) as unknown as Response;
       mod.startMonitoring("tool-b", "http://127.0.0.1:8317", 60_000);
       mod.startMonitoring("tool-b", "http://127.0.0.1:8317", 30_000);
       assert.equal(mod.isMonitoring("tool-b"), true);

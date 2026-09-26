@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-chat-pipeline-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -379,11 +381,11 @@ async function resetStorage() {
 }
 
 async function seedConnection(provider, overrides: SeedConnectionOverrides = {}) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: overrides.authType || "apikey",
-    name: overrides.name || `${provider}-primary`,
-    email: overrides.email,
+    name: (overrides as LooseDeep).name || `${provider}-primary`,
+    email: (overrides as LooseDeep).email,
     apiKey: overrides.apiKey || `sk-${provider}-${Math.random().toString(16).slice(2, 10)}`,
     accessToken: overrides.accessToken,
     refreshToken: overrides.refreshToken,
@@ -395,7 +397,7 @@ async function seedConnection(provider, overrides: SeedConnectionOverrides = {})
     priority: overrides.priority,
     rateLimitedUntil: overrides.rateLimitedUntil,
     providerSpecificData: overrides.providerSpecificData || {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 async function seedApiKey({
@@ -520,7 +522,7 @@ test("chat pipeline handles OpenAI passthrough with valid API key auth", async (
   const apiKey = await seedApiKey();
   const fetchCalls: FetchCall[] = [];
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       method: init.method || "GET",
@@ -554,7 +556,7 @@ test("chat pipeline persists Codex responses cache and reasoning tokens to call 
   await seedConnection("codex", { apiKey: "sk-codex-primary" });
   const fetchCalls = [];
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),
@@ -607,7 +609,7 @@ test("chat pipeline applies Codex OAuth fingerprint and priority tier inside com
     models: ["codex/gpt-5.5"],
   });
   const fetchCalls = [];
-  globalThis.fetch = async (_url, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       headers: toPlainHeaders(init.headers),
       body: init.body ? JSON.parse(String(init.body)) : null,
@@ -651,7 +653,7 @@ test("chat pipeline applies Codex CLI fingerprint to OAuth responses requests", 
   });
 
   const fetchCalls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),
@@ -734,7 +736,7 @@ test("chat pipeline fails closed on an unresolvable previous_response_id and kee
   });
   const fetchCalls = [];
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),
@@ -807,7 +809,7 @@ test("chat pipeline preserve mode forwards previous_response_id for responses re
   });
   const fetchCalls = [];
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),
@@ -839,7 +841,7 @@ test("chat pipeline treats Codex /responses/compact as non-streaming JSON", asyn
   await seedConnection("codex", { apiKey: "sk-codex-compact" });
   const fetchCalls = [];
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),
@@ -881,7 +883,7 @@ test("chat pipeline serves repeated /v1/responses requests as MISS then HIT and 
   await seedConnection("codex", { apiKey: "sk-codex-cache-seq" });
   const fetchCalls = [];
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),
@@ -971,7 +973,7 @@ test("chat pipeline translates OpenAI requests to Claude and returns OpenAI-shap
   await seedConnection("claude", { apiKey: "sk-claude-primary" });
   const fetchCalls = [];
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),
@@ -1005,7 +1007,7 @@ test("chat pipeline translates OpenAI requests to Gemini and returns OpenAI-shap
   await seedConnection("gemini", { apiKey: "sk-gemini-primary" });
   const fetchCalls = [];
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),
@@ -1039,7 +1041,7 @@ test("chat pipeline translates Claude-format requests into OpenAI upstream and b
   await seedConnection("openai", { apiKey: "sk-openai-claude-route" });
   const fetchCalls = [];
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),
@@ -1198,7 +1200,7 @@ test("chat pipeline supports local mode without Authorization on explicit combos
   });
   const fetchCalls = [];
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),
@@ -1410,7 +1412,7 @@ test("chat pipeline injects memory context before sending the upstream request",
   insertLegacyMemory(apiKey.id, "User prefers concise answers.");
 
   const fetchCalls = [];
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       body: init.body ? JSON.parse(String(init.body)) : null,
@@ -1478,7 +1480,7 @@ test("chat pipeline injects skills into tools and intercepts tool calls with ski
   assert.notEqual(expectedSkillToolName, "lookupWeather@1.0.0");
 
   const fetchCalls = [];
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       body: init.body ? JSON.parse(String(init.body)) : null,
@@ -1525,7 +1527,7 @@ test("chat pipeline falls back to the next account after a provider failure", as
   });
   const seenAuthHeaders = [];
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const headers = toPlainHeaders(init.headers);
     seenAuthHeaders.push(headers.Authorization);
     if (seenAuthHeaders.length === 1) {
@@ -1570,7 +1572,7 @@ test("chat pipeline falls back across combo models when the first provider fails
   });
   const attempts = [];
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const call = {
       url: String(url),
       headers: toPlainHeaders(init.headers),
@@ -1641,3 +1643,5 @@ test("chat pipeline deduplicates concurrent identical non-stream requests", asyn
   assert.equal(jsonA.choices[0].message.content, "Deduplicated response");
   assert.equal(jsonB.choices[0].message.content, "Deduplicated response");
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

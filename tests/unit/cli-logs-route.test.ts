@@ -58,7 +58,7 @@ function makeReq(queryString = "") {
 }
 
 test("GET /api/cli-tools/logs returns 200 with JSON array when log file exists", async () => {
-  const res = await GET(makeReq());
+  const res = await GET(makeReq() as unknown as NextRequest);
   assert.equal(res.status, 200);
 
   const body = await res.json();
@@ -67,7 +67,7 @@ test("GET /api/cli-tools/logs returns 200 with JSON array when log file exists",
 });
 
 test("GET /api/cli-tools/logs respects filter param", async () => {
-  const res = await GET(makeReq("filter=rateLimit"));
+  const res = await GET(makeReq("filter=rateLimit") as unknown as NextRequest);
   assert.equal(res.status, 200);
 
   const body = await res.json();
@@ -87,7 +87,7 @@ test("GET /api/cli-tools/logs returns empty array when log file does not exist",
   const origPath = process.env.APP_LOG_FILE_PATH;
   process.env.APP_LOG_FILE_PATH = "/tmp/omniroute-nonexistent-cli-logs-test.log";
 
-  const res = await GET(makeReq());
+  const res = await GET(makeReq() as unknown as NextRequest);
   assert.equal(res.status, 200);
   const body = await res.json();
   assert.ok(Array.isArray(body));
@@ -102,7 +102,7 @@ test("GET /api/cli-tools/logs error response does not leak stack traces (hard ru
   // Point to a directory so readFileSync throws
   process.env.APP_LOG_FILE_PATH = TEST_DATA_DIR;
 
-  const res = await GET(makeReq());
+  const res = await GET(makeReq() as unknown as NextRequest);
   // Should respond with 500 or empty (route may handle gracefully), but must NOT leak stack
   const text = await res.text();
   assert.ok(!text.includes(" at "), "Response must not contain stack trace frames");
@@ -122,7 +122,7 @@ test("GET /api/cli-tools/logs limit=abc does not bypass the 2000-entry cap", asy
   process.env.APP_LOG_FILE_PATH = bigLogPath;
 
   try {
-    const res = await GET(makeReq("limit=abc"));
+    const res = await GET(makeReq("limit=abc") as unknown as NextRequest);
     assert.equal(res.status, 200);
     const body = await res.json();
     assert.ok(Array.isArray(body), "body should be an array");

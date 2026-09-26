@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 // Public OAuth client_id/secret defaults for Gemini, Antigravity and Windsurf
 // are resolved at module load through open-sse/utils/publicCreds.ts — no need
@@ -39,7 +40,7 @@ test("Claude OAuth provider always uses the configured redirectUri when building
 test("Claude OAuth provider always uses the configured redirectUri during token exchange", async () => {
   let captured = null;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       method: init.method,

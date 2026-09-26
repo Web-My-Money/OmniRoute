@@ -16,7 +16,7 @@ import http from "node:http";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-supervisor-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 process.env.DISABLE_SQLITE_AUTO_BACKUP = "true";
 // Adoption is intentionally opt-in after GHSA-wg9p-6m2g-4v27. These tests
 // exercise the explicit adoption path, so enable it for this isolated process.

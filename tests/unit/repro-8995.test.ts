@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-repro-8995-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -47,7 +48,7 @@ test("#8995: resolveProxyForConnection surfaces the proxy NAME for an account-le
   assert.ok(result, "resolveProxyForConnection must return a result");
   assert.ok(result.proxy, "result must have a proxy object");
   assert.equal(
-    result.proxy.name,
+    (result.proxy as LooseDeep).name,
     "My US Proxy",
     "resolveProxyForConnection must include the proxy name so the dashboard badge can show it"
   );

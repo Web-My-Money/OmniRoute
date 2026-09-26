@@ -87,14 +87,14 @@ test("model alias route requires a dashboard session when management auth is ena
 });
 
 test("api models catalog route reuses the unified catalog diagnostics headers", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "deepgram",
     authType: "apikey",
     name: "deepgram-audio-catalog",
     apiKey: "dg-test",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   v1Catalog.__resetCatalogBuilderRunsForTest();
   const response = await catalogRoute.GET(
     new Request("http://localhost/api/models/catalog", {
@@ -129,3 +129,5 @@ test("v1 models catalog emits diagnostics headers alongside the OpenAI-compatibl
   assert.equal(body.object, "list");
   assert.ok(Array.isArray(body.data));
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

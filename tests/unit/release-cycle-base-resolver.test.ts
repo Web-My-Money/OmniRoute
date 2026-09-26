@@ -27,7 +27,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-// @ts-expect-error — plain .mjs release script, no type declarations by design
+//
 import { resolveCycleBase } from "../../scripts/release/list-uncovered-commits.mjs";
 
 /** Build a fake `git` that answers by matching on the argv it receives. */
@@ -83,7 +83,7 @@ test("falls back to the tag LOUDLY when the cycle-open commit cannot be found", 
   const { run } = fakeGit({ log: "", describe: "v3.8.49" });
   const written: string[] = [];
   const realWrite = process.stderr.write.bind(process.stderr);
-  // @ts-expect-error — narrowing the write signature for the assertion is not worth it here
+  //
   process.stderr.write = (chunk: string) => {
     written.push(String(chunk));
     return true;
@@ -108,7 +108,7 @@ test("survives a repo with neither the version commit nor any tag", () => {
     throw new Error("no tags");
   };
   const realWrite = process.stderr.write.bind(process.stderr);
-  // @ts-expect-error — see above
+  //
   process.stderr.write = () => true;
   try {
     const r = resolveCycleBase("3.8.50", run);

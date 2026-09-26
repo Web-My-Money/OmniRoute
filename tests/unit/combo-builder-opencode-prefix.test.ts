@@ -17,6 +17,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-prefix-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -54,12 +55,12 @@ test("#2901 no-auth OpenCode combo models use the oc/ prefix (not opencode/)", a
 });
 
 test("#2901 configured OpenCode connections also use the oc/ prefix", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "opencode",
     authType: "apikey",
     name: "OpenCode Free test connection",
     apiKey: "test-key",
-  });
+  })) as JsonRecord & { id: string };
 
   const payload = await getComboBuilderOptions();
   const opencode = payload.providers.find(

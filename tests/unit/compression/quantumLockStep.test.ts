@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { applyQuantumLock } from "../../../open-sse/services/compression/quantumLock/quantumLockStep.ts";
 import { TAIL_DELIM } from "../../../open-sse/services/compression/quantumLock/quantumPatterns.ts";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 const ON = { enabled: true } as const;
 const sys = (content: string) => ({
@@ -32,10 +33,7 @@ test("LOSSLESS: every original value appears in the tail", () => {
 });
 
 test("POSITIONAL: placeholders are ⟦Q0⟧, ⟦Q1⟧ in match order", () => {
-  const out = applyQuantumLock(
-    sys("a 550e8400-e29b-41d4-a716-446655440000 b 1718900000 c"),
-    ON
-  );
+  const out = applyQuantumLock(sys("a 550e8400-e29b-41d4-a716-446655440000 b 1718900000 c"), ON);
   const body = sysText(out.body);
   assert.ok(prefixOf(body).includes("⟦Q0⟧"));
   assert.ok(prefixOf(body).includes("⟦Q1⟧"));
@@ -54,12 +52,31 @@ test("only the system message is touched", () => {
 });
 
 test("no-op paths: no system msg / empty / no spans / non-string content", () => {
-  assert.equal(applyQuantumLock({ messages: [{ role: "user", content: "550e8400-e29b-41d4-a716-446655440000" }] }, ON).stats.fragments, 0);
+  assert.equal(
+    applyQuantumLock(
+      { messages: [{ role: "user", content: "550e8400-e29b-41d4-a716-446655440000" }] },
+      ON
+    ).stats.fragments,
+    0
+  );
   assert.equal(applyQuantumLock(sys(""), ON).stats.fragments, 0);
   assert.equal(applyQuantumLock(sys("plain prose only"), ON).stats.fragments, 0);
   assert.equal(applyQuantumLock(sys("x"), ON).body.messages !== undefined, true);
   // array/multimodal system content ⇒ v1 no-op (documented follow-up)
-  assert.equal(applyQuantumLock({ messages: [{ role: "system", content: [{ type: "text", text: "550e8400-e29b-41d4-a716-446655440000" }] }] }, ON).stats.fragments, 0);
+  assert.equal(
+    applyQuantumLock(
+      {
+        messages: [
+          {
+            role: "system",
+            content: [{ type: "text", text: "550e8400-e29b-41d4-a716-446655440000" }],
+          },
+        ],
+      },
+      ON
+    ).stats.fragments,
+    0
+  );
 });
 
 test("input body is not mutated (pure)", () => {
@@ -77,36 +94,63 @@ import {
 
 const CACHING = { isCachingProvider: true };
 const NOT_CACHING = { isCachingProvider: false };
-const runEcho = (b: Record<string, unknown>) => ({ body: b, compressed: false, stats: { techniquesUsed: [] } as Record<string, unknown> });
+const runEcho = (b: Record<string, unknown>) => ({
+  body: b,
+  compressed: false,
+  stats: { techniquesUsed: [] } as LooseDeep,
+});
 
 test("resolveQuantumLock returns the config only when enabled", () => {
-  assert.equal(resolveQuantumLock({ config: { quantumLock: { enabled: false } } as never }), undefined);
+  assert.equal(
+    resolveQuantumLock({ config: { quantumLock: { enabled: false } } as never }),
+    undefined
+  );
   assert.ok(resolveQuantumLock({ config: { quantumLock: { enabled: true } } as never }));
   assert.equal(resolveQuantumLock(undefined), undefined);
 });
 
 test("withQuantumLock: disabled ⇒ body passes through untouched", () => {
   const body = sys("id 550e8400-e29b-41d4-a716-446655440000");
-  const r = withQuantumLock(body, undefined, CACHING, runEcho);
+  const r = withQuantumLock(
+    body,
+    undefined,
+    CACHING,
+    runEcho as unknown as (b: Record<string, unknown>) => CompressionResult
+  );
   assert.equal(sysText(r.body), sysText(body));
 });
 
 test("withQuantumLock: non-caching provider ⇒ no-op", () => {
   const body = sys("id 550e8400-e29b-41d4-a716-446655440000");
-  const r = withQuantumLock(body, { enabled: true }, NOT_CACHING, runEcho);
+  const r = withQuantumLock(
+    body,
+    { enabled: true },
+    NOT_CACHING,
+    runEcho as unknown as (b: Record<string, unknown>) => CompressionResult
+  );
   assert.equal(sysText(r.body), sysText(body));
 });
 
 test("withQuantumLock: enabled + caching ⇒ stabilizes + attaches stats", () => {
   const body = sys("id 550e8400-e29b-41d4-a716-446655440000");
-  const r = withQuantumLock(body, { enabled: true }, CACHING, runEcho);
+  const r = withQuantumLock(
+    body,
+    { enabled: true },
+    CACHING,
+    runEcho as unknown as (b: Record<string, unknown>) => CompressionResult
+  );
   assert.ok(sysText(r.body).includes(TAIL_DELIM));
   assert.equal((r.stats as { quantumLock?: { fragments: number } }).quantumLock?.fragments, 1);
 });
 
 test("withQuantumLockAsync mirrors the sync wrapper", async () => {
   const body = sys("id 550e8400-e29b-41d4-a716-446655440000");
-  const r = await withQuantumLockAsync(body, { enabled: true }, CACHING, async (b) => runEcho(b));
+  const r = await withQuantumLockAsync(
+    body,
+    { enabled: true },
+    CACHING,
+    async (b) => runEcho(b) as unknown as Promise<CompressionResult>
+  );
   assert.ok(sysText(r.body).includes(TAIL_DELIM));
 });
 

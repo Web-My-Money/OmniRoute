@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // #10347 integration: exercise createEmbeddingResponse end-to-end with a
 // mocked upstream that returns 402, then verify the connection gets cooled
@@ -29,14 +30,14 @@ async function seedConnection(
   provider: string,
   overrides: Record<string, unknown> = {}
 ): Promise<string> {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     apiKey: `${provider}-key`,
     isActive: true,
     testStatus: "active",
     ...overrides,
-  });
+  })) as JsonRecord & { id: string };
   return (conn as Record<string, unknown>).id as string;
 }
 

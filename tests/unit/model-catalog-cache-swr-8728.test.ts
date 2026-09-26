@@ -20,6 +20,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import type { CatalogPayload } from "../../src/app/api/v1/models/catalogCache.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-catalog-cache-8728-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -31,7 +32,7 @@ function request() {
   return new Request("http://localhost/v1/models");
 }
 
-function payload(body: string, status = 200): catalogCache.CatalogPayload {
+function payload(body: string, status = 200): CatalogPayload {
   return {
     body,
     headers: { "content-type": "application/json" },
@@ -40,7 +41,7 @@ function payload(body: string, status = 200): catalogCache.CatalogPayload {
   };
 }
 
-async function resolve(build: (request: Request) => Promise<catalogCache.CatalogPayload>) {
+async function resolve(build: (request: Request) => Promise<CatalogPayload>) {
   return catalogCache.resolveCachedCatalogResponse(
     request(),
     { corsHeaders: {}, diagnosticHeaders: {} },

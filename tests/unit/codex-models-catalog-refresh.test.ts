@@ -25,6 +25,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-codex-models-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -112,14 +113,14 @@ test("non-codex OpenAI client keeps the unchanged {object,data} shape (no `model
 });
 
 test("v1 models catalog exposes remote-only Codex IDs from the discovery cache", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: "codex-curated-catalog",
     accessToken: "codex-access-token",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   await modelsDb.replaceSyncedAvailableModelsForConnection("codex", connection.id, [
     {

@@ -4,6 +4,7 @@
 // provider/model was dispatched, in what order, without writing a fetch mock.
 
 import { createChatPipelineHarness } from "./_chatPipelineHarness.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Map an upstream request URL to the provider id it targets.
 //
@@ -77,7 +78,7 @@ export async function createComboRoutingHarness(prefix: string) {
         index: calls.length,
         provider,
         url: u,
-        authorization: headers.authorization,
+        authorization: (headers as LooseDeep).authorization,
         model: readModel(init),
       };
       calls.push(call);

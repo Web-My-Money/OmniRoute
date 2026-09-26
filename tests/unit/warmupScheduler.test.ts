@@ -14,10 +14,11 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-warmup-orch-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 process.env.DISABLE_SQLITE_AUTO_BACKUP = "true";
 process.env.API_KEY_SECRET = "warmup-exclusive-lease-test-secret";
 
@@ -118,7 +119,7 @@ test("integration: opt-in gating — connection not in claudeWarmup.connections 
     await import("../../src/lib/warmupScheduler.ts");
   const settingsDb = await import("../../src/lib/db/settings.ts");
 
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "oauth",
     name: "Pro User",
@@ -127,7 +128,7 @@ test("integration: opt-in gating — connection not in claudeWarmup.connections 
     refreshToken: "rt-123",
     isActive: true,
     providerSpecificData: { organizationType: "claude_pro" },
-  });
+  })) as JsonRecord & { id: string };
 
   // Do NOT opt in — leave claudeWarmup.connections empty.
   const mock = installMockFetch(() => ({
@@ -153,7 +154,7 @@ test("integration: opted-in claude_pro connection → fetch fires with Bearer to
     await import("../../src/lib/warmupScheduler.ts");
   const settingsDb = await import("../../src/lib/db/settings.ts");
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "oauth",
     name: "Pro User",
@@ -162,7 +163,7 @@ test("integration: opted-in claude_pro connection → fetch fires with Bearer to
     refreshToken: "rt-abc",
     isActive: true,
     providerSpecificData: { organizationType: "claude_pro" },
-  });
+  })) as JsonRecord & { id: string };
 
   // Opt in via settings.
   await settingsDb.updateSettings({ claudeWarmup: { connections: { [conn.id]: true } } });
@@ -200,7 +201,7 @@ test("hard lease isolation skips an opted-in lease-only connection with zero mod
   const settingsDb = await import("../../src/lib/db/settings.ts");
   const apiKeysDb = await import("../../src/lib/db/apiKeys.ts");
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "oauth",
     name: "Managed Pro User",
@@ -208,7 +209,7 @@ test("hard lease isolation skips an opted-in lease-only connection with zero mod
     refreshToken: "synthetic-refresh",
     isActive: true,
     providerSpecificData: { organizationType: "claude_pro" },
-  });
+  })) as JsonRecord & { id: string };
   await apiKeysDb.createApiKey("managed warmup key", "test", ["lease:exclusive"], {
     allowedConnections: [conn.id],
   });
@@ -234,7 +235,7 @@ test("integration: message rotation — different content across sequential ping
     await import("../../src/lib/warmupScheduler.ts");
   const settingsDb = await import("../../src/lib/db/settings.ts");
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "oauth",
     name: "Pro User",
@@ -243,7 +244,7 @@ test("integration: message rotation — different content across sequential ping
     refreshToken: "rt-abc",
     isActive: true,
     providerSpecificData: { organizationType: "claude_pro" },
-  });
+  })) as JsonRecord & { id: string };
   await settingsDb.updateSettings({ claudeWarmup: { connections: { [conn.id]: true } } });
 
   const mock = installMockFetch(() => ({
@@ -278,7 +279,7 @@ test("integration: 403 → forbidden persisted, no further fetch for that connec
   const settingsDb = await import("../../src/lib/db/settings.ts");
   const crs = await import("../../src/lib/db/connectionRuntimeState.ts");
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "oauth",
     name: "Pro User",
@@ -287,7 +288,7 @@ test("integration: 403 → forbidden persisted, no further fetch for that connec
     refreshToken: "rt",
     isActive: true,
     providerSpecificData: { organizationType: "claude_pro" },
-  });
+  })) as JsonRecord & { id: string };
   await settingsDb.updateSettings({ claudeWarmup: { connections: { [conn.id]: true } } });
 
   const mock = installMockFetch(() => ({ status: 403, body: { error: "forbidden" } }));
@@ -313,7 +314,7 @@ test("integration: 429 → rate_limit with Retry-After parsed", async () => {
   const settingsDb = await import("../../src/lib/db/settings.ts");
   const crs = await import("../../src/lib/db/connectionRuntimeState.ts");
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "oauth",
     name: "Pro User",
@@ -322,7 +323,7 @@ test("integration: 429 → rate_limit with Retry-After parsed", async () => {
     refreshToken: "rt",
     isActive: true,
     providerSpecificData: { organizationType: "claude_pro" },
-  });
+  })) as JsonRecord & { id: string };
   await settingsDb.updateSettings({ claudeWarmup: { connections: { [conn.id]: true } } });
 
   const mock = installMockFetch(() => ({
@@ -357,14 +358,14 @@ test("integration: api_key connection is skipped even when opted in", async () =
     await import("../../src/lib/warmupScheduler.ts");
   const settingsDb = await import("../../src/lib/db/settings.ts");
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "apikey",
     name: "API Key User",
     email: "apikey@example.com",
     apiKey: "sk-123",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
   await settingsDb.updateSettings({ claudeWarmup: { connections: { [conn.id]: true } } });
 
   const mock = installMockFetch(() => ({

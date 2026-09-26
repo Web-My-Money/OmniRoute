@@ -10,6 +10,7 @@ import {
   buildClientRawRequest,
   resolveDispatchClientRawRequest,
 } from "../../src/sse/handlers/chat.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 function req(body: unknown) {
   return new Request("http://x/v1/chat/completions", {
@@ -32,8 +33,16 @@ test("mutating the original body after capture does not corrupt the snapshot", (
   const out = buildClientRawRequest(req(body), body);
   body.messages[0].content = "MUTATED";
   body.messages.push({ role: "user", content: "added" });
-  assert.equal(out.body.messages.length, 1, "snapshot length is frozen at capture time");
-  assert.equal(out.body.messages[0].content, "original", "snapshot content is isolated");
+  assert.equal(
+    (out.body as LooseDeep).messages.length,
+    1,
+    "snapshot length is frozen at capture time"
+  );
+  assert.equal(
+    (out.body as LooseDeep).messages[0].content,
+    "original",
+    "snapshot content is isolated"
+  );
 });
 
 test("endpoint and headers are captured from the request", () => {

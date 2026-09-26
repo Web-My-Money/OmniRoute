@@ -16,7 +16,7 @@ const baseBilling = {
 };
 
 test("Kimi billing rows show the real Extra Usage status when the wallet is unavailable", () => {
-  const rows = buildKimiBillingCardRows(baseBilling, "en-US");
+  const rows = buildKimiBillingCardRows(baseBilling as unknown as KimiBillingStatus, "en-US");
   assert.deepEqual(rows, [
     { kind: "status", label: "Extra Usage", value: "Unavailable" },
     {
@@ -67,7 +67,7 @@ test("Kimi monthly cap displays Unlimited when disabled or zero", () => {
       monthlyLimitMinorUnits: 0,
     },
   ]) {
-    const row = buildKimiBillingCardRows(billing, "en-US").find(
+    const row = buildKimiBillingCardRows(billing as unknown as KimiBillingStatus, "en-US").find(
       (candidate) => candidate.kind === "status" && candidate.label === "Monthly limit"
     );
     assert.deepEqual(row, { kind: "status", label: "Monthly limit", value: "Unlimited" });

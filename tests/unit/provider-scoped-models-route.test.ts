@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-provider-models-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -41,7 +42,7 @@ async function resetStorage() {
 }
 
 async function seedConnection(provider: string, overrides: SeedConnectionOverrides = {}) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: overrides.authType || "apikey",
     name: overrides.name || `${provider}-${Math.random().toString(16).slice(2, 8)}`,
@@ -50,7 +51,7 @@ async function seedConnection(provider: string, overrides: SeedConnectionOverrid
     isActive: overrides.isActive ?? true,
     testStatus: overrides.testStatus || "active",
     providerSpecificData: overrides.providerSpecificData || {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {

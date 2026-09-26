@@ -11,6 +11,7 @@ import {
 import type { CompressionResult } from "../../../open-sse/services/compression/types.ts";
 import { DEFAULT_COMPRESSION_CONFIG } from "../../../open-sse/services/compression/types.ts";
 import { applyCompression } from "../../../open-sse/services/compression/strategySelector.ts";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 const baseBody = {
   messages: [{ role: "user", content: "hello world compress me please" }],
@@ -87,12 +88,12 @@ describe("resultMemo unit", () => {
     const hit1 = memoLookup(key);
     assert.notEqual(hit1, null);
     // Mutate the returned body
-    (hit1!.body as Record<string, unknown>)["injected"] = "evil";
+    (hit1!.body as LooseDeep)["injected"] = "evil";
 
     // Second lookup should not see the mutation
     const hit2 = memoLookup(key);
     assert.notEqual(hit2, null);
-    assert.equal((hit2!.body as Record<string, unknown>)["injected"], undefined);
+    assert.equal((hit2!.body as LooseDeep)["injected"], undefined);
   });
 
   it("FIFO eviction: after MEMO_CAP entries, oldest is evicted", () => {
@@ -195,7 +196,7 @@ describe("isDeterministicMode", () => {
       ...DEFAULT_COMPRESSION_CONFIG,
       stackedPipeline: [{ engine: "ionizer" as const }, { engine: "lite" as const }],
     };
-    assert.equal(isDeterministicMode("stacked", cfg), false);
+    assert.equal(isDeterministicMode("stacked", cfg as unknown as CompressionConfig), false);
   });
 
   it("stacked with headroom engine is NOT deterministic (excluded until vetted)", () => {
@@ -355,7 +356,8 @@ describe("resultMemo — core review hardening", () => {
 
   it("#8137: caveman mode produces SAME key across different models", () => {
     // caveman is deterministic and model-independent (no image/vision logic)
-    const k = (model?: string) => makeMemoKey(baseBody, "caveman" as never, memoConfig, "p1", model);
+    const k = (model?: string) =>
+      makeMemoKey(baseBody, "caveman" as never, memoConfig, "p1", model);
     assert.equal(k("gpt-4"), k("claude-3"), "caveman key must be model-independent");
   });
 

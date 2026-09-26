@@ -149,7 +149,7 @@ test("createCombo with context_length stores it correctly", async () => {
 
   assert.equal(combo.context_length, 128000);
 
-  const retrieved = await combosDb.getComboById(combo.id);
+  const retrieved = await combosDb.getComboById(combo.id as unknown as string);
   assert.equal(retrieved?.context_length, 128000);
 });
 
@@ -170,10 +170,12 @@ test("updateCombo can set context_length", async () => {
 
   assert.equal(combo.context_length, undefined);
 
-  const updated = await combosDb.updateCombo(combo.id, { context_length: 256000 });
+  const updated = await combosDb.updateCombo(combo.id as unknown as string, {
+    context_length: 256000,
+  });
   assert.equal(updated?.context_length, 256000);
 
-  const retrieved = await combosDb.getComboById(combo.id);
+  const retrieved = await combosDb.getComboById(combo.id as unknown as string);
   assert.equal(retrieved?.context_length, 256000);
 });
 
@@ -186,10 +188,12 @@ test("updateCombo can clear context_length with null", async () => {
 
   assert.equal(combo.context_length, 128000);
 
-  const updated = await combosDb.updateCombo(combo.id, { context_length: null });
+  const updated = await combosDb.updateCombo(combo.id as unknown as string, {
+    context_length: null,
+  });
   assert.equal(updated?.context_length, undefined);
 
-  const retrieved = await combosDb.getComboById(combo.id);
+  const retrieved = await combosDb.getComboById(combo.id as unknown as string);
   assert.equal(retrieved?.context_length, undefined);
 });
 
@@ -200,7 +204,9 @@ test("updateCombo preserves context_length when not included in update", async (
     context_length: 128000,
   });
 
-  const updated = await combosDb.updateCombo(combo.id, { strategy: "round-robin" });
+  const updated = await combosDb.updateCombo(combo.id as unknown as string, {
+    strategy: "round-robin",
+  });
   assert.equal(updated?.context_length, 128000);
 });
 

@@ -186,7 +186,7 @@ test("page-level tier stats/filters ignore persisted Grok Free/Enterprise withou
 });
 
 test("Grok billing rows omit a missing balance and show an explicit localized zero", () => {
-  const missing = buildGrokBillingCardRows(baseBilling, "en-US");
+  const missing = buildGrokBillingCardRows(baseBilling as unknown as GrokBillingStatus, "en-US");
   assert.equal(
     missing.some((row) => row.kind === "balance"),
     false
@@ -197,7 +197,10 @@ test("Grok billing rows omit a missing balance and show an explicit localized ze
     value: "Unavailable",
   });
 
-  const zero = buildGrokBillingCardRows({ ...baseBilling, extraCreditsMinorUnits: 0 }, "de-DE");
+  const zero = buildGrokBillingCardRows(
+    { ...baseBilling, extraCreditsMinorUnits: 0 } as unknown as GrokBillingStatus,
+    "de-DE"
+  );
   assert.deepEqual(zero[0], {
     kind: "balance",
     label: "Extra Usage Credits",
@@ -219,7 +222,10 @@ test("Grok billing rows distinguish disabled and unavailable and translate enabl
     })[key] ?? fallback;
 
   const disabled = buildGrokBillingCardRows(
-    { ...baseBilling, autoTopUp: { available: true, enabled: false } },
+    {
+      ...baseBilling,
+      autoTopUp: { available: true, enabled: false },
+    } as unknown as GrokBillingStatus,
     "en-US",
     translate
   );

@@ -52,7 +52,8 @@ function makeTestCookieStore() {
 test.beforeEach(async () => {
   await resetStorage();
   callbackRoute.oidcCallbackInternals.clearJwksCache?.();
-  callbackRoute.oidcCallbackInternals.getCookieStore = async () => makeTestCookieStore();
+  callbackRoute.oidcCallbackInternals.getCookieStore = async () =>
+    makeTestCookieStore() as unknown as Promise<ReadonlyRequestCookies>;
 });
 
 test.afterEach(() => {

@@ -98,7 +98,7 @@ test("BaseExecutor adds the trace only on an allowlisted peer dispatch", async (
   };
   let capturedTrace: string | undefined;
   const server = createServer((request, response) => {
-    capturedTrace = request.headers["x-omniroute-peer-trace"];
+    (capturedTrace as unknown as string) = request.headers["x-omniroute-peer-trace"];
     response.writeHead(200, { "Content-Type": "application/json" });
     response.end(JSON.stringify({ choices: [] }));
   });

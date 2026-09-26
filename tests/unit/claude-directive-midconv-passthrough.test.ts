@@ -4,6 +4,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-directive-midconv-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -43,7 +45,7 @@ test.after(() => {
 test("claude mid-conversation-system passthrough relocates a directive-only messages[0]", async () => {
   let captured = null;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       method: init.method ?? "GET",
@@ -75,7 +77,7 @@ test("claude mid-conversation-system passthrough relocates a directive-only mess
     stream: false,
   };
 
-  const result = await handleChatCore({
+  const result = await looseAsync(handleChatCore)({
     body: structuredClone(body),
     modelInfo: { provider: "claude", model: "claude-opus-5", extendedContext: false },
     credentials: { apiKey: "test-claude-key", providerSpecificData: {} },
@@ -109,9 +111,7 @@ test("claude mid-conversation-system passthrough relocates a directive-only mess
   // The claude identity layer prepends its own blocks; assert the client's
   // block survived rather than an exact count.
   assert.ok(
-    captured.body.system.some(
-      (block) => block.type === "text" && block.text === "You are Claude."
-    )
+    captured.body.system.some((block) => block.type === "text" && block.text === "You are Claude.")
   );
   assert.equal(captured.body.tools.length, 1);
   // The directive stays message-level; the top level (if set) is the base

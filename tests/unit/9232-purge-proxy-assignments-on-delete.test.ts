@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-9232-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -38,12 +39,12 @@ test.after(async () => {
 });
 
 async function setupConnectionWithAssignment() {
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: TEST_PROVIDER,
     authType: "apikey",
     name: `Test conn ${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     apiKey: `sk-test-9232-${Math.random().toString(36).slice(2, 9)}`,
-  });
+  })) as JsonRecord & { id: string };
   assert.ok(created?.id, "connection must be created");
   const proxy = await proxiesDb.createProxy({
     name: "Test proxy 9232",

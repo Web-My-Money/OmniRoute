@@ -16,10 +16,11 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-crs-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 process.env.DISABLE_SQLITE_AUTO_BACKUP = "true";
 
 const core = await import("../../../src/lib/db/core.ts");
@@ -34,7 +35,7 @@ async function resetDb() {
 
 async function seedConnection(name: string) {
   // createProviderConnection always generates its own uuid; capture the returned id.
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "oauth",
     name,
@@ -42,7 +43,7 @@ async function seedConnection(name: string) {
     accessToken: "tok",
     refreshToken: "rt",
     isActive: false,
-  });
+  })) as JsonRecord & { id: string };
   return conn!.id;
 }
 

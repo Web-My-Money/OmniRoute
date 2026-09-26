@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-strategies-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -588,20 +589,20 @@ test("reset-aware quota SWR serves stale ordering while refreshing in background
 
 test("reset-aware strategy respects API-key allowed connections during expansion", async () => {
   const provider = `limited-provider-${randomUUID()}`;
-  const disallowed = await providersDb.createProviderConnection({
+  const disallowed = (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name: `disallowed-${randomUUID()}`,
     apiKey: "sk-disallowed",
     isActive: true,
-  });
-  const allowed = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const allowed = (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name: `allowed-${randomUUID()}`,
     apiKey: "sk-allowed",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
   const allowedId = String(allowed.id);
   const disallowedId = String(disallowed.id);
   const fetchedConnectionIds: string[] = [];

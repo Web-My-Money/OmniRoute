@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import type { RadarIntelCacheEntry } from "../../src/lib/radar/intelSync.ts";
 
 const { publicKey, privateKey } = crypto.generateKeyPairSync("ed25519");
 process.env.RADAR_FEED_PUBKEY = publicKey
@@ -67,7 +68,7 @@ test("Intel sync gates before fetch and only accepts exact signed live bytes", a
   }
 
   const bytes = await fixtureBytes();
-  const writes: intelSync.RadarIntelCacheEntry[] = [];
+  const writes: RadarIntelCacheEntry[] = [];
   const supporterIdentities: string[] = [];
   let authorization = "";
   const result = await intelSync.syncRadarIntel({
@@ -75,7 +76,8 @@ test("Intel sync gates before fetch and only accepts exact signed live bytes", a
     getSettings: () => liveSettings,
     getCache: () => null,
     setCache: (entry) => writes.push(entry),
-    recognizeSupporter: async (identity) => supporterIdentities.push(identity),
+    recognizeSupporter: async (identity) =>
+      supporterIdentities.push(identity) as unknown as Promise<void>,
     fetch: (async (_input, init) => {
       authorization = new Headers(init?.headers).get("authorization") ?? "";
       return response(bytes, {

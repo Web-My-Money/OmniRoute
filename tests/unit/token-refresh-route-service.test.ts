@@ -5,6 +5,8 @@ import http from "node:http";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-token-refresh-route-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -86,7 +88,7 @@ async function withConnectProxyServer(fn, options = {}) {
   server.on("connect", (req, clientSocket, head) => {
     connectRequests.push(String(req.url || ""));
     const [host, portText] = String(req.url || "").split(":");
-    const targetHost = options.targetHost || host;
+    const targetHost = (options as LooseDeep).targetHost || host;
     const targetPort = Number(options.targetPort || portText || 80);
     const upstreamSocket = net.connect(targetPort, targetHost, () => {
       clientSocket.write("HTTP/1.1 200 Connection Established\r\n\r\n");
@@ -166,7 +168,7 @@ test("token refresh wrapper delegates provider-specific refresh helpers and form
 
   const calls = [];
   await withMockedFetch(
-    async (url, options = {}) => {
+    async (url, options: MockRequestInit = {}) => {
       calls.push({ url: String(url), options });
       switch (String(url)) {
         case "https://auth.example.com/token":
@@ -267,13 +269,13 @@ test("token refresh wrapper delegates provider-specific refresh helpers and form
 });
 
 test("updateProviderCredentials persists rotated tokens and returns false for missing rows", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "oauth",
     name: "Refresh Target",
     accessToken: "access-old",
     refreshToken: "refresh-old",
-  });
+  })) as JsonRecord & { id: string };
 
   const updated = await tokenRefresh.updateProviderCredentials((connection as any).id, {
     accessToken: "access-new",
@@ -322,13 +324,13 @@ test("OAuth refresh prefers connection proxy over provider proxy", async () => {
               clientSecret: "connection-proxy-client-secret",
             },
             async () => {
-              const connection = await providersDb.createProviderConnection({
+              const connection = (await providersDb.createProviderConnection({
                 provider: providerId,
                 authType: "oauth",
                 name: "Connection Proxy OAuth",
                 accessToken: "old-access",
                 refreshToken: "refresh-via-account-proxy",
-              });
+              })) as JsonRecord & { id: string };
 
               try {
                 await settingsDb.setProxyForLevel("provider", providerId, {
@@ -387,13 +389,13 @@ test("provider-specific refresh helper accepts connection proxy context", async 
         OAUTH_ENDPOINTS.anthropic.token = `${tokenServer.url}/token`;
         let connectionId: string | undefined;
         try {
-          const connection = await providersDb.createProviderConnection({
+          const connection = (await providersDb.createProviderConnection({
             provider: "claude",
             authType: "oauth",
             name: "Claude Connection Proxy OAuth",
             accessToken: "old-access",
             refreshToken: "refresh-claude-via-account-proxy",
-          });
+          })) as JsonRecord & { id: string };
           connectionId = (connection as any).id;
 
           await settingsDb.setProxyForLevel("key", connectionId, {
@@ -423,14 +425,14 @@ test("provider-specific refresh helper accepts connection proxy context", async 
 
 test("checkAndRefreshToken refreshes expiring OAuth access tokens and updates the connection", async () => {
   const now = 1_700_000_000_000;
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "oauth",
     name: "Claude OAuth",
     accessToken: "claude-old-access",
     refreshToken: "claude-refresh-old",
     expiresAt: new Date(now + tokenRefresh.TOKEN_EXPIRY_BUFFER_MS - 1_000).toISOString(),
-  });
+  })) as JsonRecord & { id: string };
 
   await withMockedNow(now, async () => {
     await withMockedFetch(
@@ -462,7 +464,7 @@ test("checkAndRefreshToken refreshes expiring OAuth access tokens and updates th
 
 test("checkAndRefreshToken refreshes expiring GitHub copilot tokens and syncs the top-level token", async () => {
   const now = 1_700_000_100_000;
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "github",
     authType: "oauth",
     name: "GitHub OAuth",
@@ -473,11 +475,11 @@ test("checkAndRefreshToken refreshes expiring GitHub copilot tokens and syncs th
       copilotToken: "copilot-old",
       copilotTokenExpiresAt: Math.floor((now + tokenRefresh.TOKEN_EXPIRY_BUFFER_MS - 1_000) / 1000),
     },
-  });
+  })) as JsonRecord & { id: string };
 
   await withMockedNow(now, async () => {
     await withMockedFetch(
-      async (url, options = {}) => {
+      async (url, options: MockRequestInit = {}) => {
         assert.equal(String(url), "https://api.github.com/copilot_internal/v2/token");
         assert.equal(options.headers.Authorization, "token github-access-old");
         return jsonResponse({
@@ -591,3 +593,5 @@ test("refreshGitHubAndCopilotTokens returns refreshed GitHub credentials when Co
     }
   );
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

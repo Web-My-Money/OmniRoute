@@ -6,6 +6,7 @@ import { compressAggressive } from "../../../open-sse/services/compression/aggre
 import { applyCompression } from "../../../open-sse/services/compression/strategySelector.ts";
 import { DEFAULT_AGGRESSIVE_CONFIG } from "../../../open-sse/services/compression/types.ts";
 import type { CompressionConfig } from "../../../open-sse/services/compression/types.ts";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 const FIXTURE_PATH = join(import.meta.dirname, "fixtures", "long-coding-session.json");
 
@@ -93,7 +94,7 @@ describe("Golden Eval: long-coding-session", () => {
       aggressive: DEFAULT_AGGRESSIVE_CONFIG,
     };
 
-    const result = applyCompression(body as Record<string, unknown>, "aggressive", {
+    const result = applyCompression(body as LooseDeep, "aggressive", {
       model: "test-model",
       config,
     });
@@ -101,10 +102,7 @@ describe("Golden Eval: long-coding-session", () => {
     assert.ok(result.compressed, "Should be marked as compressed");
     assert.ok(result.stats !== null, "Should have stats");
     assert.equal(result.stats!.mode, "aggressive");
-    assert.ok(
-      Array.isArray((result.body as Record<string, unknown>).messages),
-      "Should have messages in body"
-    );
+    assert.ok(Array.isArray((result.body as LooseDeep).messages), "Should have messages in body");
   });
 
   it("latency under 50ms for 50-message session", () => {

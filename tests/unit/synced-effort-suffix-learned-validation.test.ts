@@ -11,6 +11,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-c1-effort-dispatch-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -33,14 +34,14 @@ const PROVIDER = "c1prov";
 const MODEL_ID = "c1-model";
 
 async function seed() {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: PROVIDER,
     authType: "apikey",
     name: "c1-runtime-efforts",
     apiKey: `${PROVIDER}-key`,
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   // Sync tiers deliberately EXCLUDE max — only the learned set will vouch for it.
   await modelDiscovery.persistDiscoveredModels(PROVIDER, connection.id, [
     { id: MODEL_ID, reasoning: { supported_efforts: ["none", "low", "medium", "high"] } },

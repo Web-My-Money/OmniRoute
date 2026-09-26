@@ -10,7 +10,9 @@ const sidebarVisibility = await import("../../src/shared/constants/sidebarVisibi
 
 test('sidebarVisibility.ts no longer contains "costs-quota-plans"', () => {
   assert.ok(
-    !(sidebarVisibility.HIDEABLE_SIDEBAR_ITEM_IDS as readonly string[]).includes("costs-quota-plans"),
+    !(sidebarVisibility.HIDEABLE_SIDEBAR_ITEM_IDS as readonly string[]).includes(
+      "costs-quota-plans"
+    ),
     '"costs-quota-plans" must have been removed from HIDEABLE_SIDEBAR_ITEM_IDS (Plans screen retired)'
   );
 });
@@ -45,7 +47,7 @@ test("costs section no longer includes costs-quota-plans nav item", () => {
   const items = sidebarVisibility.getSectionItems(section);
   const ids = items.map((i) => i.id);
   assert.ok(
-    !ids.includes("costs-quota-plans"),
+    !ids.includes("costs-quota-plans" as unknown as SidebarItemId),
     '"costs-quota-plans" nav item must be absent from the costs section (Plans screen retired)'
   );
 });

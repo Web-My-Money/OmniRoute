@@ -36,6 +36,7 @@ const baseOpts = {
   rawModel: "m1",
   isTokenLimitBreach: false,
   allAccountsRateLimited: false,
+  requestScopedFailure: false,
   log,
   tag: "COMBO",
   exhaustedLogLevel: "info" as const,
@@ -205,7 +206,7 @@ test("does NOT mark provider exhausted for empty provider strings", () => {
   const exhausted = applyComboTargetExhaustion(target({ provider: "" }), {
     ...baseOpts,
     result: { status: 503 },
-    fallbackResult: { error: { code: "quota_exhausted" } },
+    fallbackResult: {},
     errorText: "quota exhausted",
     allAccountsRateLimited: true,
     sets: s,
@@ -232,7 +233,7 @@ test("does NOT mark anything for circuit-open (X-OmniRoute-Provider-Breaker head
   const s = sets();
   const exhausted = applyComboTargetExhaustion(target(), {
     ...baseOpts,
-    result: { status: 503, headers: new Map([["x-omniroute-provider-breaker", "open"]]) },
+    result: { status: 503, headers: new Headers([["x-omniroute-provider-breaker", "open"]]) },
     fallbackResult: {},
     errorText: "",
     sets: s,
@@ -289,7 +290,7 @@ test("gemini 500 INTERNAL (sanitized real response) does NOT exhaust connection 
       fallbackResult: {},
       errorText: "Internal error encountered.",
       rawModel: "gemma-4-31b-it",
-      structuredError: { code: 500, status: "INTERNAL", message: "Internal error encountered." },
+      structuredError: { code: "500", status: "INTERNAL", message: "Internal error encountered." },
       sets: s,
     }
   );

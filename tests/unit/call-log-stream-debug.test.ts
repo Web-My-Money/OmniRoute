@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-stream-debug-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -62,11 +63,17 @@ test("saveCallLog preserves streamChunks in pipeline payloads", async () => {
 
   assert.ok(detail, "Log detail should exist");
   assert.ok(detail.pipelinePayloads, "Pipeline payloads should exist");
-  assert.ok(detail.pipelinePayloads.streamChunks, "streamChunks should exist in pipeline payloads");
+  assert.ok(
+    (detail.pipelinePayloads as LooseDeep).streamChunks,
+    "streamChunks should exist in pipeline payloads"
+  );
 
-  assert.deepEqual(detail.pipelinePayloads.streamChunks.provider, streamChunks.provider);
-  assert.deepEqual(detail.pipelinePayloads.streamChunks.openai, streamChunks.openai);
-  assert.deepEqual(detail.pipelinePayloads.streamChunks.client, streamChunks.client);
+  assert.deepEqual(
+    (detail.pipelinePayloads as LooseDeep).streamChunks.provider,
+    streamChunks.provider
+  );
+  assert.deepEqual((detail.pipelinePayloads as LooseDeep).streamChunks.openai, streamChunks.openai);
+  assert.deepEqual((detail.pipelinePayloads as LooseDeep).streamChunks.client, streamChunks.client);
 });
 
 test("saveCallLog preserves partial streamChunks", async () => {
@@ -89,7 +96,10 @@ test("saveCallLog preserves partial streamChunks", async () => {
   const detail = await callLogs.getCallLogById(logId);
 
   assert.ok(detail?.pipelinePayloads?.streamChunks, "streamChunks should exist");
-  assert.deepEqual(detail.pipelinePayloads.streamChunks.provider, streamChunks.provider);
-  assert.equal(detail.pipelinePayloads.streamChunks.openai, undefined);
-  assert.equal(detail.pipelinePayloads.streamChunks.client, undefined);
+  assert.deepEqual(
+    (detail.pipelinePayloads as LooseDeep).streamChunks.provider,
+    streamChunks.provider
+  );
+  assert.equal((detail.pipelinePayloads as LooseDeep).streamChunks.openai, undefined);
+  assert.equal((detail.pipelinePayloads as LooseDeep).streamChunks.client, undefined);
 });

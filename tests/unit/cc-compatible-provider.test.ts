@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-cc-compatible-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -121,7 +123,7 @@ test("buildClaudeCodeCompatibleRequest keeps prior role history while dropping t
   assert.deepEqual(
     payload.messages.map((message) => ({
       role: message.role,
-      text: message.content.map((block) => block.text).join("\n"),
+      text: (message.content as LooseDeep).map((block) => block.text).join("\n"),
     })),
     [
       { role: "user", text: "u1" },
@@ -150,7 +152,7 @@ test("buildClaudeCodeCompatibleRequest keeps prior role history while dropping t
       required: ["city"],
     },
   });
-  assert.deepEqual(payload.tool_choice, { type: "any" });
+  (assert as LooseDeep).deepEqual(payload.tool_choice, { type: "any" });
   assert.equal(payload.context_management, undefined as any);
   assert.equal(JSON.parse((payload as any).metadata.user_id).session_id, "session-1");
 });
@@ -457,7 +459,7 @@ test("DefaultExecutor uses CC-compatible path and headers", () => {
 
 test("validateProviderApiKey uses CC skeleton request after /models fallback", async () => {
   const calls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({
       url: String(url),
       method: init.method || "GET",
@@ -498,7 +500,7 @@ test("validateProviderApiKey uses CC skeleton request after /models fallback", a
 
 test("handleChatCore forces SSE upstream for CC compatible providers while returning JSON to non-stream clients", async () => {
   const calls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({
       url: String(url),
       method: init.method || "GET",
@@ -533,7 +535,7 @@ test("handleChatCore forces SSE upstream for CC compatible providers while retur
     );
   };
 
-  const result = await handleChatCore({
+  const result = await looseAsync(handleChatCore)({
     body: {
       model: "claude-sonnet-4-6",
       messages: [{ role: "user", content: "Ping" }],
@@ -625,7 +627,7 @@ test("handleChatCore stops buffering CC-compatible SSE once a non-stream respons
       }
     );
 
-  const result = await handleChatCore({
+  const result = await looseAsync(handleChatCore)({
     body: {
       model: "claude-sonnet-4-6",
       messages: [{ role: "user", content: "Ping" }],
@@ -670,7 +672,7 @@ test("handleChatCore stops buffering CC-compatible SSE once a non-stream respons
 
 test("handleChatCore preserves client cache markers for Claude Code requests to CC-compatible providers", async () => {
   const calls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({
       url: String(url),
       method: init.method || "GET",
@@ -741,7 +743,7 @@ test("handleChatCore preserves client cache markers for Claude Code requests to 
     ],
   };
 
-  const result = await handleChatCore({
+  const result = await looseAsync(handleChatCore)({
     body: claudeBody,
     modelInfo: {
       provider: "anthropic-compatible-cc-test",
@@ -977,7 +979,7 @@ test("provider-nodes validate route blocks cloud metadata provider hosts before 
 
 test("provider-nodes validate route validates anthropic compatible providers against the models endpoint", async () => {
   const calls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({ url, init });
     return new Response(JSON.stringify({ data: [] }), {
       status: 200,
@@ -1015,7 +1017,7 @@ test("provider-nodes validate route supports enabled CC validation and OpenAI-st
   process.env.ENABLE_CC_COMPATIBLE_PROVIDER = "true";
 
   const calls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({ url, init });
     if (calls.length === 1) {
       return new Response(JSON.stringify({ data: [] }), {
@@ -1077,7 +1079,7 @@ test("provider-nodes validate route covers default CC paths, null method, anthro
   process.env.ENABLE_CC_COMPATIBLE_PROVIDER = "true";
 
   const ccCalls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     ccCalls.push({ url, init });
     if (ccCalls.length === 1) {
       throw new Error("models unavailable");
@@ -1119,7 +1121,7 @@ test("provider-nodes validate route covers default CC paths, null method, anthro
   assert.equal(ccCalls.length, 2);
 
   const anthropicCalls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     anthropicCalls.push({ url, init });
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
@@ -1148,7 +1150,7 @@ test("provider-nodes validate route covers default CC paths, null method, anthro
   assert.equal(anthropicCalls[0].init.method, "GET");
 
   const openAiCalls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     openAiCalls.push({ url, init });
     return new Response(JSON.stringify({ data: [] }), {
       status: 200,
@@ -1211,7 +1213,7 @@ test("provider-nodes list route exposes CC flag state from server env", async ()
 test("provider models route reports CC compatible providers do not support models listing", async () => {
   process.env.ENABLE_CC_COMPATIBLE_PROVIDER = "true";
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "anthropic-compatible-cc-test",
     authType: "apikey",
     name: "cc-live",
@@ -1220,7 +1222,7 @@ test("provider models route reports CC compatible providers do not support model
       baseUrl: "https://proxy.example.com",
       chatPath: CLAUDE_CODE_COMPATIBLE_DEFAULT_CHAT_PATH,
     },
-  });
+  })) as JsonRecord & { id: string };
 
   const response = await providerModelsRoute.GET(
     new Request(`http://localhost/api/providers/${connection.id}/models`),
@@ -1232,3 +1234,6 @@ test("provider models route reports CC compatible providers do not support model
     error: "Provider anthropic-compatible-cc-test does not support models listing",
   });
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";

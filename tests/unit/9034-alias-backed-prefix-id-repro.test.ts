@@ -20,6 +20,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-9034-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -29,7 +30,8 @@ type CoreModule = typeof import("../../src/lib/db/core.ts");
 type ProvidersDbModule = typeof import("../../src/lib/db/providers.ts");
 type ModelsDbModule = typeof import("../../src/lib/db/models.ts");
 type CatalogModule = typeof import("../../src/app/api/v1/models/catalog.ts");
-type ManagedAvailableModelsModule = typeof import("../../src/lib/providerModels/managedAvailableModels.ts");
+type ManagedAvailableModelsModule =
+  typeof import("../../src/lib/providerModels/managedAvailableModels.ts");
 
 let core: CoreModule;
 let providersDb: ProvidersDbModule;
@@ -75,7 +77,7 @@ test("#9034: alias-backed model id must use the configured prefix, not the raw p
     chatPath: "/v1/chat/completions",
     modelsPath: "/v1/models",
   });
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: NODE_ID,
     authType: "apikey",
     name: "test-conn",
@@ -87,7 +89,7 @@ test("#9034: alias-backed model id must use the configured prefix, not the raw p
       chatPath: "/v1/chat/completions",
       modelsPath: "/v1/models",
     },
-  });
+  })) as JsonRecord & { id: string };
 
   // The real producer path: syncManagedAvailableModelAliases stores aliases as
   // `<UUID>/<modelId>` (getProviderStoragePrefix returns raw node id for compatible providers).

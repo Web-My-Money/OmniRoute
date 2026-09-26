@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-kimi-web-models-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -24,12 +25,12 @@ test.after(() => {
 
 test("kimi-web uses the curated registry catalog without remote discovery", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "kimi-web",
     authType: "apikey",
     name: "kimi-web-curated",
     apiKey: "opaque-current-kimi-token",
-  });
+  })) as JsonRecord & { id: string };
   const modelsDb = await import("../../src/lib/db/models.ts");
   await modelsDb.replaceSyncedAvailableModelsForConnection("kimi-web", connection.id, [
     { id: "unexpected-live-model", name: "Unexpected live model", source: "imported" },

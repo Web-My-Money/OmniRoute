@@ -23,6 +23,7 @@ const originalFetch = globalThis.fetch;
 function createLog() {
   const entries = [];
   return {
+    debug: (tag, msg) => entries.push({ level: "debug", tag, msg }),
     info: (tag, msg) => entries.push({ level: "info", tag, msg }),
     warn: (tag, msg) => entries.push({ level: "warn", tag, msg }),
     error: (tag, msg) => entries.push({ level: "error", tag, msg }),

@@ -21,6 +21,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // #6967 — every top-level `await` and every `test.after()` registration MUST
 // happen BEFORE the first `test()` call in this file. Node's test runner
@@ -148,12 +149,12 @@ interface ModelsBody {
 for (const spec of SPECS) {
   test(`#${spec.id} import fetches the live ${spec.modelsUrl} catalog`, async () => {
     resetStorage();
-    const connection = await providersDb.createProviderConnection({
+    const connection = (await providersDb.createProviderConnection({
       provider: spec.id,
       authType: "apikey",
       name: `${spec.id}-live`,
       apiKey: `${spec.alias}-key`,
-    });
+    })) as JsonRecord & { id: string };
 
     let fetched = false;
     const originalFetch = globalThis.fetch;
@@ -187,12 +188,12 @@ for (const spec of SPECS) {
 
   test(`#${spec.id} import falls back to the local seed catalog when the live fetch fails`, async () => {
     resetStorage();
-    const connection = await providersDb.createProviderConnection({
+    const connection = (await providersDb.createProviderConnection({
       provider: spec.id,
       authType: "apikey",
       name: `${spec.id}-fallback`,
       apiKey: `${spec.alias}-key-2`,
-    });
+    })) as JsonRecord & { id: string };
 
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async () => new Response("bad gateway", { status: 502 });

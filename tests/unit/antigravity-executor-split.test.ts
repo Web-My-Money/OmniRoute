@@ -44,5 +44,7 @@ test("SSE-collect helpers are callable and tolerate empty/garbage input", async 
   assert.deepEqual(stripZeroWidth(42), 42);
   // A malformed payload must not throw (defensive parse).
   const collected = { textContent: "" };
-  assert.doesNotThrow(() => processAntigravitySSEPayload("not-json", collected));
+  assert.doesNotThrow(() =>
+    processAntigravitySSEPayload("not-json", collected as unknown as AntigravityCollectedStream)
+  );
 });

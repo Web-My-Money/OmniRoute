@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-virtual-auto-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -37,13 +38,13 @@ test.after(async () => {
 });
 
 test("createVirtualAutoCombo returns an executable auto combo for API-key connections", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "OpenAI",
     apiKey: "sk-test-openai",
     defaultModel: "gpt-4o-mini",
-  });
+  })) as JsonRecord & { id: string };
 
   const combo: VirtualComboResult = await virtualFactory.createVirtualAutoCombo("fast");
 
@@ -59,14 +60,14 @@ test("createVirtualAutoCombo returns an executable auto combo for API-key connec
 });
 
 test("createVirtualAutoCombo includes OAuth accessToken connections with real expiry fields", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "oauth",
     email: "oauth@example.com",
     accessToken: "oauth-access-token",
     tokenExpiresAt: new Date(Date.now() + 60_000).toISOString(),
     defaultModel: "claude-sonnet-4-5",
-  });
+  })) as JsonRecord & { id: string };
 
   const combo: VirtualComboResult = await virtualFactory.createVirtualAutoCombo("coding");
 
@@ -82,13 +83,13 @@ test("createVirtualAutoCombo includes OAuth accessToken connections with real ex
 });
 
 test("createVirtualAutoCombo includes configured web-session providers without apiKey fields", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "qwen-web",
     authType: "apikey",
     name: "Qwen Web Session",
     providerSpecificData: { token: "qwen-web-session-token" },
     defaultModel: "qwen3-coder-plus",
-  });
+  })) as JsonRecord & { id: string };
 
   const combo: VirtualComboResult = await virtualFactory.createVirtualAutoCombo("coding");
 
@@ -100,13 +101,13 @@ test("createVirtualAutoCombo includes configured web-session providers without a
 });
 
 test("createVirtualAutoCombo excludes web-session providers with empty required token data", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "qwen-web",
     authType: "apikey",
     name: "Qwen Web Empty Session",
     providerSpecificData: { token: "   " },
     defaultModel: "qwen3-coder-plus",
-  });
+  })) as JsonRecord & { id: string };
 
   const combo: VirtualComboResult = await virtualFactory.createVirtualAutoCombo("coding");
 
@@ -119,13 +120,13 @@ test("createVirtualAutoCombo excludes web-session providers with empty required 
 });
 
 test("createVirtualAutoCombo excludes web-session providers with irrelevant providerSpecificData", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "chatgpt-web",
     authType: "apikey",
     name: "ChatGPT Web Invalid Session",
     providerSpecificData: { unrelated: "value" },
     defaultModel: "gpt-4o",
-  });
+  })) as JsonRecord & { id: string };
 
   const combo: VirtualComboResult = await virtualFactory.createVirtualAutoCombo("coding");
 
@@ -138,20 +139,20 @@ test("createVirtualAutoCombo excludes web-session providers with irrelevant prov
 });
 
 test("createVirtualAutoCombo groups same-provider web sessions behind one logical model", async () => {
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: "qwen-web",
     authType: "apikey",
     name: "Qwen Web Session A",
     providerSpecificData: { token: "qwen-web-session-token-a" },
     defaultModel: "qwen3-coder-plus",
-  });
-  const connB = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const connB = (await providersDb.createProviderConnection({
     provider: "qwen-web",
     authType: "apikey",
     name: "Qwen Web Session B",
     providerSpecificData: { token: "qwen-web-session-token-b" },
     defaultModel: "qwen3-coder-plus",
-  });
+  })) as JsonRecord & { id: string };
 
   const combo: VirtualComboResult = await virtualFactory.createVirtualAutoCombo("coding");
 
@@ -173,13 +174,13 @@ test("createVirtualAutoCombo groups same-provider web sessions behind one logica
 });
 
 test("createVirtualAutoCombo includes cookie web-session providers with required cookie data", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "chatgpt-web",
     authType: "apikey",
     name: "ChatGPT Web Session",
     providerSpecificData: { cookie: "__Secure-next-auth.session-token=chatgpt-session" },
     defaultModel: "gpt-4o",
-  });
+  })) as JsonRecord & { id: string };
 
   const combo: VirtualComboResult = await virtualFactory.createVirtualAutoCombo("coding");
 

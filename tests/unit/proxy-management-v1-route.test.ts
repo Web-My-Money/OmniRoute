@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-proxy-v1-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -152,12 +153,12 @@ test("v1 management proxies main route covers auth, lookup variants, update and 
     assert.equal(deleteAuthRes.status, 401);
   });
 
-  const providerConn = await providersDb.createProviderConnection({
+  const providerConn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "v1-main-route",
     apiKey: "sk-test-main-route",
-  });
+  })) as JsonRecord & { id: string };
 
   const createdRes = await proxyV1Route.POST(
     new Request("http://localhost/api/v1/management/proxies", {
@@ -400,12 +401,12 @@ test("v1 management proxies main route returns server errors when persistence fa
 test("v1 management assignments supports put and filtered get", async () => {
   await resetStorage();
 
-  const providerConn = await providersDb.createProviderConnection({
+  const providerConn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "v1-assignment",
     apiKey: "sk-test-v1",
-  });
+  })) as JsonRecord & { id: string };
 
   const createdRes = await proxyV1Route.POST(
     new Request("http://localhost/api/v1/management/proxies", {
@@ -699,12 +700,12 @@ test("v1 proxy management companion routes require auth when login protection is
 test("v1 assignments route resolves connection proxies and bulk assignment covers validation branches", async () => {
   await resetStorage();
 
-  const providerConn = await providersDb.createProviderConnection({
+  const providerConn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "v1-resolve",
     apiKey: "sk-test-v1-resolve",
-  });
+  })) as JsonRecord & { id: string };
 
   const proxyRes = await proxyV1Route.POST(
     new Request("http://localhost/api/v1/management/proxies", {

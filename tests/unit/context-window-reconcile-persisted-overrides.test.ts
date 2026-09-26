@@ -29,7 +29,7 @@ test("runContextWindowReconcile retains an auto override across repeated synced 
   // gpt-4o's static catalog window is 128K; discovery reports a real 372K.
   // This uses the live DB discovery and resolver seams, not injected pure deps.
   await models.replaceSyncedAvailableModelsForConnection("openai", "reconcile-test", [
-    { id: "gpt-4o", inputTokenLimit: 372000 },
+    { id: "gpt-4o", inputTokenLimit: 372000 } as unknown as SyncedAvailableModelInput,
   ]);
 
   const first = await runContextWindowReconcile();

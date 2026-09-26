@@ -54,7 +54,7 @@ test("resolveCodexCatalogAppVersion uses stable, source-qualified identities", (
       {
         OMNIROUTE_BUILD_SHA: "abc123",
         npm_package_version: "9.9.9",
-      },
+      } as NodeJS.ProcessEnv,
       { runtimeRoot }
     ),
     "build:abc123"
@@ -63,7 +63,7 @@ test("resolveCodexCatalogAppVersion uses stable, source-qualified identities", (
     resolveCodexCatalogAppVersion(
       {
         npm_package_version: "3.8.47",
-      },
+      } as NodeJS.ProcessEnv,
       { runtimeRoot }
     ),
     "pkg:3.8.47"
@@ -72,17 +72,29 @@ test("resolveCodexCatalogAppVersion uses stable, source-qualified identities", (
   try {
     fs.writeFileSync(path.join(runtimeRoot, "BUILD_SHA"), "sentinel-sha\n");
     assert.equal(
-      resolveCodexCatalogAppVersion({}, { runtimeRoot, packageVersion: "3.8.47" }),
+      resolveCodexCatalogAppVersion({} as NodeJS.ProcessEnv, {
+        runtimeRoot,
+        packageVersion: "3.8.47",
+      }),
       "build:sentinel-sha"
     );
     fs.rmSync(path.join(runtimeRoot, "BUILD_SHA"));
     fs.writeFileSync(path.join(runtimeRoot, "package.json"), '{"version":"9.8.7"}\n');
-    assert.equal(resolveCodexCatalogAppVersion({}, { runtimeRoot }), "pkg:9.8.7");
     assert.equal(
-      resolveCodexCatalogAppVersion({}, { runtimeRoot, packageVersion: "3.8.47" }),
+      resolveCodexCatalogAppVersion({} as NodeJS.ProcessEnv, { runtimeRoot }),
+      "pkg:9.8.7"
+    );
+    assert.equal(
+      resolveCodexCatalogAppVersion({} as NodeJS.ProcessEnv, {
+        runtimeRoot,
+        packageVersion: "3.8.47",
+      }),
       "pkg:3.8.47"
     );
-    assert.equal(resolveCodexCatalogAppVersion({}, { runtimeRoot, packageVersion: null }), null);
+    assert.equal(
+      resolveCodexCatalogAppVersion({} as NodeJS.ProcessEnv, { runtimeRoot, packageVersion: null }),
+      null
+    );
   } finally {
     fs.rmSync(runtimeRoot, { recursive: true, force: true });
   }

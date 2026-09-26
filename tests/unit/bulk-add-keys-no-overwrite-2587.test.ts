@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 type ConnectionRow = Record<string, unknown> & { id: string; name?: string | null };
 
@@ -65,7 +66,7 @@ test("bulk-add appends N+M connections and preserves the existing connection's s
   // Existing connection carries live resilience state: an active rate-limit
   // cooldown, a recorded error, and a non-default backoff level/priority.
   const future = new Date(Date.now() + 60_000).toISOString();
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Key 1",
@@ -75,7 +76,7 @@ test("bulk-add appends N+M connections and preserves the existing connection's s
     lastError: "429 rate limited",
     lastErrorType: "rate_limit",
     rateLimitedUntil: future,
-  });
+  })) as JsonRecord & { id: string };
   assert.ok(created, "existing connection must be created");
   // `backoffLevel` is set by the resilience/cooldown path (not at creation
   // time) — apply it the same way a real cooldown escalation would.
@@ -110,14 +111,14 @@ test("bulk-add appends N+M connections and preserves the existing connection's s
   assert.ok(!resolvedEntries.some((e) => e.name === "Key 1"));
 
   for (const entry of resolvedEntries) {
-    const created = await providersDb.createProviderConnection({
+    const created = (await providersDb.createProviderConnection({
       provider: "openai",
       authType: "apikey",
       name: entry.name,
       apiKey: entry.apiKey,
       priority: 1,
       testStatus: "unknown",
-    });
+    })) as JsonRecord & { id: string };
     assert.ok(created);
   }
 
@@ -138,9 +139,7 @@ test("bulk-add appends N+M connections and preserves the existing connection's s
   assert.equal(survivor!.rateLimitedUntil, future, "existing cooldown must survive");
   assert.equal(survivor!.backoffLevel, 2, "existing backoffLevel must survive");
 
-  const newNames = after
-    .filter((c) => c.id !== (existing as ConnectionRow).id)
-    .map((c) => c.name);
+  const newNames = after.filter((c) => c.id !== (existing as ConnectionRow).id).map((c) => c.name);
   assert.equal(new Set(newNames).size, newNames.length, "no duplicate names among new entries");
   assert.ok(!newNames.includes("Key 1"));
 });
@@ -150,19 +149,19 @@ test("without collision resolution, a colliding bulk entry silently replaces the
   // name-based upsert is intentionally unchanged (other single-add/import
   // flows depend on it) — the guard lives one layer up, in the bulk route.
   // Skipping that guard reproduces the original data-loss behavior.
-  const existing = await providersDb.createProviderConnection({
+  const existing = (await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "apikey",
     name: "Key 1",
     apiKey: "sk-existing",
-  });
+  })) as JsonRecord & { id: string };
 
-  const collided = await providersDb.createProviderConnection({
+  const collided = (await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "apikey",
     name: "Key 1", // same name, no collision resolution applied
     apiKey: "sk-overwritten",
-  });
+  })) as JsonRecord & { id: string };
 
   assert.equal(collided!.id, existing!.id, "same name upserts into the same row");
 

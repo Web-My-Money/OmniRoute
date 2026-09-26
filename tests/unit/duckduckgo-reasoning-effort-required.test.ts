@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { DuckDuckGoWebExecutor } from "../../open-sse/executors/duckduckgo-web.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 /**
  * Regression: duckchat/v1/chat now REQUIRES a `reasoningEffort` field.
@@ -22,7 +23,7 @@ async function captureChatPayload(model: string): Promise<Captured> {
   const realFetch = globalThis.fetch;
   const captured: Captured[] = [];
 
-  globalThis.fetch = (async (input: unknown, init: RequestInit = {}) => {
+  globalThis.fetch = (async (input: unknown, init: MockRequestInit = {}) => {
     const url = typeof input === "string" ? input : String((input as { url?: string })?.url ?? "");
 
     if (url.includes("/duckchat/v1/status")) {
@@ -99,7 +100,7 @@ test("executor issues exactly one chat request per call", async () => {
   const realFetch = globalThis.fetch;
   let chatCalls = 0;
 
-  globalThis.fetch = (async (input: unknown, init: RequestInit = {}) => {
+  globalThis.fetch = (async (input: unknown, init: MockRequestInit = {}) => {
     const url = typeof input === "string" ? input : String((input as { url?: string })?.url ?? "");
     if (url.includes("/duckchat/v1/status")) {
       const challenge = Buffer.from(

@@ -30,18 +30,15 @@ function sandboxTmp(prefix: string) {
 
 test("Devin child environment is allowlisted and requires an isolated home", () => {
   const isolatedHome = path.join(process.cwd(), ".sandbox", "unit-home");
-  const env = buildDevinChildEnv(
-    { apiKey: "devin-test" },
-    {
-      HOME: "/Users/example",
-      PATH: "/usr/bin:/bin",
-      ANTHROPIC_AUTH_TOKEN: "must-not-leak",
-      AWS_ACCESS_KEY_ID: "must-not-leak",
-      GITHUB_TOKEN: "must-not-leak",
-      DEVIN_AGENTIC_HOME: isolatedHome,
-      DEVIN_BRIDGE_MOCK_LOG: "/evidence/mock-acp.jsonl",
-    }
-  );
+  const env = buildDevinChildEnv({ apiKey: "devin-test" }, {
+    HOME: "/Users/example",
+    PATH: "/usr/bin:/bin",
+    ANTHROPIC_AUTH_TOKEN: "must-not-leak",
+    AWS_ACCESS_KEY_ID: "must-not-leak",
+    GITHUB_TOKEN: "must-not-leak",
+    DEVIN_AGENTIC_HOME: isolatedHome,
+    DEVIN_BRIDGE_MOCK_LOG: "/evidence/mock-acp.jsonl",
+  } as NodeJS.ProcessEnv);
 
   assert.equal(env.HOME, isolatedHome);
   assert.equal(env.PATH, "/usr/bin:/bin");
@@ -51,18 +48,19 @@ test("Devin child environment is allowlisted and requires an isolated home", () 
   assert.equal(env.GITHUB_TOKEN, undefined);
   assert.equal(env.DEVIN_BRIDGE_MOCK_LOG, "/evidence/mock-acp.jsonl");
   assert.equal(
-    buildDevinChildEnv(
-      {},
-      {
-        PATH: "/usr/bin",
-        DEVIN_AGENTIC_HOME: isolatedHome,
-        DEVIN_BRIDGE_MOCK_LOG: "/tmp/unsafe.jsonl",
-      }
-    ).DEVIN_BRIDGE_MOCK_LOG,
+    buildDevinChildEnv({}, {
+      PATH: "/usr/bin",
+      DEVIN_AGENTIC_HOME: isolatedHome,
+      DEVIN_BRIDGE_MOCK_LOG: "/tmp/unsafe.jsonl",
+    } as NodeJS.ProcessEnv).DEVIN_BRIDGE_MOCK_LOG,
     undefined
   );
   assert.throws(
-    () => buildDevinChildEnv({}, { PATH: "/usr/bin", DEVIN_AGENTIC_HOME: "/tmp/outside" }),
+    () =>
+      buildDevinChildEnv({}, {
+        PATH: "/usr/bin",
+        DEVIN_AGENTIC_HOME: "/tmp/outside",
+      } as NodeJS.ProcessEnv),
     /inside the bridge sandbox/
   );
 });
@@ -70,17 +68,14 @@ test("Devin child environment is allowlisted and requires an isolated home", () 
 test("Devin child environment derives only the trusted bridge proxy", () => {
   const isolatedHome = path.join(process.cwd(), ".sandbox", "unit-home");
   const trustedProxy = "http://network-guard:8080";
-  const trusted = buildDevinChildEnv(
-    {},
-    {
-      DEVIN_AGENTIC_HOME: isolatedHome,
-      DEVIN_BRIDGE_PROXY_URL: trustedProxy,
-      HTTP_PROXY: "http://user:password@host-proxy.example:3128",
-      HTTPS_PROXY: "http://user:password@host-proxy.example:3128",
-      ALL_PROXY: "socks5://host-proxy.example:1080",
-      NO_PROXY: "metadata.internal",
-    }
-  );
+  const trusted = buildDevinChildEnv({}, {
+    DEVIN_AGENTIC_HOME: isolatedHome,
+    DEVIN_BRIDGE_PROXY_URL: trustedProxy,
+    HTTP_PROXY: "http://user:password@host-proxy.example:3128",
+    HTTPS_PROXY: "http://user:password@host-proxy.example:3128",
+    ALL_PROXY: "socks5://host-proxy.example:1080",
+    NO_PROXY: "metadata.internal",
+  } as NodeJS.ProcessEnv);
 
   assert.equal(trusted.HTTP_PROXY, trustedProxy);
   assert.equal(trusted.HTTPS_PROXY, trustedProxy);
@@ -88,15 +83,12 @@ test("Devin child environment derives only the trusted bridge proxy", () => {
   assert.equal(trusted.NO_PROXY, undefined);
   assert.equal(trusted.DEVIN_BRIDGE_PROXY_URL, undefined);
 
-  const untrusted = buildDevinChildEnv(
-    {},
-    {
-      DEVIN_AGENTIC_HOME: isolatedHome,
-      DEVIN_BRIDGE_PROXY_URL: "http://user:password@network-guard:8080",
-      HTTP_PROXY: "http://host-proxy.example:3128",
-      HTTPS_PROXY: "http://host-proxy.example:3128",
-    }
-  );
+  const untrusted = buildDevinChildEnv({}, {
+    DEVIN_AGENTIC_HOME: isolatedHome,
+    DEVIN_BRIDGE_PROXY_URL: "http://user:password@network-guard:8080",
+    HTTP_PROXY: "http://host-proxy.example:3128",
+    HTTPS_PROXY: "http://host-proxy.example:3128",
+  } as NodeJS.ProcessEnv);
   assert.equal(untrusted.HTTP_PROXY, undefined);
   assert.equal(untrusted.HTTPS_PROXY, undefined);
 });

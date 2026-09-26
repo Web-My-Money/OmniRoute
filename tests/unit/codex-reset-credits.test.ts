@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-codex-reset-credits-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -22,7 +23,7 @@ async function resetStorage() {
 }
 
 async function createCodexConnection(overrides: Record<string, unknown> = {}) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: `Codex Reset ${Date.now()} ${Math.random()}`,
@@ -31,7 +32,7 @@ async function createCodexConnection(overrides: Record<string, unknown> = {}) {
     refreshToken: "codex-refresh-token",
     providerSpecificData: { workspaceId: "workspace-123" },
     ...overrides,
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {
@@ -49,7 +50,7 @@ test("consumeCodexResetCredit fetches a credit id, posts it, then refreshes usag
   const connection = (await createCodexConnection()) as { id: string };
   const calls: Array<{ url: string; init: RequestInit }> = [];
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({ url: String(url), init });
 
     if (String(url).endsWith("/rate-limit-reset-credits")) {
@@ -140,7 +141,7 @@ test("consumeCodexResetCredit automatically redeems the soonest-expiring availab
   const connection = (await createCodexConnection()) as { id: string };
   let consumedCreditId: string | null = null;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     if (String(url).endsWith("/rate-limit-reset-credits")) {
       return new Response(
         JSON.stringify({
@@ -183,7 +184,7 @@ test("consumeCodexResetCredit redeems an explicitly selected available credit", 
   const connection = (await createCodexConnection()) as { id: string };
   let consumedCreditId: string | null = null;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     if (String(url).endsWith("/rate-limit-reset-credits")) {
       return new Response(
         JSON.stringify({
@@ -355,3 +356,5 @@ test("consumeCodexResetCredit rejects non-Codex and missing connections", async 
       error.code === "codex_provider_required"
   );
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

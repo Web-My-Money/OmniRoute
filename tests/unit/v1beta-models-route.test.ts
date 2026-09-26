@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-v1beta-models-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -14,12 +15,12 @@ const providersDb = await import("../../src/lib/db/providers.ts");
 const v1betaModelsRoute = await import("../../src/app/api/v1beta/models/route.ts");
 
 async function addActiveConnection(provider: string) {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     apiKey: `test-key-${provider}`,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 }
 
 async function resetStorage() {

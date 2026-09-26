@@ -1,5 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { HideableSidebarItemId } from "../../src/shared/constants/sidebarVisibility.ts";
+import type { SidebarItemDefinition } from "../../src/shared/constants/sidebarVisibility.ts";
+import type { SidebarItemGroup } from "../../src/shared/constants/sidebarVisibility.ts";
 
 const sidebarVisibility = await import("../../src/shared/constants/sidebarVisibility.ts");
 
@@ -20,10 +23,10 @@ test("monitoring section has exactly 4 children: 1 item (activity) + 3 groups (l
   assert.equal(children.length, 4, "monitoring must have 4 children");
 
   // First child is the activity item (not a group)
-  const first = children[0] as sidebarVisibility.SidebarItemDefinition;
+  const first = children[0] as SidebarItemDefinition;
   assert.ok(!("type" in first) || first.type !== "group", "first child must not be a group");
   assert.equal(
-    (first as sidebarVisibility.SidebarItemDefinition).id,
+    (first as SidebarItemDefinition).id,
     "activity",
     "first child must be activity item"
   );
@@ -34,7 +37,7 @@ test("monitoring section has exactly 4 children: 1 item (activity) + 3 groups (l
     assert.ok("type" in g && g.type === "group", "children[1..3] must all be groups");
   }
 
-  const groupIds = groups.map((g) => (g as sidebarVisibility.SidebarItemGroup).id);
+  const groupIds = groups.map((g) => (g as SidebarItemGroup).id);
   assert.deepEqual(
     groupIds,
     ["logs", "audit", "system"],
@@ -50,7 +53,7 @@ test("getSectionItems of monitoring does NOT contain logs-activity", () => {
   const itemIds = items.map((i) => i.id);
 
   assert.equal(
-    itemIds.includes("logs-activity" as sidebarVisibility.HideableSidebarItemId),
+    itemIds.includes("logs-activity" as HideableSidebarItemId),
     false,
     "logs-activity must not be in monitoring section items"
   );
@@ -61,7 +64,7 @@ test("monitoring section does NOT have a group with id costs-parameters", () => 
   assert.ok(section, "monitoring section must exist");
 
   const groupIds = section.children
-    .filter((c): c is sidebarVisibility.SidebarItemGroup => "type" in c && c.type === "group")
+    .filter((c): c is SidebarItemGroup => "type" in c && c.type === "group")
     .map((g) => g.id);
 
   assert.equal(
@@ -88,8 +91,7 @@ test("monitoring logs group contains logs, logs-proxy, logs-console, logs-timeli
   assert.ok(section, "monitoring section must exist");
 
   const logsGroup = section.children.find(
-    (c): c is sidebarVisibility.SidebarItemGroup =>
-      "type" in c && c.type === "group" && c.id === "logs"
+    (c): c is SidebarItemGroup => "type" in c && c.type === "group" && c.id === "logs"
   );
   assert.ok(logsGroup, "logs group must exist in monitoring");
 
@@ -108,8 +110,7 @@ test("monitoring system group contains health, runtime, and connection resilienc
   assert.ok(section, "monitoring section must exist");
 
   const systemGroup = section.children.find(
-    (c): c is sidebarVisibility.SidebarItemGroup =>
-      "type" in c && c.type === "group" && c.id === "system"
+    (c): c is SidebarItemGroup => "type" in c && c.type === "group" && c.id === "system"
   );
   assert.ok(systemGroup, "system group must exist in monitoring");
 

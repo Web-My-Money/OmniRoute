@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 /**
  * #10225 — combo known-context-overflow must NOT hard-reject a compressible
@@ -234,7 +236,7 @@ async function invokeChatCoreCapturingUpstream(body: Record<string, unknown>) {
   const originalFetch = globalThis.fetch;
   let dispatched = false;
   let sentBodyJson: string | null = null;
-  globalThis.fetch = async (_url: RequestInfo | URL, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: RequestInfo | URL, init: MockRequestInit = {}) => {
     dispatched = true;
     sentBodyJson = init.body ? String(init.body) : null;
     return new Response(
@@ -251,7 +253,7 @@ async function invokeChatCoreCapturingUpstream(body: Record<string, unknown>) {
     );
   };
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body,
       modelInfo: {
         provider: CHATCORE_PROBE_PROVIDER,

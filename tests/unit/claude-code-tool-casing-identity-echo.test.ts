@@ -4,6 +4,7 @@ import { restoreClaudeToolName } from "../../open-sse/services/claudeCodeToolRem
 import { openaiToClaudeResponse } from "../../open-sse/translator/response/openai-to-claude.ts";
 import { translateNonStreamingResponse } from "../../open-sse/handlers/responseTranslator.ts";
 import { FORMATS } from "../../open-sse/translator/formats.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 interface ClaudeEvent {
   type: string;
@@ -150,7 +151,7 @@ describe("translateNonStreamingResponse restores Claude Code tool casing", () =>
       FORMATS.CLAUDE,
       null
     );
-    const toolUse = out.content.find((b) => b.type === "tool_use");
+    const toolUse = (out.content as LooseDeep).find((b) => b.type === "tool_use");
     assert.equal(toolUse.name, "Bash");
     assert.equal(toolUse.input.command, "echo ok");
   });

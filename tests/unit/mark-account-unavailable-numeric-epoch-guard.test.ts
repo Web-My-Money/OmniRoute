@@ -21,6 +21,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-guard-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -48,11 +49,11 @@ function readConnectionRow(connId: string) {
 }
 
 test("markAccountUnavailable does not shorten an existing numeric-epoch cooldown (anti-thundering-herd guard)", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "AG guard test",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as { id: string }).id;
 
   // Simulate the Antigravity full-quota path: a long (1h) cooldown persisted as

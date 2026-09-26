@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-custom-headers-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -430,7 +431,7 @@ test("DefaultExecutor.execute sends customHeaders in the actual HTTP request", a
   const originalFetch = globalThis.fetch;
   let capturedHeaders: Record<string, string> = {};
 
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     capturedHeaders = (init.headers as Record<string, string>) || {};
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
@@ -469,7 +470,7 @@ test("DefaultExecutor.execute does NOT send forbidden headers from customHeaders
   const originalFetch = globalThis.fetch;
   let capturedHeaders: Record<string, string> = {};
 
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     capturedHeaders = (init.headers as Record<string, string>) || {};
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
@@ -509,7 +510,7 @@ test("DefaultExecutor.execute does NOT allow customHeaders to override Authoriza
   const originalFetch = globalThis.fetch;
   let capturedHeaders: Record<string, string> = {};
 
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     capturedHeaders = (init.headers as Record<string, string>) || {};
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,

@@ -61,13 +61,13 @@ test("buildEnvWithRuntime extende NODE_PATH com runtime node_modules", async () 
   const { buildEnvWithRuntime, getRuntimeNodeModules } =
     await import("../../bin/cli/runtime/nativeDeps.mjs");
   const nm = getRuntimeNodeModules();
-  const env = buildEnvWithRuntime({});
+  const env = buildEnvWithRuntime({} as NodeJS.ProcessEnv);
   assert.ok(env.NODE_PATH.includes(nm), "NODE_PATH deve conter runtime node_modules");
 });
 
 test("buildEnvWithRuntime preserva NODE_PATH existente", async () => {
   const { buildEnvWithRuntime } = await import("../../bin/cli/runtime/nativeDeps.mjs");
-  const env = buildEnvWithRuntime({ NODE_PATH: "/existing/path" });
+  const env = buildEnvWithRuntime({ NODE_PATH: "/existing/path" } as NodeJS.ProcessEnv);
   assert.ok(env.NODE_PATH.includes("/existing/path"), "NODE_PATH original deve ser preservado");
 });
 

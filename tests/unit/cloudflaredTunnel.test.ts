@@ -106,7 +106,7 @@ test("buildCloudflaredChildEnv keeps runtime essentials, isolates runtime dirs, 
       HTTPS_PROXY: "http://proxy.internal:8080",
       JWT_SECRET: "top-secret",
       API_KEY_SECRET: "another-secret",
-    },
+    } as NodeJS.ProcessEnv,
     {
       runtimeRoot: "/managed/runtime",
       homeDir: "/managed/runtime/home",
@@ -143,7 +143,7 @@ test("buildCloudflaredChildEnv allows overriding the tunnel transport protocol",
     {
       PATH: "/usr/bin",
       CLOUDFLARED_PROTOCOL: "quic",
-    },
+    } as NodeJS.ProcessEnv,
     {
       runtimeRoot: "/managed/runtime",
       homeDir: "/managed/runtime/home",
@@ -166,7 +166,7 @@ test("buildCloudflaredChildEnv preserves auto negotiation when explicitly reques
     {
       PATH: "/usr/bin",
       CLOUDFLARED_PROTOCOL: "auto",
-    },
+    } as NodeJS.ProcessEnv,
     {
       runtimeRoot: "/managed/runtime",
       homeDir: "/managed/runtime/home",
@@ -197,7 +197,7 @@ test("getDefaultCloudflaredCertEnv detects common CA bundle paths", () => {
 
 test("buildCloudflaredChildEnv injects discovered CA paths when the parent env omits them", () => {
   const env = buildCloudflaredChildEnv(
-    { PATH: "/usr/bin" },
+    { PATH: "/usr/bin" } as NodeJS.ProcessEnv,
     {
       runtimeRoot: "/managed/runtime",
       homeDir: "/managed/runtime/home",

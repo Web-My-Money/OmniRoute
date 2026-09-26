@@ -60,7 +60,7 @@ function decideProviderBreakerRecord(args: {
   sameProviderNext?: boolean;
 }) {
   const requestScopedFailure = isComboRequestScopedFailure(
-    args.status,
+    args.status as unknown as Response,
     args.errorText,
     args.structuredError
   );

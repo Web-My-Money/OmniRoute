@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import crypto from "node:crypto";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
+import type { RadarOffersCacheEntry } from "../../src/lib/radar/offersSync.ts";
 
 const { publicKey, privateKey } = crypto.generateKeyPairSync("ed25519");
 process.env.RADAR_FEED_PUBKEY = publicKey
@@ -12,7 +14,7 @@ const offersSync = await import("../../src/lib/radar/offersSync.ts");
 
 async function fixtureFeed(): Promise<Record<string, unknown>> {
   const bytes = await readFile(new URL("../fixtures/radar-offers-canonical.json", import.meta.url));
-  return JSON.parse(bytes.toString("utf8")) as Record<string, unknown>;
+  return JSON.parse(bytes.toString("utf8")) as LooseDeep;
 }
 
 function sign(bytes: Buffer): string {
@@ -53,7 +55,7 @@ test("valid live offer feed sends Bearer server-side and caches exact signed byt
   const feed = await fixtureFeed();
   const bytes = Buffer.from(JSON.stringify(feed));
   const signature = sign(bytes);
-  const writes: offersSync.RadarOffersCacheEntry[] = [];
+  const writes: RadarOffersCacheEntry[] = [];
   let requestUrl = "";
   let authorization = "";
 

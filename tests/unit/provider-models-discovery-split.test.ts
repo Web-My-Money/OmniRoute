@@ -24,6 +24,7 @@ import {
   isNamedOpenAIStyleProvider,
 } from "../../src/app/api/providers/[id]/models/discovery/providerSets.ts";
 import { PROVIDER_MODELS_CONFIG } from "../../src/app/api/providers/[id]/models/discovery/providerModelsConfig.ts";
+import type { CodexDiscoveryModelIdentity } from "../../src/shared/services/codexDiscoveryPolicy.ts";
 import { isCodexDiscoveryModelExcluded as isSharedCodexDiscoveryModelExcluded } from "../../src/shared/services/codexDiscoveryPolicy.ts";
 import {
   applyCodexDiscoveryFilters,
@@ -40,6 +41,7 @@ import {
   normalizeCodexGithubCatalogResponse,
   normalizeCodexModelsResponse,
   reconcileCuratedCodexCatalog,
+  type CodexDiscoveryModel,
 } from "../../src/app/api/providers/[id]/models/discovery/codex.ts";
 
 // ── helpers leaf ─────────────────────────────────────────────────────────────
@@ -442,16 +444,25 @@ test("codex.mergeCodexLiveModelsWithLocalCatalog merges capacity limits conserva
 });
 
 test("codex discovery filters drop the GPT-5.4 family but keep other remote models", () => {
-  assert.equal(isCodexDiscoveryModelExcluded({ id: "gpt-5.4", name: "x" }), true);
-  assert.equal(isCodexDiscoveryModelExcluded({ id: "gpt-5.4-mini", name: "x" }), true);
-  assert.equal(isCodexDiscoveryModelExcluded({ id: "gpt-5.6-sol", name: "x" }), false);
+  assert.equal(
+    isCodexDiscoveryModelExcluded({ id: "gpt-5.4", name: "x" } as CodexDiscoveryModelIdentity),
+    true
+  );
+  assert.equal(
+    isCodexDiscoveryModelExcluded({ id: "gpt-5.4-mini", name: "x" } as CodexDiscoveryModelIdentity),
+    true
+  );
+  assert.equal(
+    isCodexDiscoveryModelExcluded({ id: "gpt-5.6-sol", name: "x" } as CodexDiscoveryModelIdentity),
+    false
+  );
 
   const filtered = applyCodexDiscoveryFilters([
     { id: "gpt-5.4", name: "Retired" },
     { id: "gpt-5.4-pro", name: "Retired Pro" },
     { id: "future-codex-model", name: "Future" },
     { id: "gpt-5.6-sol", name: "Sol" },
-  ]);
+  ] as CodexDiscoveryModel[]);
   assert.deepEqual(
     filtered.map((model) => model.id),
     ["future-codex-model", "gpt-5.6-sol"]

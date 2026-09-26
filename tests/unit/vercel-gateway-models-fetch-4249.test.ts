@@ -23,6 +23,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-4249-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -51,12 +52,12 @@ interface ModelsBody {
 
 test("#4249 Vercel AI Gateway import fetches the live /v1/models catalog", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "vercel-ai-gateway",
     authType: "apikey",
     name: "vag-live",
     apiKey: "vck_key",
-  });
+  })) as JsonRecord & { id: string };
 
   let fetched = false;
   const originalFetch = globalThis.fetch;
@@ -66,11 +67,7 @@ test("#4249 Vercel AI Gateway import fetches the live /v1/models catalog", async
       fetched = true;
       return Response.json({
         object: "list",
-        data: [
-          { id: "xai/grok-4" },
-          { id: "openai/gpt-5.1" },
-          { id: "anthropic/claude-opus-4.5" },
-        ],
+        data: [{ id: "xai/grok-4" }, { id: "openai/gpt-5.1" }, { id: "anthropic/claude-opus-4.5" }],
       });
     }
     // Bogus probe variants (…/v1/v1/models, …/chat/completions/models) → 404
@@ -102,12 +99,12 @@ test("#4249 Vercel AI Gateway import fetches the live /v1/models catalog", async
 
 test("#4249 Vercel AI Gateway import falls back to the local catalog when the live fetch fails", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "vercel-ai-gateway",
     authType: "apikey",
     name: "vag-fallback",
     apiKey: "vck_key_2",
-  });
+  })) as JsonRecord & { id: string };
 
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => new Response("bad gateway", { status: 502 });

@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { openaiToClaudeRequest } =
   await import("../../open-sse/translator/request/openai-to-claude.ts");
@@ -12,7 +13,7 @@ function userBlocks(model: string, content: unknown) {
 }
 
 test("openaiToClaudeRequest maps an OpenAI file (PDF) block to a Claude document block", () => {
-  const blocks = userBlocks("claude-sonnet-4", [
+  const blocks: LooseDeep[] = userBlocks("claude-sonnet-4", [
     { type: "text", text: "summarize" },
     {
       type: "file",
@@ -28,7 +29,7 @@ test("openaiToClaudeRequest maps an OpenAI file (PDF) block to a Claude document
 });
 
 test("openaiToClaudeRequest maps an OpenAI file (image mime) block to a Claude image block", () => {
-  const blocks = userBlocks("claude-sonnet-4", [
+  const blocks: LooseDeep[] = userBlocks("claude-sonnet-4", [
     {
       type: "file",
       file: { filename: "shot.png", file_data: "data:image/png;base64,iVBORw0KGgo=" },
@@ -42,7 +43,7 @@ test("openaiToClaudeRequest maps an OpenAI file (image mime) block to a Claude i
 });
 
 test("openaiToClaudeRequest maps a remote file (PDF url) block to a Claude document url block", () => {
-  const blocks = userBlocks("claude-sonnet-4", [
+  const blocks: LooseDeep[] = userBlocks("claude-sonnet-4", [
     { type: "file", file: { filename: "remote.pdf", file_data: "https://example.com/a.pdf" } },
   ]);
   const doc = blocks.find((b) => b.type === "document");
@@ -52,7 +53,7 @@ test("openaiToClaudeRequest maps a remote file (PDF url) block to a Claude docum
 });
 
 test("openaiToClaudeRequest skips a video file block (Claude has no native video input)", () => {
-  const blocks = userBlocks("claude-sonnet-4", [
+  const blocks: LooseDeep[] = userBlocks("claude-sonnet-4", [
     { type: "text", text: "watch this" },
     { type: "file", file: { filename: "clip.mp4", file_data: "data:video/mp4;base64,AAAAIGZ0" } },
   ]);

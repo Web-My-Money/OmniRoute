@@ -3,8 +3,6 @@ import test from "node:test";
 
 import { normalizeCodexTools } from "../../open-sse/executors/codex/tools.ts";
 
-type JsonRecord = Record<string, unknown>;
-
 function functionTool(name: string, definition: JsonRecord, extra: JsonRecord = {}): JsonRecord {
   return {
     type: "function",
@@ -161,3 +159,5 @@ test("production-like enum and oneOf schema keeps everything but the redundant o
 
   assert.deepEqual(tool.parameters, expected);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-skills-executor-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -27,7 +28,7 @@ async function resetStorage() {
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
-async function registerEchoSkill(overrides = {}) {
+async function registerEchoSkill(overrides: JsonRecord = {}) {
   return skillRegistry.register({
     name: "echo",
     version: "1.0.0",

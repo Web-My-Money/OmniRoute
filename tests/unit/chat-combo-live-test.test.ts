@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-chat-combo-live-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -31,7 +32,7 @@ async function resetStorage() {
 }
 
 async function seedSuppressedConnection() {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "openai-live-test",
@@ -39,18 +40,18 @@ async function seedSuppressedConnection() {
     isActive: true,
     testStatus: "credits_exhausted",
     rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
-  });
+  })) as JsonRecord & { id: string };
 }
 
 async function seedHealthyConnection() {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "openai-cache-test",
     apiKey: "sk-cache-test",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 }
 
 function makeRequest(extraHeaders = {}) {
@@ -139,7 +140,7 @@ test("combo live test bypasses connection cooldown and breaker state to perform 
   const created = await seedSuppressedConnection();
 
   const fetchCalls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({ url: String(url), init });
     return Response.json({
       id: "chatcmpl-live-test",
@@ -205,7 +206,7 @@ test("combo live test bypasses semantic cache and forces a fresh upstream reques
   });
 
   const fetchCalls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({ url: String(url), init });
     return Response.json({
       id: "chatcmpl-live",
@@ -349,3 +350,5 @@ test("combo live test does not use cooldown-aware request retry on upstream fail
   );
   assert.match(liveBody.error.message, /upstream unavailable/i);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

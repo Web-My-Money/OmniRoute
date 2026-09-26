@@ -28,7 +28,7 @@ test("FALSE NEGATIVE: Claude Code host correctly spoofed, no Antigravity host pr
     return realReadFileSync(p, enc);
   });
 
-  const { getMitmStatus } = await import("../../src/mitm/manager.ts?probe=8466-negative");
+  const { getMitmStatus } = await import("../../src/mitm/manager.ts" + "?probe=8466-negative");
   const status = await getMitmStatus("claude-code");
 
   assert.equal(
@@ -49,7 +49,7 @@ test("FALSE POSITIVE: only a leftover Antigravity host is present, Claude Code h
     return realReadFileSync(p, enc);
   });
 
-  const { getMitmStatus } = await import("../../src/mitm/manager.ts?probe=8466-positive");
+  const { getMitmStatus } = await import("../../src/mitm/manager.ts" + "?probe=8466-positive");
   const status = await getMitmStatus("claude-code");
 
   assert.equal(
@@ -76,7 +76,7 @@ test("no-agentId call sites: still Antigravity-only but Windows-aware (#8656)", 
     return realReadFileSync(p as string, enc);
   });
 
-  const { getMitmStatus } = await import("../../src/mitm/manager.ts?probe=8466-legacy-8656");
+  const { getMitmStatus } = await import("../../src/mitm/manager.ts" + "?probe=8466-legacy-8656");
   const status = await getMitmStatus();
 
   assert.equal(
@@ -95,8 +95,9 @@ test("diagnose route: threads ?agentId= query param through to getMitmStatus", a
     return realReadFileSync(p, enc);
   });
 
-  const { GET } =
-    await import("../../src/app/api/tools/agent-bridge/diagnose/route.ts?probe=8466-route");
+  const { GET } = await import(
+    "../../src/app/api/tools/agent-bridge/diagnose/route.ts" + "?probe=8466-route"
+  );
   const res = await GET(
     new Request("http://localhost/api/tools/agent-bridge/diagnose?agentId=claude-code")
   );

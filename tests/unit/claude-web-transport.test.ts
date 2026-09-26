@@ -14,6 +14,7 @@ import {
   isClaudeWebChallenge,
   sendClaudeWebDirect,
 } from "../../open-sse/executors/claude-web/transport.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const originalBrowserFlag = process.env.WEB_COOKIE_USE_BROWSER;
 const originalPoolFlag = process.env.OMNIROUTE_BROWSER_POOL;
@@ -110,7 +111,7 @@ describe("Claude Web direct transport", () => {
     const response = await sendClaudeWebDirect(request, {
       async tlsFetch(url, options) {
         capturedUrl = url;
-        capturedOptions = options as unknown as Record<string, unknown>;
+        capturedOptions = options as unknown as LooseDeep;
         return {
           status: 200,
           headers: new Headers({ "Content-Type": "text/event-stream" }),

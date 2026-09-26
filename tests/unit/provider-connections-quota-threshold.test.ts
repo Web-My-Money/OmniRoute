@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-db-quota-windows-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -42,13 +43,13 @@ test.after(async () => {
 });
 
 test("createProviderConnection persists quotaWindowThresholds map", async () => {
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "apikey",
     name: "Codex A",
     apiKey: "sk-a",
     quotaWindowThresholds: { window5h: 95, window7d: 80 },
-  });
+  })) as JsonRecord & { id: string };
   assert.deepEqual(created.quotaWindowThresholds, { window5h: 95, window7d: 80 });
 
   const fetched = await providersDb.getProviderConnectionById(created.id);
@@ -56,12 +57,12 @@ test("createProviderConnection persists quotaWindowThresholds map", async () => 
 });
 
 test("createProviderConnection with no map yields null on re-read", async () => {
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "apikey",
     name: "Codex Default",
     apiKey: "sk-default",
-  });
+  })) as JsonRecord & { id: string };
   const fetched = await providersDb.getProviderConnectionById(created.id);
   // null/undefined are both acceptable signals for "no overrides".
   assert.ok(
@@ -71,12 +72,12 @@ test("createProviderConnection with no map yields null on re-read", async () => 
 });
 
 test("updateProviderConnection persists a partial map", async () => {
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "apikey",
     name: "Codex B",
     apiKey: "sk-b",
-  });
+  })) as JsonRecord & { id: string };
 
   const updated = await providersDb.updateProviderConnection(created.id, {
     quotaWindowThresholds: { window5h: 50 },
@@ -88,13 +89,13 @@ test("updateProviderConnection persists a partial map", async () => {
 });
 
 test("updateProviderConnection with explicit null clears the column entirely", async () => {
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "apikey",
     name: "Codex Clearable",
     apiKey: "sk-clear",
     quotaWindowThresholds: { window5h: 90 },
-  });
+  })) as JsonRecord & { id: string };
   assert.deepEqual(created.quotaWindowThresholds, { window5h: 90 });
 
   const cleared = await providersDb.updateProviderConnection(created.id, {
@@ -182,12 +183,12 @@ test("updateProviderConnectionSchema rejects out-of-range values", () => {
 });
 
 test("provider quota visibility defaults to visible and persists explicit changes", async () => {
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "apikey",
     name: "Codex Visibility",
     apiKey: "sk-visibility",
-  });
+  })) as JsonRecord & { id: string };
   assert.equal(created.quotaVisible, true);
 
   const hidden = await providersDb.updateProviderConnection(created.id, { quotaVisible: false });

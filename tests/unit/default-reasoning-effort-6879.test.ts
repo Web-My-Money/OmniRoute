@@ -20,6 +20,7 @@ import { applyDefaultReasoningEffort } from "../../open-sse/services/defaultReas
 import { applyNoThinkingAlias } from "../../open-sse/utils/noThinkingAlias.ts";
 import { stripUnsupportedParams } from "../../open-sse/translator/paramSupport.ts";
 import { MODEL_SPECS } from "../../src/shared/constants/modelSpecs.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const FIXTURE_MODEL_ID = "__test_6879_default_reasoning_effort_model__";
 
@@ -38,7 +39,7 @@ test.after(() => {
 test("applyDefaultReasoningEffort: injects the model's default when no reasoning field is present", () => {
   const body = { model: FIXTURE_MODEL_ID, messages: [] };
   const result = applyDefaultReasoningEffort(body, FIXTURE_MODEL_ID);
-  assert.equal(result.reasoning_effort, "none");
+  assert.equal((result as LooseDeep).reasoning_effort, "none");
 });
 
 test("applyDefaultReasoningEffort: an explicit reasoning_effort always wins over the model default", () => {

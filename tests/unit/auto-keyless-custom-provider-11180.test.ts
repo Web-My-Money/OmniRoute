@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // #11180 regression guard: a custom OpenAI-compatible connection pointing at a
 // keyless local backend (llama.cpp / Ollama / vLLM started without an API key)
@@ -49,14 +50,14 @@ test.after(async () => {
 
 test("keyless custom openai-compatible connection enters the auto pool (#11180)", async () => {
   const customProvider = "openai-compatible-chat-c2fe8a44-f2fd-47b4-8893-6f1521804c45";
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: customProvider,
     authType: "apikey",
     name: "llamaAsimov",
     // Keyless local backend: llama-server --host 0.0.0.0 with no --api-key.
     apiKey: "",
     defaultModel: "Qwen3.8-27B-UD-Q4-DFlash-GGUF",
-  });
+  })) as JsonRecord & { id: string };
 
   const combo: VirtualComboResult = await virtualFactory.createVirtualAutoCombo("fast");
 
@@ -73,13 +74,13 @@ test("a keyless FIRST-PARTY provider connection stays out of the pool (#11180)",
   // The relaxation is scoped to custom compatible connection IDs. A first-party
   // provider with an empty key is an unconfigured connection, not a keyless
   // local backend, and must still be filtered out.
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "unconfigured openai",
     apiKey: "",
     defaultModel: "gpt-4o",
-  });
+  })) as JsonRecord & { id: string };
 
   const combo: VirtualComboResult = await virtualFactory.createVirtualAutoCombo("fast");
 

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-agnes-provider-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -162,7 +163,7 @@ test("agnes Image 2.1 maps standard image inputs into extra_body", async () => {
   }) as typeof fetch;
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: {
         model: "agnes/agnes-image-2.1-flash",
         prompt: "Combine both references into one cinematic poster",
@@ -198,7 +199,7 @@ test("agnes Image 2.1 maps standard image inputs into extra_body", async () => {
 });
 
 test("agnes Image 2.1 requires the current size parameter", async () => {
-  const result = await handleImageGeneration({
+  const result = await looseAsync(handleImageGeneration)({
     body: {
       model: "agnes/agnes-image-2.1-flash",
       prompt: "A detailed cityscape",
@@ -268,7 +269,7 @@ test("agnes Video V2.0 submits with Bearer auth and polls by video_id", async ()
   }) as typeof fetch;
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: {
         model: "agnes/agnes-video-v2.0",
         prompt: "A product rotates slowly under studio lighting",

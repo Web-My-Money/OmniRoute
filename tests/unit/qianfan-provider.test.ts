@@ -8,6 +8,7 @@ import { PROVIDERS } from "../../open-sse/config/constants.ts";
 import { getModelsByProviderId, isValidModel } from "../../src/shared/constants/models.ts";
 import { APIKEY_PROVIDERS } from "../../src/shared/constants/providers.ts";
 import { validateBody, createProviderSchema } from "../../src/shared/validation/schemas.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("qianfan registers Baidu ERNIE as an OpenAI-compatible API key provider", () => {
   const registryEntry = getRegistryEntry("qianfan");
@@ -27,7 +28,7 @@ test("qianfan registers Baidu ERNIE as an OpenAI-compatible API key provider", (
   assert.ok(APIKEY_PROVIDERS.qianfan, "qianfan should be visible in API key providers");
   assert.equal(APIKEY_PROVIDERS.qianfan.name, "Baidu Qianfan");
   assert.equal(APIKEY_PROVIDERS.qianfan.website, "https://cloud.baidu.com/product-s/qianfan_home");
-  assert.equal(APIKEY_PROVIDERS.qianfan.passthroughModels, undefined);
+  assert.equal((APIKEY_PROVIDERS.qianfan as LooseDeep).passthroughModels, undefined);
 
   assert.equal(PROVIDERS.qianfan.baseUrl, registryEntry.baseUrl);
   assert.equal(PROVIDERS.qianfan.format, "openai");

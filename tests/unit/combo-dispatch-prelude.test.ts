@@ -14,6 +14,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-prelude-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -58,7 +59,7 @@ async function seedHealthyPinProvider() {
   healthySeeded = true;
 }
 
-type ComboInput = Parameters<typeof resolveComboSetupConfig>[0];
+type ComboInput = import("../../open-sse/services/combo/types.ts").ComboLike;
 
 function okResponse(content: string): Response {
   const body = JSON.stringify({ choices: [{ message: { role: "assistant", content } }] });
@@ -83,7 +84,7 @@ function setup(combo: ComboInput) {
     records,
     combo,
     config: resolveComboSetupConfig(combo, {}),
-    body: { messages: [{ role: "user", content: "hi" }] } as Record<string, unknown>,
+    body: { messages: [{ role: "user", content: "hi" }] } as LooseDeep,
   };
 }
 
@@ -154,7 +155,7 @@ test("tryFusionDispatch: falls through for non-fusion strategies but still emits
   const res = await tryFusionDispatch({
     body: ctx.body,
     combo: ctx.combo,
-    cfg: ctx.config as unknown as Record<string, unknown>,
+    cfg: ctx.config as unknown as LooseDeep,
     config: ctx.config,
     strategy: "priority",
     allCombos: [],
@@ -179,7 +180,7 @@ test("tryFusionDispatch: silent fall-through when a non-fusion combo sets no fus
   const res = await tryFusionDispatch({
     body: ctx.body,
     combo: ctx.combo,
-    cfg: ctx.config as unknown as Record<string, unknown>,
+    cfg: ctx.config as unknown as LooseDeep,
     config: ctx.config,
     strategy: "priority",
     allCombos: [],
@@ -207,7 +208,7 @@ test("tryFusionDispatch: owns the request and synthesizes for the fusion strateg
   const res = await tryFusionDispatch({
     body: ctx.body,
     combo: ctx.combo,
-    cfg: ctx.config as unknown as Record<string, unknown>,
+    cfg: ctx.config as unknown as LooseDeep,
     config: ctx.config,
     strategy: "fusion",
     allCombos: [],
@@ -641,7 +642,11 @@ test("tryRuntimeUnitDispatch: sticky weighted keeps quota-only fallback dormant"
     },
   });
   assert.equal(result?.status, 200);
-  assert.deepEqual(recursedInto, [protectedUnit.comboName, protectedUnit.comboName, "leafB"]);
+  assert.deepEqual(recursedInto, [
+    (protectedUnit as LooseDeep).comboName,
+    (protectedUnit as LooseDeep).comboName,
+    "leafB",
+  ]);
 });
 
 test("tryRuntimeUnitDispatch: protected execute response validation returns local 502", async () => {

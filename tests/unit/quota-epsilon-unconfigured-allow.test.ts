@@ -26,6 +26,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-quota-epsilon-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -51,12 +52,12 @@ test("EPSILON (unconfigured) plan does not block after the first request", async
   const KEY = "key-eps";
 
   // glm seeds tokens/5h + tokens/weekly with limit=Number.EPSILON (placeholder).
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "apikey",
     name: "quota-epsilon-glm",
     apiKey: "sk-glm-epsilon",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as Record<string, unknown>).id as string;
   assert.ok(connId, "connection should have an id");
 

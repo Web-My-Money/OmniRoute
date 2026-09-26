@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-test-route-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -98,7 +99,7 @@ test("combo test route marks a model healthy only when it returns assistant text
   const fetchCalls = [];
   const originalRandom = Math.random;
   let callCount = 0;
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({ url: String(url), init });
     return new Response(
       JSON.stringify({
@@ -251,8 +252,8 @@ test("combo test route launches model probes concurrently while preserving combo
 
   const fetchCalls = [];
   const resolvers = [];
-  globalThis.fetch = (url, init = {}) =>
-    new Promise((resolve) => {
+  globalThis.fetch = (url, init: MockRequestInit = {}) =>
+    new Promise<Response>((resolve) => {
       fetchCalls.push({ url: String(url), init });
       resolvers.push(resolve);
     });
@@ -329,7 +330,7 @@ test("combo test route preserves structured step metadata for repeated model/acc
   ]);
 
   const fetchCalls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({ url: String(url), init });
     const body = JSON.parse(init.body);
     return new Response(
@@ -383,7 +384,7 @@ test("combo test route rejects empty combos and ignores forwarded origins for in
   const internalKey = await apiKeysDb.createApiKey("combo-internal", "machine-combo-internal");
 
   const fetchCalls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({ url: String(url), init });
     return new Response(
       JSON.stringify({

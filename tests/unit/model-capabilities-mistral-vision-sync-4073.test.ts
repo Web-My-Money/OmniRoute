@@ -24,6 +24,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-mistral-vision-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -32,7 +33,7 @@ const core = await import("../../src/lib/db/core.ts");
 const modelsDevSync = await import("../../src/lib/modelsDevSync.ts");
 const modelCapabilities = await import("../../src/lib/modelCapabilities.ts");
 
-function buildCapability(overrides = {}) {
+function buildCapability(overrides: JsonRecord = {}) {
   return {
     tool_call: null,
     reasoning: null,
@@ -106,7 +107,11 @@ test("#4073 mistral/pixtral-12b-latest resolves vision via the synced `-latest` 
 
   const latest = modelCapabilities.getResolvedModelCapabilities("mistral/pixtral-12b-latest");
   // attachment === true can ONLY come from the synced row keyed `pixtral-12b`.
-  assert.equal(latest.attachment, true, "synced attachment must resolve via the stripped `-latest` alias");
+  assert.equal(
+    latest.attachment,
+    true,
+    "synced attachment must resolve via the stripped `-latest` alias"
+  );
   assert.equal(latest.supportsVision, true);
 });
 
@@ -142,7 +147,9 @@ test("#4073 the `-latest` strip never fabricates a match for an unknown id", () 
   // No synced row for `unknown-text-model` (stripped) nor its `-latest` form, and
   // the heuristic doesn't recognise it → attachment null, vision null. The strip
   // must not invent a capability out of nothing.
-  const unknown = modelCapabilities.getResolvedModelCapabilities("mistral/unknown-text-model-latest");
+  const unknown = modelCapabilities.getResolvedModelCapabilities(
+    "mistral/unknown-text-model-latest"
+  );
   assert.equal(unknown.attachment, null);
   assert.equal(unknown.supportsVision, null);
 });

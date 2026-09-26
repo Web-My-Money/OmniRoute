@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { geminiToOpenAIResponse } =
   await import("../../open-sse/translator/response/gemini-to-openai.ts");
@@ -336,7 +337,7 @@ test("Gemini stream: stores thoughtSignature when signature-only part precedes f
 
   const toolCall = result.find((event: any) => event.choices?.[0]?.delta?.tool_calls)?.choices[0]
     .delta.tool_calls[0];
-  assert.equal(toolCall.id, "call_split_1");
+  (assert as LooseDeep).equal(toolCall.id, "call_split_1");
   assert.equal(state.pendingThoughtSignature, null);
   assert.equal(resolveGeminiThoughtSignature("conn-antigravity-1:call_split_1"), "sig-split-1");
 });
@@ -1174,7 +1175,10 @@ test("Gemini stream: open textual reasoning is flushed before a signed native to
     "buffered textual reasoning must be flushed, not dropped, when a tool call arrives"
   );
   assert.equal(r2[toolIdx]?.choices[0].delta.tool_calls[0].id, "call-flush-1");
-  assert.ok(reasoningIdx >= 0 && toolIdx > reasoningIdx, "reasoning is emitted before the tool call");
+  assert.ok(
+    reasoningIdx >= 0 && toolIdx > reasoningIdx,
+    "reasoning is emitted before the tool call"
+  );
 });
 
 // #3821-review LEDGER-15 — a reasoning-only chunk interrupting a partially-buffered
@@ -1211,8 +1215,8 @@ test("Gemini stream: partial textual tool call survives a reasoning-only chunk",
     "pondering"
   );
   assert.ok(
-    typeof state.textualToolCallBuffer === "string" &&
-      state.textualToolCallBuffer.includes("[Tool call: terminal]"),
+    typeof (state as LooseDeep).textualToolCallBuffer === "string" &&
+      (state as LooseDeep).textualToolCallBuffer.includes("[Tool call: terminal]"),
     "the partial tool-call buffer must survive the reasoning-only chunk"
   );
 

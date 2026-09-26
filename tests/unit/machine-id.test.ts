@@ -137,7 +137,7 @@ test("machineId: hashes consistently by salt and reports browser/server mode", a
   assert.notEqual(first, third);
   assert.equal(machineId.isBrowser(), false);
 
-  globalThis.window = {};
+  (globalThis.window as unknown as Window & typeof globalThis) = {};
   assert.equal(machineId.isBrowser(), true);
 });
 

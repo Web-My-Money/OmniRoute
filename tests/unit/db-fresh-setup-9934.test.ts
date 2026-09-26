@@ -16,6 +16,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import Database from "better-sqlite3";
 import { resetDbInstance } from "../../src/lib/db/core.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Regression guard for #9934 — init asymmetry breaks a fresh install.
 //
@@ -51,7 +52,7 @@ function withNonTestEnvironment<R>(fn: () => R): R {
   const originalArgv = [...process.argv];
   const originalExecArgv = [...process.execArgv];
 
-  delete process.env.NODE_ENV;
+  delete (process.env as Record<string, string | undefined>).NODE_ENV;
   delete process.env.VITEST;
   delete process.env.DISABLE_SQLITE_AUTO_BACKUP;
   process.argv = process.argv.filter((arg) => !arg.includes("test"));
@@ -62,8 +63,9 @@ function withNonTestEnvironment<R>(fn: () => R): R {
   } finally {
     process.argv = originalArgv;
     process.execArgv = originalExecArgv;
-    if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
-    else process.env.NODE_ENV = originalNodeEnv;
+    if (originalNodeEnv === undefined)
+      delete (process.env as Record<string, string | undefined>).NODE_ENV;
+    else (process.env as Record<string, string | undefined>).NODE_ENV = originalNodeEnv;
     if (originalVitest === undefined) delete process.env.VITEST;
     else process.env.VITEST = originalVitest;
     if (originalDisableAutoBackup === undefined) delete process.env.DISABLE_SQLITE_AUTO_BACKUP;
@@ -78,7 +80,7 @@ function cleanupGlobalDb() {
   } catch {
     /* ignore */
   }
-  delete (globalThis as Record<string, unknown>).__omnirouteDb;
+  delete (globalThis as LooseDeep).__omnirouteDb;
 }
 
 test.after(() => {
@@ -132,9 +134,9 @@ test(
       }, "first serve must not abort on a fresh setup DB that only has the 001 seed (#9934)");
 
       // Prove the fresh DB actually got migrated past 001 to the latest version.
-      const maxRow = db.prepare(
-        "SELECT MAX(CAST(version AS INTEGER)) AS maxV FROM _omniroute_migrations"
-      ).get();
+      const maxRow = db
+        .prepare("SELECT MAX(CAST(version AS INTEGER)) AS maxV FROM _omniroute_migrations")
+        .get();
       assert.ok(
         (maxRow?.maxV ?? 0) > 1,
         `expected migrations beyond 001 to run, got max=${maxRow?.maxV}`

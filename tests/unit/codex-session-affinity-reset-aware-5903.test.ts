@@ -16,6 +16,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { looseCreds } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-codex-affinity-5903-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -27,6 +28,7 @@ const settingsDb = await import("../../src/lib/db/settings.ts");
 const apiKeysDb = await import("../../src/lib/db/apiKeys.ts");
 const affinityDb = await import("../../src/lib/db/sessionAccountAffinity.ts");
 const auth = await import("../../src/sse/services/auth.ts");
+const getCreds = looseCreds(auth.getProviderCredentials);
 
 async function resetStorage() {
   core.resetDbInstance();
@@ -36,7 +38,7 @@ async function resetStorage() {
 }
 
 async function seedConnection(provider: string, overrides: any = {}) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: overrides.authType || "oauth",
     name: overrides.name || `${provider}-${Math.random().toString(16).slice(2, 8)}`,
@@ -46,7 +48,7 @@ async function seedConnection(provider: string, overrides: any = {}) {
     testStatus: overrides.testStatus || "active",
     priority: overrides.priority,
     providerSpecificData: overrides.providerSpecificData || {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {
@@ -69,11 +71,15 @@ test("codex session affinity wins over a per-request reset-aware forcedConnectio
   const connectionB = await seedConnection("codex", { name: "codex-reset-aware-b" });
 
   // Request 1: reset-aware quota scoring picks A as the winner for session S.
-  const request1 = await auth.getProviderCredentials("codex", null, null, "gpt-5.5", {
+  const request1 = await getCreds("codex", null, null, "gpt-5.5", {
     sessionKey: "session-S",
     forcedConnectionId: connectionA.id,
   });
-  assert.equal(request1?.connectionId, connectionA.id, "request 1 should pin to the scored winner A");
+  assert.equal(
+    request1?.connectionId,
+    connectionA.id,
+    "request 1 should pin to the scored winner A"
+  );
   assert.equal(
     affinityDb.getSessionAccountAffinity("session-S", "codex", 60_000)?.connectionId,
     connectionA.id,
@@ -84,7 +90,7 @@ test("codex session affinity wins over a per-request reset-aware forcedConnectio
   // the SAME session. Without the fix, forcedConnectionId=B narrows the pool
   // to just B before affinity is checked, evicting the A pin and re-pinning
   // to B. With the fix, the existing active pin (A) must win.
-  const request2 = await auth.getProviderCredentials("codex", null, null, "gpt-5.5", {
+  const request2 = await getCreds("codex", null, null, "gpt-5.5", {
     sessionKey: "session-S",
     forcedConnectionId: connectionB.id,
   });
@@ -101,11 +107,15 @@ test("codex session affinity wins over a per-request reset-aware forcedConnectio
 
   // A brand-new session (S2) has no existing pin, so the freshly re-scored
   // winner (B) must be honored and a NEW pin created for S2.
-  const request3 = await auth.getProviderCredentials("codex", null, null, "gpt-5.5", {
+  const request3 = await getCreds("codex", null, null, "gpt-5.5", {
     sessionKey: "session-S2",
     forcedConnectionId: connectionB.id,
   });
-  assert.equal(request3?.connectionId, connectionB.id, "a new session must honor the fresh re-scored pick");
+  assert.equal(
+    request3?.connectionId,
+    connectionB.id,
+    "a new session must honor the fresh re-scored pick"
+  );
   assert.equal(
     affinityDb.getSessionAccountAffinity("session-S2", "codex", 60_000)?.connectionId,
     connectionB.id,
@@ -129,7 +139,7 @@ test("reset-aware forcedConnectionId is honored when the pinned connection becom
   const connectionA = await seedConnection("codex", { name: "codex-reset-aware-ineligible-a" });
   const connectionB = await seedConnection("codex", { name: "codex-reset-aware-ineligible-b" });
 
-  const request1 = await auth.getProviderCredentials("codex", null, null, "gpt-5.5", {
+  const request1 = await getCreds("codex", null, null, "gpt-5.5", {
     sessionKey: "session-failover",
     forcedConnectionId: connectionA.id,
   });
@@ -143,7 +153,7 @@ test("reset-aware forcedConnectionId is honored when the pinned connection becom
     rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
   });
 
-  const request2 = await auth.getProviderCredentials("codex", null, null, "gpt-5.5", {
+  const request2 = await getCreds("codex", null, null, "gpt-5.5", {
     sessionKey: "session-failover",
     forcedConnectionId: connectionB.id,
   });
@@ -163,13 +173,13 @@ test("no session affinity configured: reset-aware forcedConnectionId applies exa
   const connectionA = await seedConnection("codex", { name: "codex-no-affinity-a" });
   const connectionB = await seedConnection("codex", { name: "codex-no-affinity-b" });
 
-  const request1 = await auth.getProviderCredentials("codex", null, null, "gpt-5.5", {
+  const request1 = await getCreds("codex", null, null, "gpt-5.5", {
     sessionKey: "session-no-ttl",
     forcedConnectionId: connectionA.id,
   });
   assert.equal(request1?.connectionId, connectionA.id);
 
-  const request2 = await auth.getProviderCredentials("codex", null, null, "gpt-5.5", {
+  const request2 = await getCreds("codex", null, null, "gpt-5.5", {
     sessionKey: "session-no-ttl",
     forcedConnectionId: connectionB.id,
   });
@@ -179,3 +189,5 @@ test("no session affinity configured: reset-aware forcedConnectionId applies exa
     "with affinity disabled (ttl=0) each request must honor the fresh forcedConnectionId"
   );
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

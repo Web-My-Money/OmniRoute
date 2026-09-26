@@ -16,6 +16,7 @@ import {
   DELAY_BETWEEN_REQUESTS_MS,
   type Message,
 } from "./liveGeminiShared.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test.before(async () => {
   await ensureTestEnvironment();
@@ -111,7 +112,7 @@ test("[26] concurrent load — 2 threads × 2 iterations", { skip }, async () =>
 
   if (rejected.length > 0) {
     for (const r of rejected) {
-      const msg = r.reason instanceof Error ? r.message : String(r.reason);
+      const msg = r.reason instanceof Error ? (r as LooseDeep).message : String(r.reason);
       console.log(`    THREAD FAILED: ${msg}`);
     }
   }

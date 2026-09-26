@@ -19,6 +19,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-4202-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -47,12 +48,12 @@ interface ModelsBody {
 
 test("#4202 ZenMux import fetches the live /api/v1/models catalog (incl. the free models)", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "zenmux",
     authType: "apikey",
     name: "zenmux-live",
     apiKey: "zm-key",
-  });
+  })) as JsonRecord & { id: string };
 
   let fetched = false;
   const originalFetch = globalThis.fetch;
@@ -88,7 +89,10 @@ test("#4202 ZenMux import fetches the live /api/v1/models catalog (incl. the fre
       ids.includes("z-ai/glm-5.2-free"),
       `live free models missing from catalog: ${ids.join(",")}`
     );
-    assert.ok(ids.includes("moonshotai/kimi-k2.7-code-free"), `live free models missing: ${ids.join(",")}`);
+    assert.ok(
+      ids.includes("moonshotai/kimi-k2.7-code-free"),
+      `live free models missing: ${ids.join(",")}`
+    );
     // The stale hardcoded registry entry must not be what we serve.
     assert.ok(
       !ids.includes("mistralai/mistral-large-2512"),
@@ -101,12 +105,12 @@ test("#4202 ZenMux import fetches the live /api/v1/models catalog (incl. the fre
 
 test("#4202 ZenMux import falls back to the local catalog when the live fetch fails", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "zenmux",
     authType: "apikey",
     name: "zenmux-fallback",
     apiKey: "zm-key-2",
-  });
+  })) as JsonRecord & { id: string };
 
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => new Response("bad gateway", { status: 502 });

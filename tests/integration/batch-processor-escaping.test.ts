@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const batchProcessor = await import("../../open-sse/services/batchProcessor.ts");
 
@@ -104,16 +105,16 @@ test("parseBatchItems handles multiple lines with special characters", () => {
   assert.ok(result.items, "Should have items");
   assert.strictEqual(result.items.length, 4, "Should have 4 items");
 
-  assert.strictEqual(result.items[0].customId, "item-1");
+  assert.strictEqual((result.items[0] as LooseDeep).customId, "item-1");
   assert.ok(result.items[0].body.input.includes("`"));
 
-  assert.strictEqual(result.items[1].customId, "item-2");
+  assert.strictEqual((result.items[1] as LooseDeep).customId, "item-2");
   assert.ok(result.items[1].body.input.includes('"'));
 
-  assert.strictEqual(result.items[2].customId, "item-3");
+  assert.strictEqual((result.items[2] as LooseDeep).customId, "item-3");
   assert.ok(result.items[2].body.input.includes("\n"));
 
-  assert.strictEqual(result.items[3].customId, "item-4");
+  assert.strictEqual((result.items[3] as LooseDeep).customId, "item-4");
   assert.ok(result.items[3].body.input.includes("你好世界"));
 });
 
@@ -131,9 +132,9 @@ test("buildRequestBody preserves input without modification", () => {
     url: "/v1/embeddings",
   };
 
-  const result = batchProcessor.buildRequestBody(item);
+  const result = batchProcessor.buildRequestBody(item as unknown as BatchRequestItem);
 
-  assert.strictEqual(result.input, inputText, "Input should be preserved exactly");
+  assert.strictEqual((result as LooseDeep).input, inputText, "Input should be preserved exactly");
   assert.strictEqual(result.model, "mistral/mistral-embed", "Model should be preserved");
   assert.ok(!("stream" in result), "Embeddings endpoint should not have stream field");
 });
@@ -150,7 +151,7 @@ test("buildRequestBody adds stream:false for chat endpoints", () => {
     url: "/v1/chat/completions",
   };
 
-  const result = batchProcessor.buildRequestBody(item);
+  const result = batchProcessor.buildRequestBody(item as unknown as BatchRequestItem);
 
   assert.strictEqual(result.stream, false, "Chat endpoint should have stream:false");
   assert.ok("messages" in result, "Messages should be preserved");
@@ -232,8 +233,8 @@ My fundamental commitment is to never settle. I am tasked with questioning, refl
   const item = parseResult.items[0];
   const requestBody = batchProcessor.buildRequestBody(item);
 
-  assert.strictEqual(
-    requestBody.input,
+  (assert as LooseDeep).strictEqual(
+    (requestBody as LooseDeep).input,
     inputText,
     "Input should be preserved after buildRequestBody"
   );

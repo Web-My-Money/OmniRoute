@@ -1,9 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
-const { handleImageGeneration } = await import(
-  "../../open-sse/handlers/imageGeneration.ts"
-);
+const { handleImageGeneration } = await import("../../open-sse/handlers/imageGeneration.ts");
 
 function restore<T>(fn: () => T): T {
   const originalFetch = globalThis.fetch;
@@ -27,7 +26,7 @@ test("fetch timeout in OpenAI provider path returns 504 and sanitized error", ()
       throw makeAbortError();
     };
 
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: { model: "openai/gpt-image-2", prompt: "timeout test" },
       credentials: { apiKey: "test-key" },
       log: null,
@@ -44,7 +43,7 @@ test("non-timeout fetch error still returns 502", () =>
       throw new Error("network down");
     };
 
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: { model: "openai/gpt-image-2", prompt: "network error test" },
       credentials: { apiKey: "test-key" },
       log: null,
@@ -69,7 +68,7 @@ test("successful image gen passes AbortSignal and returns URL", () =>
       );
     };
 
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: { model: "openai/gpt-image-2", prompt: "success test" },
       credentials: { apiKey: "test-key" },
       log: null,

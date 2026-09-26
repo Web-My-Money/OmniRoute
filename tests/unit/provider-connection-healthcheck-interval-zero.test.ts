@@ -3,12 +3,11 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 
-const TEST_DATA_DIR = fs.mkdtempSync(
-  path.join(os.tmpdir(), "omniroute-hci-zero-")
-);
+const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-hci-zero-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
 
 const core = await import("../../src/lib/db/core.ts");
@@ -48,7 +47,7 @@ test.after(async () => {
 test("createProviderConnection persists healthCheckInterval=0 (not coerced to null)", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "Antigravity Disabled HC",
@@ -60,7 +59,7 @@ test("createProviderConnection persists healthCheckInterval=0 (not coerced to nu
     testStatus: "active",
     isActive: true,
     healthCheckInterval: 0,
-  });
+  })) as JsonRecord & { id: string };
 
   const stored = await providersDb.getProviderConnectionById((connection as any).id);
   assert.equal(stored?.healthCheckInterval, 0);
@@ -69,7 +68,7 @@ test("createProviderConnection persists healthCheckInterval=0 (not coerced to nu
 test("updateProviderConnection persists healthCheckInterval=0 (not coerced to null)", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "Antigravity Default HC",
@@ -82,7 +81,7 @@ test("updateProviderConnection persists healthCheckInterval=0 (not coerced to nu
     isActive: true,
     // Start from the default (60). Updating to 0 below must round-trip.
     healthCheckInterval: 60,
-  });
+  })) as JsonRecord & { id: string };
 
   await providersDb.updateProviderConnection((connection as any).id, {
     healthCheckInterval: 0,
@@ -97,7 +96,7 @@ test("updateProviderConnection persists healthCheckInterval=0 (not coerced to nu
 test("updateProviderConnection still persists a nonzero healthCheckInterval", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "Antigravity Nonzero HC",
@@ -109,7 +108,7 @@ test("updateProviderConnection still persists a nonzero healthCheckInterval", as
     testStatus: "active",
     isActive: true,
     healthCheckInterval: 0,
-  });
+  })) as JsonRecord & { id: string };
 
   await providersDb.updateProviderConnection((connection as any).id, {
     healthCheckInterval: 60,

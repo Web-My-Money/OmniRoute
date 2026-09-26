@@ -21,7 +21,7 @@ test.after(() => {
 
 test("GET keeps one parent row and projects raw Codex state without exposing credentials", async () => {
   const cooldown = new Date(Date.now() + 60_000).toISOString();
-  const codex = await providersDb.createProviderConnection({
+  const codex = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: "Codex parent",
@@ -43,13 +43,13 @@ test("GET keeps one parent row and projects raw Codex state without exposing cre
       },
       codexExhaustedWindowByScope: { spark: "5h" },
     },
-  });
-  const openai = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const openai = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "OpenAI parent",
     apiKey: "openai-api-secret",
-  });
+  })) as JsonRecord & { id: string };
 
   const response = await providersRoute.GET(
     await makeManagementSessionRequest("http://localhost/api/providers")
@@ -113,3 +113,5 @@ test("GET keeps one parent row and projects raw Codex state without exposing cre
   const safeProviderData = codexRow.providerSpecificData as Record<string, unknown>;
   assert.equal("consoleApiKey" in safeProviderData, false);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

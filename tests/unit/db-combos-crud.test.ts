@@ -149,7 +149,11 @@ test("reorderCombos persists manual combo ordering in sqlite", async () => {
     models: [{ provider: "google", model: "gemini-2.5-pro" }],
   });
 
-  const reordered = await combosDb.reorderCombos([charlie.id, alpha.id, bravo.id]);
+  const reordered = await combosDb.reorderCombos([
+    charlie.id as unknown as string,
+    alpha.id as unknown as string,
+    bravo.id as unknown as string,
+  ]);
 
   assert.deepEqual(
     reordered.map((combo) => combo.name),

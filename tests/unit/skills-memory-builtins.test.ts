@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-memory-builtins-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -201,7 +202,7 @@ test("interceptToolCalls executes memory tools when allowed via builtinToolNames
 
   assert.equal(results.length, 1);
   assert.equal(results[0].id, "call-save");
-  assert.equal(results[0].result.success, true);
+  assert.equal((results[0].result as LooseDeep).success, true);
 
   const stored = await listMemories({ apiKeyId: "key-mem" });
   assert.equal(stored.data.length, 1);
@@ -210,9 +211,7 @@ test("interceptToolCalls executes memory tools when allowed via builtinToolNames
 
 test("interceptToolCalls skips memory tools not allowed by builtinToolNames", async () => {
   const results = await interceptToolCalls(
-    [
-      { id: "call-x", name: MEMORY_DELETE_TOOL_NAME, arguments: { id: "anything" } },
-    ],
+    [{ id: "call-x", name: MEMORY_DELETE_TOOL_NAME, arguments: { id: "anything" } }],
     {
       apiKeyId: "key-mem",
       sessionId: "session-mem",
@@ -223,5 +222,5 @@ test("interceptToolCalls skips memory tools not allowed by builtinToolNames", as
   // The tool is not in the allowed builtin list, so it falls through to the
   // custom-skill resolver, which has no such skill registered.
   assert.equal(results.length, 1);
-  assert.match(String(results[0].result.error), /Skill not found/);
+  assert.match(String((results[0].result as LooseDeep).error), /Skill not found/);
 });

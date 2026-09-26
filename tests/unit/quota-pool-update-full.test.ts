@@ -14,6 +14,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // ── DB harness (mirror quota-pool-connections.test.ts) ──────────────────────
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-pool-update-full-"));
@@ -24,13 +25,11 @@ const poolsDb = await import("../../src/lib/db/quotaPools.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
 const combosDb = await import("../../src/lib/db/combos.ts");
 const { createGroup } = await import("../../src/lib/db/quotaGroups.ts");
-const { syncQuotaCombos, removeQuotaCombosForPool } = await import(
-  "../../src/lib/quota/quotaCombos.ts"
-);
+const { syncQuotaCombos, removeQuotaCombosForPool } =
+  await import("../../src/lib/quota/quotaCombos.ts");
 const { PoolUpdateSchema } = await import("../../src/shared/schemas/quota.ts");
-const { isQuotaModelName, parseQuotaModelName, quotaGroupSlug } = await import(
-  "../../src/lib/quota/quotaModelNaming.ts"
-);
+const { isQuotaModelName, parseQuotaModelName, quotaGroupSlug } =
+  await import("../../src/lib/quota/quotaModelNaming.ts");
 
 async function resetStorage() {
   core.resetDbInstance();
@@ -120,21 +119,21 @@ test("updatePool with new connectionIds triggers combo re-sync (openrouter → b
   const groupSlug = quotaGroupSlug(group.name);
 
   // Provider connection 1: openrouter
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "upd-or-conn",
     apiKey: "sk-upd-or",
-  });
+  })) as JsonRecord & { id: string };
   const idA = (connA as Record<string, unknown>).id as string;
 
   // Provider connection 2: baidu
-  const connB = await providersDb.createProviderConnection({
+  const connB = (await providersDb.createProviderConnection({
     provider: "baidu",
     authType: "apikey",
     name: "upd-baidu-conn",
     apiKey: "sk-upd-baidu",
-  });
+  })) as JsonRecord & { id: string };
   const idB = (connB as Record<string, unknown>).id as string;
 
   // Create pool initially pointing to openrouter
@@ -184,19 +183,19 @@ test("PATCH route sequence (remove→update→sync) prunes OLD-provider combos o
   const group = createGroup("RouteSwitchGroup");
   const groupSlug = quotaGroupSlug(group.name);
 
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "rt-or-conn",
     apiKey: "sk-rt-or",
-  });
+  })) as JsonRecord & { id: string };
   const idA = (connA as Record<string, unknown>).id as string;
-  const connB = await providersDb.createProviderConnection({
+  const connB = (await providersDb.createProviderConnection({
     provider: "baidu",
     authType: "apikey",
     name: "rt-baidu-conn",
     apiKey: "sk-rt-baidu",
-  });
+  })) as JsonRecord & { id: string };
   const idB = (connB as Record<string, unknown>).id as string;
 
   const pool = poolsDb.createPool({ connectionId: idA, name: "Route Switch", groupId: group.id });

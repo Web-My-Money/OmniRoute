@@ -24,7 +24,7 @@ import {
   isBinaryAvailable,
   evaluateZizmorRatchet,
   readBaselineZizmorValue,
-  // @ts-expect-error — .mjs helper has no type declarations; runtime shape is known.
+  //
 } from "../../../scripts/check/check-workflows.mjs";
 
 type RatchetVerdict = { regressed: boolean; improved: boolean };

@@ -10,9 +10,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-const dnsRoute = await import(
-  "../../src/app/api/tools/agent-bridge/agents/[id]/dns/route.ts"
-);
+const dnsRoute = await import("../../src/app/api/tools/agent-bridge/agents/[id]/dns/route.ts");
 
 function makeRequest(body: unknown): Request {
   return new Request("http://127.0.0.1/api/tools/agent-bridge/agents/x/dns", {
@@ -47,7 +45,7 @@ test("POST .../[id]/dns: malformed JSON body returns 400", async () => {
     headers: { "Content-Type": "application/json" },
     body: "{not-json",
   });
-  const res = await dnsRoute.POST(req, { params: { id: "cursor" } });
+  const res = await dnsRoute.POST(req, { params: Promise.resolve({ id: "cursor" }) });
   assert.equal(res.status, 400);
 });
 

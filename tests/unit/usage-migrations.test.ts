@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const ORIGINAL_HOME = process.env.HOME;
 const ORIGINAL_USERPROFILE = process.env.USERPROFILE;
@@ -327,7 +328,7 @@ test("migrateUsageJsonToSqlite migrates call logs to summary rows and ignores du
       error_summary: "bad upstream",
     }
   );
-  assert.equal(typeof rows[0].artifact_relpath, "string");
+  assert.equal(typeof (rows[0] as LooseDeep).artifact_relpath, "string");
   assert.equal((rows[1] as any).id.length > 0, true);
   assert.equal((rows[1] as any).method, "POST");
   assert.equal((rows[1] as any).path, null);
@@ -341,7 +342,10 @@ test("migrateUsageJsonToSqlite migrates call logs to summary rows and ignores du
   assert.equal((rows[1] as any).error_summary, null);
 
   const firstArtifact = JSON.parse(
-    fs.readFileSync(path.join(TEST_DATA_DIR, "call_logs", rows[0].artifact_relpath), "utf8")
+    fs.readFileSync(
+      path.join(TEST_DATA_DIR, "call_logs", (rows[0] as LooseDeep).artifact_relpath),
+      "utf8"
+    )
   );
   assert.deepEqual(firstArtifact.requestBody, { messages: [{ role: "user", content: "hi" }] });
   assert.deepEqual(firstArtifact.responseBody, { id: "resp-1" });

@@ -12,10 +12,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
-const TEST_DATA_DIR = fs.mkdtempSync(
-  path.join(os.tmpdir(), "omniroute-vscode-responses-listing-")
-);
+const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-vscode-responses-listing-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
 process.env.API_KEY_SECRET = process.env.API_KEY_SECRET || "vscode-responses-listing-secret";
 
@@ -60,7 +59,7 @@ test("vscode Ollama-compatible tags/show routes (token + raw) expose Codex-disco
   // CODEX_DISCOVERY_EXCLUDED_ID_PREFIXES (src/shared/services/codexDiscoveryPolicy.ts)
   // and would be dropped from the catalog before ever reaching the listing filter
   // this test targets.
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "apikey",
     name: "codex-vscode-responses-listing",
@@ -68,7 +67,7 @@ test("vscode Ollama-compatible tags/show routes (token + raw) expose Codex-disco
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
   await modelsDb.replaceSyncedAvailableModelsForConnection("codex", connection.id, [
     {
       id: "gpt-6.9-responses-probe",

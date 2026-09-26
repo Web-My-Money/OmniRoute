@@ -22,6 +22,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-6957-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -52,18 +53,18 @@ test("#6957 native Mistral provider with 2 connections: synced models produce a 
   // Native Mistral provider, 2 API-key connections — mirrors the reporter's setup
   // (providerId "mistral", connectionCount 2, both accounts auto-syncing the same
   // upstream catalog).
-  const conn1 = await providersDb.createProviderConnection({
+  const conn1 = (await providersDb.createProviderConnection({
     provider: "mistral",
     authType: "apikey",
     name: "ac1",
     apiKey: "sk-mistral-ac1",
-  });
-  const conn2 = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const conn2 = (await providersDb.createProviderConnection({
     provider: "mistral",
     authType: "apikey",
     name: "ac2",
     apiKey: "sk-mistral-ac2",
-  });
+  })) as JsonRecord & { id: string };
 
   // Both connections sync the identical upstream catalog slice (same account
   // family just imported twice, matching "connectionCount: 2" in the reporter's

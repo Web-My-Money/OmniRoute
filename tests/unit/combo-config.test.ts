@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const {
   resolveComboConfig,
@@ -78,7 +79,7 @@ test("resolveComboConfig applies the full cascade from defaults to combo overrid
   assert.equal(result.retryDelayMs, 500);
   assert.equal(result.fallbackDelayMs, 100);
   assert.equal(result.maxRetries, 4);
-  assert.equal(result.targetTimeoutMs, 45000);
+  assert.equal((result as LooseDeep).targetTimeoutMs, 45000);
   assert.ok(!("timeoutMs" in result));
   assert.ok(!("healthCheckEnabled" in result));
 });
@@ -510,11 +511,11 @@ test("createComboSchema accepts structured combo steps with pinned connection an
     ],
   });
 
-  assert.equal(parsed.models[0].kind, "model");
-  assert.equal(parsed.models[0].providerId, "codex");
-  assert.equal(parsed.models[0].connectionId, "conn-codex-a");
-  assert.equal(parsed.models[1].kind, "combo-ref");
-  assert.equal(parsed.models[1].comboName, "backup-codex");
+  assert.equal((parsed.models[0] as LooseDeep).kind, "model");
+  assert.equal((parsed.models[0] as LooseDeep).providerId, "codex");
+  assert.equal((parsed.models[0] as LooseDeep).connectionId, "conn-codex-a");
+  assert.equal((parsed.models[1] as LooseDeep).kind, "combo-ref");
+  assert.equal((parsed.models[1] as LooseDeep).comboName, "backup-codex");
 });
 
 test("createComboSchema accepts composite tiers that reference normalized combo steps", () => {

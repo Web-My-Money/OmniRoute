@@ -27,12 +27,10 @@ process.env.DATA_DIR = testDataDir;
 const coreDb = await import("../../src/lib/db/core.ts");
 const settingsDb = await import("../../src/lib/db/settings.ts");
 const upstreamProxyDb = await import("../../src/lib/db/upstreamProxy.ts");
-const { resolveExecutorWithProxy } = await import(
-  "../../open-sse/handlers/chatCore/executorProxy.ts"
-);
-const { clearUpstreamProxyConfigCache } = await import(
-  "../../open-sse/handlers/chatCore/comboContextCache.ts"
-);
+const { resolveExecutorWithProxy } =
+  await import("../../open-sse/handlers/chatCore/executorProxy.ts");
+const { clearUpstreamProxyConfigCache } =
+  await import("../../open-sse/handlers/chatCore/comboContextCache.ts");
 const { updateSettingsSchema } = await import("../../src/shared/validation/settingsSchemas.ts");
 
 const NATIVE_KEY = "sk-native-provider-key-cliproxyapi-must-not-see";
@@ -73,7 +71,7 @@ async function withCapturedCliproxyapiRequest(
 ): Promise<{ headers: Record<string, string>; called: boolean }> {
   let capturedHeaders: Record<string, string> | null = null;
   const originalFetch = globalThis.fetch;
-  // @ts-expect-error test stub
+  //
   globalThis.fetch = async (url: string, init: RequestInit) => {
     if (String(url).includes("8317")) {
       capturedHeaders = init.headers as Record<string, string>;

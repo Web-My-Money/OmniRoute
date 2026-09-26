@@ -22,6 +22,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-8779-agy-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -39,7 +40,7 @@ async function resetStorage() {
 
 async function seedOnly(provider: string) {
   await resetStorage();
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider,
     authType: "oauth",
     email: `${provider}@example.test`,
@@ -47,7 +48,7 @@ async function seedOnly(provider: string) {
     isActive: true,
     testStatus: "active",
     priority: 1,
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.after(() => {

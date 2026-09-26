@@ -9,6 +9,7 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { translateNonStreamingResponse } =
   await import("../../open-sse/handlers/responseTranslator.ts");
@@ -49,7 +50,7 @@ test("Responses API non-streaming: Gemini error body has no valid output", () =>
     ERROR_BODY,
     FORMATS.GEMINI,
     FORMATS.OPENAI_RESPONSES
-  ) as Record<string, unknown>;
+  ) as LooseDeep;
 
   // No chat.completion shape, no choices, no output array
   assert.equal(result.object, undefined);
@@ -69,12 +70,12 @@ test("Non-streaming: 429 RESOURCE_EXHAUSTED also returns raw error body", () => 
     ERROR_BODY_RESOURCE_EXHAUSTED,
     FORMATS.GEMINI,
     FORMATS.OPENAI_RESPONSES
-  ) as Record<string, unknown>;
+  ) as LooseDeep;
 
   assert.equal(result, ERROR_BODY_RESOURCE_EXHAUSTED);
   if (result.error) {
-    assert.equal((result.error as Record<string, unknown>).code, 429);
-    assert.equal((result.error as Record<string, unknown>).status, "RESOURCE_EXHAUSTED");
+    assert.equal((result.error as LooseDeep).code, 429);
+    assert.equal((result.error as LooseDeep).status, "RESOURCE_EXHAUSTED");
   }
 });
 
@@ -115,7 +116,7 @@ test("Non-streaming: valid Gemini response with candidates still translates corr
     },
     FORMATS.GEMINI,
     FORMATS.OPENAI_RESPONSES
-  ) as Record<string, unknown>;
+  ) as LooseDeep;
 
   assert.equal(result.object, "chat.completion");
   assert.equal((result.choices as unknown[])[0]?.message?.content, "Hello");

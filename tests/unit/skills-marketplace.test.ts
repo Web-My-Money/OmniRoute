@@ -14,9 +14,9 @@ const { GLOBAL_SKILL_OWNER_ID, skillRegistry } = await import("../../src/lib/ski
 const installRoute = await import("../../src/app/api/skills/marketplace/install/route.ts");
 
 function clearSkillRegistry() {
-  skillRegistry.registeredSkills?.clear?.();
-  skillRegistry.versionCache?.clear?.();
-  skillRegistry.loadedApiKeyIds?.clear?.();
+  skillRegistry["registeredSkills"]?.clear?.();
+  skillRegistry["versionCache"]?.clear?.();
+  skillRegistry["loadedApiKeyIds"]?.clear?.();
   skillRegistry.invalidateCache();
 }
 

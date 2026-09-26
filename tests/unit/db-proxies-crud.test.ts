@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-db-proxies-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -104,12 +105,12 @@ test("proxy CRUD clears stored credentials when blanks are explicitly provided",
 });
 
 test("proxy assignments resolve by account, provider and global scope", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Proxy Target",
     apiKey: "sk-proxy",
-  });
+  })) as JsonRecord & { id: string };
   const globalProxy = await proxiesDb.createProxy({
     name: "Global",
     type: "http",
@@ -157,18 +158,18 @@ test("proxy assignments resolve by account, provider and global scope", async ()
 });
 
 test("bulk assignment deduplicates scope ids and reports failures for missing proxies", async () => {
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Bulk One",
     apiKey: "sk-bulk-1",
-  });
-  const second = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const second = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Bulk Two",
     apiKey: "sk-bulk-2",
-  });
+  })) as JsonRecord & { id: string };
   const proxy = await proxiesDb.createProxy({
     name: "Bulk Proxy",
     type: "http",
@@ -239,12 +240,12 @@ test("proxy health stats aggregate proxy_logs and force delete removes assignmen
 });
 
 test("assignProxyToScope normalizes key scope, supports removal, and blocks deleting in-use proxies", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Assigned Account",
     apiKey: "sk-assigned",
-  });
+  })) as JsonRecord & { id: string };
   const proxy = await proxiesDb.createProxy({
     name: "Assigned Proxy",
     type: "http",

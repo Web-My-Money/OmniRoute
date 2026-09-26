@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { HideableSidebarItemId } from "../../src/shared/constants/sidebarVisibility.ts";
 
 const sidebarVisibility = await import("../../src/shared/constants/sidebarVisibility.ts");
 
@@ -65,7 +66,7 @@ test("costs item was removed from analytics section", () => {
   const analyticsItemIds = analyticsItems.map((i) => i.id);
 
   assert.equal(
-    analyticsItemIds.includes("costs" as sidebarVisibility.HideableSidebarItemId),
+    analyticsItemIds.includes("costs" as HideableSidebarItemId),
     false,
     "costs item must not be in analytics section"
   );
@@ -118,9 +119,7 @@ test("FIX5: no other costs-section item declares a featureFlagKey (no regression
   const section = findSection("costs");
   assert.ok(section, "costs section must exist");
 
-  const otherItems = sidebarVisibility
-    .getSectionItems(section)
-    .filter((i) => i.id !== "radar");
+  const otherItems = sidebarVisibility.getSectionItems(section).filter((i) => i.id !== "radar");
 
   for (const item of otherItems) {
     assert.equal(

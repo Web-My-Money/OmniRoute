@@ -23,6 +23,7 @@ import {
   toCfMessages,
   type CfTransport,
 } from "../../open-sse/executors/cloudflare-playground.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const CHAT_ID = "chatcmpl-cfp-test123";
 
@@ -115,10 +116,7 @@ const executeArgs = (body: Record<string, unknown>, stream: boolean) =>
 // ── Catalog / NOAUTH_PROVIDERS ───────────────────────────────────────────────
 
 test("cloudflare-playground is present in NOAUTH_PROVIDERS (noAuth category)", () => {
-  const p = (NOAUTH_PROVIDERS as Record<string, unknown>)["cloudflare-playground"] as Record<
-    string,
-    unknown
-  >;
+  const p = (NOAUTH_PROVIDERS as LooseDeep)["cloudflare-playground"] as Record<string, unknown>;
   assert.ok(p, "NOAUTH_PROVIDERS['cloudflare-playground'] must exist");
   assert.equal(p.id, "cloudflare-playground");
   assert.equal(p.alias, "cfp");
@@ -380,7 +378,9 @@ test("PlaywrightCfTransport.start() closes the browser when Cloudflare Attention
       close: async () => {
         closeCalls += 1;
       },
-    }) as unknown as ReturnType<typeof playwright.chromium.launch>) as typeof playwright.chromium.launch;
+    }) as unknown as ReturnType<
+      typeof playwright.chromium.launch
+    >) as typeof playwright.chromium.launch;
 
   try {
     const transport = new PlaywrightCfTransport("chat-attention-required");

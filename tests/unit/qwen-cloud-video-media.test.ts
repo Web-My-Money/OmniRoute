@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-qwen-cloud-video-"));
 
@@ -30,7 +32,7 @@ async function captureQwenCloudRequest(body, region = "global-sg") {
   let captured;
 
   globalThis.setTimeout = immediateTimeout;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     if (stringUrl.endsWith("/services/aigc/video-generation/video-synthesis")) {
       captured = {
@@ -52,7 +54,7 @@ async function captureQwenCloudRequest(body, region = "global-sg") {
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body,
       credentials: {
         apiKey: "qwen-cloud-key",
@@ -242,7 +244,7 @@ test("Qwen Cloud media-specific models reject missing required inputs locally", 
     ["wan2.7-r2v-2026-06-12", /reference image or video input is required/i],
     ["wan2.7-videoedit", /video input is required/i],
   ]) {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: {
         model: `qwen-cloud/${model}`,
         prompt: "missing media",
@@ -253,12 +255,12 @@ test("Qwen Cloud media-specific models reject missing required inputs locally", 
 
     assert.equal(result.success, false);
     assert.equal(result.status, 400);
-    assert.match(result.error, errorPattern);
+    assert.match(result.error, errorPattern as unknown as RegExp);
   }
 });
 
 test("Qwen provider prefixes cannot cross their registered model lists", async () => {
-  const qwenCloudResult = await handleVideoGeneration({
+  const qwenCloudResult = await looseAsync(handleVideoGeneration)({
     body: {
       model: "qwen-cloud/wan2.7-image",
       prompt: "wrong registry",
@@ -266,7 +268,7 @@ test("Qwen provider prefixes cannot cross their registered model lists", async (
     credentials: { apiKey: "qwen-cloud-key" },
     log: null,
   });
-  const tokenPlanResult = await handleVideoGeneration({
+  const tokenPlanResult = await looseAsync(handleVideoGeneration)({
     body: {
       model: "qwen-cloud-token-plan/wan2.7-videoedit",
       prompt: "wrong registry",

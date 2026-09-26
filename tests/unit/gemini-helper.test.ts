@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const gemini = await import("../../open-sse/translator/helpers/geminiHelper.ts");
 
@@ -142,8 +143,8 @@ test("convertOpenAIContentToParts maps OpenAI Chat Completions file (PDF) to inl
   const parts = gemini.convertOpenAIContentToParts(content);
   const inline = parts.find((p) => p.inlineData);
   assert.ok(inline, "PDF file part must be converted to inlineData, not dropped");
-  assert.equal(inline.inlineData.mimeType, "application/pdf");
-  assert.equal(inline.inlineData.data, "JVBERiAtMQ==");
+  assert.equal((inline.inlineData as LooseDeep).mimeType, "application/pdf");
+  assert.equal((inline.inlineData as LooseDeep).data, "JVBERiAtMQ==");
 });
 
 test("convertOpenAIContentToParts keeps the real mime for a video file_data", () => {
@@ -153,8 +154,8 @@ test("convertOpenAIContentToParts keeps the real mime for a video file_data", ()
   const parts = gemini.convertOpenAIContentToParts(content);
   const inline = parts.find((p) => p.inlineData);
   assert.ok(inline, "video file part must be converted to inlineData");
-  assert.equal(inline.inlineData.mimeType, "video/mp4");
-  assert.equal(inline.inlineData.data, "AAAAIGZ0");
+  assert.equal((inline.inlineData as LooseDeep).mimeType, "video/mp4");
+  assert.equal((inline.inlineData as LooseDeep).data, "AAAAIGZ0");
 });
 
 test("convertOpenAIContentToParts still maps image_url data URIs (regression)", () => {
@@ -162,5 +163,5 @@ test("convertOpenAIContentToParts still maps image_url data URIs (regression)", 
   const parts = gemini.convertOpenAIContentToParts(content);
   const inline = parts.find((p) => p.inlineData);
   assert.ok(inline, "image_url must still convert to inlineData");
-  assert.equal(inline.inlineData.mimeType, "image/png");
+  assert.equal((inline.inlineData as LooseDeep).mimeType, "image/png");
 });

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-ollama-404-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -10,7 +11,8 @@ process.env.DATA_DIR = TEST_DATA_DIR;
 const core = await import("../../src/lib/db/core.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
 const auth = await import("../../src/sse/services/auth.ts");
-const { hasPerModelQuota, isModelLocked } = await import("../../open-sse/services/accountFallback.ts");
+const { hasPerModelQuota, isModelLocked } =
+  await import("../../open-sse/services/accountFallback.ts");
 
 async function resetStorage() {
   core.resetDbInstance();
@@ -31,12 +33,12 @@ test("hasPerModelQuota returns true for ollama-local and ollama providers", () =
 test("markAccountUnavailable locks only the missing model on a 404 from ollama-local", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "ollama-local",
     authType: "none",
     baseUrl: "http://127.0.0.1:11434/v1",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await auth.markAccountUnavailable(
     connection.id,
@@ -53,7 +55,11 @@ test("markAccountUnavailable locks only the missing model on a 404 from ollama-l
 
   // The connection in DB must remain active / not marked unavailable for sibling models
   const connInDb = await providersDb.getProviderConnectionById(connection.id);
-  assert.notEqual(connInDb?.testStatus, "unavailable", "connection should not be marked unavailable connection-wide on a 404 model-not-found error");
+  assert.notEqual(
+    connInDb?.testStatus,
+    "unavailable",
+    "connection should not be marked unavailable connection-wide on a 404 model-not-found error"
+  );
 
   // getProviderCredentials must still serve sibling models
   const selectedForSibling = await auth.getProviderCredentials(
@@ -62,5 +68,8 @@ test("markAccountUnavailable locks only the missing model on a 404 from ollama-l
     null,
     "model-a"
   );
-  assert.ok(selectedForSibling && !("allExpired" in selectedForSibling), "sibling model-a must still be selected on the same connection");
+  assert.ok(
+    selectedForSibling && !("allExpired" in selectedForSibling),
+    "sibling model-a must still be selected on the same connection"
+  );
 });

@@ -8,6 +8,7 @@ import {
   PromptInjectionGuardrail,
   resolveDisabledGuardrails,
 } from "../../src/lib/guardrails/index.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 async function withEnv(overrides: Record<string, string | undefined>, fn: () => Promise<void>) {
   const originals = Object.fromEntries(
@@ -45,7 +46,7 @@ test("guardrail registry runs pre-call hooks in priority order", async () => {
     }
 
     override async preCall(payload: unknown) {
-      const record = payload as Record<string, unknown>;
+      const record = payload as LooseDeep;
       const markers = Array.isArray(record.markers) ? [...record.markers] : [];
       markers.push(this.marker);
       return {
@@ -64,7 +65,7 @@ test("guardrail registry runs pre-call hooks in priority order", async () => {
   const result = await registry.runPreCallHooks({ markers: [] });
 
   assert.equal(result.blocked, false);
-  assert.deepEqual((result.payload as Record<string, unknown>).markers, ["earlier", "later"]);
+  assert.deepEqual((result.payload as LooseDeep).markers, ["earlier", "later"]);
 });
 
 test("guardrail registry respects disabledGuardrails from context", async () => {
@@ -254,7 +255,7 @@ test("guardrail registry fails open when a guardrail throws", async () => {
   );
 
   assert.equal(result.blocked, false);
-  assert.equal((result.payload as Record<string, unknown>).safe, true);
+  assert.equal((result.payload as LooseDeep).safe, true);
   assert.equal(result.results[0]?.error, "boom");
   assert.equal(warnings.length, 1);
 });

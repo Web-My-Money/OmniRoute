@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-image-route-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -61,7 +62,7 @@ function createCodexEditForm(
   formData.set("model", options.model ?? "codex/gpt-5.6-sol");
   formData.set(
     "image",
-    new File([options.bytes ?? VALID_PNG_BYTES], "reference.png", {
+    new File([(options.bytes as unknown as BlobPart) ?? VALID_PNG_BYTES], "reference.png", {
       type: options.mime ?? "image/png",
     })
   );
@@ -96,7 +97,7 @@ async function seedConnection(
   } = {}
 ) {
   const authType = overrides.authType ?? "apikey";
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType,
     name: `${provider}-${Math.random().toString(16).slice(2, 8)}`,
@@ -109,7 +110,7 @@ async function seedConnection(
     isActive: true,
     testStatus: "active",
     providerSpecificData: overrides.providerSpecificData ?? {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {
@@ -171,7 +172,7 @@ test("v1 image models GET exposes current Codex image models and hides inactive 
 test("v1 image generation POST accepts promptless requests for image-only models", async () => {
   await seedConnection("topaz", { apiKey: "topaz-key" });
 
-  globalThis.fetch = async (url, options: RequestInit = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     if (stringUrl === "https://example.com/topaz-input.png") {
       return new Response(new Uint8Array([1, 2, 3]), {
@@ -305,7 +306,7 @@ test("v1 image edit POST routes built-in Codex references through native Respons
   await seedConnection("codex", { apiKey: "codex-oauth-token" });
 
   let captured: CapturedRequest | null = null;
-  globalThis.fetch = async (url, options: RequestInit = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers as Record<string, string>,
@@ -634,7 +635,7 @@ test("v1 image generation POST rotates to the next account after an upstream 401
   await seedConnection("openai", { apiKey: "healthy-image-key", priority: 2 });
   const authorizationHeaders: string[] = [];
 
-  globalThis.fetch = async (url, options: RequestInit = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     assert.equal(String(url), "https://api.openai.com/v1/images/generations");
     const authorization = new Headers(options.headers).get("authorization") ?? "";
     authorizationHeaders.push(authorization);
@@ -670,7 +671,7 @@ test("provider-scoped image generation POST uses the shared 401 account fallback
   await seedConnection("openai", { apiKey: "provider-healthy-key", priority: 2 });
   const authorizationHeaders: string[] = [];
 
-  globalThis.fetch = async (_url, options: RequestInit = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     const authorization = new Headers(options.headers).get("authorization") ?? "";
     authorizationHeaders.push(authorization);
     if (authorization === "Bearer provider-expired-key") {
@@ -704,7 +705,7 @@ test("provider-scoped image generation POST uses the shared 401 account fallback
 test("v1 image generation POST normalizes a terminal upstream 401 to the OpenAI-standard error shape", async () => {
   await seedConnection("openai", { apiKey: "single-expired-image-key" });
 
-  globalThis.fetch = async (url, options: RequestInit = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     assert.equal(String(url), "https://api.openai.com/v1/images/generations");
     const authorization = new Headers(options.headers).get("authorization") ?? "";
     assert.equal(authorization, "Bearer single-expired-image-key");
@@ -734,7 +735,7 @@ test("v1 image generation POST normalizes a terminal upstream 401 to the OpenAI-
 test("provider-scoped image generation POST normalizes a terminal upstream 401 to the OpenAI-standard error shape", async () => {
   await seedConnection("openai", { apiKey: "provider-single-expired-key" });
 
-  globalThis.fetch = async (url, options: RequestInit = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     assert.equal(String(url), "https://api.openai.com/v1/images/generations");
     const authorization = new Headers(options.headers).get("authorization") ?? "";
     assert.equal(authorization, "Bearer provider-single-expired-key");
@@ -772,7 +773,7 @@ test("v1 image generation POST refreshes an expired Antigravity token before dis
   });
   const calls: Array<{ url: string; authorization: string }> = [];
 
-  globalThis.fetch = async (url, options: RequestInit = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     const authorization = new Headers(options.headers).get("authorization") ?? "";
     calls.push({ url: stringUrl, authorization });
@@ -822,3 +823,5 @@ test("v1 image generation POST refreshes an expired Antigravity token before dis
   assert.equal(body.data[0].b64_json, "ZnJlc2gtaW1hZ2U=");
   assert.equal(calls.filter((call) => call.url.includes("oauth2.googleapis.com/token")).length, 1);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

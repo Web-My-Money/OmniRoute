@@ -79,7 +79,7 @@ test("cleanup keeps cancelled tasks as cancelled", () => {
   task.expiresAt = new Date(Date.now() - 1_000).toISOString();
 
   // private in TS only; callable at runtime for regression test
-  tm.cleanupExpired();
+  tm["cleanupExpired"]();
 
   const loaded = tm.getTask(task.id);
   assert.equal(loaded?.state, "cancelled");

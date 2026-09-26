@@ -131,11 +131,7 @@ test("cloudSync returns a generic error when the API responds with a non-OK stat
   const originalConsoleLog = console.log;
   const logged = [];
   console.log = (...args) =>
-    logged.push(
-      args
-        .map((x) => (typeof x === "object" ? JSON.stringify(x) : String(x)))
-        .join(" ")
-    );
+    logged.push(args.map((x) => (typeof x === "object" ? JSON.stringify(x) : String(x))).join(" "));
   globalThis.fetch = async () =>
     new Response("upstream unavailable", {
       status: 503,
@@ -160,22 +156,22 @@ test("cloudSync syncs data upstream and refreshes only locally stale provider to
   process.env.NEXT_PUBLIC_CLOUD_URL = "https://cloud.example";
   process.env.OMNIROUTE_CLOUD_SYNC_SECRETS = "true";
 
-  const stale = await providersDb.createProviderConnection({
+  const stale = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "oauth",
     email: "stale@example.com",
     accessToken: "old-token",
     refreshToken: "old-refresh",
     providerSpecificData: { region: "us" },
-  });
-  const fresh = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const fresh = (await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "oauth",
     email: "fresh@example.com",
     accessToken: "keep-token",
     refreshToken: "keep-refresh",
     providerSpecificData: { plan: "pro" },
-  });
+  })) as JsonRecord & { id: string };
   await apiKeysDb.createApiKey("machine key", "machine-1");
 
   const db = coreDb.getDbInstance();
@@ -245,3 +241,5 @@ test("cloudSync syncs data upstream and refreshes only locally stale provider to
   assert.equal(freshAfter.accessToken, "keep-token");
   assert.deepEqual(freshAfter.providerSpecificData, { plan: "pro" });
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

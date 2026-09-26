@@ -11,6 +11,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { getExecutor, hasSpecializedExecutor } from "../../open-sse/executors/index.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("#6699: jules has no specialized executor (falls through to DefaultExecutor)", () => {
   assert.equal(hasSpecializedExecutor("jules"), false);
@@ -30,9 +31,9 @@ test("#6699: a chat-completion request routed to provider 'jules' must not silen
   assert.throws(
     () => getExecutor("jules"),
     (err) => {
-      assert.match(err.message, /cloud-agent provider/i);
-      assert.match(err.message, /does not support direct chat completions/i);
-      assert.equal(err.status, 400);
+      assert.match((err as LooseDeep).message, /cloud-agent provider/i);
+      assert.match((err as LooseDeep).message, /does not support direct chat completions/i);
+      assert.equal((err as LooseDeep).status, 400);
       return true;
     },
     "provider 'jules' must raise a clear error instead of silently inheriting OpenAI's base URL/config"

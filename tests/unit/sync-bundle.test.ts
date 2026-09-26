@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-sync-bundle-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -55,14 +56,14 @@ test("config sync bundle is deterministic, strips auth settings, and ignores vol
     password: "hashed-password",
     cloudEnabled: true,
   });
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Primary OpenAI",
     apiKey: "sk-live-secret",
     defaultModel: "gpt-4o-mini",
     providerSpecificData: { region: "us" },
-  });
+  })) as JsonRecord & { id: string };
   await modelsDb.setModelAlias("smart-default", "openai/gpt-4o-mini");
   await combosDb.createCombo({
     name: "primary",

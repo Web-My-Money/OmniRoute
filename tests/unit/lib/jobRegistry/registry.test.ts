@@ -10,6 +10,7 @@ function regInternals(reg: JobRegistry): TestRegistry {
 }
 
 import test from "node:test";
+import type { JobRegistry } from "../../../src/lib/jobRegistry/registry.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";

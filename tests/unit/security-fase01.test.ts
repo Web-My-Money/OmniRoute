@@ -16,7 +16,7 @@ async function withEnv(overrides, fn) {
     if (value === undefined) {
       delete process.env[key];
     } else {
-      process.env[key] = value;
+      (process.env[key] as unknown as string) = value;
     }
   }
   try {
@@ -26,7 +26,7 @@ async function withEnv(overrides, fn) {
       if (value === undefined) {
         delete process.env[key];
       } else {
-        process.env[key] = value;
+        (process.env[key] as unknown as string) = value;
       }
     }
   }
@@ -202,7 +202,7 @@ test("inputSanitizer: sanitizeRequest returns clean result for safe input", asyn
       model: "gpt-4",
     };
     const mockLogger = { warn: () => {}, info: () => {} };
-    const result = sanitizeRequest(body, mockLogger);
+    const result = sanitizeRequest(body, mockLogger as unknown as Console);
     assert.equal(result.blocked, false);
     assert.equal(result.modified, false);
     assert.equal(result.detections.length, 0);
@@ -217,7 +217,7 @@ test("inputSanitizer: sanitizeRequest detects injection in warn mode", async () 
     };
     const warnings = [];
     const mockLogger = { warn: (msg) => warnings.push(msg), info: () => {} };
-    const result = sanitizeRequest(body, mockLogger);
+    const result = sanitizeRequest(body, mockLogger as unknown as Console);
     assert.equal(result.blocked, false, "warn mode should not block");
     assert.ok(result.detections.length > 0, "Should detect injection");
   });
@@ -230,7 +230,7 @@ test("inputSanitizer: sanitizeRequest blocks in block mode for high severity", a
       model: "gpt-4",
     };
     const mockLogger = { warn: () => {}, info: () => {} };
-    const result = sanitizeRequest(body, mockLogger);
+    const result = sanitizeRequest(body, mockLogger as unknown as Console);
     assert.equal(result.blocked, true, "block mode should block high-severity injections");
   });
 });

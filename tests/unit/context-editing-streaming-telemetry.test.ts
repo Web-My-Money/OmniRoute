@@ -86,7 +86,7 @@ function claudeStreamWithoutContextManagement(): SSEEvent[] {
 
 test("streaming collector preserves context_management from the final message_delta snapshot", () => {
   const summary = collector.buildStreamSummaryFromEvents(
-    claudeStreamWithAppliedEdits()
+    claudeStreamWithAppliedEdits() as unknown as StructuredSSEEvent[]
   ) as ClaudeSummary;
 
   assert.ok(summary && typeof summary === "object", "summary should be an object");
@@ -102,7 +102,9 @@ test("streaming collector preserves context_management from the final message_de
 });
 
 test("extractContextEditingTelemetry reads applied_edits from the reconstructed streaming body", () => {
-  const summary = collector.buildStreamSummaryFromEvents(claudeStreamWithAppliedEdits());
+  const summary = collector.buildStreamSummaryFromEvents(
+    claudeStreamWithAppliedEdits() as unknown as StructuredSSEEvent[]
+  );
   const tele = extractContextEditingTelemetry(summary);
 
   assert.ok(tele, "telemetry must be extracted from the streaming summary");
@@ -113,7 +115,7 @@ test("extractContextEditingTelemetry reads applied_edits from the reconstructed 
 
 test("streaming collector adds no context_management key when the stream carries none", () => {
   const summary = collector.buildStreamSummaryFromEvents(
-    claudeStreamWithoutContextManagement()
+    claudeStreamWithoutContextManagement() as unknown as StructuredSSEEvent[]
   ) as ClaudeSummary;
 
   assert.ok(summary && typeof summary === "object");

@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { MODEL_SPECS } from "../../src/shared/constants/modelSpecs.ts";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-model-capabilities-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -12,7 +13,7 @@ const core = await import("../../src/lib/db/core.ts");
 const modelsDevSync = await import("../../src/lib/modelsDevSync.ts");
 const modelCapabilities = await import("../../src/lib/modelCapabilities.ts");
 
-function buildCapability(overrides = {}) {
+function buildCapability(overrides: JsonRecord = {}) {
   return {
     tool_call: null,
     reasoning: null,

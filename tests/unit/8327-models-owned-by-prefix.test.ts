@@ -22,6 +22,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-8327-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -63,7 +64,7 @@ test("#8327: synced models on a compatible provider node expose the configured p
     chatPath: "/v1/chat/completions",
     modelsPath: "/v1/models",
   });
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: NODE_ID,
     authType: "apikey",
     name: "pix4k-talk-conn",
@@ -75,7 +76,7 @@ test("#8327: synced models on a compatible provider node expose the configured p
       chatPath: "/v1/chat/completions",
       modelsPath: "/v1/models",
     },
-  });
+  })) as JsonRecord & { id: string };
 
   await modelsDb.replaceSyncedAvailableModelsForConnection(
     NODE_ID,
@@ -133,7 +134,7 @@ test("#8327: custom models on a compatible provider node expose the configured p
     chatPath: "/v1/messages",
     modelsPath: "/v1/models",
   });
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: NODE_ID,
     authType: "apikey",
     name: "pix4k-talk-custom-conn",
@@ -145,7 +146,7 @@ test("#8327: custom models on a compatible provider node expose the configured p
       chatPath: "/v1/messages",
       modelsPath: "/v1/models",
     },
-  });
+  })) as JsonRecord & { id: string };
   await modelsDb.addCustomModel(NODE_ID, "custom-glm", "Custom GLM");
 
   const response = await v1ModelsCatalog.getUnifiedModelsResponse(
@@ -167,7 +168,7 @@ test("#8327: custom models on a compatible provider node expose the configured p
 });
 
 test("#8327: built-in providers keep their existing owned_by contract (unaffected by the fix)", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "openai-main",
@@ -175,7 +176,7 @@ test("#8327: built-in providers keep their existing owned_by contract (unaffecte
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 
   const response = await v1ModelsCatalog.getUnifiedModelsResponse(
     new Request("http://localhost/api/v1/models")
@@ -199,7 +200,7 @@ test("#9416: compatible provider with empty prefix falls back to slugified name,
     chatPath: "/v1/chat/completions",
     modelsPath: "/v1/models",
   });
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: NODE_ID,
     authType: "apikey",
     name: "pix4k-talk-conn",
@@ -211,7 +212,7 @@ test("#9416: compatible provider with empty prefix falls back to slugified name,
       chatPath: "/v1/chat/completions",
       modelsPath: "/v1/models",
     },
-  });
+  })) as JsonRecord & { id: string };
 
   await modelsDb.replaceSyncedAvailableModelsForConnection(
     NODE_ID,
@@ -270,7 +271,7 @@ test("#9416: compatible provider with null/undefined prefix also falls back to s
     chatPath: "/v1/chat/completions",
     modelsPath: "/v1/models",
   });
-  const connection2 = await providersDb.createProviderConnection({
+  const connection2 = (await providersDb.createProviderConnection({
     provider: nodeIdWithoutPrefix,
     authType: "apikey",
     name: "myproxy-conn",
@@ -282,7 +283,7 @@ test("#9416: compatible provider with null/undefined prefix also falls back to s
       chatPath: "/v1/chat/completions",
       modelsPath: "/v1/models",
     },
-  });
+  })) as JsonRecord & { id: string };
 
   await modelsDb.replaceSyncedAvailableModelsForConnection(
     nodeIdWithoutPrefix,
@@ -327,7 +328,7 @@ test("#9416: provider with configured prefix still uses the configured prefix (r
     chatPath: "/v1/chat/completions",
     modelsPath: "/v1/models",
   });
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: NODE_ID,
     authType: "apikey",
     name: "pix4k-talk-conn",
@@ -339,7 +340,7 @@ test("#9416: provider with configured prefix still uses the configured prefix (r
       chatPath: "/v1/chat/completions",
       modelsPath: "/v1/models",
     },
-  });
+  })) as JsonRecord & { id: string };
 
   await modelsDb.replaceSyncedAvailableModelsForConnection(
     NODE_ID,
@@ -361,10 +362,7 @@ test("#9416: provider with configured prefix still uses the configured prefix (r
 
   // Must still use the configured prefix, NOT slugified name
   const entry = body.data.find((m) => m.id === `${CONFIGURED_PREFIX}/glm-5.2`);
-  assert.ok(
-    entry,
-    `expected entry with configured prefix "${CONFIGURED_PREFIX}/glm-5.2"`
-  );
+  assert.ok(entry, `expected entry with configured prefix "${CONFIGURED_PREFIX}/glm-5.2"`);
   assert.equal(entry!.owned_by, CONFIGURED_PREFIX);
   assert.notEqual(entry!.owned_by, "pix4k-talk-probe"); // not slugified
 });

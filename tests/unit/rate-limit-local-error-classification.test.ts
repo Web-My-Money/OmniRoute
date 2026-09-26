@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-rl-local-errors-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -39,7 +40,10 @@ const { shouldTripProviderBreakerForResult } =
 const LOCAL_ERROR_MESSAGE = "OmniRoute repaired a local limiter queue";
 
 function createLocalLimiterSseResponse(connectionId: string, code = RATE_LIMIT_QUEUE_WEDGED_CODE) {
-  const error = markLocalRateLimitError(new Error(LOCAL_ERROR_MESSAGE), code);
+  const error = markLocalRateLimitError(
+    new Error(LOCAL_ERROR_MESSAGE),
+    code as unknown as TrustedLocalRateLimitErrorCode
+  );
   const { response } = createStreamingErrorResult(
     getTrustedLocalRateLimitError(error)?.status ?? 503,
     LOCAL_ERROR_MESSAGE,
@@ -249,7 +253,7 @@ test("legacy queue-timeout code classifies as request-scoped with or without pro
 
 for (const strategy of ["priority", "round-robin"] as const) {
   test(`${strategy} fallback preserves all health state for a trusted local SSE failure`, async () => {
-    const connection = await providersDb.createProviderConnection({
+    const connection = (await providersDb.createProviderConnection({
       provider: "openai",
       authType: "apikey",
       name: `local-wedge-${strategy}`,
@@ -259,7 +263,7 @@ for (const strategy of ["priority", "round-robin"] as const) {
       rateLimitedUntil: null,
       backoffLevel: 0,
       providerSpecificData: {},
-    });
+    })) as JsonRecord & { id: string };
     const models = [
       {
         kind: "model",
@@ -325,7 +329,7 @@ for (const strategy of ["priority", "round-robin"] as const) {
 }
 
 test("an upstream body colliding with local queue codes is treated as local backpressure (#9164)", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "upstream-local-code-collision",
@@ -333,7 +337,7 @@ test("an upstream body colliding with local queue codes is treated as local back
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await handleComboChat({
     body: {},

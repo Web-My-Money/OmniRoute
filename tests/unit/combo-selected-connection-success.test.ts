@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-sel-conn-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -77,12 +78,12 @@ describe("combo selected connection success handling", () => {
     const provider = "openai";
     const dynamicConnId = "conn-dynamic-123";
 
-    await providersDb.createProviderConnection({
+    (await providersDb.createProviderConnection({
       provider,
       authType: "apikey",
       name: "OpenAI Test",
       apiKey: "sk-test",
-    });
+    })) as JsonRecord & { id: string };
 
     // 1. Populate lockout failure count = 4
     recordModelLockoutFailure(
@@ -181,12 +182,12 @@ describe("combo selected connection success handling", () => {
     const provider = "openai";
     const dynamicConnId = "conn-dynamic-123-lc";
 
-    await providersDb.createProviderConnection({
+    (await providersDb.createProviderConnection({
       provider,
       authType: "apikey",
       name: "OpenAI Test LC",
       apiKey: "sk-test",
-    });
+    })) as JsonRecord & { id: string };
 
     // 1. Populate lockout failure count = 4
     recordModelLockoutFailure(
@@ -282,12 +283,12 @@ describe("combo selected connection success handling", () => {
     const provider = "openai";
     const dynamicConnId = "conn-dynamic-123-rr";
 
-    await providersDb.createProviderConnection({
+    (await providersDb.createProviderConnection({
       provider,
       authType: "apikey",
       name: "OpenAI Test RR",
       apiKey: "sk-test",
-    });
+    })) as JsonRecord & { id: string };
 
     // 1. Populate lockout failure count = 4
     recordModelLockoutFailure(

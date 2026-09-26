@@ -17,6 +17,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-3976-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -45,12 +46,12 @@ interface ModelsBody {
 
 test("#3976 LLM7 import fetches the live /v1/models catalog (not the 4 hardcoded models)", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "llm7",
     authType: "apikey",
     name: "llm7-live",
     apiKey: "llm7-key",
-  });
+  })) as JsonRecord & { id: string };
 
   let fetched = false;
   const originalFetch = globalThis.fetch;
@@ -91,12 +92,12 @@ test("#3976 LLM7 import fetches the live /v1/models catalog (not the 4 hardcoded
 
 test("#3976 LLM7 import falls back to the local catalog when the live fetch fails", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "llm7",
     authType: "apikey",
     name: "llm7-fallback",
     apiKey: "llm7-key-2",
-  });
+  })) as JsonRecord & { id: string };
 
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => new Response("bad gateway", { status: 502 });
@@ -118,12 +119,12 @@ test("#3976 LLM7 import falls back to the local catalog when the live fetch fail
 
 test("#3976 BytePlus import fetches the live /api/v3/models catalog", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "byteplus",
     authType: "apikey",
     name: "byteplus-live",
     apiKey: "ark-key",
-  });
+  })) as JsonRecord & { id: string };
 
   let fetched = false;
   const originalFetch = globalThis.fetch;

@@ -297,14 +297,14 @@ describe("resolveOpencodeConfigPath — cross-platform", () => {
   it("should resolve on Linux with XDG_CONFIG_HOME", () => {
     const result = resolveOpencodeConfigPathFn(
       "linux",
-      { XDG_CONFIG_HOME: "/tmp/xdg" },
+      { XDG_CONFIG_HOME: "/tmp/xdg" } as NodeJS.ProcessEnv,
       "/home/dev"
     );
     assert.equal(result, path.join("/tmp/xdg", "opencode", "opencode.json"));
   });
 
   it("should resolve on Linux with default .config", () => {
-    const result = resolveOpencodeConfigPathFn("linux", {}, "/home/dev");
+    const result = resolveOpencodeConfigPathFn("linux", {} as NodeJS.ProcessEnv, "/home/dev");
     assert.equal(result, path.join("/home/dev", ".config", "opencode", "opencode.json"));
   });
 
@@ -313,21 +313,21 @@ describe("resolveOpencodeConfigPath — cross-platform", () => {
     // platform, including Windows (%USERPROFILE%\.config). %APPDATA% is ignored.
     const result = resolveOpencodeConfigPathFn(
       "win32",
-      { APPDATA: "C:\\Users\\dev\\AppData\\Roaming" },
+      { APPDATA: "C:\\Users\\dev\\AppData\\Roaming" } as NodeJS.ProcessEnv,
       "C:\\Users\\dev"
     );
     assert.equal(result, path.join("C:\\Users\\dev", ".config", "opencode", "opencode.json"));
   });
 
   it("should resolve on Windows under ~/.config without APPDATA (#3330)", () => {
-    const result = resolveOpencodeConfigPathFn("win32", {}, "C:\\Users\\dev");
+    const result = resolveOpencodeConfigPathFn("win32", {} as NodeJS.ProcessEnv, "C:\\Users\\dev");
     assert.equal(result, path.join("C:\\Users\\dev", ".config", "opencode", "opencode.json"));
   });
 
   it("should honor XDG_CONFIG_HOME on Windows too (#3330)", () => {
     const result = resolveOpencodeConfigPathFn(
       "win32",
-      { XDG_CONFIG_HOME: "D:\\xdg" },
+      { XDG_CONFIG_HOME: "D:\\xdg" } as NodeJS.ProcessEnv,
       "C:\\Users\\dev"
     );
     assert.equal(result, path.join("D:\\xdg", "opencode", "opencode.json"));
@@ -342,7 +342,7 @@ describe("resolveOpencodeConfigPath — cross-platform", () => {
 
     const result = resolveOpencodeConfigPathFn(
       process.platform,
-      { XDG_CONFIG_HOME: xdgRoot },
+      { XDG_CONFIG_HOME: xdgRoot } as NodeJS.ProcessEnv,
       os.homedir()
     );
 
@@ -360,7 +360,7 @@ describe("resolveOpencodeConfigPath — cross-platform", () => {
 
     const result = resolveOpencodeConfigPathFn(
       process.platform,
-      { XDG_CONFIG_HOME: xdgRoot },
+      { XDG_CONFIG_HOME: xdgRoot } as NodeJS.ProcessEnv,
       os.homedir()
     );
 

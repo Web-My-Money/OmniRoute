@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { validateProviderApiKey } = await import("../../src/lib/providers/validation.ts");
 
@@ -10,7 +11,7 @@ test.afterEach(() => {
 });
 
 test("azure-openai validation accepts a successful deployments probe", async () => {
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(
       String(url),
       "https://my-resource.openai.azure.com/openai/deployments?api-version=2024-12-01-preview"
@@ -30,7 +31,7 @@ test("azure-openai validation accepts a successful deployments probe", async () 
 });
 
 test("azure-ai validation accepts a successful v1 models probe", async () => {
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(String(url), "https://my-foundry.services.ai.azure.com/openai/v1/models");
     assert.equal((init.headers as Record<string, string>)["api-key"], "azure-ai-key");
     return new Response(JSON.stringify({ data: [] }), { status: 200 });

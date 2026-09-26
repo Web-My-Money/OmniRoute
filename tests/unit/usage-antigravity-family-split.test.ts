@@ -7,6 +7,7 @@
 // hardening / code-assist-subscription (which exercise them via usage.ts __testing).
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const A = await import("../../open-sse/services/usage/antigravity.ts");
 const HOST = await import("../../open-sse/services/usage.ts");
@@ -19,7 +20,7 @@ test("leaf exports the host-facing Antigravity helpers", () => {
     "mapCodeAssistTierIdToLabel",
     "mapSubscriptionTierStringToPlanLabel",
   ]) {
-    assert.equal(typeof (A as Record<string, unknown>)[name], "function", `missing ${name}`);
+    assert.equal(typeof (A as LooseDeep)[name], "function", `missing ${name}`);
   }
 });
 

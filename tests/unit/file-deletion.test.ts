@@ -3,6 +3,7 @@ import assert from "node:assert";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-file-deletion-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -65,10 +66,10 @@ describe("File Deletion API", () => {
     const row = db.prepare("SELECT deleted_at FROM files WHERE id = ?").get(testFileId);
 
     assert(row !== undefined);
-    assert(row.deleted_at !== null);
-    assert(typeof row.deleted_at === "number");
+    assert((row as LooseDeep).deleted_at !== null);
+    assert(typeof (row as LooseDeep).deleted_at === "number");
     // Should be very recent
-    assert(row.deleted_at >= now);
+    assert((row as LooseDeep).deleted_at >= now);
     assert(row.deleted_at <= now + 10);
   });
 

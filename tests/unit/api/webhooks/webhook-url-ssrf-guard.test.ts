@@ -20,7 +20,7 @@ import path from "node:path";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-webhook-ssrf-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 process.env.DISABLE_SQLITE_AUTO_BACKUP = "true";
 
 const core = await import("../../../../src/lib/db/core.ts");
@@ -29,8 +29,9 @@ await updateSettings({ requireLogin: false });
 
 const webhooksRoute = await import("../../../../src/app/api/webhooks/route.ts");
 const webhookByIdRoute = await import("../../../../src/app/api/webhooks/[id]/route.ts");
-const webhookTestRoute =
-  await import("../../../../src/app/api/webhooks/[id]/test/route.ts?suite=ssrf-guard");
+const webhookTestRoute = await import(
+  "../../../../src/app/api/webhooks/[id]/test/route.ts" + "?suite=ssrf-guard"
+);
 const { createWebhook } = await import("../../../../src/lib/db/webhooks.ts");
 
 after(() => {

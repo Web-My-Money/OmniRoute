@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Isolated DATA_DIR set BEFORE importing anything that touches the DB
 // (checkSemanticCache -> getCachedResponse reads the semantic_cache SQLite table).
@@ -170,7 +171,7 @@ function makeHitArgs(overrides: Record<string, unknown> = {}) {
       },
     },
     persistAttemptLogs: (a: unknown) => {
-      persistCalls.push(a as Record<string, unknown>);
+      persistCalls.push(a as LooseDeep);
     },
     apiKeyId: null as string | null,
     ...overrides,
@@ -182,9 +183,9 @@ function makeHitArgs(overrides: Record<string, unknown> = {}) {
 function seedHit(args: ReturnType<typeof makeHitArgs>["args"], response: unknown) {
   const signature = generateSignature(
     args.model,
-    args.body.messages ?? (args.body as Record<string, unknown>).input,
+    args.body.messages ?? (args.body as LooseDeep).input,
     args.body.temperature,
-    (args.body as Record<string, unknown>).top_p,
+    (args.body as LooseDeep).top_p,
     args.apiKeyId ?? undefined
   );
   setCachedResponse(signature, args.model, response);

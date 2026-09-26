@@ -9,7 +9,7 @@ const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-bifrost-i
 const FAKE_BIN_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-bifrost-fake-bin-"));
 
 process.env.DATA_DIR = TEST_DATA_DIR;
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 process.env.DISABLE_SQLITE_AUTO_BACKUP = "true";
 
 const originalPath = process.env.PATH ?? "";

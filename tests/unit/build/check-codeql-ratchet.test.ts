@@ -7,7 +7,7 @@
 //                           (Hard Rule #14: dismissed alerts do not count)
 import test from "node:test";
 import assert from "node:assert/strict";
-// @ts-expect-error — .mjs helper has no type declarations; runtime shape is known.
+//
 import {
   parseCodeQLAlerts,
   evaluateCodeqlRatchet,

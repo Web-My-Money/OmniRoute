@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-search-"));
 
@@ -12,7 +13,7 @@ test("handleSearch builds Serper web requests and normalizes organic results", a
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: init.headers,
@@ -76,7 +77,7 @@ test("handleSearch builds Brave news requests and normalizes favicon metadata", 
   let capturedUrl;
   let capturedHeaders;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     capturedUrl = String(url);
     capturedHeaders = init.headers;
 
@@ -127,7 +128,7 @@ test("handleSearch builds Exa requests with contents-nested options, include/exc
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     captured = JSON.parse(String(init.body || "{}"));
 
     return new Response(
@@ -185,7 +186,7 @@ test("handleSearch builds Tavily requests with topic and raw content normalizati
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     captured = JSON.parse(String(init.body || "{}"));
 
     return new Response(
@@ -289,7 +290,7 @@ test("handleSearch builds Linkup requests and normalizes searchResults payload",
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: init.headers,
@@ -400,7 +401,7 @@ test("handleSearch builds You.com requests with livecrawl and normalizes unified
   let capturedUrl;
   let capturedHeaders;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     capturedUrl = String(url);
     capturedHeaders = init.headers;
 
@@ -662,7 +663,7 @@ test("handleSearch builds Ollama POST request with bearer auth", async () => {
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: init.headers,
@@ -841,7 +842,7 @@ test("handleSearch searches with Z.AI Coding Plan via MCP", async () => {
   const calls: { url: string; init: RequestInit }[] = [];
   let capturedArgs: Record<string, unknown> = {};
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({ url: String(url), init });
     const body = init.body ? JSON.parse(String(init.body)) : {};
 
@@ -923,7 +924,7 @@ test("handleSearch searches with Z.AI Coding Plan via MCP", async () => {
 test("handleSearch handles Z.AI Coding Plan empty MCP results", async () => {
   const originalFetch = globalThis.fetch;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const body = init.body ? JSON.parse(String(init.body)) : {};
 
     if (body.method === "initialize") {
@@ -1010,7 +1011,7 @@ test("handleSearch handles Z.AI Coding Plan MCP connection error", async () => {
 test("handleSearch handles Z.AI Coding Plan non-array MCP result", async () => {
   const originalFetch = globalThis.fetch;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const body = init.body ? JSON.parse(String(init.body)) : {};
 
     if (body.method === "initialize") {

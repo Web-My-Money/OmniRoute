@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-10734-combo-ctx-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -74,7 +75,7 @@ test("#10734: GET /v1/models does not advertise 128k for a 500k combo plus an un
   const modelId = "gpt-5.6-terra";
   assert.equal(contextOverrides.setModelContextOverride("codex", modelId, 500000), true);
 
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: "codex-10734-large-window",
@@ -82,7 +83,7 @@ test("#10734: GET /v1/models does not advertise 128k for a 500k combo plus an un
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
   await combosDb.createCombo({
     name: "large-context-combo-10734",
     strategy: "priority",

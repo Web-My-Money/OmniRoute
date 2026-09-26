@@ -53,7 +53,7 @@ test("manual sync history remains visible without advertising a disabled future 
     });
 
   // Instance A: simulates the background periodic-sync module instance.
-  const pricingSyncA = await import("../../src/lib/pricingSync.ts?instance=A");
+  const pricingSyncA = await import("../../src/lib/pricingSync.ts" + "?instance=A");
   const result = await pricingSyncA.syncPricingFromSources({
     sources: ["litellm"],
     dryRun: false,
@@ -63,7 +63,7 @@ test("manual sync history remains visible without advertising a disabled future 
   // Instance B: simulates the dashboard API-route module instance — a
   // genuinely fresh module scope that never called syncPricingFromSources
   // itself, and whose own `syncTimer`/`lastSyncTime` module vars are unset.
-  const pricingSyncB = await import("../../src/lib/pricingSync.ts?instance=B");
+  const pricingSyncB = await import("../../src/lib/pricingSync.ts" + "?instance=B");
   const status = pricingSyncB.getSyncStatus();
 
   assert.equal(

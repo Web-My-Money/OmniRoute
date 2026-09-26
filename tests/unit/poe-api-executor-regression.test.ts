@@ -14,6 +14,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-poe-api-8969-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -218,7 +219,7 @@ test("#8969: mocked execute posts Chat Completions with Bearer, no Cookie, strip
       method: (init?.method || "GET").toUpperCase(),
       authorization: headers.get("authorization"),
       cookie: headers.get("cookie"),
-      body: JSON.parse(rawBody) as Record<string, unknown>,
+      body: JSON.parse(rawBody) as LooseDeep,
     });
     return Response.json({
       id: "chatcmpl-test",

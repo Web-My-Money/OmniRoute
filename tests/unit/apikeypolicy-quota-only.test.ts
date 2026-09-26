@@ -21,9 +21,7 @@ import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
-const TEST_DATA_DIR = fs.mkdtempSync(
-  path.join(os.tmpdir(), "omniroute-apikeypolicy-quota-only-")
-);
+const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-apikeypolicy-quota-only-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
 process.env.API_KEY_SECRET = process.env.API_KEY_SECRET || "quota-only-test-secret";
 
@@ -103,12 +101,12 @@ test("quota-only key requesting its quotaShared-* virtual model is allowed", asy
   // quotaGroupSlug("Times") === "times", matching quotaModelName("Times", ...) → qtSd/times/...
   const group = groupsDb.createGroup("Times");
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "apikey",
     name: "quota-b4-codex-conn",
     apiKey: "sk-codex-b4-allowed",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as Record<string, unknown>).id as string;
   assert.ok(connId);
 
@@ -138,12 +136,12 @@ test("quota-only key requesting its quotaShared-* virtual model is allowed", asy
 
 test("quota-only key requesting raw model name is rejected 403 QUOTA_ONLY", async () => {
   const group = groupsDb.createGroup("Times");
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "apikey",
     name: "quota-b4-codex-conn-raw",
     apiKey: "sk-codex-b4-raw",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as Record<string, unknown>).id as string;
   const pool = poolsDb.createPool({ connectionId: connId, name: "Times", groupId: group.id });
 
@@ -172,12 +170,12 @@ test("quota-only key requesting raw model name is rejected 403 QUOTA_ONLY", asyn
 
 test("quota-only key requesting a quotaShared-* model from a different pool is rejected 403 QUOTA_ONLY", async () => {
   const group = groupsDb.createGroup("Times");
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "apikey",
     name: "quota-b4-codex-conn-otherpool",
     apiKey: "sk-codex-b4-otherpool",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as Record<string, unknown>).id as string;
   const pool = poolsDb.createPool({ connectionId: connId, name: "Times", groupId: group.id });
 
@@ -194,7 +192,10 @@ test("quota-only key requesting a quotaShared-* model from a different pool is r
 
   const result = await policy.enforceApiKeyPolicy(makeRequest(created.key), otherPoolVirtualModel);
 
-  assert.ok(result.rejection, "should produce a rejection Response for other-pool quotaShared-* model");
+  assert.ok(
+    result.rejection,
+    "should produce a rejection Response for other-pool quotaShared-* model"
+  );
   assert.equal(result.rejection.status, 403, "rejection should be 403 Forbidden");
 
   const body = await readBody(result.rejection);
@@ -218,14 +219,13 @@ test("key with empty allowedQuotas is subject to normal model restriction checks
 
   // Allowed model should pass
   const allowed = await policy.enforceApiKeyPolicy(makeRequest(created.key), "openai/gpt-4.1");
-  assert.equal(
-    allowed.rejection,
-    null,
-    "model in allowedModels should pass for a non-quota key"
-  );
+  assert.equal(allowed.rejection, null, "model in allowedModels should pass for a non-quota key");
 
   // Disallowed model should be rejected via the normal allowedModels path
-  const blocked = await policy.enforceApiKeyPolicy(makeRequest(created.key), "anthropic/claude-3-7-sonnet");
+  const blocked = await policy.enforceApiKeyPolicy(
+    makeRequest(created.key),
+    "anthropic/claude-3-7-sonnet"
+  );
   assert.ok(blocked.rejection, "disallowed model should be rejected");
   assert.equal(blocked.rejection.status, 403);
 
@@ -233,7 +233,11 @@ test("key with empty allowedQuotas is subject to normal model restriction checks
   assert.match(body.error.message, /not allowed for this API key/);
   // The code for this case comes from errorConfig (403 → "insufficient_quota")
   // rather than QUOTA_ONLY — confirming paths are separate
-  assert.notEqual(body.error.code, "QUOTA_ONLY", "normal key rejection must NOT use QUOTA_ONLY code");
+  assert.notEqual(
+    body.error.code,
+    "QUOTA_ONLY",
+    "normal key rejection must NOT use QUOTA_ONLY code"
+  );
 });
 
 test("non-quota key (empty allowedQuotas) requesting a qtSd model is rejected 403 QUOTA_NOT_ALLOCATED", async () => {
@@ -276,3 +280,5 @@ test("quota-only key whose allowedQuotas references a non-existent pool is rejec
   assert.equal(body.error.code, "QUOTA_ONLY", "error code should be QUOTA_ONLY");
   assert.ok(!body.error.message.includes(" at "), "message must not contain stack trace");
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

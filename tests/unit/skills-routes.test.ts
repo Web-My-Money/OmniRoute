@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-skills-route-"));
 const originalDataDir = process.env.DATA_DIR;
@@ -14,8 +15,8 @@ const skillsRoute = await import("../../src/app/api/skills/route.ts");
 const skillByIdRoute = await import("../../src/app/api/skills/[id]/route.ts");
 
 function clearSkillRegistry() {
-  skillRegistry.registeredSkills?.clear?.();
-  skillRegistry.versionCache?.clear?.();
+  skillRegistry["registeredSkills"]?.clear?.();
+  skillRegistry["versionCache"]?.clear?.();
   if (typeof skillRegistry.invalidateCache === "function") {
     skillRegistry.invalidateCache();
   }
@@ -29,7 +30,7 @@ function resetStorage() {
   core.getDbInstance();
 }
 
-async function registerSkill(overrides = {}) {
+async function registerSkill(overrides: JsonRecord = {}) {
   return skillRegistry.register({
     apiKeyId: "api-key-1",
     name: "lookupWeather",

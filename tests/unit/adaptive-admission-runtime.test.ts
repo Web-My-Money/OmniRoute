@@ -19,6 +19,7 @@ import type {
   ResourcePressureObservation,
 } from "../../open-sse/utils/resourcePressure.ts";
 import { buildErrorBody } from "../../open-sse/utils/error.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 class FakeClock {
   nowMs = 0;
@@ -139,7 +140,7 @@ function makeRuntime(
 }
 
 async function parseJson(response: Response): Promise<Record<string, unknown>> {
-  return JSON.parse(await response.text()) as Record<string, unknown>;
+  return JSON.parse(await response.text()) as LooseDeep;
 }
 
 describe("adaptive admission runtime env + defaults", () => {
@@ -282,7 +283,7 @@ describe("adaptive admission runtime env + defaults", () => {
       const snap = runtime.snapshot();
       assert.equal(snap.mode, "shadow");
       assert.equal(snap.minLimit, 8);
-      assert.equal(snap.initialLimit ?? snap.currentLimit >= 8, true);
+      assert.equal((snap as LooseDeep).initialLimit ?? snap.currentLimit >= 8, true);
       assert.equal(warnings.length, 1);
       assert.match(
         warnings[0]!,
@@ -380,7 +381,7 @@ describe("adaptive admission runtime modes", () => {
     if (second.status !== "rejected") throw new Error("expected rejected");
     assert.equal(second.response.status, 503);
     const body = await parseJson(second.response);
-    assert.equal(typeof body.error.message, "string");
+    assert.equal(typeof (body.error as LooseDeep).message, "string");
     assert.match(second.code, /^admission_/);
     assert.ok(!JSON.stringify(body).includes("t2"));
     assert.ok(!JSON.stringify(body).includes("tenant"));
@@ -497,7 +498,7 @@ describe("rejection mapping", () => {
     assert.equal(rejected.response.status, 499);
     assert.equal(rejected.response.headers.get("Retry-After"), null);
     const body = await parseJson(rejected.response);
-    assert.equal(body.error.code, "admission_aborted");
+    assert.equal((body.error as LooseDeep).code, "admission_aborted");
     assert.ok(!JSON.stringify(body).includes("wait"));
     if (holder.status === "admitted") holder.lease.release();
     runtime.dispose();
@@ -533,7 +534,7 @@ describe("rejection mapping", () => {
       assert.equal(deadlineRejected.response.status, 503);
       assert.equal(deadlineRejected.code, "admission_deadline");
       const body = await parseJson(deadlineRejected.response);
-      assert.equal(body.error.code, "admission_deadline");
+      assert.equal((body.error as LooseDeep).code, "admission_deadline");
       assert.equal(deadlineRejected.response.headers.get("Retry-After"), "1");
     }
 
@@ -553,7 +554,7 @@ describe("rejection mapping", () => {
       assert.equal(full.response.status, 503);
       assert.equal(full.response.headers.get("Retry-After"), "1");
       const body = await parseJson(full.response);
-      assert.equal(body.error.code, "admission_queue_full");
+      assert.equal((body.error as LooseDeep).code, "admission_queue_full");
     }
     clock.advance(1_000);
     await waiterPromise;
@@ -592,7 +593,7 @@ describe("rejection mapping", () => {
       assert.equal(huge.code, "admission_oversized");
       assert.equal(huge.response.status, 503);
       const body = await parseJson(huge.response);
-      assert.equal(body.error.code, "admission_oversized");
+      assert.equal((body.error as LooseDeep).code, "admission_oversized");
       assert.ok(!JSON.stringify(body).toLowerCase().includes("cost"));
       assert.ok(!JSON.stringify(body).includes("huge"));
     }
@@ -639,7 +640,7 @@ describe("rejection mapping", () => {
       assert.equal(rejected.response.status, 503);
       assert.equal(rejected.response.headers.get("Retry-After"), "1");
       const body = await parseJson(rejected.response);
-      assert.equal(body.error.code, "admission_lane_evicted");
+      assert.equal((body.error as LooseDeep).code, "admission_lane_evicted");
       assert.ok(!JSON.stringify(body).includes("lane-waiter"));
     }
     if (hold.status === "admitted") hold.lease.release();
@@ -722,7 +723,7 @@ describe("resource pressure integration", () => {
       tenantKey: "guarded-2",
       body: { messages: [{ role: "user", content: "y" }] },
     });
-    assert.equal(second.response, guard.response);
+    assert.equal((second as LooseDeep).response, guard.response);
     assert.deepEqual(pressures, ["critical"]);
     assert.equal(runtime.snapshot().currentLimit, 10);
 
@@ -737,7 +738,7 @@ describe("resource pressure integration", () => {
       tenantKey: "guarded-3",
       body: { messages: [{ role: "user", content: "z" }] },
     });
-    assert.equal(third.response, guard.response);
+    assert.equal((third as LooseDeep).response, guard.response);
     assert.deepEqual(pressures, ["critical", "critical"]);
     assert.equal(runtime.snapshot().currentLimit, 5);
     runtime.dispose();
@@ -832,7 +833,7 @@ describe("public snapshot privacy", () => {
     assert.equal(snap.resourceReason, "cgroup_ratio");
     assert.equal(snap.resourceObservedAtMs, 42);
     assert.equal(typeof snap.pressureGuardRejectCount, "number");
-    const snapRecord = snap as unknown as Record<string, unknown>;
+    const snapRecord = snap as unknown as LooseDeep;
     assert.equal(snapRecord.tenants, undefined);
     assert.equal(snapRecord.queue, undefined);
     assert.equal(snapRecord.features, undefined);

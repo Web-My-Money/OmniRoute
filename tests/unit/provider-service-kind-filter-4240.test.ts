@@ -8,6 +8,7 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { filterConfiguredProviderEntries } =
   await import("../../src/app/(dashboard)/dashboard/providers/providerPageUtils.ts");
@@ -40,7 +41,7 @@ const ENTRIES: Entry[] = [
   entry("suno", "Suno", 1),
 ];
 
-function ids(list: Entry[]): string[] {
+function ids(list: LooseDeep[]): string[] {
   return list.map((e) => e.providerId).sort();
 }
 

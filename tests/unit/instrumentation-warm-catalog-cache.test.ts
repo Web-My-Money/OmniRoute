@@ -31,8 +31,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-warm-catalog-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -102,13 +103,13 @@ test("warmModelCatalogCache warms the OpenRouter catalog once, and a real reques
   await resetStorage();
   installFakeOpenRouterFetch();
   try {
-    await providersDb.createProviderConnection({
+    (await providersDb.createProviderConnection({
       provider: "openrouter",
       authType: "apikey",
       name: "test-openrouter",
       apiKey: "sk-or-test",
       isActive: true,
-    });
+    })) as JsonRecord & { id: string };
 
     await warmModelCatalogCache();
     assert.equal(fetchCallCount, 1, "warmup should fetch the OpenRouter catalog exactly once");
@@ -150,13 +151,13 @@ test("warmModelCatalogCache makes no OpenRouter network call when no OpenRouter 
 
 test("warmModelCatalogCache never rejects, even when the OpenRouter fetch fails", async () => {
   await resetStorage();
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "test-openrouter-failing",
     apiKey: "sk-or-test-fail",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
   installFailingOpenRouterFetch();
   try {
     await assert.doesNotReject(() => warmModelCatalogCache());

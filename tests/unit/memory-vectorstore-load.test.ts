@@ -18,6 +18,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omr-vecstore-load-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -83,7 +84,7 @@ test("getVectorStore() returns null or a VectorStore instance (never throws)", (
   assert.equal(threw, false, "getVectorStore() must never throw — must return null on failure");
   assert.ok(
     result === null || (typeof result === "object" && result !== null),
-    `getVectorStore() must return object or null, got ${typeof result}`,
+    `getVectorStore() must return object or null, got ${typeof result}`
   );
 });
 
@@ -108,8 +109,8 @@ test("getVectorStore() result has all required VectorStore methods when not null
 
   for (const method of requiredMethods) {
     assert.ok(
-      typeof (store as Record<string, unknown>)[method] === "function",
-      `VectorStore must have method ${method}`,
+      typeof (store as LooseDeep)[method] === "function",
+      `VectorStore must have method ${method}`
     );
   }
 });

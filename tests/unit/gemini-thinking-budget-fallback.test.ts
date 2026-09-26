@@ -6,6 +6,8 @@ import {
   getLearnedThinkingCap,
   __test_resetLearnedThinkingCaps,
 } from "../../open-sse/services/learnedThinkingCaps.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { type LooseDeep, wrapLoose } from "../helpers/looseTypes.ts";
 
 const GEMINI_400_BODY = JSON.stringify({
   error: {
@@ -43,9 +45,9 @@ after(() => {
 test("400 'thinking_budget must be in the range' clamps nested budget and retries once", async () => {
   const executor = new SimpleExecutor();
   const originalFetch = globalThis.fetch;
-  const capturedBodies: Record<string, unknown>[] = [];
+  const capturedBodies: LooseDeep[] = [];
 
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     const body = JSON.parse(String(init.body));
     capturedBodies.push(body);
     if (capturedBodies.length === 1) {
@@ -61,7 +63,7 @@ test("400 'thinking_budget must be in the range' clamps nested budget and retrie
   };
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gemini-2.5-pro",
       body: {
         contents: [{ role: "user", parts: [{ text: "hi" }] }],
@@ -129,9 +131,9 @@ test("Antigravity envelope: budget nested under request.generationConfig is clam
   }
   const executor = new AntigravityLikeExecutor();
   const originalFetch = globalThis.fetch;
-  const capturedBodies: Record<string, unknown>[] = [];
+  const capturedBodies: LooseDeep[] = [];
 
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     const body = JSON.parse(String(init.body));
     capturedBodies.push(body);
     if (capturedBodies.length === 1) {
@@ -147,7 +149,7 @@ test("Antigravity envelope: budget nested under request.generationConfig is clam
   };
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gemini-3.1-pro",
       body: {
         request: {
@@ -187,7 +189,7 @@ test("no retry when the body carries no thinking budget (nothing to clamp → wo
   };
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gemini-2.5-pro",
       body: { contents: [{ role: "user", parts: [{ text: "hi" }] }] },
       stream: false,
@@ -214,7 +216,7 @@ test("no retry when the budget is already at/below the upstream max", async () =
   };
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gemini-2.5-pro",
       body: { generationConfig: { thinkingConfig: { thinkingBudget: 8192 } } },
       stream: false,
@@ -243,7 +245,7 @@ test("no retry for a non-thinking-budget 400", async () => {
   };
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gemini-2.5-pro",
       body: { generationConfig: { thinkingConfig: { thinkingBudget: 131072 } } },
       stream: false,
@@ -270,7 +272,7 @@ test("clamp fires at most once per execute() even if the retry also 400s", async
   };
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gemini-2.5-pro",
       body: { generationConfig: { thinkingConfig: { thinkingBudget: 131072 } } },
       stream: false,
@@ -301,9 +303,9 @@ test("E2E: reasoning_effort=xhigh on an unregistered Gemini model is clamped pro
   }
   const executor = new RealTranslatorExecutor();
   const originalFetch = globalThis.fetch;
-  const capturedBodies: Record<string, unknown>[] = [];
+  const capturedBodies: LooseDeep[] = [];
 
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     const body = JSON.parse(String(init.body));
     capturedBodies.push(body);
     // First request succeeds — the budget must already be within range.
@@ -314,7 +316,7 @@ test("E2E: reasoning_effort=xhigh on an unregistered Gemini model is clamped pro
   };
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gemini-2.5-pro", // NOT in MODEL_SPECS
       body: {
         messages: [{ role: "user", content: "hi" }],

@@ -11,6 +11,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-cap-snapshot-9199-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -30,6 +31,10 @@ const contextManager = await import("../../open-sse/services/contextManager.ts")
 const model = await import("../../open-sse/services/model.ts");
 const { MODEL_SPECS } = await import("../../src/shared/constants/modelSpecs.ts");
 const { REGISTRY } = await import("../../open-sse/config/providerRegistry.ts");
+import type {
+  ModelCapabilityResolutionSnapshot,
+  ResolveModelCapabilitiesOptions,
+} from "../../src/lib/modelCapabilities.ts";
 
 test.after(() => {
   core.resetDbInstance();
@@ -134,7 +139,11 @@ function seedFixture() {
   assert.equal(aliasCanonical.model, "claude-opus-4-5-20251101");
   assert.notEqual(aliasCanonical.model, "claude-4.5-opus");
   assert.equal(
-    capabilityOverrides.setModelCapabilityOverride("github/claude-4.5-opus", "max_output_tokens", 77777),
+    capabilityOverrides.setModelCapabilityOverride(
+      "github/claude-4.5-opus",
+      "max_output_tokens",
+      77777
+    ),
     true
   );
   assert.equal(
@@ -191,7 +200,7 @@ function pickParityFields(
 function assertOrdinarySnapshotParity(
   provider: string,
   modelId: string,
-  snapshot: modelCapabilities.ModelCapabilityResolutionSnapshot,
+  snapshot: ModelCapabilityResolutionSnapshot,
   label: string
 ) {
   const ordinaryCaps = modelCapabilities.getResolvedModelCapabilities({
@@ -200,7 +209,7 @@ function assertOrdinarySnapshotParity(
   });
   const snapshotCaps = modelCapabilities.getResolvedModelCapabilities(
     { provider, model: modelId },
-    snapshot
+    snapshot as unknown as ResolveModelCapabilitiesOptions
   );
   assert.deepEqual(
     pickParityFields(snapshotCaps),
@@ -243,7 +252,7 @@ test("#9199 bulk capability rows treat prototype-shaped keys as data", () => {
     assert.equal(bulk["prototype-provider"]?.["__proto__"]?.limit_context, 111111);
     assert.equal(Object.hasOwn(Object.prototype, "polluted-model"), false);
   } finally {
-    delete (Object.prototype as Record<string, unknown>)["polluted-model"];
+    delete (Object.prototype as LooseDeep)["polluted-model"];
   }
 });
 
@@ -378,13 +387,19 @@ test("#9199 nested override maps keep delimiter-colliding pairs distinct", (t) =
   assertOrdinarySnapshotParity("a\u0000b", "c", snapshot, "collision pair (a\\0b, c)");
 
   assert.equal(
-    modelCapabilities.getResolvedModelCapabilities({ provider: "a", model: "b\u0000c" }, snapshot)
-      .maxOutputTokens,
+    modelCapabilities.getResolvedModelCapabilities(
+      { provider: "a", model: "b\u0000c" },
+      undefined,
+      snapshot
+    ).maxOutputTokens,
     10101
   );
   assert.equal(
-    modelCapabilities.getResolvedModelCapabilities({ provider: "a\u0000b", model: "c" }, snapshot)
-      .maxOutputTokens,
+    modelCapabilities.getResolvedModelCapabilities(
+      { provider: "a\u0000b", model: "c" },
+      undefined,
+      snapshot
+    ).maxOutputTokens,
     20202
   );
   assert.equal(modelCapabilities.getModelContextLimit("a", "b\u0000c", snapshot), 30303);
@@ -490,7 +505,7 @@ test("#9199 snapshot-backed resolution matches ordinary resolvers across resolut
 
   const aliasResolved = modelCapabilities.getResolvedModelCapabilities(
     { provider: "github", model: "claude-4.5-opus" },
-    snapshot
+    snapshot as unknown as ResolveModelCapabilitiesOptions
   );
   assert.equal(aliasResolved.rawModel, "claude-4.5-opus");
   assert.equal(aliasResolved.model, "claude-opus-4-5-20251101");
@@ -501,7 +516,7 @@ test("#9199 snapshot-backed resolution matches ordinary resolvers across resolut
   );
   const canonicalOnly = modelCapabilities.getResolvedModelCapabilities(
     { provider: "github", model: "claude-opus-4-5-20251101" },
-    snapshot
+    snapshot as unknown as ResolveModelCapabilitiesOptions
   );
   assert.equal(canonicalOnly.rawModel, "claude-opus-4-5-20251101");
   assert.equal(canonicalOnly.model, "claude-opus-4-5-20251101");
@@ -514,7 +529,7 @@ test("#9199 snapshot-backed resolution matches ordinary resolvers across resolut
   // Registry-backed pins: glm-5-turbo is absent from MODEL_SPECS.
   const registryResolved = modelCapabilities.getResolvedModelCapabilities(
     { provider: "glm", model: "glm-5-turbo" },
-    snapshot
+    snapshot as unknown as ResolveModelCapabilitiesOptions
   );
   assert.equal(registryResolved.contextWindow, 200000);
   assert.equal(registryResolved.maxOutputTokens, 131072);

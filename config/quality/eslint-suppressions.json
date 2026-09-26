@@ -4945,11 +4945,6 @@
       "count": 4
     }
   },
-  "tests/unit/executor-codex.test.ts": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 3
-    }
-  },
   "tests/unit/executor-default-base.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 42
@@ -5278,11 +5273,6 @@
   "tests/unit/model-sync-route.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 16
-    }
-  },
-  "tests/unit/model-sync-scheduler.test.ts": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 1
     }
   },
   "tests/unit/model-test-route.test.ts": {
@@ -5862,11 +5852,6 @@
   "tests/unit/response-sanitizer.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 83
-    }
-  },
-  "tests/unit/responses-transformer.test.ts": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
     }
   },
   "tests/unit/responses-translation-fixes.test.ts": {
@@ -6509,14 +6494,6 @@
     }
   },
   "tests/unit/vercel-deploy-sso-protection-check.test.ts": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
-    }
-  },
-  "tests/unit/version-manager.test.ts": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 1
-    },
     "@typescript-eslint/no-unused-vars": {
       "count": 1
     }

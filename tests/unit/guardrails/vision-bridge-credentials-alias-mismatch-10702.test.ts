@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-visionbridge-cred-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -10,9 +11,8 @@ process.env.DISABLE_SQLITE_AUTO_BACKUP = "true";
 
 const core = await import("../../../src/lib/db/core.ts");
 const providersDb = await import("../../../src/lib/db/providers.ts");
-const { hasUsableCredentialsForModel } = await import(
-  "../../../src/lib/guardrails/visionBridgeCredentials.ts"
-);
+const { hasUsableCredentialsForModel } =
+  await import("../../../src/lib/guardrails/visionBridgeCredentials.ts");
 
 test.after(() => {
   core.resetDbInstance();
@@ -20,12 +20,12 @@ test.after(() => {
 });
 
 test("issue #10702: hasUsableCredentialsForModel resolves alias-prefixed model to the raw provider id (command-code / alias cmd)", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "command-code",
     authType: "apikey",
     apiKey: "sk-test-command-code-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await hasUsableCredentialsForModel("cmd/some-vision-model");
   assert.equal(
@@ -36,12 +36,12 @@ test("issue #10702: hasUsableCredentialsForModel resolves alias-prefixed model t
 });
 
 test("issue #10702: hasUsableCredentialsForModel resolves alias-prefixed model to the raw provider id (opencode / alias oc)", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "opencode",
     authType: "apikey",
     apiKey: "sk-test-opencode-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await hasUsableCredentialsForModel("oc/some-vision-model");
   assert.equal(

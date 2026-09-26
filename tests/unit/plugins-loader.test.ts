@@ -7,6 +7,7 @@ import { join } from "node:path";
 
 import { loadPlugin, type LoadedPlugin } from "../../src/lib/plugins/loader.ts";
 import type { Plugin, PluginContext, PluginResult } from "../../src/lib/plugins/index.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ── Type checks ──
 
@@ -74,7 +75,7 @@ test("PluginResult supports body modification", () => {
     body: { model: "gpt-4-turbo" },
     metadata: { plugin: "model-switcher" },
   };
-  assert.equal(modified.body.model, "gpt-4-turbo");
+  assert.equal((modified.body as LooseDeep).model, "gpt-4-turbo");
   assert.equal(modified.metadata?.plugin, "model-switcher");
 });
 

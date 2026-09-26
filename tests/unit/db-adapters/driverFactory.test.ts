@@ -7,7 +7,6 @@ import { createRequire } from "node:module";
 import type * as NodePath from "node:path";
 import { runtimeRequire } from "../../../src/lib/db/adapters/runtimeRequire.ts";
 
-
 const {
   createSyncDriverFactory,
   createBetterSqliteProbe,
@@ -36,7 +35,6 @@ function createTempDatabasePath(t: TestContext) {
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   return databasePath;
 }
-
 
 describe("driverFactory", () => {
   test("runtimeRequire loads Node built-ins outside webpack", () => {
@@ -464,14 +462,20 @@ describe("driverFactory", () => {
   });
 
   test("pack-boot sql.js forcing requires both smoke-only markers", () => {
-    assert.equal(isPackBootForcedSqlJsSmoke({}), false);
-    assert.equal(isPackBootForcedSqlJsSmoke({ OMNIROUTE_PACK_BOOT_SMOKE: "1" }), false);
-    assert.equal(isPackBootForcedSqlJsSmoke({ OMNIROUTE_PACK_BOOT_FORCE_SQLJS: "1" }), false);
+    assert.equal(isPackBootForcedSqlJsSmoke({} as NodeJS.ProcessEnv), false);
+    assert.equal(
+      isPackBootForcedSqlJsSmoke({ OMNIROUTE_PACK_BOOT_SMOKE: "1" } as NodeJS.ProcessEnv),
+      false
+    );
+    assert.equal(
+      isPackBootForcedSqlJsSmoke({ OMNIROUTE_PACK_BOOT_FORCE_SQLJS: "1" } as NodeJS.ProcessEnv),
+      false
+    );
     assert.equal(
       isPackBootForcedSqlJsSmoke({
         OMNIROUTE_PACK_BOOT_SMOKE: "1",
         OMNIROUTE_PACK_BOOT_FORCE_SQLJS: "1",
-      }),
+      } as NodeJS.ProcessEnv),
       true
     );
   });

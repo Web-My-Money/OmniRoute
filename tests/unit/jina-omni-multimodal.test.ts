@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-jina-omni-"));
 
@@ -75,14 +77,14 @@ test("schema still rejects unsafe native image URLs", () => {
 test("handleEmbedding forwards Jina Omni native text+image URL intact and does not fetch the image", async () => {
   const originalFetch = globalThis.fetch;
   const seen: Array<{ url: string; body: Record<string, unknown> }> = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const target = String(url);
     if (target === IMAGE_URL || target.includes("bike.png")) {
       throw new Error("OmniRoute must not fetch Jina-native image URLs");
     }
     seen.push({
       url: target,
-      body: JSON.parse(String(init.body || "{}")) as Record<string, unknown>,
+      body: JSON.parse(String(init.body || "{}")) as LooseDeep,
     });
     return vectorResponse();
   };
@@ -113,7 +115,7 @@ test("handleEmbedding forwards Jina Omni native text+image URL intact and does n
 test("handleEmbedding family alias jina-embeddings-v5-omni sends omni-small upstream", async () => {
   const originalFetch = globalThis.fetch;
   let upstreamModel = "";
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     upstreamModel = JSON.parse(String(init.body || "{}")).model;
     return vectorResponse();
   };

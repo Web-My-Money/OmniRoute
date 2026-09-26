@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-provreq-fail-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -102,7 +103,7 @@ test("network failure persisted call log includes providerRequest in pipeline pa
     throw new Error("Connection refused");
   };
 
-  const result = await handleChatCore({
+  const result = await looseAsync(handleChatCore)({
     body: structuredClone(body),
     modelInfo: { provider: "openai", model: "gpt-4o-mini", extendedContext: false },
     credentials: { apiKey: "sk-test", providerSpecificData: {} },
@@ -221,7 +222,7 @@ test("provider error response (HTTP 502) includes both providerRequest and provi
     );
   };
 
-  const result = await handleChatCore({
+  const result = await looseAsync(handleChatCore)({
     body: structuredClone(body),
     modelInfo: { provider: "openai", model: "gpt-4o-mini", extendedContext: false },
     credentials: { apiKey: "sk-test", providerSpecificData: {} },
@@ -288,7 +289,7 @@ test("successful response includes both providerRequest and providerResponse in 
     );
   };
 
-  const result = await handleChatCore({
+  const result = await looseAsync(handleChatCore)({
     body: structuredClone(body),
     modelInfo: { provider: "openai", model: "gpt-4o-mini", extendedContext: false },
     credentials: { apiKey: "sk-test", providerSpecificData: {} },
@@ -365,7 +366,7 @@ test("streaming response preserves request headers in providerRequest pipeline p
     });
   };
 
-  const result = await handleChatCore({
+  const result = await looseAsync(handleChatCore)({
     body: structuredClone(body),
     modelInfo: { provider: "openai", model: "gpt-4o-mini", extendedContext: false },
     credentials: { apiKey: "sk-test", providerSpecificData: {} },
@@ -434,7 +435,7 @@ test("CC-compatible providerRequest log keeps request beta headers and summarize
     });
   };
 
-  const result = await handleChatCore({
+  const result = await looseAsync(handleChatCore)({
     body: structuredClone(body),
     modelInfo: {
       provider: "anthropic-compatible-cc-test",

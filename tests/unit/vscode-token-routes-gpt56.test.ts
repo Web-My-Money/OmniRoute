@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(
   path.join(os.tmpdir(), "omniroute-vscode-token-routes-gpt56-")
@@ -45,7 +46,7 @@ test("vscode models route preserves gateway-owned Ollama Cloud effort tiers", as
     password: "hashed-password",
     requireAuthForModels: true,
   });
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "ollama-cloud",
     authType: "apikey",
     name: "ollama-cloud-vscode-efforts",
@@ -53,7 +54,7 @@ test("vscode models route preserves gateway-owned Ollama Cloud effort tiers", as
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
   const key = await apiKeysDb.createApiKey(
     "vscode-ollama-cloud-efforts",
     "machine-vscode-ollama-cloud-efforts"
@@ -91,7 +92,7 @@ test("vscode raw models route exposes native GPT-5.6 IDs and effort tiers", asyn
     password: "hashed-password",
     requireAuthForModels: true,
   });
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: "codex-vscode-raw-models",
@@ -99,7 +100,7 @@ test("vscode raw models route exposes native GPT-5.6 IDs and effort tiers", asyn
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
   const key = await apiKeysDb.createApiKey(
     "vscode-raw-models-codex",
     "machine-vscode-raw-models-codex"

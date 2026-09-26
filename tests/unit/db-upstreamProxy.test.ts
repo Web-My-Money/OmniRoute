@@ -14,6 +14,7 @@ import path from "node:path";
 import fs from "node:fs";
 import os from "node:os";
 import Database from "better-sqlite3";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const fileTmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "omni-dbupc-test-"));
 const moduleDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "omni-dbupc-module-"));
@@ -377,7 +378,7 @@ describe("db/upstreamProxy (module coverage)", () => {
     });
     assert.equal(upstreamProxyDb.validateProxyUrl("ftp://proxy.example.com").valid, false);
     assert.match(
-      upstreamProxyDb.validateProxyUrl("http://169.254.169.254").error,
+      (upstreamProxyDb.validateProxyUrl("http://169.254.169.254") as LooseDeep).error,
       /private\/internal address/
     );
     assert.match(upstreamProxyDb.validateProxyUrl("not-a-url").error, /Invalid URL/);

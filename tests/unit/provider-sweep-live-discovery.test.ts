@@ -21,6 +21,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-sweep-live-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -83,12 +84,12 @@ const LIVE_CASES: Array<{ provider: string; liveUrl: string; source?: string }> 
 for (const { provider, liveUrl, source = "api" } of LIVE_CASES) {
   test(`sweep: ${provider} import fetches the live /models catalog`, async () => {
     await resetStorage();
-    const connection = await providersDb.createProviderConnection({
+    const connection = (await providersDb.createProviderConnection({
       provider,
       authType: "apikey",
       name: `${provider}-live`,
       apiKey: "sweep-key",
-    });
+    })) as JsonRecord & { id: string };
 
     let fetched = false;
     const originalFetch = globalThis.fetch;
@@ -113,7 +114,11 @@ for (const { provider, liveUrl, source = "api" } of LIVE_CASES) {
       const body = (await response.json()) as ModelsBody;
       assert.equal(body.provider, provider);
       assert.ok(fetched, `should have probed ${liveUrl}`);
-      assert.equal(body.source, source, "should serve the live upstream catalog, not local_catalog");
+      assert.equal(
+        body.source,
+        source,
+        "should serve the live upstream catalog, not local_catalog"
+      );
       const ids = body.models.map((m) => m.id);
       assert.ok(
         ids.includes(`${provider}-live-a`) && ids.includes(`${provider}-live-b`),
@@ -127,12 +132,12 @@ for (const { provider, liveUrl, source = "api" } of LIVE_CASES) {
 
 test("sweep: live-discovery providers fall back to the local seed when upstream is down", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "venice",
     authType: "apikey",
     name: "venice-fallback",
     apiKey: "sweep-key-2",
-  });
+  })) as JsonRecord & { id: string };
 
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => new Response("bad gateway", { status: 502 });

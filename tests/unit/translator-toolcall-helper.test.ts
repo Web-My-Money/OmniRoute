@@ -8,9 +8,8 @@ import assert from "node:assert/strict";
 // left behind when client-side history truncation/compaction drops the assistant
 // turn that issued the call but keeps the stale result. Strict upstream APIs
 // reject the whole request with a 400 when an orphan is forwarded.
-const { stripOrphanedToolResults } = await import(
-  "../../open-sse/translator/helpers/toolCallHelper.ts"
-);
+const { stripOrphanedToolResults } =
+  await import("../../open-sse/translator/helpers/toolCallHelper.ts");
 
 test("stripOrphanedToolResults: matched OpenAI tool_calls + role:tool preserved", () => {
   const body = {
@@ -18,7 +17,9 @@ test("stripOrphanedToolResults: matched OpenAI tool_calls + role:tool preserved"
       {
         role: "assistant",
         content: null,
-        tool_calls: [{ id: "call_1", type: "function", function: { name: "foo", arguments: "{}" } }],
+        tool_calls: [
+          { id: "call_1", type: "function", function: { name: "foo", arguments: "{}" } },
+        ],
       },
       { role: "tool", tool_call_id: "call_1", content: "result" },
       { role: "user", content: "next" },
@@ -39,7 +40,10 @@ test("stripOrphanedToolResults: orphan role:tool stripped", () => {
     ],
   };
   const out = stripOrphanedToolResults(body);
-  assert.equal(out.messages.some((m: { role: string }) => m.role === "tool"), false);
+  assert.equal(
+    out.messages.some((m: { role: string }) => m.role === "tool"),
+    false
+  );
   assert.equal(out.messages.length, 2);
 });
 
@@ -128,7 +132,9 @@ test("stripOrphanedToolResults: mixed matched+orphan — matched kept, orphan st
       {
         role: "assistant",
         content: null,
-        tool_calls: [{ id: "call_valid", type: "function", function: { name: "fn", arguments: "{}" } }],
+        tool_calls: [
+          { id: "call_valid", type: "function", function: { name: "fn", arguments: "{}" } },
+        ],
       },
       { role: "tool", tool_call_id: "call_valid", content: "ok" },
       { role: "tool", tool_call_id: "call_orphan", content: "stale" },
@@ -143,6 +149,8 @@ test("stripOrphanedToolResults: mixed matched+orphan — matched kept, orphan st
 
 test("stripOrphanedToolResults: body without messages array is a no-op", () => {
   const body = { foo: "bar" };
-  const out = stripOrphanedToolResults(body as unknown as { messages?: unknown[] });
+  const out = stripOrphanedToolResults(
+    body as unknown as ToolCallBody as unknown as { messages?: unknown[] }
+  );
   assert.equal(out, body);
 });

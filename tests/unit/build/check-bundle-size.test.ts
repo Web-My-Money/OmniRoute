@@ -9,7 +9,7 @@ import {
   runSizeLimit,
   evaluateBundleSizeRatchet,
   readBaselineBundleSizeValue,
-  // @ts-expect-error — .mjs helper has no type declarations; runtime shape is known.
+  //
 } from "../../../scripts/check/check-bundle-size.mjs";
 
 type RatchetVerdict = { regressed: boolean; improved: boolean };

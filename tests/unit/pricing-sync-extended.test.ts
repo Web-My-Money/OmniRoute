@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-pricing-sync-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -120,7 +121,7 @@ test("syncPricingFromSources supports dry runs with warnings without persisting 
 
   assert.equal(result.success, true);
   assert.ok(result.data.openai);
-  assert.deepEqual(result.warnings, ["Unknown sources ignored: bogus-source"]);
+  assert.deepEqual((result as LooseDeep).warnings, ["Unknown sources ignored: bogus-source"]);
   assert.deepEqual(pricingSync.getSyncedPricing(), {});
 });
 

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { ReasoningRoutingRule } from "../../src/lib/db/reasoningRoutingRules.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-reasoning-api-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -17,11 +18,11 @@ const simulateRoute =
   await import("../../src/app/api/settings/reasoning-routing-rules/simulate/route.ts");
 
 type RuleResponse = {
-  rule: rulesDb.ReasoningRoutingRule;
+  rule: ReasoningRoutingRule;
 };
 
 type RuleListResponse = {
-  rules: rulesDb.ReasoningRoutingRule[];
+  rules: ReasoningRoutingRule[];
 };
 
 type SimulationResponse = {

@@ -12,7 +12,7 @@ import {
   syncStandaloneExtraModules,
   syncStandaloneNativeAssets,
 } from "../../scripts/build/build-next-isolated.mjs";
-
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 async function withTempDir(fn) {
   const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "omniroute-build-next-isolated-"));
@@ -43,7 +43,7 @@ test("movePath falls back to copy/remove when rename raises EXDEV", async () => 
       await movePath(sourceDir, destinationDir, {
         rename: async () => {
           const error = new Error("cross-device link not permitted");
-          error.code = "EXDEV";
+          (error as LooseDeep).code = "EXDEV";
           throw error;
         },
         cp: async (...args) => {
@@ -127,19 +127,25 @@ test("resolveNextBuildEnv raises the Node heap for memory-constrained local buil
 });
 
 test("resolveNextBuildEnv does not clobber an existing --max-old-space-size (Docker)", () => {
-  const env = resolveNextBuildEnv({ NODE_OPTIONS: "--max-old-space-size=8192" });
+  const env = resolveNextBuildEnv({
+    NODE_OPTIONS: "--max-old-space-size=8192",
+  } as NodeJS.ProcessEnv);
   const occurrences = (env.NODE_OPTIONS.match(/--max-old-space-size=/g) || []).length;
-  assert.equal(occurrences, 1, "must not duplicate the heap flag when one is already set");
+  (assert as LooseDeep).equal(
+    occurrences,
+    1,
+    "must not duplicate the heap flag when one is already set"
+  );
   assert.match(env.NODE_OPTIONS, /--max-old-space-size=8192/);
 });
 
 test("resolveNextBuildEnv honors the OMNIROUTE_BUILD_MEMORY_MB override", () => {
-  const env = resolveNextBuildEnv({ OMNIROUTE_BUILD_MEMORY_MB: "6144" });
+  const env = resolveNextBuildEnv({ OMNIROUTE_BUILD_MEMORY_MB: "6144" } as NodeJS.ProcessEnv);
   assert.match(env.NODE_OPTIONS, /--max-old-space-size=6144/);
 });
 
 test("getTransientBuildPaths leaves _tasks in place by default", () => {
-  const paths = getTransientBuildPaths("/repo", {});
+  const paths = getTransientBuildPaths("/repo", {} as NodeJS.ProcessEnv);
 
   // Layer 1 deleted the root-level `app/` move-out hack, so the only default
   // transient path left is the Wine prefix. ("legacy app snapshot" is gone.)
@@ -154,7 +160,9 @@ test("getTransientBuildPaths leaves _tasks in place by default", () => {
 });
 
 test("getTransientBuildPaths only moves _tasks when explicitly enabled", () => {
-  const paths = getTransientBuildPaths("/repo", { OMNIROUTE_BUILD_MOVE_TASKS: "1" });
+  const paths = getTransientBuildPaths("/repo", {
+    OMNIROUTE_BUILD_MOVE_TASKS: "1",
+  } as NodeJS.ProcessEnv);
 
   assert.equal(
     paths.some((entry) => path.basename(entry.sourcePath) === "_tasks"),

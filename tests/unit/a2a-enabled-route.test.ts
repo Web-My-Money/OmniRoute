@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { NextRequest } from "next/server";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-a2a-enabled-route-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -55,7 +56,7 @@ test.after(() => {
 
 test("A2A status reports disabled and offline when the endpoint is off", async () => {
   const response = await statusRoute.GET();
-  const body = (await response.json()) as Record<string, unknown>;
+  const body = (await response.json()) as LooseDeep;
 
   assert.equal(response.status, 200);
   assert.equal(body.status, "disabled");
@@ -108,7 +109,7 @@ test("A2A status reports online only after enabling the endpoint", async () => {
   await settingsDb.updateSettings({ a2aEnabled: true });
 
   const response = await statusRoute.GET();
-  const body = (await response.json()) as Record<string, unknown>;
+  const body = (await response.json()) as LooseDeep;
 
   assert.equal(response.status, 200);
   assert.equal(body.status, "ok");

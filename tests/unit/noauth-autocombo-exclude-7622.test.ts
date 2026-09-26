@@ -11,6 +11,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-7622-noauth-exclude-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -43,12 +44,12 @@ test.after(async () => {
 });
 
 test("#7622: a no-auth model excluded via providerSpecificData.excludedModels is ABSENT from the auto-combo candidate pool", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "opencode",
     authType: "no-auth",
     name: "OpenCode Free Account 1",
     providerSpecificData: { excludedModels: "mimo-v2.5-free" },
-  });
+  })) as JsonRecord & { id: string };
   assert.ok(conn.id, "connection must be created");
 
   const combo = await virtualFactory.createVirtualAutoCombo(undefined);
@@ -62,12 +63,12 @@ test("#7622: a no-auth model excluded via providerSpecificData.excludedModels is
 });
 
 test("#7622: a non-excluded no-auth model from the same connection remains in the auto-combo candidate pool", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "opencode",
     authType: "no-auth",
     name: "OpenCode Free Account 1",
     providerSpecificData: { excludedModels: "mimo-v2.5-free" },
-  });
+  })) as JsonRecord & { id: string };
 
   const combo = await virtualFactory.createVirtualAutoCombo(undefined);
 
@@ -79,12 +80,12 @@ test("#7622: a non-excluded no-auth model from the same connection remains in th
 });
 
 test("#7622 regression guard: with no excludedModels set, all opencode models remain in the pool (baseline unchanged)", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "opencode",
     authType: "no-auth",
     name: "OpenCode Free Account 1",
     providerSpecificData: { fingerprints: ["11111111111111111111111111111111"] },
-  });
+  })) as JsonRecord & { id: string };
 
   const combo = await virtualFactory.createVirtualAutoCombo(undefined);
 

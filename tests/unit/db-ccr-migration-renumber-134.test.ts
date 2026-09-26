@@ -57,7 +57,7 @@ test.after(() => {
 test("renumbered CCR migration frees 134 for proxy_logs on existing databases", () => {
   const db = createLegacyDb("ccr_blocks");
   try {
-    assert.equal(runMigrations(db), 1);
+    assert.equal(runMigrations(db as unknown as SqliteAdapter), 1);
     assert.deepEqual(
       db.prepare("SELECT version, name FROM _omniroute_migrations ORDER BY version").all(),
       [
@@ -75,7 +75,7 @@ test("renumbered CCR migration frees 134 for proxy_logs on existing databases", 
 test("renumbered CCR migration marks an existing table without recreating it", () => {
   const db = createLegacyDb("proxy_logs_egress_ip");
   try {
-    assert.equal(runMigrations(db), 1);
+    assert.equal(runMigrations(db as unknown as SqliteAdapter), 1);
     assert.deepEqual(
       db.prepare("SELECT version, name FROM _omniroute_migrations ORDER BY version").all(),
       [

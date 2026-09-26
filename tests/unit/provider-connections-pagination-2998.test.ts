@@ -22,12 +22,12 @@ function resetDb() {
 }
 
 async function createConnection(provider: string, name: string) {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider,
     name,
     authType: "apikey",
     apiKey: `${provider}-${name}-key`,
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(resetDb);
@@ -77,3 +77,5 @@ test("GET /api/providers keeps the unfiltered contract when provider is absent",
     new Set(["synthetic", "poe"])
   );
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

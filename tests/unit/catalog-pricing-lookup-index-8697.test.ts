@@ -6,6 +6,7 @@ import {
   clearModelsDevPricing,
   type PricingByProvider,
 } from "../../src/lib/modelsDevSync.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const PROVIDER_COUNT = 180;
 const MODELS_PER_PROVIDER = 34;
@@ -43,8 +44,8 @@ describe("catalog pricing lookup index (#8697 second bottleneck — findInsensit
       owned_by: "provider42",
       root: "model7",
     });
-    assert.ok(entry.pricing, "pricing should resolve via case-insensitive lookup");
-    assert.equal((entry.pricing as { input: number }).input, 42.07);
+    assert.ok((entry as LooseDeep).pricing, "pricing should resolve via case-insensitive lookup");
+    assert.equal(((entry as LooseDeep).pricing as { input: number }).input, 42.07);
   });
 
   it("does not rescan the pricing tables per lookup (regression guard for O(providers*models) scans)", () => {

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-dashscope-models-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -89,13 +90,13 @@ async function assertTextOnlyDiscovery({
   expectedModelIds: string[];
 }) {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name: `${provider}-live-text`,
     apiKey: "test-dashscope-key",
     ...(region ? { providerSpecificData: { region } } : {}),
-  });
+  })) as JsonRecord & { id: string };
   await modelsDb.replaceSyncedAvailableModelsForConnection(provider, connection.id, [
     { id: "qwen-image-stale", name: "Stale image model", source: "imported" },
   ]);
@@ -179,13 +180,13 @@ test("legacy Alibaba China connections also sync only Beijing text models", asyn
 
 test("Alibaba free billing mode syncs all live text models, not only the curated catalog", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "alibaba",
     authType: "apikey",
     name: "alibaba-free-live",
     apiKey: "test-dashscope-key",
     providerSpecificData: { region: "global-sg", alibabaBillingMode: "free" },
-  });
+  })) as JsonRecord & { id: string };
 
   const originalFetch = globalThis.fetch;
   globalThis.fetch = (async () =>

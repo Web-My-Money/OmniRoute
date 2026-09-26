@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { generateKeyPairSync } from "node:crypto";
 
 import { VertexExecutor } from "../../open-sse/executors/vertex.ts";
+import { wrapLoose } from "../helpers/looseTypes.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { privateKey } = generateKeyPairSync("rsa", {
   modulusLength: 2048,
@@ -23,9 +25,9 @@ function createServiceAccountJson({
     private_key_id: `kid-${saCounter}`,
   };
 
-  if (includeProjectId) payload.project_id = projectId;
+  if (includeProjectId) (payload as LooseDeep).project_id = projectId;
   if (includeEmail) {
-    payload.client_email = `svc-${saCounter}@example.iam.gserviceaccount.com`;
+    (payload as LooseDeep).client_email = `svc-${saCounter}@example.iam.gserviceaccount.com`;
   }
   if (includePrivateKey) payload.private_key = privateKey;
 
@@ -68,7 +70,10 @@ test("VertexExecutor.buildUrl routes a non-JSON Express API key to the project-l
     expressUrl,
     "https://aiplatform.googleapis.com/v1/publishers/google/models/gemini-2.5-flash:generateContent?key=express-key-abc"
   );
-  assert.ok(!expressUrl.includes("/projects/"), "Express key URL must not route through a project path");
+  assert.ok(
+    !expressUrl.includes("/projects/"),
+    "Express key URL must not route through a project path"
+  );
 });
 
 test("VertexExecutor.buildUrl routes partner and org-prefixed models to the global partner endpoint", () => {
@@ -161,7 +166,7 @@ test("VertexExecutor.execute exchanges a JWT for an access token and then calls 
 
   try {
     const body = { contents: [{ role: "user", parts: [{ text: "Hello" }] }] };
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gemini-2.5-flash",
       body,
       stream: false,
@@ -202,7 +207,7 @@ test("VertexExecutor.execute skips Service Account parsing when accessToken is a
   };
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gemini-2.5-flash",
       body: { contents: [] },
       stream: true,
@@ -265,7 +270,7 @@ test("VertexExecutor.execute strips the client's model field and injects anthrop
   };
 
   try {
-    await executor.execute({
+    await wrapLoose(executor).execute({
       model: "claude-sonnet-4-6",
       // rawPredict rejects a body-level "model" field ("Extra inputs are not permitted") since
       // the model is already encoded in the URL — the openai→claude request translator copies
@@ -313,7 +318,7 @@ test("VertexExecutor.execute synthesizes a genuine Anthropic-format SSE stream w
     );
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "claude-sonnet-4-6",
       body: { messages: [{ role: "user", content: "hi" }] },
       stream: true,

@@ -17,6 +17,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-proxy-6246-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -40,12 +41,12 @@ function setGlobalProxyEnabled(enabled: boolean) {
 }
 
 async function makeConnection(): Promise<string> {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apiKey",
     name: `Conn ${Date.now()} ${Math.random()}`,
     apiKey: "sk-test",
-  });
+  })) as JsonRecord & { id: string };
   return (conn as { id: string }).id;
 }
 

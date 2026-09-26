@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { AntigravityExecutor } from "../../open-sse/executors/antigravity.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("T44: Antigravity preserves thoughtSignature for functionCall turns", async () => {
   const executor = new AntigravityExecutor();
@@ -32,7 +33,7 @@ test("T44: Antigravity preserves thoughtSignature for functionCall turns", async
     { projectId: "test-project" }
   );
 
-  const parts = transformed.request.contents[0].parts;
+  const parts = (transformed as LooseDeep).request.contents[0].parts;
 
   assert.equal(
     parts.some((part) => part.thought === true),
@@ -100,7 +101,7 @@ test("T44: Antigravity preserves skip_thought_signature_validator bypass sentine
     { projectId: "test-project" }
   );
 
-  const parts = transformed.request.contents[0].parts;
+  const parts = (transformed as LooseDeep).request.contents[0].parts;
   assert.equal(
     parts.some((part) => part.thoughtSignature === "skip_thought_signature_validator"),
     true,

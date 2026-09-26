@@ -158,7 +158,11 @@ test("model discovery accepts only explicit uid/id fields and detects catalog am
   assert.equal(selected, "swe-1-7-lightning");
   assert.throws(() => selectLiveModel({ metadata: { id: "swe-1.7" } }), /no model identifier/i);
   assert.throws(
-    () => selectLiveModel({ models: [{ model_uid: "a.b" }] }, {}, [{ id: "a.b" }, { id: "a-b" }]),
+    () =>
+      selectLiveModel({ models: [{ model_uid: "a.b" }] }, {} as NodeJS.ProcessEnv, [
+        { id: "a.b" },
+        { id: "a-b" },
+      ]),
     /Ambiguous OmniRoute catalog normalization/
   );
 });

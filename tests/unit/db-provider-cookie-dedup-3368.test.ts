@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-cookie-dedup-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -44,88 +45,88 @@ test.after(async () => {
 });
 
 test("#3368 cookie dedup: re-importing the same cookie under a different name updates, not duplicates", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "qwen-ai",
     authType: "cookie",
     name: "Import A",
     apiKey: null,
     providerSpecificData: { cookie: "session=SAME_COOKIE_VALUE" },
     isActive: true,
-  });
-  await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  (await providersDb.createProviderConnection({
     provider: "qwen-ai",
     authType: "cookie",
     name: "Import B (same cookie)",
     apiKey: null,
     providerSpecificData: { cookie: "session=SAME_COOKIE_VALUE" },
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const conns = await providersDb.getProviderConnections({ provider: "qwen-ai" });
   assert.equal(conns.length, 1, "same cookie value must dedupe to a single connection");
 });
 
 test("#3368 cookie dedup: a different cookie creates a separate connection", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "qwen-ai",
     authType: "cookie",
     name: "Account 1",
     apiKey: null,
     providerSpecificData: { cookie: "session=COOKIE_ONE" },
     isActive: true,
-  });
-  await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  (await providersDb.createProviderConnection({
     provider: "qwen-ai",
     authType: "cookie",
     name: "Account 2",
     apiKey: null,
     providerSpecificData: { cookie: "session=COOKIE_TWO" },
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const conns = await providersDb.getProviderConnections({ provider: "qwen-ai" });
   assert.equal(conns.length, 2, "distinct cookies must remain distinct connections");
 });
 
 test("#3368 cookie dedup: token-kind credential (no `cookie` key) also dedupes by value", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "kilo-code",
     authType: "cookie",
     name: "Token A",
     apiKey: null,
     providerSpecificData: { token: "TOK_123", userToken: "TOK_123" },
     isActive: true,
-  });
-  await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  (await providersDb.createProviderConnection({
     provider: "kilo-code",
     authType: "cookie",
     name: "Token A re-import",
     apiKey: null,
     providerSpecificData: { token: "TOK_123", userToken: "TOK_123" },
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const conns = await providersDb.getProviderConnections({ provider: "kilo-code" });
   assert.equal(conns.length, 1, "same token value must dedupe even without a cookie key");
 });
 
 test("#3368 cookie dedup: name-based upsert updates the same-named cookie connection", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "qwen-ai",
     authType: "cookie",
     name: "Stable Name",
     apiKey: null,
     providerSpecificData: { cookie: "session=FIRST" },
     isActive: true,
-  });
-  await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  (await providersDb.createProviderConnection({
     provider: "qwen-ai",
     authType: "cookie",
     name: "Stable Name",
     apiKey: null,
     providerSpecificData: { cookie: "session=ROTATED" },
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const conns = await providersDb.getProviderConnections({ provider: "qwen-ai" });
   assert.equal(conns.length, 1, "same provider+name must upsert, not duplicate");

@@ -20,6 +20,8 @@
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { BaseExecutor } from "../../open-sse/executors/base.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Minimal `claude` executor: passthrough transformRequest, no credential refresh,
 // so we exercise exactly base.ts's cloak + serialize-and-return path.
@@ -41,7 +43,7 @@ test("#4307 execute() preserves the tool-name cloak map (read->Read reverse) on 
   const originalFetch = globalThis.fetch;
   let upstreamBody: Record<string, unknown> | null = null;
 
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     upstreamBody = JSON.parse(String(init.body));
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
@@ -79,7 +81,7 @@ test("#4307 execute() preserves the tool-name cloak map (read->Read reverse) on 
 
   // The actual regression guard: the returned transformedBody must still carry
   // the reverse map so chatCore can restore `Read` -> `read` for the client.
-  const returned = result.transformedBody as Record<string, unknown>;
+  const returned = (result as LooseDeep).transformedBody as LooseDeep;
   const map = returned._toolNameMap;
   assert.ok(
     map instanceof Map,

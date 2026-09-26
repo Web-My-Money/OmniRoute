@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-video-xai-"));
 
@@ -41,7 +43,7 @@ test("handleVideoGeneration creates + polls an xAI Grok Imagine video job and re
   let pollRequestCount = 0;
 
   globalThis.setTimeout = immediateTimeout;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
 
     if (stringUrl === CREATE_URL) {
@@ -70,7 +72,7 @@ test("handleVideoGeneration creates + polls an xAI Grok Imagine video job and re
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: {
         model: "xai/grok-imagine-video",
         prompt: "a cinematic tracking shot through a neon city at night",
@@ -103,7 +105,7 @@ test("handleVideoGeneration creates + polls an xAI Grok Imagine video job and re
 });
 
 test("handleVideoGeneration rejects xAI video requests without credentials", async () => {
-  const result = await handleVideoGeneration({
+  const result = await looseAsync(handleVideoGeneration)({
     body: { model: "xai/grok-imagine-video", prompt: "x" },
     credentials: null,
     log: null,
@@ -116,11 +118,10 @@ test("handleVideoGeneration rejects xAI video requests without credentials", asy
 
 test("handleVideoGeneration surfaces a 502 when xAI returns no request_id", async () => {
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = async () =>
-    jsonResponse({ error: { message: "Invalid API key" } }, 401);
+  globalThis.fetch = async () => jsonResponse({ error: { message: "Invalid API key" } }, 401);
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: { model: "xai/grok-imagine-video", prompt: "x" },
       credentials: { apiKey: "bad-key" },
       log: null,
@@ -155,7 +156,7 @@ test("handleVideoGeneration returns 502 when the xAI job status is failed", asyn
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: { model: "xai/grok-imagine-video", prompt: "x" },
       credentials: { apiKey: "xai-key" },
       log: null,
@@ -194,7 +195,7 @@ test("handleVideoGeneration returns 504 when the xAI job never completes", async
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: {
         model: "xai/grok-imagine-video",
         prompt: "x",
@@ -222,7 +223,7 @@ test("handleVideoGeneration never leaks a stack trace in xAI video error respons
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: { model: "xai/grok-imagine-video", prompt: "x" },
       credentials: { apiKey: "xai-key" },
       log: null,

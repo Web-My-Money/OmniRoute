@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-provider-model-routes-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -30,8 +32,20 @@ async function resetStorage() {
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
-async function seedConnection(provider, overrides = {}) {
-  return providersDb.createProviderConnection({
+async function seedConnection(
+  provider: string,
+  overrides: {
+    authType?: string;
+    name?: string;
+    apiKey?: string;
+    accessToken?: string;
+    projectId?: string;
+    isActive?: boolean;
+    testStatus?: string;
+    providerSpecificData?: JsonRecord;
+  } = {}
+): Promise<JsonRecord & { id: string }> {
+  const conn = (await providersDb.createProviderConnection({
     provider,
     authType: overrides.authType || "apikey",
     name: overrides.name || `${provider}-${Math.random().toString(16).slice(2, 8)}`,
@@ -41,10 +55,11 @@ async function seedConnection(provider, overrides = {}) {
     isActive: overrides.isActive ?? true,
     testStatus: overrides.testStatus || "active",
     providerSpecificData: overrides.providerSpecificData || {},
-  });
+  })) as JsonRecord & { id: string };
+  return conn;
 }
 
-async function callRoute(connectionId, search = "") {
+async function callRoute(connectionId: string, search = "") {
   return providerModelsRoute.GET(
     new Request(`http://localhost/api/providers/${connectionId}/models${search}`),
     { params: { id: connectionId } }
@@ -486,7 +501,7 @@ test("provider models route discovers local OpenAI-style models without requirin
     providerSpecificData: { autoFetchModels: true, baseUrl: "http://localhost:13305/api/v1" },
   });
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const target = String(url);
     assert.equal(init.headers.Authorization, undefined);
     if (target === "http://localhost:1234/v1/models") {
@@ -547,7 +562,7 @@ test("provider models route prefers the remote OpenRouter /models API over stati
   });
   const seenUrls = [];
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     seenUrls.push(String(url));
     assert.equal(init.method, "GET");
     assert.equal(init.headers.Authorization, "Bearer openrouter-key");
@@ -757,7 +772,7 @@ test("provider models route caches discovered opencode-go models per connection"
   });
   let fetchCalls = 0;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls += 1;
     assert.equal(String(url), "https://opencode.ai/zen/go/v1/models");
     assert.equal(init.method, "GET");
@@ -918,7 +933,7 @@ test("provider models route retries Antigravity discovery endpoints before retur
   const seenUrls: string[] = [];
   antigravityVersion.seedAntigravityIdeVersionCache("1.22.2");
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const urlString = String(url);
     // After PR #2219, the discovery flow calls loadCodeAssist first as a project
     // bootstrap; treat all bootstrap calls as non-fatal failures so the test
@@ -1105,7 +1120,7 @@ test("provider models route trims Anthropic-compatible message URLs and filters 
     isHidden: true,
   });
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(String(url), "https://proxy.example.com/v1/models");
     assert.equal(init.method, "GET");
     assert.equal(init.headers["Content-Type"], "application/json");
@@ -1294,7 +1309,7 @@ test("provider models route discovers active DataRobot gateway models from the c
     providerSpecificData: { autoFetchModels: true, baseUrl: "https://app.datarobot.com" },
   });
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(String(url), "https://app.datarobot.com/genai/llmgw/catalog/");
     assert.equal(init.method, "GET");
     assert.equal(init.headers.Authorization, "Bearer dr-key");
@@ -1334,7 +1349,7 @@ test("provider models route discovers Clarifai OpenAI-compatible models with Key
     apiKey: "clarifai-pat",
   });
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(String(url), "https://api.clarifai.com/v2/ext/openai/v1/models");
     assert.equal(init.method, "GET");
     assert.equal(init.headers.Authorization, "Key clarifai-pat");
@@ -1379,7 +1394,7 @@ test("provider models route discovers Azure AI Foundry deployments through the v
     },
   });
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(String(url), "https://my-foundry.services.ai.azure.com/openai/v1/models");
     assert.equal(init.method, "GET");
     assert.equal(init.headers["api-key"], "azure-ai-key");
@@ -1411,7 +1426,7 @@ test("provider models route discovers Azure OpenAI deployments from the resource
     },
   });
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(
       String(url),
       "https://my-resource.openai.azure.com/openai/deployments?api-version=2024-12-01-preview"
@@ -1446,7 +1461,7 @@ test("provider models route discovers native Bedrock foundation models and infer
   });
   const seenUrls: string[] = [];
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const target = String(url);
     seenUrls.push(target);
     assert.equal(init.method, "GET");
@@ -1530,7 +1545,7 @@ test("provider models route discovers watsonx gateway models from the v1 models 
     providerSpecificData: { autoFetchModels: true, baseUrl: "https://ca-tor.ml.cloud.ibm.com" },
   });
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(String(url), "https://ca-tor.ml.cloud.ibm.com/ml/gateway/v1/models");
     assert.equal(init.method, "GET");
     assert.equal(init.headers.Authorization, "Bearer watsonx-key");
@@ -1573,7 +1588,7 @@ test("provider models route discovers OCI OpenAI-compatible models and forwards 
     },
   });
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(
       String(url),
       "https://inference.generativeai.us-chicago-1.oci.oraclecloud.com/openai/v1/models"
@@ -1616,7 +1631,7 @@ test("provider models route discovers Modal models from the configured OpenAI-co
     providerSpecificData: { autoFetchModels: true, baseUrl: "https://alice--demo.modal.run/v1" },
   });
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(String(url), "https://alice--demo.modal.run/v1/models");
     assert.equal(init.method, "GET");
     assert.equal(init.headers.Authorization, "Bearer modal-key");
@@ -1706,7 +1721,7 @@ test("provider models route discovers SAP models from AI_API_URL derived from de
     },
   });
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(String(url), "https://sap.example.com/v2/lm/scenarios/foundation-models/models");
     assert.equal(init.method, "GET");
     assert.equal(init.headers.Authorization, "Bearer sap-key");
@@ -1759,7 +1774,7 @@ test("provider models route uses provider-specific auth headers for Kimi Coding"
     providerSpecificData: { autoFetchModels: true },
   });
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(String(url), "https://api.kimi.com/coding/v1/models");
     assert.equal(init.method, "GET");
     assert.equal(init.headers["x-api-key"], "kimi-coding-key");

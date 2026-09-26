@@ -211,18 +211,18 @@ test("provider create/update/delete routes emit sanitized credential audit event
 });
 
 test("deleting the final provider connection removes imported models but preserves manual models", async () => {
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "First",
     apiKey: "first-key",
-  });
-  const second = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const second = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Second",
     apiKey: "second-key",
-  });
+  })) as JsonRecord & { id: string };
   await modelsDb.addCustomModel("openai", "manual-model", "Manual", "manual");
   await modelsDb.addCustomModel("openai", "imported-model", "Imported", "imported");
   await modelsDb.addCustomModel("openai", "api-sync-model", "API Sync", "api-sync");
@@ -253,3 +253,5 @@ test("deleting the final provider connection removes imported models but preserv
     },
   ]);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

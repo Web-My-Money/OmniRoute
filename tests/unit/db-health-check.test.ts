@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-db-health-check-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -132,12 +133,12 @@ test("runDbHealthCheck auto-repairs orphan rows and invalid JSON payloads", asyn
 test("runDbHealthCheck repairs broken combo payloads, combo refs and stale connection pins", async () => {
   const db = core.getDbInstance();
   const now = new Date().toISOString();
-  const activeConnection = await providersDb.createProviderConnection({
+  const activeConnection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Healthy Connection",
     apiKey: "sk-healthy",
-  });
+  })) as JsonRecord & { id: string };
   db.prepare(
     "INSERT INTO combos (id, name, data, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)"
   ).run(
@@ -387,18 +388,18 @@ test("deleteApiKey removes domain budget and cost history rows for that key", as
 });
 
 test("deleteProviderConnection and bulk delete remove related quota snapshots", async () => {
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Primary",
     apiKey: "sk-primary",
-  });
-  const second = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const second = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Secondary",
     apiKey: "sk-secondary",
-  });
+  })) as JsonRecord & { id: string };
   const db = core.getDbInstance();
 
   db.prepare(

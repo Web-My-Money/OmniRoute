@@ -19,6 +19,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-openrouter-free-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -41,13 +43,13 @@ test.after(() => {
 test("getProviderCredentials still serves a :free OpenRouter model after the connection is credits_exhausted", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     apiKey: "sk-or-exhausted",
     isActive: true,
     testStatus: "credits_exhausted",
-  });
+  })) as JsonRecord & { id: string };
 
   const selected = await auth.getProviderCredentials(
     "openrouter",
@@ -57,19 +59,19 @@ test("getProviderCredentials still serves a :free OpenRouter model after the con
   );
 
   assert.ok(selected, "a credits_exhausted OpenRouter connection must still serve :free models");
-  assert.equal(selected.connectionId, conn.id);
+  assert.equal((selected as LooseDeep).connectionId, conn.id);
 });
 
 test("getProviderCredentials still refuses a PAID OpenRouter model on a credits_exhausted connection", async () => {
   await resetStorage();
 
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     apiKey: "sk-or-exhausted-paid",
     isActive: true,
     testStatus: "credits_exhausted",
-  });
+  })) as JsonRecord & { id: string };
 
   const selected = await auth.getProviderCredentials(
     "openrouter",
@@ -88,13 +90,13 @@ test("getProviderCredentials still refuses a PAID OpenRouter model on a credits_
 test("getProviderCredentials still refuses a :free OpenRouter model on a banned connection", async () => {
   await resetStorage();
 
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     apiKey: "sk-or-banned",
     isActive: true,
     testStatus: "banned",
-  });
+  })) as JsonRecord & { id: string };
 
   const selected = await auth.getProviderCredentials(
     "openrouter",
@@ -113,13 +115,13 @@ test("getProviderCredentials still refuses a :free OpenRouter model on a banned 
 test("getProviderCredentials still refuses a :free model on a credits_exhausted connection for a NON-openrouter provider", async () => {
   await resetStorage();
 
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-oai-exhausted",
     isActive: true,
     testStatus: "credits_exhausted",
-  });
+  })) as JsonRecord & { id: string };
 
   const selected = await auth.getProviderCredentials("openai", null, null, "some-model:free");
 

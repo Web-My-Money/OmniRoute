@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 // #6656 — Segmind image+video provider.
 // Segmind exposes 200+ hosted models under a single `POST /v1/{model}` REST
@@ -10,14 +12,15 @@ import assert from "node:assert/strict";
 // the dedicated handlers (mocked fetch, no live key required), and the
 // error path staying sanitized (no raw stack/message leakage).
 
-const { IMAGE_PROVIDERS, getImageProvider } = await import("../../open-sse/config/imageRegistry.ts");
-const { VIDEO_PROVIDERS, getVideoProvider } = await import("../../open-sse/config/videoRegistry.ts");
+const { IMAGE_PROVIDERS, getImageProvider } =
+  await import("../../open-sse/config/imageRegistry.ts");
+const { VIDEO_PROVIDERS, getVideoProvider } =
+  await import("../../open-sse/config/videoRegistry.ts");
 const { handleImageGeneration } = await import("../../open-sse/handlers/imageGeneration.ts");
 const { handleVideoGeneration } = await import("../../open-sse/handlers/videoGeneration.ts");
 const { APIKEY_PROVIDERS } = await import("../../src/shared/constants/providers/apikey/index.ts");
-const { IMAGE_ONLY_PROVIDER_IDS, VIDEO_PROVIDER_IDS } = await import(
-  "../../src/shared/constants/providers.ts"
-);
+const { IMAGE_ONLY_PROVIDER_IDS, VIDEO_PROVIDER_IDS } =
+  await import("../../src/shared/constants/providers.ts");
 
 test("segmind connection-metadata entry is registered with the expected shape", () => {
   const entry = (APIKEY_PROVIDERS as Record<string, { id: string; website: string }>).segmind;
@@ -27,7 +30,10 @@ test("segmind connection-metadata entry is registered with the expected shape", 
 });
 
 test("segmind is registered in both IMAGE_ONLY_PROVIDER_IDS and VIDEO_PROVIDER_IDS", () => {
-  assert.ok(IMAGE_ONLY_PROVIDER_IDS.has("segmind"), "segmind must appear in IMAGE_ONLY_PROVIDER_IDS");
+  assert.ok(
+    IMAGE_ONLY_PROVIDER_IDS.has("segmind"),
+    "segmind must appear in IMAGE_ONLY_PROVIDER_IDS"
+  );
   assert.ok(VIDEO_PROVIDER_IDS.has("segmind"), "segmind must appear in VIDEO_PROVIDER_IDS");
 });
 
@@ -74,7 +80,7 @@ test("handleImageGeneration posts to Segmind with x-api-key and returns a data: 
   const originalFetch = globalThis.fetch;
   let requestCapture;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     requestCapture = {
       url: String(url),
       headers: options.headers,
@@ -87,7 +93,7 @@ test("handleImageGeneration posts to Segmind with x-api-key and returns a data: 
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: {
         model: "segmind/flux-schnell",
         prompt: "a bengal tiger in an astronaut suit",
@@ -119,7 +125,7 @@ test("handleImageGeneration returns b64_json when response_format=b64_json is re
     });
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: {
         model: "segmind/flux-schnell",
         prompt: "test",
@@ -130,7 +136,9 @@ test("handleImageGeneration returns b64_json when response_format=b64_json is re
     });
 
     assert.equal(result.success, true);
-    assert.ok(typeof result.data.data[0].b64_json === "string" && result.data.data[0].b64_json.length > 0);
+    assert.ok(
+      typeof result.data.data[0].b64_json === "string" && result.data.data[0].b64_json.length > 0
+    );
     assert.equal(result.data.data[0].url, undefined);
   } finally {
     globalThis.fetch = originalFetch;
@@ -147,7 +155,7 @@ test("handleImageGeneration sanitizes Segmind upstream error bodies (no raw stac
     );
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: { model: "segmind/flux-schnell", prompt: "test" },
       credentials: { apiKey: "segmind-key" },
       log: null,
@@ -166,7 +174,7 @@ test("handleVideoGeneration posts to Segmind with x-api-key and returns an mp4 b
   const originalFetch = globalThis.fetch;
   let requestCapture;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     requestCapture = {
       url: String(url),
       headers: options.headers,
@@ -179,7 +187,7 @@ test("handleVideoGeneration posts to Segmind with x-api-key and returns an mp4 b
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: {
         model: "segmind/wan2.1-t2v",
         prompt: "a smiling woman walking in London at night",
@@ -195,7 +203,9 @@ test("handleVideoGeneration posts to Segmind with x-api-key and returns an mp4 b
     assert.equal(requestCapture.body.prompt, "a smiling woman walking in London at night");
     assert.equal(requestCapture.body.aspect_ratio, "16:9");
     assert.equal(result.data.data[0].format, "mp4");
-    assert.ok(typeof result.data.data[0].b64_json === "string" && result.data.data[0].b64_json.length > 0);
+    assert.ok(
+      typeof result.data.data[0].b64_json === "string" && result.data.data[0].b64_json.length > 0
+    );
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -205,13 +215,13 @@ test("handleVideoGeneration sanitizes Segmind upstream error bodies (no raw stac
   const originalFetch = globalThis.fetch;
 
   globalThis.fetch = async () =>
-    new Response("Traceback (most recent call last):\n  File \"/srv/app/handler.py\", line 10", {
+    new Response('Traceback (most recent call last):\n  File "/srv/app/handler.py", line 10', {
       status: 502,
       headers: { "content-type": "text/plain" },
     });
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: { model: "segmind/wan2.1-t2v", prompt: "test" },
       credentials: { apiKey: "segmind-key" },
       log: null,
@@ -235,7 +245,7 @@ test("handleImageGeneration surfaces network errors through sanitizeErrorMessage
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: { model: "segmind/flux-schnell", prompt: "test" },
       credentials: { apiKey: "segmind-key" },
       log: null,

@@ -12,6 +12,7 @@
  */
 
 import test from "node:test";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -82,15 +83,15 @@ test("Payload normalization produces correct values with real API contract shape
   };
 
   // THE BUG: reading from top-level body
-  const buggyProxies = (apiResponse as Record<string, unknown>).items ?? [];
-  const buggyTotal = (apiResponse as Record<string, unknown>).total ?? 0;
+  const buggyProxies = (apiResponse as LooseDeep).items ?? [];
+  const buggyTotal = (apiResponse as LooseDeep).total ?? 0;
   assert.equal(buggyProxies.length, 0, "BUG: data.items is undefined — should show empty table");
   assert.equal(buggyTotal, 0, "BUG: data.total is undefined — should show 0 total");
 
   // THE FIX: normalize through body?.data
-  const payload = (apiResponse as Record<string, unknown>)?.data ?? apiResponse;
-  const fixedProxies = (payload as Record<string, unknown>).proxies ?? (payload as Record<string, unknown>).items ?? [];
-  const fixedTotal = (payload as Record<string, unknown>).total ?? 0;
+  const payload = (apiResponse as LooseDeep)?.data ?? apiResponse;
+  const fixedProxies = (payload as LooseDeep).proxies ?? (payload as LooseDeep).items ?? [];
+  const fixedTotal = (payload as LooseDeep).total ?? 0;
 
   assert.equal(fixedProxies.length, 2, "FIX: payload.proxies contains 2 items");
   assert.equal(fixedTotal, 254, "FIX: payload.total is 254");
@@ -99,10 +100,7 @@ test("Payload normalization produces correct values with real API contract shape
 // Also verify the backend contract is still correct
 test("Backend route test asserts body.data.proxies contract", () => {
   // Verify the route test asserts data.proxies, not data.items
-  const routeTestPath = resolve(
-    import.meta.dirname,
-    "./api/free-proxies-list-route.test.ts"
-  );
+  const routeTestPath = resolve(import.meta.dirname, "./api/free-proxies-list-route.test.ts");
   const routeTest = readFileSync(routeTestPath, "utf-8");
   assert.ok(
     routeTest.includes("body.data.proxies") || routeTest.includes("body.data.total"),

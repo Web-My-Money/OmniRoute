@@ -114,12 +114,12 @@ test("getCachedProviderConnections caches only the unfiltered query", async () =
   const db = core.getDbInstance();
   const now = new Date().toISOString();
 
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Primary",
     apiKey: "sk-primary",
-  });
+  })) as JsonRecord & { id: string };
   const firstRead = await readCache.getCachedProviderConnections();
 
   db.prepare(
@@ -143,12 +143,12 @@ test("getCachedProviderConnections caches only the unfiltered query", async () =
 });
 
 test("resetDbInstance invalidates provider connection read caches", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Reset Cache Test",
     apiKey: "sk-reset-cache",
-  });
+  })) as JsonRecord & { id: string };
 
   assert.equal((await providersDb.getProviderConnections()).length, 1);
 
@@ -182,12 +182,12 @@ test("cached LKGP values refresh only after the specific key is invalidated", as
 test("staleness regression: getProviderConnections returns fresh data after connection deleted", async () => {
   const readCache = await importFresh("src/lib/db/readCache.ts");
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Staleness Test",
     apiKey: "sk-stale-test",
-  });
+  })) as JsonRecord & { id: string };
 
   const before = await providersDb.getProviderConnections();
   assert.ok(before.length > 0);
@@ -202,12 +202,12 @@ test("staleness regression: getProviderConnections returns fresh data after conn
 test("staleness regression: getProviderConnections returns fresh data after deleteProviderConnectionsByProvider", async () => {
   const readCache = await importFresh("src/lib/db/readCache.ts");
 
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "test-stale-batch",
     authType: "apikey",
     name: "Batch Stale Conn",
     apiKey: "sk-batch-stale",
-  });
+  })) as JsonRecord & { id: string };
 
   const before = await providersDb.getProviderConnections();
   assert.ok(before.some((c) => c.provider === "test-stale-batch"));
@@ -222,12 +222,12 @@ test("getCachedProviderConnectionById caches result and invalidates on connectio
   const readCache = await importFresh("src/lib/db/readCache.ts");
   const db = core.getDbInstance();
 
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "apikey",
     name: "Cached Conn",
     apiKey: "sk-cached-conn",
-  });
+  })) as JsonRecord & { id: string };
 
   const allConns = await providersDb.getProviderConnections();
   const id = allConns[allConns.length - 1].id;
@@ -283,3 +283,5 @@ test("getCachedProviderNodes caches results and invalidates on nodes write", asy
   assert.equal(matchingFresh.length, 1);
   assert.equal(matchingFresh[0].name, "Direct Insert Node");
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

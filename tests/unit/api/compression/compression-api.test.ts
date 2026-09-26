@@ -5,6 +5,7 @@ import { dirname, join } from "node:path";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { NextRequest } from "next/server";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,7 +21,6 @@ process.env.DATA_DIR = TEST_DATA_DIR;
 
 const core = await import("../../../../src/lib/db/core.ts");
 const route = await import("../../../../src/app/api/settings/compression/route.ts");
-
 
 describe("Compression Settings API Schema Validation", () => {
   const compressionModeValues = [
@@ -128,8 +128,8 @@ describe("Compression Settings API Schema Validation", () => {
 // Mirrors the mcp-accessibility-config test harness: allocate a temp DATA_DIR,
 // import route + DB modules, tear down in after().
 
-function makeRequest(method: string, body?: unknown): Request {
-  return new Request("http://localhost/api/settings/compression", {
+function makeRequest(method: string, body?: unknown): NextRequest {
+  return new NextRequest("http://localhost/api/settings/compression", {
     method,
     headers: body !== undefined ? { "content-type": "application/json" } : {},
     body: body !== undefined ? JSON.stringify(body) : undefined,

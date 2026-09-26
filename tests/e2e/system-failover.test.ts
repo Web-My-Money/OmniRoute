@@ -77,7 +77,7 @@ async function seedProvider(label: string, apiKey: string, baseUrl: string) {
     apiType: "chat",
     baseUrl,
   });
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: providerId,
     authType: "apikey",
     name: `conn-${label}`,
@@ -85,7 +85,7 @@ async function seedProvider(label: string, apiKey: string, baseUrl: string) {
     isActive: true,
     testStatus: "active",
     providerSpecificData: { baseUrl, apiType: "chat" },
-  });
+  })) as JsonRecord & { id: string };
   return { providerId, model: `${label}/test-model`, apiKey };
 }
 
@@ -697,3 +697,5 @@ test("single provider, both models fail: request returns 5xx to client", async (
   assert.ok(result.response.status >= 500, `expected 5xx, got ${result.response.status}`);
   assert.equal(serverA.getState(TOKEN_A).hits, 2);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

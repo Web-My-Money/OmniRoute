@@ -14,7 +14,7 @@ import path from "node:path";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-9router-reveal-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 process.env.DISABLE_SQLITE_AUTO_BACKUP = "true";
 
 // Bootstrap DB and seed service row
@@ -37,8 +37,9 @@ const { initAuditLog, countAuditLog } = await import("../../../../src/lib/compli
 initAuditLog();
 
 // Import GET after env is set
-const { GET } =
-  await import("../../../../src/app/api/services/9router/status/route.ts?t=reveal-suite");
+const { GET } = await import(
+  "../../../../src/app/api/services/9router/status/route.ts" + "?t=reveal-suite"
+);
 
 function makeRequest(url: string, headers?: Record<string, string>): Request {
   return new Request(url, { headers });

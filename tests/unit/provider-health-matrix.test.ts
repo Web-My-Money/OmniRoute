@@ -252,13 +252,13 @@ test("provider health matrix treats recovered models as degraded instead of erro
 
 test("provider health matrix route requires management auth", async () => {
   await enableManagementAuth();
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: PROVIDER,
     authType: "apikey",
     name: "matrix-key",
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const unauthenticated = await route.GET(
     new Request("http://localhost/api/providers/health-matrix?includeHealthy=true")
@@ -292,3 +292,5 @@ test("provider health matrix route rejects invalid query parameters", async () =
   );
   assert.equal(invalidBoolean.status, 400);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";
