@@ -35,6 +35,7 @@ const evaluateZizmor = evaluateZizmorRatchet as (
 const readZizmorBaseline = readBaselineZizmorValue as (p?: string) => number | null;
 const qualityWorkflowPath = new URL("../../../.github/workflows/quality.yml", import.meta.url);
 const buildWorkflowPath = new URL("../../../.github/workflows/build.yml", import.meta.url);
+const ciWorkflowPath = new URL("../../../.github/workflows/ci.yml", import.meta.url);
 
 function readWorkflow(workflowPath: URL): string {
   return fs.readFileSync(workflowPath, "utf8").replace(/\r\n/g, "\n");
@@ -46,6 +47,10 @@ function readQualityWorkflow(): string {
 
 function readBuildWorkflow(): string {
   return readWorkflow(buildWorkflowPath);
+}
+
+function readCiWorkflow(): string {
+  return readWorkflow(ciWorkflowPath);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -355,6 +360,16 @@ test("build.yml skips artifact-neutral pushes and cancels superseded builds", ()
     /concurrency:\n  group: \$\{\{ github\.workflow \}\}-\$\{\{ github\.ref \}\}/
   );
   assert.match(source, /cancel-in-progress: true/);
+});
+
+test("ci.yml + quality.yml classify renames as delete+add (--no-renames)", () => {
+  // git diff --name-only reports only the destination of a rename, so
+  // src/x.ts → docs/x.md would classify as docs-only while production code
+  // was deleted. --no-renames lists both paths so the code classification
+  // is preserved.
+  for (const source of [readCiWorkflow(), readQualityWorkflow()]) {
+    assert.match(source, /git diff --name-only --no-renames/);
+  }
 });
 
 test("#7307 quality.yml adds an advisory production build for release PR code changes", () => {

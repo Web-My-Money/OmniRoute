@@ -72,7 +72,10 @@ jobs:
             exit 0
           fi
 
-          git diff --name-only "$BASE_SHA" "$HEAD_SHA" > changed-files.txt
+          # --no-renames: --name-only reports only the destination of a rename,
+          # so src/x.ts → docs/x.md would classify as docs-only while production
+          # code was deleted. Listing both paths preserves the code signal.
+          git diff --name-only --no-renames "$BASE_SHA" "$HEAD_SHA" > changed-files.txt
           node scripts/quality/classify-pr-changes.mjs changed-files.txt >> "$GITHUB_OUTPUT"
 
   lint:
