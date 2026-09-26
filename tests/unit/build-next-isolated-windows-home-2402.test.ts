@@ -67,9 +67,9 @@ test("getWindowsBuildProfileDir is stable per-process (repeated calls return the
 
 test("ensureWindowsBuildProfileDirs is a no-op when the env has no APPDATA/LOCALAPPDATA", () => {
   let called = false;
-  ensureWindowsBuildProfileDirs({ NODE_ENV: "test" }, () => {
+  ensureWindowsBuildProfileDirs({ NODE_ENV: "test" }, (() => {
     called = true;
-  });
+  }) as unknown as typeof fsSync.mkdirSync);
   assert.equal(called, false);
 });
 

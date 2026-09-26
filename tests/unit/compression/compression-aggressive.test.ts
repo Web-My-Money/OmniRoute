@@ -24,6 +24,8 @@ describe("Integration: strategySelector → aggressive pipeline", () => {
     const messages = makeMessages(20);
     const body = { messages };
     const config: CompressionConfig = {
+      engines: {},
+      activeComboId: null,
       enabled: true,
       defaultMode: "aggressive",
       autoTriggerTokens: 0,
@@ -47,6 +49,8 @@ describe("Integration: strategySelector → aggressive pipeline", () => {
   it("applyCompression with mode='aggressive' returns unchanged for empty messages", () => {
     const body = { messages: [] };
     const config: CompressionConfig = {
+      engines: {},
+      activeComboId: null,
       enabled: true,
       defaultMode: "aggressive",
       autoTriggerTokens: 0,
@@ -178,6 +182,8 @@ describe("Integration: strategySelector → aggressive pipeline", () => {
 
   it("full pipeline: strategySelector selects aggressive mode from config", () => {
     const config: CompressionConfig = {
+      engines: {},
+      activeComboId: null,
       enabled: true,
       defaultMode: "aggressive",
       autoTriggerTokens: 0,

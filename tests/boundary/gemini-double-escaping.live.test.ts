@@ -332,7 +332,7 @@ test(
     for (const event of events) {
       if (
         event.event === "response.output_item.done" &&
-        event.data?.item?.type === "function_call"
+        (event.data as LooseDeep)?.item?.type === "function_call"
       ) {
         doneArgs = (event.data.item as LooseDeep).arguments;
       }

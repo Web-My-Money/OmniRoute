@@ -24,7 +24,7 @@ async function resetStorage() {
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
-async function createTestCombo(models = ["openrouter/openai/gpt-5.4"]) {
+async function createTestCombo(models: unknown[] = ["openrouter/openai/gpt-5.4"]) {
   return combosDb.createCombo({
     name: "strict-live-test",
     models,

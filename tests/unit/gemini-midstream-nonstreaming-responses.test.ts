@@ -119,7 +119,7 @@ test("Non-streaming: valid Gemini response with candidates still translates corr
   ) as LooseDeep;
 
   assert.equal(result.object, "chat.completion");
-  assert.equal((result.choices as unknown[])[0]?.message?.content, "Hello");
+  assert.equal(((result.choices as unknown[])[0] as LooseDeep)?.message?.content, "Hello");
 });
 
 test("detectMalformedNonStream classifies Gemini error body as empty_choices", async () => {

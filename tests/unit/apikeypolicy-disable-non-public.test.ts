@@ -276,7 +276,7 @@ test("disableNonPublicModels=true + existing combo name → not rejected by publ
   // Create a combo via the DB helper if available:
   let comboDb: { createCombo?: (input: Record<string, unknown>) => { name: string } } | null = null;
   try {
-    comboDb = (await import("../../src/lib/db/combos.ts")) as typeof comboDb;
+    comboDb = (await import("../../src/lib/db/combos.ts")) as unknown as typeof comboDb;
   } catch {
     comboDb = null;
   }

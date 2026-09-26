@@ -10,6 +10,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { CustomModelVisionDatabase } from "../../src/lib/db/models.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-api-models-hidepaid-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -109,7 +110,7 @@ test("custom-model vision DB failures fail open through point, bulk, snapshot, a
   for (const getDatabase of pointFactories) {
     assert.equal(
       customModelsDb.getCustomModelVisionOverride("openai", "gpt-4o", undefined, {
-        getDatabase,
+        getDatabase: getDatabase as () => CustomModelVisionDatabase,
       }),
       null
     );
@@ -144,7 +145,9 @@ test("custom-model vision DB failures fail open through point, bulk, snapshot, a
     }),
   ];
   for (const getDatabase of bulkFactories) {
-    const overrides = customModelsDb.listCustomModelVisionOverrides({ getDatabase });
+    const overrides = customModelsDb.listCustomModelVisionOverrides({
+      getDatabase: getDatabase as () => CustomModelVisionDatabase,
+    });
     assert.equal(overrides.size, 0);
   }
 

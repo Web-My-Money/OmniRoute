@@ -107,7 +107,7 @@ test("command-code effort-suffixed variants resolve capabilities from their base
         limit_output: 1048576,
       },
     },
-  });
+  } as unknown as Parameters<typeof modelsDevSync.saveModelsDevCapabilities>[0]);
 
   const cases: Array<[string, boolean]> = [
     ["command-code/deepseek/deepseek-v4-flash-max", false], // text-only base

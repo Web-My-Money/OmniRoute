@@ -40,10 +40,8 @@ before(async () => {
   await coreDb.ensureDbInitialized();
 });
 
-afterEach(async () => {
+afterEach(() => {
   clearUpstreamProxyConfigCache();
-  const { dbCache } = await import("../../src/lib/db/readCache.ts");
-  dbCache?.invalidate?.("settings");
 });
 
 after(() => {

@@ -13,6 +13,8 @@
  * serve the same connection when the scheduled target keeps failing.
  */
 import test from "node:test";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
+import type { ComboLike } from "../../open-sse/services/combo/types.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -67,7 +69,7 @@ function rrCombo(name: string) {
   };
 }
 
-async function dispatchServedConnection(combo: Record<string, unknown>): Promise<string> {
+async function dispatchServedConnection(combo: ComboLike): Promise<string> {
   let served = "?";
   await handleComboChat({
     body: { model: combo.name, messages: [{ role: "user", content: "hi" }], stream: false },
@@ -78,11 +80,7 @@ async function dispatchServedConnection(combo: Record<string, unknown>): Promise
     signal: undefined,
     settings: {},
     log: makeLog(),
-    handleSingleModel: async (
-      _b: unknown,
-      modelStr: string,
-      target?: { connectionId?: string | null }
-    ) => {
+    handleSingleModel: async (_b: unknown, modelStr: string, target?: LooseDeep) => {
       const conn = target?.connectionId ?? "?";
       // conn-A always fails with a fallback-eligible status so rotation must fall through.
       if (conn === "conn-A") {

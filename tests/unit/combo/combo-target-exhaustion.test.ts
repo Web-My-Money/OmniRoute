@@ -290,7 +290,7 @@ test("gemini 500 INTERNAL (sanitized real response) does NOT exhaust connection 
       fallbackResult: {},
       errorText: "Internal error encountered.",
       rawModel: "gemma-4-31b-it",
-      structuredError: { code: "500", status: "INTERNAL", message: "Internal error encountered." },
+      structuredError: { code: "500", message: "Internal error encountered." },
       sets: s,
     }
   );

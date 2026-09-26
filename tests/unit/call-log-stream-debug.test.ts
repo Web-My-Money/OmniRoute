@@ -95,7 +95,7 @@ test("saveCallLog preserves partial streamChunks", async () => {
 
   const detail = await callLogs.getCallLogById(logId);
 
-  assert.ok(detail?.pipelinePayloads?.streamChunks, "streamChunks should exist");
+  assert.ok((detail?.pipelinePayloads as LooseDeep)?.streamChunks, "streamChunks should exist");
   assert.deepEqual(
     (detail.pipelinePayloads as LooseDeep).streamChunks.provider,
     streamChunks.provider

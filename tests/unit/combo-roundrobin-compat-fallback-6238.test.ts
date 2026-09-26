@@ -43,7 +43,7 @@ function okResponse(body: unknown = { choices: [{ message: { content: "ok" } }] 
   });
 }
 
-function capabilityEntry(limitContext: unknown, overrides: Record<string, unknown> = {}) {
+function capabilityEntry(limitContext: number, overrides: Record<string, unknown> = {}) {
   return {
     tool_call: true,
     reasoning: false,

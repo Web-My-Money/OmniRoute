@@ -149,6 +149,7 @@ test("exhaustion: typed combo_target_timeout 504 does not poison connection; gen
     fallbackResult: {},
     isTokenLimitBreach: false,
     allAccountsRateLimited: false,
+    requestScopedFailure: false,
     log,
     tag: "COMBO",
     exhaustedLogLevel: "info" as const,

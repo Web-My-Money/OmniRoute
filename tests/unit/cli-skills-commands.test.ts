@@ -124,7 +124,7 @@ test("runSkillsEnable usa JSON-RPC tools/call", async () => {
   const inner = globalThis.fetch;
   globalThis.fetch = ((url: unknown, init: unknown) => {
     calls.push({ url: String(url), init });
-    return inner(url, init);
+    return inner(url as string, init as RequestInit);
   }) as any;
 
   const { runSkillsEnable } = await import("../../bin/cli/commands/skills.mjs");
@@ -149,7 +149,7 @@ test("runSkillsExecute usa JSON-RPC tools/call", async () => {
   const inner = globalThis.fetch;
   globalThis.fetch = ((url: unknown, init: unknown) => {
     calls.push({ url: String(url), init });
-    return inner(url, init);
+    return inner(url as string, init as RequestInit);
   }) as any;
 
   const { runSkillsExecute } = await import("../../bin/cli/commands/skills.mjs");

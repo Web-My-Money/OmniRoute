@@ -90,7 +90,9 @@ class FakeTransport implements CfTransport {
     private fail: { status: number; message: string } | null = null
   ) {}
 
-  async start(): Promise<{ ok: true } | { ok: false; status: number; message: string }> {
+  async start(
+    _config?: Parameters<CfTransport["start"]>[0]
+  ): Promise<{ ok: true } | { ok: false; status: number; message: string }> {
     return this.fail ? { ok: false, ...this.fail } : { ok: true };
   }
 
@@ -419,7 +421,9 @@ class HangingTransport implements CfTransport {
     this.queue = [...initialFrames];
   }
 
-  async start(): Promise<{ ok: true } | { ok: false; status: number; message: string }> {
+  async start(
+    _config?: Parameters<CfTransport["start"]>[0]
+  ): Promise<{ ok: true } | { ok: false; status: number; message: string }> {
     return { ok: true };
   }
 

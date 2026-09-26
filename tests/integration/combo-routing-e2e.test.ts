@@ -227,7 +227,7 @@ test("priority combo can repeat the same provider/model with different fixed acc
   let firstAttemptHeader = null;
   globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     const headers = toPlainHeaders(init.headers);
-    authHeaders.push(headers.authorization);
+    authHeaders.push((headers as LooseDeep).authorization);
     if (!firstAttemptHeader) {
       firstAttemptHeader = (headers as LooseDeep).authorization;
       return new Response(JSON.stringify({ error: { message: "first account down" } }), {
@@ -296,7 +296,7 @@ test("model combo mappings route explicit model ids through the configured combo
   });
   await modelComboMappingsDb.createModelComboMapping({
     pattern: "tenant/mapped-model",
-    comboId: combo.id,
+    comboId: combo.id as string,
     priority: 100,
   });
 
@@ -331,7 +331,7 @@ test("wildcard model combo mappings resolve arbitrary matching models", async ()
   });
   await modelComboMappingsDb.createModelComboMapping({
     pattern: "tenant/*",
-    comboId: combo.id,
+    comboId: combo.id as string,
     priority: 10,
   });
 

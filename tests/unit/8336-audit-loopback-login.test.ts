@@ -43,7 +43,8 @@ async function resetStorage() {
 
 test.beforeEach(async () => {
   await resetStorage();
-  loginRoute.authRouteInternals.getCookieStore = async () => ({ set() {} });
+  loginRoute.authRouteInternals.getCookieStore = async () =>
+    ({ set() {} }) as unknown as ReturnType<typeof loginRoute.authRouteInternals.getCookieStore>;
 });
 
 test.afterEach(() => {
@@ -89,7 +90,7 @@ async function postWrongPassword(forwardedFor: string) {
         "x-forwarded-for": forwardedFor,
       },
       body: JSON.stringify({ password: "wrong-password" }),
-    })
+    }) as unknown as Parameters<typeof loginRoute.POST>[0]
   );
 }
 

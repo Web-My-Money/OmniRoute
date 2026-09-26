@@ -151,7 +151,7 @@ test("parseToolCallsFromText correctly extracts response <tool> blocks (#7679)",
 });
 
 test("parseToolCallsFromText returns null when hardened text has no tool blocks (#7679)", () => {
-  const hardenedPrompt = serializeToolsToPrompt(TOOLS, { hardened: true });
+  const hardenedPrompt = serializeToolsToPrompt(TOOLS);
   const text = [hardenedPrompt, "", "I don't need any tools for this."].join("\n");
 
   const result = parseToolCallsFromText(text, "call", TOOLS);

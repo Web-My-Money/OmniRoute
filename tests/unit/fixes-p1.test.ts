@@ -254,13 +254,13 @@ test("unlinkFileWithRetry retries EBUSY/EPERM and eventually succeeds", async ()
       if (attempts === 1) {
         const err = new Error("busy");
         (err as LooseDeep).code = "EBUSY";
-        seenCodes.push(err.code);
+        seenCodes.push((err as LooseDeep).code);
         throw err;
       }
       if (attempts === 2) {
         const err = new Error("perm");
         (err as LooseDeep).code = "EPERM";
-        seenCodes.push(err.code);
+        seenCodes.push((err as LooseDeep).code);
         throw err;
       }
     }
@@ -437,9 +437,9 @@ test("proxy fetch rejects socks5 context when feature flag is disabled", async (
 test("proxy fetch accepts socks5 context when feature flag is enabled", async () => {
   await withEnv("ENABLE_SOCKS5_PROXY", "true", async () => {
     const server = net.createServer();
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       server.once("error", reject);
-      server.listen(0, "127.0.0.1", resolve);
+      server.listen(0, "127.0.0.1", () => resolve());
     });
 
     const address = server.address();
@@ -452,7 +452,7 @@ test("proxy fetch accepts socks5 context when feature flag is enabled", async ()
       );
       assert.equal(result, "ok");
     } finally {
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         server.close((err) => {
           if (err) reject(err);
           else resolve();

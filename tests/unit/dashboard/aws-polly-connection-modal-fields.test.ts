@@ -5,8 +5,12 @@ import {
   assignEditApiKeyProviderSpecificData,
   buildAddProviderSpecificData,
 } from "../../../src/app/(dashboard)/dashboard/providers/[id]/components/modals/connectionProviderSpecificData.ts";
+import { EMPTY_QUOTA_SCRAPING_FIELDS } from "../../../src/app/(dashboard)/dashboard/providers/[id]/components/modals/quotaScrapingFieldValues.ts";
+import { EMPTY_GLM_TEAM_QUOTA_FIELDS } from "../../../src/app/(dashboard)/dashboard/providers/[id]/components/modals/glmTeamQuotaProviderData.ts";
 
 const BASE_FORM_DATA = {
+  ...EMPTY_QUOTA_SCRAPING_FIELDS,
+  ...EMPTY_GLM_TEAM_QUOTA_FIELDS,
   accountId: "",
   apiRegion: "international",
   awsAccessKeyId: "",
@@ -22,12 +26,16 @@ const BASE_FORM_DATA = {
   glmProjectId: "",
   importFreeModelsOnly: false,
   m365Tier: undefined,
+  newApiAggregatorBalance: false,
   newApiUserId: "",
   passthroughModels: false,
+  quotaPerUnit: "",
   region: "",
   routingTags: "",
   tag: "",
   validationModelId: undefined,
+  tunnelId: "",
+  connectorName: "",
 };
 
 const NOOP_OPEN_ROUTER_PRESET_ADD = { applyTo: () => {} };

@@ -110,7 +110,7 @@ test("THE FIX: 429 rate_limited with no hint -> no sleep, falls through to fallb
 
   try {
     const result = await executor.handleAntigravityRateLimit(
-      ctx as unknown as AntigravityRateLimitContext
+      ctx as unknown as Parameters<typeof executor.handleAntigravityRateLimit>[0]
     );
 
     assert.equal(setTimeoutCalled, false, "must not sleep when switchAuth=true");
@@ -143,7 +143,7 @@ test("Regression: 429 with 30s hint -> sleeps and retries same URL", async () =>
 
   try {
     const result = await executor.handleAntigravityRateLimit(
-      ctx as unknown as AntigravityRateLimitContext
+      ctx as unknown as Parameters<typeof executor.handleAntigravityRateLimit>[0]
     );
 
     assert.ok(setTimeoutCallCount > 0, `setTimeout must be called (was ${setTimeoutCallCount})`);

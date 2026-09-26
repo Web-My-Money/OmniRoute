@@ -287,5 +287,5 @@ test("compression engine set falls back to PUT /api/settings/compression on MCP 
   assert.ok(restCall, "should fall back to PUT /api/settings/compression");
   assert.equal(restCall?.method, "PUT");
   // #6571: the REST fallback now PUTs the canonical `defaultMode` field
-  assert.equal(restCall?.body?.defaultMode, "rtk");
+  assert.equal((restCall?.body as LooseDeep)?.defaultMode, "rtk");
 });

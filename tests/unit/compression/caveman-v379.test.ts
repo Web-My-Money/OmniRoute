@@ -103,6 +103,8 @@ describe("Caveman v3.7.9 rule parity", () => {
     };
     const result = applyCompression(body, "standard", {
       config: {
+        engines: {},
+        activeComboId: null,
         enabled: true,
         defaultMode: "standard",
         autoTriggerMode: "standard",
@@ -142,6 +144,8 @@ describe("Caveman v3.7.9 rule parity", () => {
     for (const mode of ["aggressive", "ultra"] as const) {
       const result = applyCompression(body, mode, {
         config: {
+          engines: {},
+          activeComboId: null,
           enabled: true,
           defaultMode: mode,
           autoTriggerTokens: 0,

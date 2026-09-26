@@ -382,7 +382,7 @@ describe("db/upstreamProxy (module coverage)", () => {
       (upstreamProxyDb.validateProxyUrl("http://169.254.169.254") as LooseDeep).error,
       /private\/internal address/
     );
-    assert.match(upstreamProxyDb.validateProxyUrl("not-a-url").error, /Invalid URL/);
+    assert.match((upstreamProxyDb.validateProxyUrl("not-a-url") as LooseDeep).error, /Invalid URL/);
   });
 
   it("round-trips configs through upsert, update, mode filters and fallback ordering", async () => {

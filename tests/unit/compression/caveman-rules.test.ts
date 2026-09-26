@@ -81,16 +81,11 @@ describe("cavemanRules", () => {
   it("verbose_instructions compresses", () => {
     const rule = getRuleByName("verbose_instructions");
     assert.ok(rule);
-    const result = "provide a detailed explanation".replace(
-      rule.pattern,
-      typeof rule.replacement === "function"
-        ? (...args: string[]) =>
-            (rule.replacement as (match: string, ...rest: string[]) => string)(
-              args[0],
-              ...args.slice(1)
-            )
-        : (rule.replacement as string)
-    );
+    const rep1 = rule.replacement;
+    const result =
+      typeof rep1 === "function"
+        ? "provide a detailed explanation".replace(rule.pattern as RegExp, (m: string) => rep1(m))
+        : "provide a detailed explanation".replace(rule.pattern as RegExp, rep1);
     assert.ok(result.includes("provide"), `Expected 'provide', got: ${result}`);
     assert.ok(!result.includes("detailed"), `Expected 'detailed' removed, got: ${result}`);
   });
@@ -146,13 +141,11 @@ describe("cavemanRules", () => {
   it("passive_voice converts 'is being used' to 'uses'", () => {
     const rule = getRuleByName("passive_voice");
     assert.ok(rule);
-    const result = "The function is being used".replace(
-      rule.pattern,
-      typeof rule.replacement === "function"
-        ? (...args: string[]) =>
-            (rule.replacement as (match: string, ...rest: string[]) => string)(args[0])
-        : (rule.replacement as string)
-    );
+    const rep2 = rule.replacement;
+    const result =
+      typeof rep2 === "function"
+        ? "The function is being used".replace(rule.pattern as RegExp, (m: string) => rep2(m))
+        : "The function is being used".replace(rule.pattern as RegExp, rep2);
     assert.ok(result.includes("uses"), `Expected 'uses', got: ${result}`);
   });
 

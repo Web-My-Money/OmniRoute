@@ -93,7 +93,7 @@ test("cloudSync returns a configuration error when the cloud URL is missing", as
 test("fetchWithTimeout aborts when the timeout elapses", async () => {
   process.env.NEXT_PUBLIC_CLOUD_URL = "https://cloud.example";
   globalThis.fetch = (_url, options) =>
-    new Promise((_, reject) => {
+    new Promise<Response>((_, reject) => {
       options.signal.addEventListener("abort", () => reject(createAbortError()));
     });
 
@@ -109,7 +109,7 @@ test("cloudSync maps timeout and transport failures to stable error messages", a
   process.env.CLOUD_SYNC_TIMEOUT_MS = "5";
 
   globalThis.fetch = (_url, options) =>
-    new Promise((_, reject) => {
+    new Promise<Response>((_, reject) => {
       options.signal.addEventListener("abort", () => reject(createAbortError("timeout")));
     });
 

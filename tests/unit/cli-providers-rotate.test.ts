@@ -178,11 +178,11 @@ test("providers status returns json when server returns expiration list", async 
       json: async () => ({ list: mockList, summary: {} }),
       text: async () => "",
     });
-    globalThis.fetch = mockFetch;
+    globalThis.fetch = mockFetch as unknown as typeof fetch;
     const { runProvidersStatusCommand } = await import("../../bin/cli/commands/providers.mjs");
     // Run with our fetch in place
     const savedFetch = globalThis.fetch;
-    globalThis.fetch = mockFetch;
+    globalThis.fetch = mockFetch as unknown as typeof fetch;
     const exitCode = await runProvidersStatusCommand({ json: true });
     globalThis.fetch = savedFetch;
     assert.equal(exitCode, 0);

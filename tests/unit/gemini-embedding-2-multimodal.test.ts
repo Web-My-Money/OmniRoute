@@ -167,7 +167,8 @@ test("handleEmbedding sends N Gemini Embedding 2 inputs as N batch requests", as
         input: ["alpha", "beta", "gamma"],
         dimensions: 768,
       },
-      credentials: { apiKey: "test-gemini-token", connectionId: "conn-gemini-embed" },
+      credentials: { apiKey: "test-gemini-token" },
+      connectionId: "conn-gemini-embed",
       log: null,
     });
     assert.equal(result.success, true, result.error);

@@ -29,12 +29,13 @@ process.env.DATA_DIR = TEST_DATA_DIR;
 const { handleComboChat } = await import("../../open-sse/services/combo.ts");
 const stick = await import("../../open-sse/services/combo/sessionStickiness.ts");
 const dbCore = await import("../../src/lib/db/core.ts");
+import type { ComboLike } from "../../open-sse/services/combo/types.ts";
 
 function makeLog() {
   return { info() {}, warn() {}, debug() {}, error() {} };
 }
 
-function rrCombo(name: string) {
+function rrCombo(name: string): ComboLike {
   return {
     name,
     strategy: "round-robin",
@@ -70,7 +71,7 @@ function rrCombo(name: string) {
 
 // Responses-API shape: turns live in `.input` (array of message items with
 // input_text content parts), and `.messages` is absent.
-function responsesBody(combo: Record<string, unknown>, firstMessage: string) {
+function responsesBody(combo: ComboLike, firstMessage: string) {
   return {
     model: combo.name,
     input: [{ role: "user", content: [{ type: "input_text", text: firstMessage }] }],
@@ -79,7 +80,7 @@ function responsesBody(combo: Record<string, unknown>, firstMessage: string) {
 }
 
 async function dispatchConnection(
-  combo: Record<string, unknown>,
+  combo: ComboLike,
   body: Record<string, unknown>
 ): Promise<string> {
   let conn = "?";
@@ -92,11 +93,7 @@ async function dispatchConnection(
     signal: undefined,
     settings: {},
     log: makeLog(),
-    handleSingleModel: async (
-      _b: unknown,
-      modelStr: string,
-      target?: { connectionId?: string | null }
-    ) => {
+    handleSingleModel: async (_b: unknown, modelStr: string, target?: LooseDeep) => {
       conn = target?.connectionId ?? "?";
       return Response.json({ choices: [{ message: { role: "assistant", content: modelStr } }] });
     },
@@ -211,7 +208,7 @@ test("round-robin: a sessionless Responses-API conversation re-pins across turns
 // normalizeStickinessMessages cast the array straight through unmapped, so
 // deriveMessageHash never found a `role === "user"` entry and stickiness stayed
 // fail-open for this narrower wire shape too.
-function responsesBodyPlainStringArray(combo: Record<string, unknown>, firstMessage: string) {
+function responsesBodyPlainStringArray(combo: ComboLike, firstMessage: string) {
   return {
     model: combo.name,
     input: [firstMessage],

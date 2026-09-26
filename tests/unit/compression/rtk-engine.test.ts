@@ -10,6 +10,7 @@ import {
   rtkEngine,
 } from "../../../open-sse/services/compression/index.ts";
 import type { LooseDeep } from "../../helpers/looseTypes.ts";
+import { DEFAULT_RTK_CONFIG } from "../../../open-sse/services/compression/types.ts";
 
 describe("RTK compression engine", () => {
   it("detects TypeScript build output", () => {
@@ -74,10 +75,25 @@ describe("RTK compression engine", () => {
     const repeated = Array.from({ length: 20 }, () => "same").join("\n");
     const body = { messages: [{ role: "tool", content: repeated }] };
     assert.equal(
-      rtkEngine.apply(body, { config: { rtkConfig: { enabled: true } } }).stats?.engine,
+      rtkEngine.apply(body, {
+        config: {
+          enabled: true,
+          defaultMode: "rtk",
+          autoTriggerTokens: 0,
+          cacheMinutes: 0,
+          preserveSystemPrompt: true,
+          comboOverrides: {},
+          engines: {},
+          activeComboId: null,
+          rtkConfig: { ...DEFAULT_RTK_CONFIG, enabled: true },
+        },
+      }).stats?.engine,
       "rtk"
     );
-    assert.equal(rtkEngine.compress(body, { enabled: true }).stats?.engine, "rtk");
+    assert.equal(
+      rtkEngine.compress(body, { ...DEFAULT_RTK_CONFIG, enabled: true }).stats?.engine,
+      "rtk"
+    );
   });
 
   it("applies to chat tool messages", () => {
@@ -111,7 +127,7 @@ describe("RTK compression engine", () => {
     assert.ok((Array as LooseDeep).isArray(content));
     assert.match((content[0] as LooseDeep).text ?? "", /alpha noisy line/);
     assert.match((content[2] as LooseDeep).text ?? "", /beta noisy line/);
-    assert.notEqual(content[0].text, (content[2] as LooseDeep).text);
+    assert.notEqual((content[0] as LooseDeep).text, (content[2] as LooseDeep).text);
     assert.deepEqual(content[1], imagePart);
   });
 });

@@ -48,7 +48,7 @@ function makeRoot({ fragments = {} } = {}) {
   for (const [rel, text] of Object.entries(fragments)) {
     const abs = join(root, "changelog.d", rel);
     mkdirSync(join(abs, ".."), { recursive: true });
-    writeFileSync(abs, text as unknown as string | ArrayBufferView<ArrayBufferLike>);
+    writeFileSync(abs, text as unknown as Parameters<typeof writeFileSync>[1]);
   }
   return root;
 }

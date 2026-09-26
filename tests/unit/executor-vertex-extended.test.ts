@@ -29,7 +29,7 @@ function createServiceAccountJson({
   if (includeEmail) {
     (payload as LooseDeep).client_email = `svc-${saCounter}@example.iam.gserviceaccount.com`;
   }
-  if (includePrivateKey) payload.private_key = privateKey;
+  if (includePrivateKey) (payload as LooseDeep).private_key = privateKey;
 
   return JSON.stringify(payload);
 }

@@ -131,7 +131,7 @@ test("buildClaudeCodeCompatibleRequest keeps prior role history while dropping t
       { role: "user", text: "u2" },
     ]
   );
-  assert.equal((payload.messages[0].content.at(-1) as any).cache_control, undefined);
+  assert.equal((payload.messages[0].content as LooseDeep[]).at(-1).cache_control, undefined);
   assert.equal((payload.messages[1] as any).content.at(-1).cache_control, undefined);
   assert.equal((payload.messages as any)[2].content.at(-1).cache_control, undefined);
   assert.equal(payload.system.length, 2);
@@ -152,8 +152,8 @@ test("buildClaudeCodeCompatibleRequest keeps prior role history while dropping t
       required: ["city"],
     },
   });
-  (assert as LooseDeep).deepEqual(payload.tool_choice, { type: "any" });
-  assert.equal(payload.context_management, undefined as any);
+  assert.deepEqual(payload.tool_choice, { type: "any" });
+  assert.equal((payload as LooseDeep).context_management, undefined as any);
   assert.equal(JSON.parse((payload as any).metadata.user_id).session_id, "session-1");
 });
 

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { writeFileSync } from "node:fs";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const isolatedRoot = path.join(process.cwd(), ".sandbox", "direct-acp-test");
 process.env.HOME = path.join(isolatedRoot, "home");
@@ -107,8 +108,8 @@ test("Devin agentic provider delegates auth only to the isolated CLI", () => {
 
 test("Devin agentic provider resolves synthetic no-auth credentials without a DB row", async () => {
   const credentials = await getProviderCredentials("devin-cli-agentic");
-  assert.equal(credentials?.connectionId, "noauth");
-  assert.equal(credentials?.apiKey, null);
+  assert.equal((credentials as LooseDeep)?.connectionId, "noauth");
+  assert.equal((credentials as LooseDeep)?.apiKey, null);
 });
 
 function writeMockDevin(tmpDir: string, responseText: string) {

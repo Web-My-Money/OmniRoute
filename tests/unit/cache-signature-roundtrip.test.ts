@@ -48,7 +48,7 @@ test("cache signature must be identical before and after body mutations", async 
     mutatedBody.model,
     mutatedBody.messages,
     mutatedBody.temperature as unknown as number,
-    mutatedBody.top_p
+    mutatedBody.top_p as unknown as number
   );
 
   // Compute signature at write-time using the preserved snapshot (the fix).

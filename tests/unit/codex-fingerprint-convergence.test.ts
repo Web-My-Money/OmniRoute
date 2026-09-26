@@ -449,7 +449,12 @@ test("ensureCodexFingerprintSeed creates once, preserves, and skips non-converge
   assert.notEqual(forgedOnCreate?.codexFingerprintSeed, "99999999-8888-4777-8666-555555555555");
 
   // Non-OAuth (API key) connections are never seeded.
-  assert.equal(ensureCodexFingerprintSeed(undefined, { apiKey: "sk-x" }), undefined);
+  assert.equal(
+    ensureCodexFingerprintSeed(undefined, { apiKey: "sk-x" } as unknown as Parameters<
+      typeof ensureCodexFingerprintSeed
+    >[1]),
+    undefined
+  );
   assert.equal(ensureCodexFingerprintSeed(undefined, undefined), undefined);
 
   // device/full modes require the seed as well.

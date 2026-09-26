@@ -84,9 +84,9 @@ test("auth login route returns needsSetup when no management password is configu
 test("auth login route lazily migrates INITIAL_PASSWORD to a persisted hash before validating", async () => {
   process.env.INITIAL_PASSWORD = "bootstrap-secret";
   const setCalls: unknown[][] = [];
-  loginRoute.authRouteInternals.getCookieStore = async () => ({
+  loginRoute.authRouteInternals.getCookieStore = (async () => ({
     set: (...args: unknown[]) => setCalls.push(args),
-  });
+  })) as unknown as typeof loginRoute.authRouteInternals.getCookieStore;
 
   const response = await loginRoute.POST(
     new NextRequest("http://localhost/api/auth/login", {
@@ -113,9 +113,9 @@ test("auth login route lazily migrates INITIAL_PASSWORD to a persisted hash befo
 test("auth login route sets a bounded maxAge on the auth_token cookie (Seg3)", async () => {
   process.env.INITIAL_PASSWORD = "bootstrap-secret";
   const setCalls: unknown[][] = [];
-  loginRoute.authRouteInternals.getCookieStore = async () => ({
+  loginRoute.authRouteInternals.getCookieStore = (async () => ({
     set: (...args: unknown[]) => setCalls.push(args),
-  });
+  })) as unknown as typeof loginRoute.authRouteInternals.getCookieStore;
 
   const response = await loginRoute.POST(
     new NextRequest("http://localhost/api/auth/login", {

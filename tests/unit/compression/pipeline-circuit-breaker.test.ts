@@ -1,5 +1,7 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
+import type { CompressionEngineMetadata } from "../../../open-sse/services/compression/engines/types.ts";
+import type { CompressionEngineId } from "../../../open-sse/services/compression/types.ts";
 import {
   resolvePipelineBreakerConfig,
   canRunEngine,
@@ -90,7 +92,7 @@ describe("pipelineEngineBreaker — state machine", () => {
 });
 
 describe("pipelineEngineBreaker — pipeline integration", () => {
-  const ENGINE_ID = "test-cb-throw";
+  const ENGINE_ID = "test-cb-throw" as CompressionEngineId;
   let calls = 0;
 
   beforeEach(() => {
@@ -98,9 +100,12 @@ describe("pipelineEngineBreaker — pipeline integration", () => {
     registerCompressionEngine({
       id: ENGINE_ID,
       name: "throwing test engine",
+      description: "test",
+      icon: "test",
+      stackPriority: 0,
       targets: ["messages"],
       stackable: true,
-      metadata: { executionStages: ["pre-translation"] },
+      metadata: { executionStages: ["pre-translation"] } as CompressionEngineMetadata,
       apply() {
         calls += 1;
         throw new Error("boom");

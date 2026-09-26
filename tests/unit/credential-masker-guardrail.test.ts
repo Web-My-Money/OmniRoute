@@ -62,7 +62,7 @@ test("redacts every shared reference without mutating the original", async () =>
     const guardrail = new CredentialMaskerGuardrail();
     const shared = { Authorization: "Bearer shared-token" };
     const result = await guardrail.postCall({ first: shared, second: shared }, {});
-    const response = result?.modifiedResponse as {
+    const response = (result as LooseDeep)?.modifiedResponse as {
       first: { Authorization: string };
       second: { Authorization: string };
     };
@@ -79,7 +79,7 @@ test("preserves unchanged cyclic provider responses without JSON serialization",
     const response: Record<string, unknown> = { value: undefined, nested: { safe: true } };
     response.self = response;
     const result = await guardrail.postCall(response, {});
-    assert.equal(result?.modifiedResponse, undefined);
+    assert.equal((result as LooseDeep)?.modifiedResponse, undefined);
     assert.equal(response.value, undefined);
     assert.equal(response.self, response);
   });
@@ -91,7 +91,7 @@ test("does not re-redact an already-redacted structured header", async () => {
     const response = { headers: { Authorization: "Bearer [REDACTED:auth_header]" } };
     const result = await guardrail.postCall(response, {});
 
-    assert.equal(result?.modifiedResponse, undefined);
+    assert.equal((result as LooseDeep)?.modifiedResponse, undefined);
     assert.equal(response.headers.Authorization, "Bearer [REDACTED:auth_header]");
   });
 });

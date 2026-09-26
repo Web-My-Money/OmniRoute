@@ -164,7 +164,7 @@ describe("formatCompressionMeta", () => {
 });
 
 describe("buildNamedComboLookup", () => {
-  const pipe = [{ engine: "lite" }];
+  const pipe = [{ engine: "lite" }] as CompressionPipelineStep[];
 
   it("keys each combo by both id and lowercased name", () => {
     const map = buildNamedComboLookup([{ id: "abc-123", name: "My Fast Combo", pipeline: pipe }]);

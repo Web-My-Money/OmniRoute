@@ -10,12 +10,11 @@ import test, { describe } from "node:test";
 import assert from "node:assert/strict";
 
 /** Minimal shape accepted by DuckDuckGoWebExecutor.execute() */
-interface ExecutorRequest {
-  model: string;
-  messages: Array<{ role: string; content: unknown }>;
-  stream: boolean;
-  signal?: AbortSignal;
-}
+import type { ExecuteInput } from "../../open-sse/executors/base.ts";
+
+type ExecutorRequest = Pick<ExecuteInput, "model" | "stream" | "signal" | "credentials"> & {
+  body: { messages: Array<{ role: string; content: unknown }> };
+};
 
 // The DuckDuckGoWebExecutor uses module-level mutable state (circuitBreaker)
 // so we import the module fresh and interact with execute() to verify
@@ -45,8 +44,9 @@ describe("#6999 DDG circuit breaker", () => {
     const executor = makeExecutor();
     const response = await executor.execute({
       model: "gpt-4o-mini",
-      messages: [],
+      body: { messages: [] },
       stream: false,
+      credentials: {},
     } satisfies ExecutorRequest);
 
     assert.equal(response.status, 400, "empty messages should still be 400 regardless of CB state");
@@ -70,8 +70,9 @@ describe("#6999 DDG circuit breaker", () => {
     try {
       const response = await executor.execute({
         model: "gpt-4o-mini",
-        messages: validMessages(),
+        body: { messages: validMessages() },
         stream: false,
+        credentials: {},
       } satisfies ExecutorRequest);
       // If we get here, network succeeded or timed out gracefully
       assert.ok(response instanceof Response, "should return a Response object");

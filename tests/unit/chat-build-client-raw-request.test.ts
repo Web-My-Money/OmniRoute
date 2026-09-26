@@ -68,7 +68,7 @@ test("resolveDispatchClientRawRequest uses modelAbortSignal directly when client
   const modelAbortController = new AbortController();
   const clientRawRequest = { endpoint: "/v1/responses", signal: null };
   const out = resolveDispatchClientRawRequest(clientRawRequest, modelAbortController.signal);
-  assert.equal(out?.endpoint, "/v1/responses", "other fields are preserved");
+  assert.equal((out as LooseDeep)?.endpoint, "/v1/responses", "other fields are preserved");
   assert.equal(out?.signal?.aborted, false);
   modelAbortController.abort(new Error("target timeout"));
   assert.equal(out?.signal?.aborted, true, "the returned signal must reflect the model abort");

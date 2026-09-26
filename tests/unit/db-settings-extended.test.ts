@@ -178,11 +178,7 @@ test("getLKGP returns null for unknown combo/model", async () => {
 
 test("setLKGP and getLKGP round-trip", async () => {
   await resetStorage();
-  await settings.setLKGP("test-combo", "test-model", {
-    provider: "test",
-    model: "test",
-    connectionId: "conn-1",
-  });
+  await settings.setLKGP("test-combo", "test-model", "test", "conn-1");
   const result = await settings.getLKGP("test-combo", "test-model");
   assert.ok(result === null || typeof result === "object");
 });

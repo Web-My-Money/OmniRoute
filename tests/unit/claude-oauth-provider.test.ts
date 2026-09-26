@@ -72,7 +72,7 @@ test("Claude OAuth provider always uses the configured redirectUri during token 
 });
 
 test("Claude OAuth token mapper persists the first non-empty token plan field", () => {
-  const cases = [
+  const cases: [Record<string, unknown>, string][] = [
     [{ account_tier: " Pro ", plan: "Max" }, "Pro"],
     [{ account_tier: "", plan: "Max" }, "Max"],
     [{ plan: "", subscription_type: "Team" }, "Team"],

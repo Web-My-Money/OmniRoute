@@ -160,8 +160,8 @@ test("model discovery accepts only explicit uid/id fields and detects catalog am
   assert.throws(
     () =>
       selectLiveModel({ models: [{ model_uid: "a.b" }] }, {} as NodeJS.ProcessEnv, [
-        { id: "a.b" },
-        { id: "a-b" },
+        { id: "a.b", name: "a.b" },
+        { id: "a-b", name: "a-b" },
       ]),
     /Ambiguous OmniRoute catalog normalization/
   );

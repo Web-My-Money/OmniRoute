@@ -1,4 +1,5 @@
 import test from "node:test";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -132,7 +133,7 @@ test("saveCallLog stores only summary metadata in SQLite and writes detailed art
   assert.equal(detail?.comboName, "combo-a");
   assert.equal(detail?.comboStepId, "step-openai-a");
   assert.equal(detail?.comboExecutionKey, "combo-a:0:step-openai-a");
-  assert.equal(detail?.pipelinePayloads?.clientRawRequest?.body?.raw, true);
+  assert.equal((detail?.pipelinePayloads as LooseDeep)?.clientRawRequest?.body?.raw, true);
   assert.equal((detail?.pipelinePayloads?.providerRequest as any).body?.translated, true);
   assert.equal((detail?.pipelinePayloads as any).providerResponse?.body?.upstream, true);
   assert.equal((detail?.pipelinePayloads as any).clientResponse?.body?.final, true);
@@ -422,7 +423,7 @@ test("getCallLogById falls back to legacy inline rows and request_detail_logs", 
   assert.deepEqual(detail?.requestBody, { recovered: "request" });
   assert.deepEqual(detail?.responseBody, { recovered: "response" });
   assert.deepEqual(detail?.error, { message: "legacy-error" });
-  assert.equal(detail?.pipelinePayloads?.clientRequest?.body?.from, "detail-client");
+  assert.equal((detail?.pipelinePayloads as LooseDeep)?.clientRequest?.body?.from, "detail-client");
   assert.equal(
     (detail?.pipelinePayloads?.providerRequest as any).body?.from,
     "detail-provider-request"

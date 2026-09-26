@@ -131,11 +131,7 @@ test("resolveNextBuildEnv does not clobber an existing --max-old-space-size (Doc
     NODE_OPTIONS: "--max-old-space-size=8192",
   } as NodeJS.ProcessEnv);
   const occurrences = (env.NODE_OPTIONS.match(/--max-old-space-size=/g) || []).length;
-  (assert as LooseDeep).equal(
-    occurrences,
-    1,
-    "must not duplicate the heap flag when one is already set"
-  );
+  assert.equal(occurrences, 1, "must not duplicate the heap flag when one is already set");
   assert.match(env.NODE_OPTIONS, /--max-old-space-size=8192/);
 });
 

@@ -6,6 +6,7 @@ import {
   updateComboSchema,
 } from "../../src/shared/validation/schemas/combo.ts";
 import { normalizeComboStep } from "../../src/lib/combos/steps.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const modelStep = {
   kind: "model" as const,
@@ -14,6 +15,7 @@ const modelStep = {
 };
 const comboRefStep = {
   kind: "combo-ref" as const,
+  weight: 0,
   comboName: "child",
   fallbackOnlyOnQuotaExhaustion: true,
 };
@@ -26,12 +28,12 @@ test("create/update accept and preserve strict quota-only booleans on model and 
     config: { nestedComboMode: "execute" as const },
   };
   const created = createComboSchema.parse(payload);
-  assert.equal(created.models[0].fallbackOnlyOnQuotaExhaustion, true);
-  assert.equal(created.models[1].fallbackOnlyOnQuotaExhaustion, true);
+  assert.equal((created.models[0] as LooseDeep).fallbackOnlyOnQuotaExhaustion, true);
+  assert.equal((created.models[1] as LooseDeep).fallbackOnlyOnQuotaExhaustion, true);
 
   const updated = updateComboSchema.parse(payload);
-  assert.equal(updated.models?.[0].fallbackOnlyOnQuotaExhaustion, true);
-  assert.equal(updated.models?.[1].fallbackOnlyOnQuotaExhaustion, true);
+  assert.equal((updated.models?.[0] as LooseDeep).fallbackOnlyOnQuotaExhaustion, true);
+  assert.equal((updated.models?.[1] as LooseDeep).fallbackOnlyOnQuotaExhaustion, true);
 
   for (const bad of ["true", 1, null]) {
     assert.equal(
@@ -50,8 +52,11 @@ test("non-priority combos preserve the dormant option", () => {
     strategy: "weighted",
     models: [modelStep],
   });
-  assert.equal(parsed.models[0].fallbackOnlyOnQuotaExhaustion, true);
-  assert.equal(normalizeComboStep(parsed.models[0])?.fallbackOnlyOnQuotaExhaustion, true);
+  assert.equal((parsed.models[0] as LooseDeep).fallbackOnlyOnQuotaExhaustion, true);
+  assert.equal(
+    (normalizeComboStep(parsed.models[0]) as LooseDeep)?.fallbackOnlyOnQuotaExhaustion,
+    true
+  );
 });
 
 test("only active priority combo refs require execute mode", () => {
@@ -109,5 +114,5 @@ test("normalization omits false and preserves true", () => {
   const disabled = normalizeComboStep({ ...modelStep, fallbackOnlyOnQuotaExhaustion: false });
   const enabled = normalizeComboStep(modelStep);
   assert.equal("fallbackOnlyOnQuotaExhaustion" in (disabled || {}), false);
-  assert.equal(enabled?.fallbackOnlyOnQuotaExhaustion, true);
+  assert.equal((enabled as LooseDeep)?.fallbackOnlyOnQuotaExhaustion, true);
 });

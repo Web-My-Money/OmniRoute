@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-codex-defaults-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -122,7 +123,7 @@ test("provider connection persistence normalizes request defaults without droppi
 
   const updated = await providersDb.updateProviderConnection((created as any).id, {
     providerSpecificData: {
-      ...created.providerSpecificData,
+      ...(created.providerSpecificData as LooseDeep),
       requestDefaults: { reasoningEffort: "medium" },
     },
   });

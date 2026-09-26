@@ -32,7 +32,7 @@ const { evaluateCase } = await import("../../src/lib/evals/evalRunner.ts");
 const { withItemDispatchTimeout } = await import("../../open-sse/services/batchProcessor.ts");
 const { saveModelsDevCapabilities } = await import("../../src/lib/modelsDevSync.ts");
 
-function capabilityEntry(limitContext: unknown, overrides: Record<string, unknown> = {}) {
+function capabilityEntry(limitContext: number, overrides: Record<string, unknown> = {}) {
   return {
     tool_call: true,
     reasoning: false,

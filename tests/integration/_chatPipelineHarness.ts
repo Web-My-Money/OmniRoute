@@ -58,10 +58,14 @@ export async function createChatPipelineHarness(prefix) {
   type SeedConnectionOverrides = {
     name?: string;
     apiKey?: string;
+    accessToken?: string;
     isActive?: boolean;
     testStatus?: string;
     priority?: number;
     rateLimitedUntil?: string | number | null;
+    errorCode?: string | number | null;
+    lastError?: string | null;
+    lastErrorType?: string | null;
     providerSpecificData?: Record<string, unknown>;
   };
 
@@ -176,7 +180,7 @@ export async function createChatPipelineHarness(prefix) {
     model = "gpt-4o-mini",
     toolName = "lookupWeather@1.0.0",
     toolCallId = "call_weather",
-    argumentsObject = { location: "Sao Paulo" },
+    argumentsObject = { location: "Sao Paulo" } as Record<string, unknown>,
   } = {}) {
     return new Response(
       JSON.stringify({
@@ -313,10 +317,14 @@ export async function createChatPipelineHarness(prefix) {
       authType: "apikey",
       name: overrides.name || `${provider}-primary`,
       apiKey: overrides.apiKey || `sk-${provider}-${crypto.randomUUID().slice(0, 8)}`,
+      accessToken: overrides.accessToken,
       isActive: overrides.isActive ?? true,
       testStatus: overrides.testStatus || "active",
       priority: overrides.priority,
       rateLimitedUntil: overrides.rateLimitedUntil,
+      errorCode: overrides.errorCode,
+      lastError: overrides.lastError,
+      lastErrorType: overrides.lastErrorType,
       providerSpecificData: overrides.providerSpecificData || {},
     })) as JsonRecord & { id: string };
     return conn;

@@ -34,6 +34,7 @@ const core = await import("../../src/lib/db/core.ts");
 const contextOverrides = await import("../../src/lib/db/modelContextOverrides.ts");
 const capabilityOverrides = await import("../../src/lib/db/modelCapabilityOverrides.ts");
 const { handleChatCore } = await import("../../open-sse/handlers/chatCore.ts");
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const PROVIDER = "github";
 const MODEL = "claude-opus-4.5";
@@ -108,7 +109,7 @@ test("raw-alias combo request rescued by an exact context override dispatches", 
   const result = await handleChatCore(buildRequest(true, BIG_PROMPT));
   assert.ok(fetchCalls > 0, "rescued combo target must reach the upstream fetch");
   assert.notEqual(
-    result.status,
+    (result as LooseDeep).status,
     400,
     "rescued combo target must not be rejected with the input-cap 400"
   );
@@ -127,7 +128,7 @@ test("an exact raw-alias max_input_tokens override is enforced even in a combo",
     true
   );
   const result = await handleChatCore(buildRequest(true, BIG_PROMPT));
-  assert.equal(result.status, 400);
+  assert.equal((result as LooseDeep).status, 400);
   assert.equal(
     fetchCalls,
     0,

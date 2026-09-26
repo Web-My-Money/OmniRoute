@@ -37,8 +37,8 @@ const pluginServerPath = join(
 );
 if (existsSync(pluginServerPath)) {
   try {
-    ({ VaultServer } = await import("../../obsidian-plugin/src/server.ts"));
-    ({ TFile, TFolder, Vault } = await import("obsidian"));
+    ({ VaultServer } = await import(pluginServerPath));
+    ({ TFile, TFolder, Vault } = await import("obsidian" as string));
   } catch {
     SKIP_OBSIDIAN_E2E = true;
   }
@@ -293,7 +293,7 @@ function authRequest(
 // ── Integration Tests ──────────────────────────────────────────────────────
 
 describe("Obsidian Plugin E2E — Server + HTTP", { skip: SKIP_OBSIDIAN_E2E }, () => {
-  let server: VaultServer;
+  let server: InstanceType<typeof VaultServer>;
   let port: number;
   let baseUrl: string;
 
@@ -606,7 +606,7 @@ describe("Obsidian Plugin E2E — Server + HTTP", { skip: SKIP_OBSIDIAN_E2E }, (
 });
 
 describe("Obsidian Plugin E2E — Auth", { skip: SKIP_OBSIDIAN_E2E }, () => {
-  let server: VaultServer;
+  let server: InstanceType<typeof VaultServer>;
   let port: number;
   let baseUrl: string;
 
@@ -654,7 +654,7 @@ describe("Obsidian Plugin E2E — Auth", { skip: SKIP_OBSIDIAN_E2E }, () => {
 });
 
 describe("Obsidian Plugin E2E — Full Sync Cycle", { skip: SKIP_OBSIDIAN_E2E }, () => {
-  let server: VaultServer;
+  let server: InstanceType<typeof VaultServer>;
   let port: number;
   let baseUrl: string;
 

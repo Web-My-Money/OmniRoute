@@ -100,7 +100,7 @@ function computeStreamChunksText(
     try {
       chunks = JSON.parse(chunks);
     } catch {
-      return chunks;
+      return chunks as string;
     }
   }
 
@@ -242,8 +242,6 @@ test("streamChunks survive the full lifecycle: in-flight → completed → persi
   // ── Phase 3: Simulate request completion ──
   usageHistory.finalizeMostRecentPendingRequest(model, provider, connectionId, {
     status: 200,
-    model,
-    provider,
     clientResponse: { choices: [{ message: { content: "Hello" } }] },
   });
 
@@ -630,8 +628,6 @@ test("streamChunks in completedDetails survives beyond the logs polling window",
 
   usageHistory.finalizeMostRecentPendingRequest(model, provider, connectionId, {
     status: 200,
-    model,
-    provider,
   });
 
   // Should be in completedDetails

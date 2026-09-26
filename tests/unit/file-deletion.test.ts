@@ -70,7 +70,7 @@ describe("File Deletion API", () => {
     assert(typeof (row as LooseDeep).deleted_at === "number");
     // Should be very recent
     assert((row as LooseDeep).deleted_at >= now);
-    assert(row.deleted_at <= now + 10);
+    assert((row as LooseDeep).deleted_at <= now + 10);
   });
 
   it("should not list deleted files", () => {

@@ -371,10 +371,23 @@ test("mergeAlibabaFreeTierQuotaClassification makes discovery authoritative", ()
 
   assert.equal(merged.alibabaFreeTierDiscoverySource, "console-quota-api");
   assert.equal(typeof merged.alibabaFreeTierQuotaLastSyncAt, "string");
-  assert.ok(merged.alibabaFreeTierVisionCapableModels?.includes("wan2.7-t2v"));
-  assert.equal(merged.alibabaFreeTierVisionCapableModels?.includes("qwen-image-3.0-pro"), false);
-  assert.ok(merged.alibabaFreeTierMultimodalCapableModels?.includes("qwen3.5-omni-plus"));
-  assert.ok(merged.alibabaFreeTierAudioCapableModels?.includes("qwen3-tts-flash"));
+  assert.ok(
+    (merged.alibabaFreeTierVisionCapableModels as string[] | undefined)?.includes("wan2.7-t2v")
+  );
+  assert.equal(
+    (merged.alibabaFreeTierVisionCapableModels as string[] | undefined)?.includes(
+      "qwen-image-3.0-pro"
+    ),
+    false
+  );
+  assert.ok(
+    (merged.alibabaFreeTierMultimodalCapableModels as string[] | undefined)?.includes(
+      "qwen3.5-omni-plus"
+    )
+  );
+  assert.ok(
+    (merged.alibabaFreeTierAudioCapableModels as string[] | undefined)?.includes("qwen3-tts-flash")
+  );
 
   assert.equal(isAlibabaFreeTierCapableModel("qwen3.6-plus", merged), true);
   assert.equal(isAlibabaFreeTierCapableModel("qwen3.7-plus", merged), false);

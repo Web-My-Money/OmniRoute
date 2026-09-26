@@ -65,7 +65,7 @@ test("skip reasons are allowlisted (unknown reason is rejected)", () => {
       target: "p/m",
       decision: "skipped_before_dispatch",
       reason: "freeform upstream error",
-    })
+    } as unknown as Parameters<typeof recordComboDecision>[1])
   );
   assert.equal(getComboTrace("combo-t")!.decisions.length, COMBO_SKIP_REASONS.length);
 });

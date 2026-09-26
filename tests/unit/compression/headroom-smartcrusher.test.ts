@@ -11,7 +11,7 @@ import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 // Lazy imports resolved inside tests so RED gives clean "module not found" errors,
 // not mysterious runtime crashes before any assertion.
-let headroomEngine: import("../../../open-sse/services/compression/engines/headroom/index.ts").headroomEngine;
+let headroomEngine: (typeof import("../../../open-sse/services/compression/engines/headroom/index.ts"))["headroomEngine"];
 let encodeTabular: (arr: Record<string, unknown>[]) => string;
 let decodeTabular: (text: string) => Record<string, unknown>[];
 let getCompressionEngine: (

@@ -216,7 +216,9 @@ test("handleChat applies task-aware routing when a semantic override is enabled"
 
   globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     const headers = toPlainHeaders(init.headers);
-    seenAuthHeaders.push(headers.Authorization ?? (headers as LooseDeep).authorization);
+    seenAuthHeaders.push(
+      (headers as LooseDeep).Authorization ?? (headers as LooseDeep).authorization
+    );
     seenRequestBodies.push(JSON.parse(String(init.body)));
     return new Response(
       JSON.stringify({

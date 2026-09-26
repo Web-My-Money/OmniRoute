@@ -184,7 +184,7 @@ test("getProviderCredentials keeps a disableCooling connection eligible after a 
   for (let i = 0; i < 8; i++) {
     const selected = await auth.getProviderCredentials("glm");
     assert.ok(selected, "expected a selectable connection");
-    (assert as LooseDeep).equal(
+    assert.equal(
       (selected as LooseDeep).connectionId,
       (flagged as any).id,
       "disableCooling connection must stay eligible while the unflagged sibling is cooled"

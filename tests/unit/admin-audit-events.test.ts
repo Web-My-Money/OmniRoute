@@ -46,12 +46,14 @@ test("auth login/logout routes emit structured audit events with ip and request 
   const setCalls = [];
   const deleteCalls = [];
 
-  loginRoute.authRouteInternals.getCookieStore = async () => ({
-    set: (...args) => setCalls.push(args),
-  });
-  logoutRoute.logoutRouteInternals.getCookieStore = async () => ({
-    delete: (...args) => deleteCalls.push(args),
-  });
+  loginRoute.authRouteInternals.getCookieStore = async () =>
+    ({ set: (...args) => setCalls.push(args) }) as unknown as Awaited<
+      ReturnType<typeof loginRoute.authRouteInternals.getCookieStore>
+    >;
+  logoutRoute.logoutRouteInternals.getCookieStore = async () =>
+    ({ delete: (...args) => deleteCalls.push(args) }) as unknown as Awaited<
+      ReturnType<typeof logoutRoute.logoutRouteInternals.getCookieStore>
+    >;
 
   const loginResponse = await loginRoute.POST(
     new Request("http://localhost/api/auth/login", {
@@ -62,7 +64,7 @@ test("auth login/logout routes emit structured audit events with ip and request 
         "x-request-id": "req-auth-login",
       },
       body: JSON.stringify({ password: "admin-secret" }),
-    })
+    }) as unknown as NextRequest
   );
 
   assert.equal(loginResponse.status, 200);
@@ -76,7 +78,7 @@ test("auth login/logout routes emit structured audit events with ip and request 
         "x-forwarded-for": "198.51.100.10",
         "x-request-id": "req-auth-logout",
       },
-    })
+    }) as unknown as NextRequest
   );
 
   assert.equal(logoutResponse.status, 200);
@@ -98,9 +100,10 @@ test("auth login/logout routes emit structured audit events with ip and request 
 });
 
 test("auth login route records failed password attempts", async () => {
-  loginRoute.authRouteInternals.getCookieStore = async () => ({
-    set() {},
-  });
+  loginRoute.authRouteInternals.getCookieStore = async () =>
+    ({ set() {} }) as unknown as Awaited<
+      ReturnType<typeof loginRoute.authRouteInternals.getCookieStore>
+    >;
 
   const response = await loginRoute.POST(
     new Request("http://localhost/api/auth/login", {
@@ -111,7 +114,7 @@ test("auth login route records failed password attempts", async () => {
         "x-request-id": "req-auth-failed",
       },
       body: JSON.stringify({ password: "wrong-password" }),
-    })
+    }) as unknown as NextRequest
   );
 
   assert.equal(response.status, 401);
@@ -255,3 +258,4 @@ test("deleting the final provider connection removes imported models but preserv
 });
 
 import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { NextRequest } from "next/server";

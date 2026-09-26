@@ -414,7 +414,7 @@ describe("Claude Web account-scoped browser transport", () => {
           body: new TextEncoder().encode('data: {"type":"message_stop"}\n\n'),
         };
       },
-    } as ClaudeWebBrowserDeps;
+    } as unknown as ClaudeWebBrowserDeps;
 
     await sendClaudeWebBrowser(request(), deps);
 

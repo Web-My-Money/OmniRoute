@@ -6,6 +6,7 @@ import path from "node:path";
 
 import { OMNIROUTE_RESPONSE_HEADERS } from "../../src/shared/constants/headers.ts";
 import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-codex-stream-false-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -29,6 +30,7 @@ function noopLog() {
 function createComboLog() {
   const entries = [];
   return {
+    debug: (tag, msg) => entries.push({ level: "debug", tag, msg }),
     info: (tag, msg) => entries.push({ level: "info", tag, msg }),
     warn: (tag, msg) => entries.push({ level: "warn", tag, msg }),
     error: (tag, msg) => entries.push({ level: "error", tag, msg }),
@@ -157,7 +159,7 @@ async function invokeChatCore({
   accept = "application/json",
   responseFactory,
   log = noopLog(),
-} = {}) {
+}: LooseDeep = {}) {
   const calls = [];
 
   globalThis.fetch = async (url, init: MockRequestInit = {}) => {
@@ -242,9 +244,9 @@ test("chatCore converts Responses-style SSE fallback into JSON when stream=false
     responseFactory: () => buildResponsesSse("Brasilia"),
   });
 
-  const payload = (await result.response.json()) as any;
+  const payload = (await (result as LooseDeep).response.json()) as any;
 
-  assert.equal(result.success, true);
+  assert.equal((result as LooseDeep).success, true);
   assert.equal(call.headers.Accept || call.headers.accept, "application/json");
   assert.equal(payload.object, "chat.completion");
   assert.equal(payload.choices[0].message.content, "Brasilia");
@@ -267,9 +269,9 @@ test("chatCore buffers expected Codex upstream SSE without warning for stream=fa
     log,
   });
 
-  const payload = (await result.response.json()) as any;
+  const payload = (await (result as LooseDeep).response.json()) as any;
 
-  assert.equal(result.success, true);
+  assert.equal((result as LooseDeep).success, true);
   assert.equal(call.headers.Accept || call.headers.accept, "text/event-stream");
   assert.equal(call.body.stream, true);
   assert.equal(payload.choices[0].message.content, "Brasilia");
@@ -303,9 +305,9 @@ test("chatCore converts Responses-style NDJSON fallback into JSON when stream=fa
     responseFactory: () => buildResponsesNdjson("Brasilia"),
   });
 
-  const payload = (await result.response.json()) as any;
+  const payload = (await (result as LooseDeep).response.json()) as any;
 
-  assert.equal(result.success, true);
+  assert.equal((result as LooseDeep).success, true);
   assert.equal(call.headers.Accept || call.headers.accept, "application/json");
   assert.equal(payload.object, "chat.completion");
   assert.equal(payload.choices[0].message.content, "Brasilia");
@@ -397,9 +399,9 @@ test("non-stream chat success carries cost-telemetry meta headers (cost/version/
       }),
   });
 
-  assert.equal(result.success, true);
+  assert.equal((result as LooseDeep).success, true);
 
-  const headers = result.response.headers;
+  const headers = (result as LooseDeep).response.headers;
 
   const cost = headers.get(OMNIROUTE_RESPONSE_HEADERS.responseCost);
   assert.equal(typeof cost, "string");

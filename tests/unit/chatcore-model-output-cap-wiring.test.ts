@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-model-cap-wiring-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -104,7 +105,7 @@ test("handleChatCore rejects input over the model input cap before upstream disp
   dispatchedBody = null;
   fetchCalls = 0;
   const result = await handleChatCore(buildRequest(1, "x".repeat(200)));
-  assert.equal(result.status, 400);
+  assert.equal((result as LooseDeep).status, 400);
   assert.equal(fetchCalls, 0, "input-cap rejection must not call the upstream");
   assert.match(JSON.stringify(result), /maximum input tokens/i);
 });
@@ -123,7 +124,7 @@ test("DISABLE_CONTEXT_WINDOW_CHECKS lets direct-model input exceed the declared 
   featureFlagsDb.setFeatureFlagOverride("DISABLE_CONTEXT_WINDOW_CHECKS", "true");
   try {
     const result = await handleChatCore(buildRequest(1, "x".repeat(200)));
-    assert.equal(result.success, true);
+    assert.equal((result as LooseDeep).success, true);
     assert.equal(fetchCalls, 1, "disabled context checks must let the upstream decide");
     assert.ok(dispatchedBody, "oversized input must reach the upstream when the flag is enabled");
   } finally {
@@ -137,7 +138,7 @@ test("DISABLE_CONTEXT_WINDOW_CHECKS keeps the direct model output cap active", a
   featureFlagsDb.setFeatureFlagOverride("DISABLE_CONTEXT_WINDOW_CHECKS", "true");
   try {
     const result = await handleChatCore(buildRequest(REQUESTED_MAX_TOKENS, "x".repeat(200)));
-    assert.equal(result.success, true);
+    assert.equal((result as LooseDeep).success, true);
     assert.equal(fetchCalls, 1);
     assert.equal(dispatchedBody?.max_tokens, OUTPUT_CAP);
   } finally {

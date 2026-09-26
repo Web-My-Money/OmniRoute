@@ -16,14 +16,16 @@ import assert from "node:assert/strict";
 
 let crushMessages: typeof import("../../../open-sse/services/compression/engines/headroom/smartcrusher.ts").crushMessages;
 let collectCompactableArrays: typeof import("../../../open-sse/services/compression/engines/headroom/smartcrusher.ts").collectCompactableArrays;
-let headroomEngine: import("../../../open-sse/services/compression/engines/headroom/index.ts").headroomEngine;
+let headroomEngine: (typeof import("../../../open-sse/services/compression/engines/headroom/index.ts"))["headroomEngine"];
 
 before(async () => {
-  const mod = await import("../../../open-sse/services/compression/engines/headroom/smartcrusher.ts");
+  const mod =
+    await import("../../../open-sse/services/compression/engines/headroom/smartcrusher.ts");
   crushMessages = mod.crushMessages;
   collectCompactableArrays = mod.collectCompactableArrays;
 
-  const engineMod = await import("../../../open-sse/services/compression/engines/headroom/index.ts");
+  const engineMod =
+    await import("../../../open-sse/services/compression/engines/headroom/index.ts");
   headroomEngine = engineMod.headroomEngine;
 });
 
@@ -64,9 +66,7 @@ describe("headroom SmartCrusher — developer-role guard (9router#2132)", () => 
 
   it("collectCompactableArrays does not surface arrays from developer-role messages", () => {
     const json = JSON.stringify(makePlanSchemaExample());
-    const messages = [
-      { role: "developer", content: `\`\`\`json\n${json}\n\`\`\`` },
-    ];
+    const messages = [{ role: "developer", content: `\`\`\`json\n${json}\n\`\`\`` }];
     const found = collectCompactableArrays(messages, 8);
     assert.equal(found.length, 0);
   });

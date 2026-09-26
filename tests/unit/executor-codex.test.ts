@@ -250,7 +250,7 @@ test("CodexExecutor.transformRequest injects default instructions, clamps reason
   });
 
   assert.deepEqual([(result as LooseDeep).stream, result.store], [true, false]);
-  assert.equal(result.instructions.length > 0, true);
+  assert.equal((result.instructions as unknown[]).length > 0, true);
   assert.deepEqual(result.reasoning, { effort: "high", summary: "auto" });
   assert.deepEqual(result.include, ["reasoning.encrypted_content"]);
   assert.equal(result.service_tier, "priority");

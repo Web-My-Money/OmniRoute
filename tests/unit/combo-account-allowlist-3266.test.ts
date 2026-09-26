@@ -14,6 +14,7 @@
  *   3. getProviderCredentials never hands back a connection outside the allowlist.
  */
 import test from "node:test";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -140,11 +141,7 @@ test("handleComboChat propagates a step allowlist onto target.allowedConnectionI
         },
       ],
     },
-    handleSingleModel: async (
-      _body: unknown,
-      modelStr: string,
-      target: { allowedConnectionIds?: unknown }
-    ) => {
+    handleSingleModel: async (_body: unknown, modelStr: string, target?: LooseDeep) => {
       captured = Array.isArray(target?.allowedConnectionIds) ? target.allowedConnectionIds : null;
       return okResponse(modelStr);
     },
@@ -242,11 +239,7 @@ test("a step allowlist intersects with tag routing — most-restrictive wins (#3
         },
       ],
     },
-    handleSingleModel: async (
-      _body: unknown,
-      modelStr: string,
-      target: { allowedConnectionIds?: unknown }
-    ) => {
+    handleSingleModel: async (_body: unknown, modelStr: string, target?: LooseDeep) => {
       captured = Array.isArray(target?.allowedConnectionIds) ? target.allowedConnectionIds : null;
       return okResponse(modelStr);
     },

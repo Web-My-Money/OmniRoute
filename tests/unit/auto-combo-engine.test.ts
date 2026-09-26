@@ -5,6 +5,7 @@ import { selectProvider } from "../../open-sse/services/autoCombo/engine.ts";
 import { getSelfHealingManager } from "../../open-sse/services/autoCombo/selfHealing.ts";
 import { DEFAULT_WEIGHTS } from "../../open-sse/services/autoCombo/scoring.ts";
 import type { AutoComboConfig } from "../../open-sse/services/autoCombo/engine.ts";
+import type { ProviderCandidate } from "../../open-sse/services/autoCombo/scoring.ts";
 
 const healer = getSelfHealingManager();
 const originalRandom = Math.random;
@@ -14,7 +15,7 @@ function resetHealer() {
   healer["incidentMode"] = false;
 }
 
-const baseConfig = {
+const baseConfig: AutoComboConfig = {
   id: "auto-main",
   name: "Auto Main",
   type: "auto",
@@ -34,7 +35,7 @@ test.afterEach(() => {
 });
 
 test("selectProvider infers coding intent from prompt messages when taskType is generic", () => {
-  const candidates = [
+  const candidates: ProviderCandidate[] = [
     {
       provider: "codex",
       model: "gpt-5.1-codex",
@@ -63,7 +64,7 @@ test("selectProvider infers coding intent from prompt messages when taskType is 
     },
   ];
 
-  const result = selectProvider(baseConfig as unknown as AutoComboConfig, candidates, "default", [
+  const result = selectProvider(baseConfig, candidates, "default", [
     {
       role: "user",
       content: "Refactor this TypeScript function and debug the code path for me.",

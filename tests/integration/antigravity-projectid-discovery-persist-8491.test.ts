@@ -166,7 +166,7 @@ test("#8491 PART B: a second request re-reading credentials from the DB must not
       true,
       {
         accessToken: refreshed.accessToken as string,
-        connectionId: refreshed.id,
+        connectionId: refreshed.id as string,
         projectId: refreshed.projectId as string | undefined,
         providerSpecificData: refreshed.providerSpecificData as LooseDeep,
       }

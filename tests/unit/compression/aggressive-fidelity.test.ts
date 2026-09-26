@@ -77,7 +77,7 @@ describe("replaceTextContent — multi-text-block fidelity (B-AGG-TEXTDROP)", ()
       msgs.push({ role: i % 2 ? "assistant" : "user", content: `filler ${i} ${"z".repeat(60)}` });
     }
     const result = applyAging(msgs, { fullSummary: 10, moderate: 10, light: 3, verbatim: 1 });
-    const out = extractTextContent(result.messages[0].content as ChatMessageLike["content"]);
+    const out = extractTextContent((result.messages[0] as ChatMessageLike).content);
     // Light tier keeps content; both blocks' text must still be present (joined).
     assert.ok(out.includes("alpha-marker"), "first text block lost during aging");
     assert.ok(out.includes("bravo-marker"), "second text block silently dropped during aging");

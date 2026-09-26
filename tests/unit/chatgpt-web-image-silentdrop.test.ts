@@ -13,6 +13,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { looseAsync } from "../helpers/looseTypes.ts";
+import type { ChatGptWebExecutor } from "../../open-sse/executors/chatgpt-web.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-cgptweb-silentdrop-"));
 
@@ -55,7 +56,7 @@ test("handler surfaces a specific 502 when the image was generated but not retri
       fakeExecutor({
         choices: [{ message: { role: "assistant", content: "Here's your image:" } }],
         x_image_resolution_failed: true,
-      }),
+      }) as unknown as ChatGptWebExecutor,
   });
   assert.equal(res.success, false);
   assert.equal(res.status, 502);
@@ -74,7 +75,7 @@ test("handler keeps the generic 502 when no image was generated at all", async (
     executorFactory: () =>
       fakeExecutor({
         choices: [{ message: { role: "assistant", content: "I can't create that." } }],
-      }),
+      }) as unknown as ChatGptWebExecutor,
   });
   assert.equal(res.success, false);
   assert.equal(res.status, 502);
@@ -88,7 +89,7 @@ test("handler returns success when the executor produced image markdown", async 
     executorFactory: () =>
       fakeExecutor({
         choices: [{ message: { role: "assistant", content: `Here you go:\n\n![image](${url})` } }],
-      }),
+      }) as unknown as ChatGptWebExecutor,
   });
   assert.equal(res.success, true);
   assert.equal(res.data.data.length, 1);

@@ -68,7 +68,7 @@ test("#10437: the healthy-heap fast path admits only a bounded headroom budget, 
   );
   for (const r of rejected) {
     if ((r as LooseDeep).admit) continue;
-    assert.equal((r.response as LooseDeep).status, 503);
+    assert.equal(((r as LooseDeep).response as LooseDeep).status, 503);
     const payload = await (r as LooseDeep).response.json();
     assert.equal(payload.error.code, "chat_admission_busy");
     assert.equal(payload.error.reason, "structure_limit");

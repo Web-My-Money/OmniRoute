@@ -46,14 +46,22 @@ test("prebuiltBinaryName maps platform/arch the way better-sqlite3 ships them", 
   // glibc Linux keeps the plain `linux-` prefix …
   const glibcReport = { getReport: () => ({ header: { glibcVersionRuntime: "2.39" } }) };
   assert.equal(
-    prebuiltBinaryName("linux", "x64", glibcReport as unknown as ProcessReport),
+    prebuiltBinaryName(
+      "linux",
+      "x64",
+      glibcReport as unknown as Parameters<typeof prebuiltBinaryName>[2]
+    ),
     "linux-x64.node"
   );
 
   // … while musl builds (no glibcVersionRuntime) use `linuxmusl-`.
   const muslReport = { getReport: () => ({ header: {} }) };
   assert.equal(
-    prebuiltBinaryName("linux", "arm64", muslReport as unknown as ProcessReport),
+    prebuiltBinaryName(
+      "linux",
+      "arm64",
+      muslReport as unknown as Parameters<typeof prebuiltBinaryName>[2]
+    ),
     "linuxmusl-arm64.node"
   );
 });

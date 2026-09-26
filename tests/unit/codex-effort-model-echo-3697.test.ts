@@ -22,7 +22,10 @@ function collectResponsesEvents(chunks: Array<Record<string, unknown> | null>) {
   const events: Array<{ event: string; data: Record<string, unknown> }> = [];
   for (const chunk of chunks) {
     const result = openaiToOpenAIResponsesResponse(chunk as never, state as never);
-    if (result) events.push(...(result as never));
+    if (result)
+      events.push(
+        ...(result as unknown[] as Array<{ event: string; data: Record<string, unknown> }>)
+      );
   }
   return events;
 }

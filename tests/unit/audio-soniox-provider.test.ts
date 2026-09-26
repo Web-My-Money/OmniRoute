@@ -56,7 +56,7 @@ test("handleAudioTranscription uploads, creates, polls and reads the Soniox tran
   let uploadBody = "";
 
   globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
-  globalThis.fetch = async (url, options: FetchInit = {}) => {
+  globalThis.fetch = (async (url, options: FetchInit = {}) => {
     const stringUrl = String(url);
     calls.push({ url: stringUrl, method: options?.method || "GET" });
 
@@ -86,7 +86,7 @@ test("handleAudioTranscription uploads, creates, polls and reads the Soniox tran
     }
 
     throw new Error(`Unexpected URL: ${stringUrl}`);
-  };
+  }) as unknown as typeof fetch;
 
   try {
     const response = await handleAudioTranscription({
@@ -195,14 +195,14 @@ test("handleAudioSpeech maps the OpenAI speech body to Soniox and passes audio t
   const originalFetch = globalThis.fetch;
   let captured: { url: string; headers: Record<string, string>; body: Record<string, unknown> };
 
-  globalThis.fetch = async (url, options: FetchInit = {}) => {
+  globalThis.fetch = (async (url, options: FetchInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers,
       body: JSON.parse(String(options.body || "{}")),
     };
     return new Response(new Uint8Array([1, 2, 3]), { status: 200 });
-  };
+  }) as unknown as typeof fetch;
 
   try {
     const response = await handleAudioSpeech({
@@ -257,11 +257,11 @@ test("validateSonioxProvider accepts a working key and rejects an unauthorized o
   let capturedHeaders: Record<string, string> = {};
   let status = 200;
 
-  globalThis.fetch = async (url, options: FetchInit = {}) => {
+  globalThis.fetch = (async (url, options: FetchInit = {}) => {
     capturedUrl = String(url);
     capturedHeaders = options.headers;
     return new Response("{}", { status, headers: { "content-type": "application/json" } });
-  };
+  }) as unknown as typeof fetch;
 
   try {
     assert.deepEqual(await validateSonioxProvider({ apiKey: "soniox-key" }), {

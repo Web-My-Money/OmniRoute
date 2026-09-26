@@ -48,8 +48,8 @@ test("getUsageForProvider with bailian-coding-plan and consoleApiKey returns quo
   });
 
   // Should NOT return "Usage API not implemented" message
-  (assert as LooseDeep).notStrictEqual(
-    result?.message,
+  assert.notStrictEqual(
+    (result as LooseDeep)?.message,
     "Usage API not implemented for bailian-coding-plan",
     "Should have implemented bailian-coding-plan usage"
   );
@@ -58,7 +58,10 @@ test("getUsageForProvider with bailian-coding-plan and consoleApiKey returns quo
   assert.ok(result, "Should return quota data");
   assert.ok((result as LooseDeep).used !== undefined, "Should have used property");
   assert.ok((result as LooseDeep).total !== undefined, "Should have total property");
-  assert.ok(result.remainingPercentage !== undefined, "Should have remainingPercentage");
+  assert.ok(
+    (result as LooseDeep).remainingPercentage !== undefined,
+    "Should have remainingPercentage"
+  );
 });
 
 test("getUsageForProvider with bailian-coding-plan and only apiKey falls back to apiKey", async () => {
@@ -101,8 +104,8 @@ test("getUsageForProvider with bailian-coding-plan and only apiKey falls back to
   });
 
   // Should NOT return "Usage API not implemented" message
-  (assert as LooseDeep).notStrictEqual(
-    result?.message,
+  assert.notStrictEqual(
+    (result as LooseDeep)?.message,
     "Usage API not implemented for bailian-coding-plan",
     "Should have implemented bailian-coding-plan usage with apiKey fallback"
   );
@@ -157,14 +160,14 @@ test("getUsageForProvider with bailian-coding-plan returns quota with percentUse
   });
 
   // Should NOT return "Usage API not implemented" message
-  (assert as LooseDeep).notStrictEqual(
-    result?.message,
+  assert.notStrictEqual(
+    (result as LooseDeep)?.message,
     "Usage API not implemented for bailian-coding-plan",
     "Should have implemented bailian-coding-plan usage"
   );
 
   // Should return percentUsed = 0.8 (80% from weekly, the most restrictive)
-  (assert as LooseDeep).ok(result, "Should return quota data");
+  assert.ok(result, "Should return quota data");
   const percentUsed = (result as LooseDeep).used / (result as LooseDeep).total;
   assert.strictEqual(
     percentUsed,

@@ -55,7 +55,11 @@ test.after(() => {
 });
 
 test("A2A status reports disabled and offline when the endpoint is off", async () => {
-  const response = await statusRoute.GET();
+  const response = await statusRoute.GET(
+    new Request("http://localhost/api/a2a/status") as unknown as Parameters<
+      typeof statusRoute.GET
+    >[0]
+  );
   const body = (await response.json()) as LooseDeep;
 
   assert.equal(response.status, 200);
@@ -108,7 +112,11 @@ test("A2A JSON-RPC checks auth before returning disabled state", async () => {
 test("A2A status reports online only after enabling the endpoint", async () => {
   await settingsDb.updateSettings({ a2aEnabled: true });
 
-  const response = await statusRoute.GET();
+  const response = await statusRoute.GET(
+    new Request("http://localhost/api/a2a/status") as unknown as Parameters<
+      typeof statusRoute.GET
+    >[0]
+  );
   const body = (await response.json()) as LooseDeep;
 
   assert.equal(response.status, 200);

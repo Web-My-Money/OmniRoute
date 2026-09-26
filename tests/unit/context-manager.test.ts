@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-context-manager-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -251,12 +252,12 @@ test("Layer 3: removes orphaned tool_result (OpenAI format) when tool_use is dro
   assert.ok(result.compressed);
 
   const toolCallIds = new Set();
-  for (const msg of result.body.messages) {
+  for (const msg of (result.body as LooseDeep).messages) {
     if (msg.role === "assistant" && Array.isArray(msg.tool_calls)) {
       for (const tc of msg.tool_calls) toolCallIds.add(tc.id);
     }
   }
-  for (const msg of result.body.messages) {
+  for (const msg of (result.body as LooseDeep).messages) {
     if (msg.role === "tool" && msg.tool_call_id) {
       assert.ok(
         toolCallIds.has(msg.tool_call_id),
@@ -296,14 +297,14 @@ test("Layer 3: removes orphaned tool_result (Claude format) when tool_use is dro
   assert.ok(result.compressed);
 
   const toolUseIds = new Set();
-  for (const msg of result.body.messages) {
+  for (const msg of (result.body as LooseDeep).messages) {
     if (msg.role === "assistant" && Array.isArray(msg.content)) {
       for (const block of msg.content) {
         if (block.type === "tool_use" && block.id) toolUseIds.add(block.id);
       }
     }
   }
-  for (const msg of result.body.messages) {
+  for (const msg of (result.body as LooseDeep).messages) {
     if (msg.role === "user" && Array.isArray(msg.content)) {
       for (const block of msg.content) {
         if (block.type === "tool_result" && block.tool_use_id) {

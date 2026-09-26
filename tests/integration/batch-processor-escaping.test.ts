@@ -106,16 +106,16 @@ test("parseBatchItems handles multiple lines with special characters", () => {
   assert.strictEqual(result.items.length, 4, "Should have 4 items");
 
   assert.strictEqual((result.items[0] as LooseDeep).customId, "item-1");
-  assert.ok(result.items[0].body.input.includes("`"));
+  assert.ok(((result.items[0] as LooseDeep).body.input as string).includes("`"));
 
   assert.strictEqual((result.items[1] as LooseDeep).customId, "item-2");
-  assert.ok(result.items[1].body.input.includes('"'));
+  assert.ok(((result.items[1] as LooseDeep).body.input as string).includes('"'));
 
   assert.strictEqual((result.items[2] as LooseDeep).customId, "item-3");
-  assert.ok(result.items[2].body.input.includes("\n"));
+  assert.ok(((result.items[2] as LooseDeep).body.input as string).includes("\n"));
 
   assert.strictEqual((result.items[3] as LooseDeep).customId, "item-4");
-  assert.ok(result.items[3].body.input.includes("你好世界"));
+  assert.ok(((result.items[3] as LooseDeep).body.input as string).includes("你好世界"));
 });
 
 test("buildRequestBody preserves input without modification", () => {
@@ -241,7 +241,7 @@ My fundamental commitment is to never settle. I am tasked with questioning, refl
   const item = parseResult.items[0];
   const requestBody = batchProcessor.buildRequestBody(item);
 
-  (assert as LooseDeep).strictEqual(
+  assert.strictEqual(
     (requestBody as LooseDeep).input,
     inputText,
     "Input should be preserved after buildRequestBody"

@@ -85,6 +85,8 @@ describe("Golden Eval: long-coding-session", () => {
     const messages = loadFixture();
     const body = { messages };
     const config: CompressionConfig = {
+      engines: {},
+      activeComboId: null,
       enabled: true,
       defaultMode: "aggressive",
       autoTriggerTokens: 0,
