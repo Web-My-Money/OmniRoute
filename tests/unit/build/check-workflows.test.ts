@@ -36,6 +36,10 @@ const readZizmorBaseline = readBaselineZizmorValue as (p?: string) => number | n
 const qualityWorkflowPath = new URL("../../../.github/workflows/quality.yml", import.meta.url);
 const buildWorkflowPath = new URL("../../../.github/workflows/build.yml", import.meta.url);
 const ciWorkflowPath = new URL("../../../.github/workflows/ci.yml", import.meta.url);
+const nightlyCompatWorkflowPath = new URL(
+  "../../../.github/workflows/nightly-compat.yml",
+  import.meta.url
+);
 
 function readWorkflow(workflowPath: URL): string {
   return fs.readFileSync(workflowPath, "utf8").replace(/\r\n/g, "\n");
@@ -370,6 +374,31 @@ test("ci.yml + quality.yml classify renames as delete+add (--no-renames)", () =>
   for (const source of [readCiWorkflow(), readQualityWorkflow()]) {
     assert.match(source, /git diff --name-only --no-renames/);
   }
+});
+
+test("ci.yml covers the production default branch", () => {
+  // This fork's default branch is wmm-production, not main. A ci.yml that only
+  // triggers on main silently runs zero unit tests on our PRs and default-branch
+  // pushes (the only signal left is build.yml's production build).
+  const source = readCiWorkflow();
+  assert.match(source, /push:\n\s+branches: \[main, wmm-production\]/);
+  assert.match(source, /pull_request:\n\s+branches: \[main, wmm-production\]/);
+});
+
+test("nightly-compat reports failures without requiring Issues", () => {
+  // The fork has Issues disabled, so an unconditional `gh issue create` hard-fails
+  // the reporting job and masks the real result. The step must always emit a
+  // warning annotation + step summary, and only touch the Issues API when the
+  // repo actually has it enabled.
+  const source = readWorkflow(nightlyCompatWorkflowPath);
+  assert.match(source, /GITHUB_STEP_SUMMARY/);
+  assert.match(source, /::warning title=nightly-compat::/);
+  assert.match(source, /has_issues/);
+  const issueBlock = source.match(
+    /if \[ "\$\(gh api "repos\/\$GITHUB_REPOSITORY" --jq '.has_issues'\)" = "true" \]; then[\s\S]*?fi/
+  );
+  assert.ok(issueBlock, "issue create/comment must be gated on has_issues");
+  assert.match(issueBlock[0], /gh issue (comment|create)/);
 });
 
 test("#7307 quality.yml adds an advisory production build for release PR code changes", () => {

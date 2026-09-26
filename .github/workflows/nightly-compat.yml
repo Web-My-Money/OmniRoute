@@ -122,7 +122,7 @@ jobs:
     permissions:
       issues: write
     steps:
-      - name: Open or update issue
+      - name: Report failure
         env:
           GH_TOKEN: ${{ github.token }}
           TARGET: ${{ needs.resolve-branch.outputs.target }}
@@ -130,10 +130,18 @@ jobs:
         run: |
           set -euo pipefail
           TITLE="🌙 nightly-compat: Node 24/26 failures on $TARGET"
-          EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$TITLE in:title" --json number --jq '.[0].number')
           BODY="Nightly Node-compat run failed on \`$TARGET\`: $RUN_URL — triage which Node version/shard broke (fail-fast off, all versions reported)."
-          if [ -n "$EXISTING" ]; then
-            gh issue comment "$EXISTING" --repo "$GITHUB_REPOSITORY" --body "$BODY"
+          # Always surface in the run: the fork has Issues disabled, so the
+          # annotation + summary are the durable report path there.
+          echo "::warning title=nightly-compat::Node compat failures on $TARGET — $RUN_URL"
+          echo "$BODY" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$(gh api "repos/$GITHUB_REPOSITORY" --jq '.has_issues')" = "true" ]; then
+            EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$TITLE in:title" --json number --jq '.[0].number')
+            if [ -n "$EXISTING" ]; then
+              gh issue comment "$EXISTING" --repo "$GITHUB_REPOSITORY" --body "$BODY"
+            else
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$BODY"
+            fi
           else
-            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$BODY"
+            echo "Issues are disabled on $GITHUB_REPOSITORY; reported via summary + annotation instead." >> "$GITHUB_STEP_SUMMARY"
           fi
