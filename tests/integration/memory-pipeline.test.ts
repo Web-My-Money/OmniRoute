@@ -12,8 +12,9 @@ const harness = await createChatPipelineHarness("memory-pipeline");
 const { extractFactsFromText } = await import("../../src/lib/memory/extraction.ts");
 const { retrieveMemories } = await import("../../src/lib/memory/retrieval.ts");
 const { invalidateMemorySettingsCache } = await import("../../src/lib/memory/settings.ts");
-const { injectMemory, formatMemoryContext } = await import("../../src/lib/memory/injection.ts");
+const { injectMemory } = await import("../../src/lib/memory/injection.ts");
 import type { MemoryType } from "../../src/lib/memory/types.ts";
+import type { ChatRequest } from "../../src/lib/memory/injection.ts";
 const {
   BaseExecutor,
   buildOpenAIResponse,

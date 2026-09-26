@@ -1,4 +1,6 @@
 import test from "node:test";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 import { makeMcpStreamFetch } from "./helpers/mcpStreamMock.ts";
 import assert from "node:assert/strict";
 
@@ -116,7 +118,7 @@ test("runSkillsGet busca /api/skills/:id", async () => {
 });
 
 test("runSkillsEnable usa JSON-RPC tools/call", async () => {
-  const calls: unknown[] = [];
+  const calls: { url: string; init: LooseDeep }[] = [];
   const origFetch = globalThis.fetch;
   globalThis.fetch = makeMcpStreamFetch({ toolResult: { ok: true } });
   const inner = globalThis.fetch;
@@ -130,7 +132,9 @@ test("runSkillsEnable usa JSON-RPC tools/call", async () => {
 
   globalThis.fetch = origFetch;
   assert.ok(calls.some((x) => String(x.url).includes("/api/mcp/stream")));
-  const callBody = JSON.parse(calls.find((x) => String(x.init?.body || "").includes("tools/call"))?.init?.body || "{}");
+  const callBody = JSON.parse(
+    calls.find((x) => String(x.init?.body || "").includes("tools/call"))?.init?.body || "{}"
+  );
   assert.equal(callBody.method, "tools/call");
   assert.equal(callBody.params.name, "omniroute_skills_enable");
   assert.equal(callBody.params.arguments.skillId, "sk_pdf");
@@ -139,7 +143,7 @@ test("runSkillsEnable usa JSON-RPC tools/call", async () => {
 });
 
 test("runSkillsExecute usa JSON-RPC tools/call", async () => {
-  const calls: unknown[] = [];
+  const calls: { url: string; init: LooseDeep }[] = [];
   const origFetch = globalThis.fetch;
   globalThis.fetch = makeMcpStreamFetch({ toolResult: { result: "ok", output: "parsed" } });
   const inner = globalThis.fetch;
@@ -154,7 +158,9 @@ test("runSkillsExecute usa JSON-RPC tools/call", async () => {
   );
 
   globalThis.fetch = origFetch;
-  const callBody = JSON.parse(calls.find((x) => String(x.init?.body || "").includes("tools/call"))?.init?.body || "{}");
+  const callBody = JSON.parse(
+    calls.find((x) => String(x.init?.body || "").includes("tools/call"))?.init?.body || "{}"
+  );
   assert.equal(callBody.method, "tools/call");
   assert.equal(callBody.params.name, "omniroute_skills_execute");
   assert.equal(callBody.params.arguments.skillId, "sk_pdf");
@@ -203,9 +209,9 @@ test("runMarketplaceSearch retorna pacotes com query e filtros", async () => {
 });
 
 test("runMarketplaceInstall --yes envia POST sem confirmação", async () => {
-  let capturedBody: unknown = null;
+  let capturedBody: LooseDeep | null = null;
   const origFetch = globalThis.fetch;
-  globalThis.fetch = ((_url: string, init: unknown) => {
+  globalThis.fetch = ((_url: string, init?: MockRequestInit) => {
     capturedBody = JSON.parse(init?.body ?? "{}");
     return Promise.resolve(makeResp({ skillId: "sk_pdf_installed" }));
   }) as any;

@@ -1,3 +1,5 @@
+type ExecFileMock = Parameters<typeof autoUpdate.detectComposeCommand>[0];
+type LaunchOptions = Parameters<typeof autoUpdate.launchAutoUpdate>[0];
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -30,26 +32,26 @@ test("auto update config normalizes env values and local source installs to sour
 });
 
 test("detectComposeCommand prefers docker compose and falls back to docker-compose", async () => {
-  const dockerCompose = await autoUpdate.detectComposeCommand(async (command, args) => {
+  const dockerCompose = await autoUpdate.detectComposeCommand((async (command, args) => {
     if (command === "docker" && args[0] === "compose") {
       return { stdout: "Docker Compose version v2", stderr: "" };
     }
     throw new Error("unexpected");
-  });
+  }) as unknown as ExecFileMock);
   assert.equal(dockerCompose, "docker compose");
 
-  const dockerComposeLegacy = await autoUpdate.detectComposeCommand(async (command, args) => {
+  const dockerComposeLegacy = await autoUpdate.detectComposeCommand((async (command, args) => {
     if (command === "docker") throw new Error("missing");
     if (command === "docker-compose" && args[0] === "version") {
       return { stdout: "docker-compose 1.29", stderr: "" };
     }
     throw new Error("unexpected");
-  });
+  }) as unknown as ExecFileMock);
   assert.equal(dockerComposeLegacy, "docker-compose");
 
-  const none = await autoUpdate.detectComposeCommand(async () => {
+  const none = await autoUpdate.detectComposeCommand((async () => {
     throw new Error("missing");
-  });
+  }) as unknown as ExecFileMock);
   assert.equal(none, null);
 });
 
@@ -291,7 +293,7 @@ test("launchAutoUpdate returns validation failures and starts detached update sc
       AUTO_UPDATE_LOG_PATH: "/tmp/auto-update-source.log",
     },
     existsImpl: async () => false,
-  });
+  } as unknown as LaunchOptions);
 
   assert.equal(unsupported.started, false);
   assert.equal(unsupported.channel, "source");
@@ -320,7 +322,7 @@ test("launchAutoUpdate returns validation failures and starts detached update sc
         },
       };
     },
-  });
+  } as unknown as LaunchOptions);
 
   assert.equal(sourceStarted.started, true);
   assert.equal(sourceStarted.channel, "source");
@@ -371,7 +373,7 @@ test("launchAutoUpdate returns validation failures and starts detached update sc
     },
     existsImpl: async (targetPath) =>
       targetPath === repoDir || targetPath === composeFile || targetPath === "/var/run/docker.sock",
-  });
+  } as unknown as LaunchOptions);
 
   try {
     assert.equal(started.started, true);
@@ -396,7 +398,7 @@ test("launchAutoUpdate returns validation failures and starts detached update sc
     assert.equal(spawnCalls[0].unrefCalled, true);
     assert.match(spawnCalls[0].args[1], /git cherry-pick --keep-redundant-commits 'abc123'/);
   } finally {
-    fs.rmSync(tempRoot, { recursive: true, force: true });
+    fs.rmSync(tempRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
 
@@ -419,6 +421,6 @@ test("resolveProjectRoot walks up from start dir to nearest package.json or .git
     const lonelyResult = autoUpdate.resolveProjectRoot("/my-fallback", lonely);
     assert.equal(lonelyResult, "/my-fallback");
   } finally {
-    fs.rmSync(tempRoot, { recursive: true, force: true });
+    fs.rmSync(tempRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });

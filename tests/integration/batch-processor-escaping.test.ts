@@ -132,10 +132,16 @@ test("buildRequestBody preserves input without modification", () => {
     url: "/v1/embeddings",
   };
 
-  const result = batchProcessor.buildRequestBody(item as unknown as BatchRequestItem);
+  const result = batchProcessor.buildRequestBody(
+    item as unknown as Parameters<typeof batchProcessor.buildRequestBody>[0]
+  );
 
   assert.strictEqual((result as LooseDeep).input, inputText, "Input should be preserved exactly");
-  assert.strictEqual(result.model, "mistral/mistral-embed", "Model should be preserved");
+  assert.strictEqual(
+    (result as LooseDeep).model,
+    "mistral/mistral-embed",
+    "Model should be preserved"
+  );
   assert.ok(!("stream" in result), "Embeddings endpoint should not have stream field");
 });
 
@@ -151,7 +157,9 @@ test("buildRequestBody adds stream:false for chat endpoints", () => {
     url: "/v1/chat/completions",
   };
 
-  const result = batchProcessor.buildRequestBody(item as unknown as BatchRequestItem);
+  const result = batchProcessor.buildRequestBody(
+    item as unknown as Parameters<typeof batchProcessor.buildRequestBody>[0]
+  );
 
   assert.strictEqual(result.stream, false, "Chat endpoint should have stream:false");
   assert.ok("messages" in result, "Messages should be preserved");

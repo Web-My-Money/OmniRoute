@@ -4,12 +4,10 @@ import fs from "node:fs/promises";
 import fsSync from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
-const {
-  ensureWindowsBuildProfileDirs,
-  getWindowsBuildProfileDir,
-  resolveNextBuildEnv,
-} = await import("../../scripts/build/build-next-isolated.mjs");
+const { ensureWindowsBuildProfileDirs, getWindowsBuildProfileDir, resolveNextBuildEnv } =
+  await import("../../scripts/build/build-next-isolated.mjs");
 
 // Port of decolua/9router#2402 ("fix(build): isolate Windows HOME/AppData during
 // next build"). Upstream wraps `npm run build` in a new `scripts/build-app.js`
@@ -22,7 +20,7 @@ const {
 // touch.
 
 test("resolveNextBuildEnv leaves HOME/USERPROFILE/APPDATA untouched on non-Windows", () => {
-  const env = resolveNextBuildEnv({ NODE_ENV: "test", HOME: "/home/dev" }, "linux");
+  const env: LooseDeep = resolveNextBuildEnv({ NODE_ENV: "test", HOME: "/home/dev" }, "linux");
   assert.equal(env.HOME, "/home/dev");
   assert.equal(env.USERPROFILE, undefined);
   assert.equal(env.APPDATA, undefined);
@@ -30,7 +28,7 @@ test("resolveNextBuildEnv leaves HOME/USERPROFILE/APPDATA untouched on non-Windo
 });
 
 test("resolveNextBuildEnv isolates HOME/USERPROFILE/APPDATA/LOCALAPPDATA on win32", () => {
-  const env = resolveNextBuildEnv(
+  const env: LooseDeep = resolveNextBuildEnv(
     { NODE_ENV: "test", USERPROFILE: "C:\\Users\\ci-runner" },
     "win32"
   );
@@ -49,7 +47,7 @@ test("resolveNextBuildEnv isolates HOME/USERPROFILE/APPDATA/LOCALAPPDATA on win3
 });
 
 test("resolveNextBuildEnv skips Windows isolation when a caller already sandboxed the build (NEXT_DIST_DIR)", () => {
-  const env = resolveNextBuildEnv(
+  const env: LooseDeep = resolveNextBuildEnv(
     { NODE_ENV: "test", USERPROFILE: "C:\\Users\\ci-runner", NEXT_DIST_DIR: ".build/cli-next" },
     "win32"
   );
@@ -88,6 +86,6 @@ test("ensureWindowsBuildProfileDirs creates the isolated AppData directories", a
     assert.equal(fsSync.existsSync(env.APPDATA), true);
     assert.equal(fsSync.existsSync(env.LOCALAPPDATA), true);
   } finally {
-    await fs.rm(tempDir, { recursive: true, force: true });
+    await fs.rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });

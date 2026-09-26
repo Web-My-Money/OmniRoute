@@ -41,7 +41,7 @@ test("#8826: openOmniRouteDb() falls back to node:sqlite when better-sqlite3 nat
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-8826-"));
   t.after(() => {
     try {
-      fs.rmSync(tmpDir, { recursive: true, force: true });
+      fs.rmSync(tmpDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     } catch {}
     (Module as LooseDeep)._load = originalLoad;
   });

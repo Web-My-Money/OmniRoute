@@ -22,7 +22,7 @@ function makeRequest(body: unknown): Request {
 
 test("POST .../[id]/dns: unknown agent id returns 404 before any DNS call", async () => {
   const res = await dnsRoute.POST(makeRequest({ enabled: true }), {
-    params: { id: "__nonexistent_agent__" },
+    params: Promise.resolve({ id: "__nonexistent_agent__" }),
   });
   assert.equal(res.status, 404);
   const body = (await res.json()) as { error?: { message?: string } };
@@ -34,7 +34,7 @@ test("POST .../[id]/dns: unknown agent id returns 404 before any DNS call", asyn
 
 test("POST .../[id]/dns: invalid body still returns 400 (schema validated first)", async () => {
   const res = await dnsRoute.POST(makeRequest({ enabled: "not-a-boolean" }), {
-    params: { id: "__nonexistent_agent__" },
+    params: Promise.resolve({ id: "__nonexistent_agent__" }),
   });
   assert.equal(res.status, 400);
 });
@@ -51,7 +51,7 @@ test("POST .../[id]/dns: malformed JSON body returns 400", async () => {
 
 test("POST .../[id]/dns: error responses do not leak stack traces", async () => {
   const res = await dnsRoute.POST(makeRequest({ enabled: true }), {
-    params: { id: "__nonexistent_agent__" },
+    params: Promise.resolve({ id: "__nonexistent_agent__" }),
   });
   const text = await res.text();
   assert.ok(!text.includes("at /"), "stack trace leaked in dns route 404 response");

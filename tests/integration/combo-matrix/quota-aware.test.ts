@@ -16,6 +16,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createComboRoutingHarness } from "../_comboRoutingHarness.ts";
+import type { QuotaInfo } from "../../../open-sse/services/quotaPreflight.ts";
 
 const h = await createComboRoutingHarness("combo-quota-aware");
 const { BaseExecutor, combosDb, handleChat, buildRequest, seedConnection, resetStorage } = h;
@@ -128,10 +129,14 @@ test("reset-window: target with nearest quota-reset dispatched first despite bei
 
   // Quota that resets in 1 hour → much sooner than openai (Infinity / limitReached).
   const soonResetAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-  registerQuotaFetcher("gemini", async (_connId) => ({
-    percentUsed: 0.5,
-    window7d: { percentUsed: 0.5, resetAt: soonResetAt },
-  }));
+  registerQuotaFetcher(
+    "gemini",
+    async (_connId) =>
+      ({
+        percentUsed: 0.5,
+        window7d: { percentUsed: 0.5, resetAt: soonResetAt },
+      }) as unknown as QuotaInfo
+  );
 
   await combosDb.createCombo({
     name: "m-reset-window",

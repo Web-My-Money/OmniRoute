@@ -1618,7 +1618,7 @@ test("isAccountDeactivated matches a custom signal after setCustomBannedSignals"
 
 async function resetStorage10460() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR_10460, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR_10460, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR_10460, { recursive: true });
 }
 
@@ -1635,7 +1635,7 @@ async function seedConn10460(provider: string): Promise<string> {
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR_10460, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR_10460, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#10460: model-unsupported 400 returns shouldFallback:false (no account cooldown)", async () => {

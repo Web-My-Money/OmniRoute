@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import { selectProvider } from "../../open-sse/services/autoCombo/engine.ts";
 import { getSelfHealingManager } from "../../open-sse/services/autoCombo/selfHealing.ts";
 import { DEFAULT_WEIGHTS } from "../../open-sse/services/autoCombo/scoring.ts";
+import type { AutoComboConfig } from "../../open-sse/services/autoCombo/engine.ts";
 
 const healer = getSelfHealingManager();
 const originalRandom = Math.random;

@@ -249,7 +249,7 @@ test("handleAudioTranscription routes AssemblyAI uploads and polls until complet
   const originalSetTimeout = globalThis.setTimeout;
   const calls = [];
 
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     calls.push({ url: stringUrl, method: options?.method || "GET" });
@@ -314,7 +314,7 @@ test("handleAudioTranscription returns an error when AssemblyAI reports a termin
   const originalFetch = globalThis.fetch;
   const originalSetTimeout = globalThis.setTimeout;
 
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = async (url) => {
     const stringUrl = String(url);
 
@@ -366,7 +366,7 @@ test("handleAudioTranscription routes Rev AI uploads and polls until transcribed
   const originalSetTimeout = globalThis.setTimeout;
   const calls = [];
 
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     calls.push({ url: stringUrl, method: options?.method || "GET" });
@@ -431,7 +431,7 @@ test("handleAudioTranscription returns an error when Rev AI reports a failed job
   const originalFetch = globalThis.fetch;
   const originalSetTimeout = globalThis.setTimeout;
 
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = async (url) => {
     const stringUrl = String(url);
 
@@ -668,7 +668,7 @@ test("handleAudioTranscription routes Gladia uploads and polls result_url until 
   const originalSetTimeout = globalThis.setTimeout;
   const calls = [];
 
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     calls.push({ url: stringUrl, method: options?.method || "GET", headers: options?.headers });
@@ -736,7 +736,7 @@ test("handleAudioTranscription returns an error when Gladia reports a terminal f
   const originalFetch = globalThis.fetch;
   const originalSetTimeout = globalThis.setTimeout;
 
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = async (url) => {
     const stringUrl = String(url);
 

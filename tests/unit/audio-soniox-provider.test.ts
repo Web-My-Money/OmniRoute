@@ -55,7 +55,7 @@ test("handleAudioTranscription uploads, creates, polls and reads the Soniox tran
   const calls: { url: string; method: string }[] = [];
   let uploadBody = "";
 
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = async (url, options: FetchInit = {}) => {
     const stringUrl = String(url);
     calls.push({ url: stringUrl, method: options?.method || "GET" });
@@ -116,7 +116,7 @@ test("handleAudioTranscription joins Soniox tokens when the transcript has no te
   const originalFetch = globalThis.fetch;
   const originalSetTimeout = globalThis.setTimeout;
 
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = async (url) => {
     const stringUrl = String(url);
     if (stringUrl === "https://api.soniox.com/v1/files") return Response.json({ id: "file-1" });
@@ -167,7 +167,7 @@ test("handleAudioTranscription reports a Soniox job that ends in error", async (
   const originalFetch = globalThis.fetch;
   const originalSetTimeout = globalThis.setTimeout;
 
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = async (url) => {
     const stringUrl = String(url);
     if (stringUrl === "https://api.soniox.com/v1/files") return Response.json({ id: "file-1" });

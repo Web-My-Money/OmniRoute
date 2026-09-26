@@ -8,6 +8,7 @@ import {
 } from "../../open-sse/services/autoCombo/requestControls.ts";
 import { getSelfHealingManager } from "../../open-sse/services/autoCombo/selfHealing.ts";
 import { DEFAULT_WEIGHTS } from "../../open-sse/services/autoCombo/scoring.ts";
+import type { ProviderCandidate } from "../../open-sse/services/autoCombo/scoring.ts";
 
 // #3470 — Auto-combo transparency + budget controls: `budgetFallback: "strict"`
 // must refuse to select (instead of silently overspending) when EVERY candidate

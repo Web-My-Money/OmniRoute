@@ -1,5 +1,4 @@
 import test from "node:test";
-import type { LooseDeep } from "../helpers/looseTypes.ts";
 import assert from "node:assert/strict";
 
 const {
@@ -47,11 +46,15 @@ test("configure picker materializes explicit remote/base-url targets", () => {
 
 test("configure picker ranks favorites and recent model ids without leaking context data", () => {
   const ranked = rankPreferredModels("codex", ["glm/slow", "glm/fast", "qwen/recent"], {
+    version: 0,
+    contexts: {},
     targets: { codex: { favorites: ["glm/fast"], recent: ["qwen/recent"] } },
   });
   assert.deepEqual(ranked, ["glm/fast", "qwen/recent", "glm/slow"]);
   assert.deepEqual(
     getModelPreferenceState("codex", {
+      version: 0,
+      contexts: {},
       targets: { codex: { favorites: ["glm/fast"], recent: ["qwen/recent"] } },
     }),
     { favorites: ["glm/fast"], recent: ["qwen/recent"] }
@@ -70,13 +73,20 @@ test("configure picker keeps preferences isolated per remote context", () => {
     rankPreferredModels(
       "codex",
       ["local/model", "remote/model"],
-      preferences as LooseDeep,
+      preferences as unknown as Parameters<typeof rankPreferredModels>[2],
       "remote"
     ),
     ["remote/model", "local/model"]
   );
-  assert.deepEqual(getModelPreferenceState("codex", preferences as LooseDeep, "local"), {
-    favorites: ["local/model"],
-    recent: [],
-  });
+  assert.deepEqual(
+    getModelPreferenceState(
+      "codex",
+      preferences as unknown as Parameters<typeof getModelPreferenceState>[1],
+      "local"
+    ),
+    {
+      favorites: ["local/model"],
+      recent: [],
+    }
+  );
 });

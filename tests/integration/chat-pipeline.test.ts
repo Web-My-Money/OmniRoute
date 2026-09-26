@@ -375,7 +375,7 @@ async function resetStorage() {
   invalidateMemorySettingsCache();
   await new Promise((resolve) => setTimeout(resolve, 20));
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   initTranslators();
 }
@@ -514,7 +514,7 @@ test.after(async () => {
   clearInflight();
   resetAllCircuitBreakers();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("chat pipeline handles OpenAI passthrough with valid API key auth", async () => {

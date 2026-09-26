@@ -38,7 +38,7 @@ const originalSiblingEnv = process.env[SIBLING_LIMIT_ENV];
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -75,7 +75,7 @@ test.after(() => {
     process.env[SIBLING_LIMIT_ENV] = originalSiblingEnv;
   }
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#8378: enforceOutputTokenBudget honors the combo-resolved context limit, not the plain per-target lookup", async () => {

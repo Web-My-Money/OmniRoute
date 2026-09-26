@@ -159,7 +159,7 @@ test("HappyHorse video generation uses only the Bailian Coding Plan endpoint and
   const originalSetTimeout = globalThis.setTimeout;
   let captured;
 
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     if (stringUrl.endsWith("/services/aigc/video-generation/video-synthesis")) {

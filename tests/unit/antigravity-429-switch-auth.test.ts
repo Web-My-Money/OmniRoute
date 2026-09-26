@@ -19,7 +19,6 @@ import assert from "node:assert/strict";
 
 import { classify429, decide429 } from "../../open-sse/services/antigravity429Engine.ts";
 import { AntigravityExecutor } from "../../open-sse/executors/antigravity.ts";
-
 // -- Helpers -----------------------------------------------------------------
 
 function noopLog() {
