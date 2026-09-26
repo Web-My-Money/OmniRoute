@@ -19,8 +19,6 @@ const localDb = await import("../../src/lib/localDb.ts");
 // @ts-ignore - intentional for test harness timing
 const callbackRoute = await import("../../src/app/api/auth/oidc/callback/route.ts");
 
-import type { default as CookieStore } from "next/headers"; // not really, just for shape
-
 interface CapturedCookie {
   value: string;
   options?: Record<string, unknown>;
@@ -32,7 +30,7 @@ let capturedCookies: Record<string, CapturedCookie> = {};
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   capturedCookies = {};
 }
@@ -53,7 +51,9 @@ test.beforeEach(async () => {
   await resetStorage();
   callbackRoute.oidcCallbackInternals.clearJwksCache?.();
   callbackRoute.oidcCallbackInternals.getCookieStore = async () =>
-    makeTestCookieStore() as unknown as Promise<ReadonlyRequestCookies>;
+    makeTestCookieStore() as unknown as ReturnType<
+      typeof callbackRoute.oidcCallbackInternals.getCookieStore
+    >;
 });
 
 test.afterEach(() => {
@@ -62,7 +62,7 @@ test.afterEach(() => {
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   delete process.env.JWT_SECRET;
 });
 
@@ -110,7 +110,7 @@ test("OIDC callback happy path: exchanges code, validates ID token, mints identi
 
   const originalFetch = globalThis.fetch;
 
-  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+  globalThis.fetch = (async (input: RequestInfo | URL, _init?: RequestInit) => {
     const url = typeof input === "string" ? input : (input as URL).toString();
 
     if (url.includes("/.well-known/openid-configuration")) {

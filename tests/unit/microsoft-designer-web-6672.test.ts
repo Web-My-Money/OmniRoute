@@ -14,6 +14,7 @@ import {
 import { WEB_COOKIE_PROVIDERS } from "../../src/shared/constants/providers/web-cookie.ts";
 import { IMAGE_PROVIDERS } from "../../open-sse/config/imageRegistry.ts";
 import { looseAsync } from "../helpers/looseTypes.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 

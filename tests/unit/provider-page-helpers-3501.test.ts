@@ -45,6 +45,7 @@ import {
   type CompatModelRow,
   type CompatModelMap,
 } from "../../src/app/(dashboard)/dashboard/providers/[id]/providerPageHelpers.ts";
+import type { WebSessionCredentialRequirement } from "../../src/shared/providers/webSessionCredentials.ts";
 
 const tStub = Object.assign((key: string) => key, { has: (_k: string) => false });
 

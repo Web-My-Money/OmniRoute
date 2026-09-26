@@ -4,7 +4,6 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { JsonRecord } from "../../src/shared/types/json.ts";
-
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-provider-limits-recovery-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
 process.env.API_KEY_SECRET = "test-provider-limits-recovery-secret";
@@ -18,7 +17,7 @@ const originalFetch = globalThis.fetch;
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -80,7 +79,7 @@ test.beforeEach(async () => {
 test.after(async () => {
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("successful GLM quota refresh clears transient rate-limit state", async () => {
@@ -296,7 +295,7 @@ test("partial quota refresh does not clear a quota cooldown before its reset", a
   const connection = await providersDb.getProviderConnectionById(connectionId);
 
   await providerLimits.maybeClearRecoveredQuotaState(
-    connection as unknown as ProviderConnectionLike,
+    connection as unknown as Parameters<typeof providerLimits.maybeClearRecoveredQuotaState>[0],
     {
       quotas: {
         Ratelimit: { remainingPercentage: 0 },
@@ -336,7 +335,7 @@ test("Claude subscription quota recovery clears synthetic cooldown once the real
 
   const realResetInThePast = new Date(Date.now() - 60 * 1000).toISOString();
   const result = await providerLimits.maybeClearRecoveredQuotaState(
-    connection as unknown as ProviderConnectionLike,
+    connection as unknown as Parameters<typeof providerLimits.maybeClearRecoveredQuotaState>[0],
     {
       quotas: {
         "session (5h)": { remaining: 87, remainingPercentage: 87, resetAt: realResetInThePast },
@@ -378,7 +377,7 @@ test("Claude subscription quota still exhausted keeps the connection locked (no 
   const connection = await providersDb.getProviderConnectionById(connectionId);
 
   const result = await providerLimits.maybeClearRecoveredQuotaState(
-    connection as unknown as ProviderConnectionLike,
+    connection as unknown as Parameters<typeof providerLimits.maybeClearRecoveredQuotaState>[0],
     {
       quotas: {
         "session (5h)": { remaining: 0, remainingPercentage: 0 },
@@ -426,7 +425,7 @@ test("rate_limit_exceeded cooldown is not cleared early by an unrelated quota wi
   // exact shape that, pre-fix, fell straight through to hasTransientState
   // and cleared the cooldown for any lastErrorType other than quota_exhausted.
   const result = await providerLimits.maybeClearRecoveredQuotaState(
-    connection as unknown as ProviderConnectionLike,
+    connection as unknown as Parameters<typeof providerLimits.maybeClearRecoveredQuotaState>[0],
     {
       quotas: { unrelated: { unlimited: true } },
     }

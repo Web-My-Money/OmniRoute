@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { WizardProviderOption } from "../../src/app/(dashboard)/dashboard/providers/components/onboarding/providerOnboardingCatalog.ts";
 
 const catalog =
   await import("../../src/app/(dashboard)/dashboard/providers/components/onboarding/providerOnboardingCatalog.ts");

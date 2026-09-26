@@ -28,7 +28,7 @@ const originalFetch = globalThis.fetch;
 test.beforeEach(() => {
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   delete process.env.PROVIDER_LIMITS_SYNC_SPACING_MS;
 });
@@ -36,7 +36,7 @@ test.beforeEach(() => {
 test.after(() => {
   globalThis.fetch = originalFetch;
   delete process.env.PROVIDER_LIMITS_SYNC_SPACING_MS;
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 async function createGlmApiKeyConnection(i: number) {

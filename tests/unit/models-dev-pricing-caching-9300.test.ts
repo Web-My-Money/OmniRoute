@@ -13,6 +13,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const testDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-pricing-cache-"));
 process.env.DATA_DIR = testDataDir;
@@ -48,10 +49,7 @@ describe("getModelsDevPricing caching (#9300)", () => {
 
     // Seed pricing data into DB
     modelsDev.saveModelsDevPricing(
-      PRICING_DATA as unknown as PricingByProvider as Record<
-        string,
-        Record<string, Record<string, number>>
-      >
+      PRICING_DATA as unknown as LooseDeep as Record<string, Record<string, Record<string, number>>>
     );
 
     // Reset cache to ensure a clean read from DB
@@ -62,7 +60,7 @@ describe("getModelsDevPricing caching (#9300)", () => {
     // Clean up DB handles
     dbCore.resetDbInstance();
     try {
-      fs.rmSync(testDataDir, { recursive: true, force: true });
+      fs.rmSync(testDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     } catch {
       // ignore
     }

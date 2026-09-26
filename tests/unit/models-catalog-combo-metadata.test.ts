@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import type { JsonRecord } from "../../src/shared/types/json.ts";
 import type { LooseDeep } from "../helpers/looseTypes.ts";
+import type { SyncedAvailableModelInput } from "../../src/lib/db/models/synced.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-metadata-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -21,7 +22,7 @@ const catalog = await import("../../src/app/api/v1/models/catalog.ts");
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("single-target combo preserves its direct model metadata", async () => {
@@ -491,7 +492,7 @@ test("multi-target combo does not ignore a target with unknown reasoning metadat
           {
             id: "grok-4.6",
             supportedThinkingEfforts: ["low", "medium", "high"],
-          },
+          } as unknown as SyncedAvailableModelInput,
         ]
       )
     );

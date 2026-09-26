@@ -45,7 +45,7 @@ test("handleMusicGeneration executes ComfyUI audio workflow and normalizes wav o
   const originalSetTimeout = globalThis.setTimeout;
   let promptBody;
 
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
 
@@ -229,7 +229,7 @@ test("handleMusicGeneration returns provider errors for ComfyUI failures and log
   const logEntries = [];
   let promptBody;
 
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
 

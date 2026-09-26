@@ -15,6 +15,7 @@ import {
   type HookRegistration,
 } from "../../src/lib/plugins/hooks.ts";
 import type { LooseDeep } from "../helpers/looseTypes.ts";
+import type { PluginContext } from "../../src/lib/plugins/hooks.ts";
 
 // ── Setup ──
 

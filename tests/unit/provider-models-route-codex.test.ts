@@ -48,7 +48,7 @@ async function resetStorage() {
   globalThis.fetch = originalFetch;
   codexDiscovery.clearCodexGithubCatalogCacheForTests();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -80,7 +80,7 @@ test.after(async () => {
   globalThis.fetch = originalFetch;
   codexDiscovery.clearCodexGithubCatalogCacheForTests();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("provider models route merges live Codex models with the local catalog then filters denylist", async () => {

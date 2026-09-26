@@ -89,7 +89,7 @@ test(
 
     t.after(async () => {
       loaded?.cleanup();
-      await rm(pluginDir, { recursive: true, force: true });
+      await rm(pluginDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     });
 
     await writeFile(
@@ -149,7 +149,7 @@ test(
 
     t.after(async () => {
       loaded?.cleanup();
-      await rm(pluginDir, { recursive: true, force: true });
+      await rm(pluginDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     });
 
     await writeFile(
@@ -225,8 +225,8 @@ test(
         if (value === undefined) delete process.env[key];
         else process.env[key] = value;
       }
-      await rm(pluginDir, { recursive: true, force: true });
-      await rm(hostScriptDir, { recursive: true, force: true });
+      await rm(pluginDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+      await rm(hostScriptDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     });
 
     await writeFile(entryPoint, "export async function onRequest() { return {}; }\n", "utf-8");

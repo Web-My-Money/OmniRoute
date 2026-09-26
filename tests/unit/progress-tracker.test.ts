@@ -15,8 +15,8 @@ function withFakeIntervals(fn) {
     <TArgs extends unknown[]>(
       callback: (...args: TArgs) => void,
       delay?: number,
-      ...args: MakeVoidParameterOptional<TArgs>
-    ): Timeout;
+      ...args: TArgs
+    ): unknown;
   }) = (callback, delay = 0, ...args) => {
     const interval = {
       id: ++nextId,

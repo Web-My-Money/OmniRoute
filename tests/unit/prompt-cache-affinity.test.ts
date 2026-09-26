@@ -13,6 +13,7 @@ import {
   _clearOAuthSessionOccupancyForTest,
   reserveOAuthSession,
 } from "../../open-sse/services/oauthSessionOccupancy.ts";
+import type { ApplyStrategyOrderingDeps } from "../../open-sse/services/combo/applyStrategyOrdering.ts";
 
 function target(
   executionKey: string,
