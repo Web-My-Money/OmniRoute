@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import type { SidebarItemId } from "../../src/shared/constants/sidebarVisibility/types.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

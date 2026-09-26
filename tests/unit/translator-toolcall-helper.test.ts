@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Ports decolua/9router#2237: 9router already had helpers for half of the tool
 // call/result pairing invariant in this file — ensureToolCallIds (well-formed ids)
@@ -150,7 +151,7 @@ test("stripOrphanedToolResults: mixed matched+orphan — matched kept, orphan st
 test("stripOrphanedToolResults: body without messages array is a no-op", () => {
   const body = { foo: "bar" };
   const out = stripOrphanedToolResults(
-    body as unknown as ToolCallBody as unknown as { messages?: unknown[] }
+    body as unknown as LooseDeep as unknown as { messages?: unknown[] }
   );
   assert.equal(out, body);
 });

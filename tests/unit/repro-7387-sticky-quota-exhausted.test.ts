@@ -18,6 +18,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import type { HeadroomSaturation } from "../../open-sse/services/combo/headroomRanking.ts";
 import type { StickyConnectionHealth } from "../../open-sse/services/combo/sessionStickiness.ts";
+import type { ResolvedComboTarget } from "../../open-sse/services/combo/types.ts";
 
 const stickinessMod = await import("../../open-sse/services/combo/sessionStickiness.ts");
 const {

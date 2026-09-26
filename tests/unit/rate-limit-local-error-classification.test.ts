@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { TrustedLocalRateLimitErrorCode } from "../../open-sse/services/rateLimitManager/errors.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-rl-local-errors-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -101,7 +102,7 @@ test.afterEach(() => {
   providerCooldown.clearCooldownState();
   rateLimitSemaphore.resetAll();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 });
 
@@ -111,7 +112,7 @@ test.after(() => {
   providerCooldown.clearCooldownState();
   rateLimitSemaphore.resetAll();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("execution-timeout classification requires trusted provenance; queue codes classify by string (#9164/#9342)", () => {

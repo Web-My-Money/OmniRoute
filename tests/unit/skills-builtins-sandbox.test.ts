@@ -17,8 +17,14 @@ function makeTempDir(prefix) {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 }
 
-function removePath(targetPath) {
-  fs.rmSync(targetPath, { recursive: true, force: true });
+async function removePath(targetPath) {
+  try {
+    const { closeDbInstance } = await import("../../src/lib/db/core.ts");
+    closeDbInstance();
+  } catch {
+    // DB module not loaded or already closed — nothing to release.
+  }
+  fs.rmSync(targetPath, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 }
 
 async function importFresh(modulePath) {
@@ -43,7 +49,9 @@ test.afterEach(() => {
   globalThis.fetch = originalFetch;
 });
 
-function createFakeProcess({ onKill }: { onKill?: (signal?: string) => void } = {}) {
+function createFakeProcess({
+  onKill,
+}: { onKill?: (proc: LooseDeep, signal?: string) => void } = {}) {
   const proc = new EventEmitter() as EventEmitter & {
     stdout: EventEmitter;
     stderr: EventEmitter;
@@ -179,7 +187,7 @@ test("builtin skill handlers validate required fields and perform real sandboxed
       );
     });
   } finally {
-    removePath(dataDir);
+    await removePath(dataDir);
   }
 });
 
@@ -292,7 +300,7 @@ test("sandboxRunner handles success, spawn errors, timeouts, and killAll cleanup
       if (mode === "timeout") {
         return createFakeProcess({
           onKill: (instance) => {
-            setImmediate(() => (instance as LooseDeep).emit("close", null));
+            setImmediate(() => (instance as unknown as LooseDeep).emit("close", null));
           },
         });
       }

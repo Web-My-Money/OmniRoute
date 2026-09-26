@@ -167,7 +167,7 @@ test("handleVideoGeneration submits + polls a Novita task and returns mp4 URL", 
   const originalSetTimeout = globalThis.setTimeout;
   let submitRequest;
 
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
 
@@ -250,7 +250,7 @@ test("handleVideoGeneration surfaces an error when Novita returns no task_id", a
 test("handleVideoGeneration returns 502 when the Novita task FAILED", async () => {
   const originalFetch = globalThis.fetch;
   const originalSetTimeout = globalThis.setTimeout;
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
 
   globalThis.fetch = async (url) => {
     const stringUrl = String(url);
@@ -285,7 +285,7 @@ test("handleVideoGeneration returns 504 when the Novita task never completes", a
   const originalFetch = globalThis.fetch;
   const originalSetTimeout = globalThis.setTimeout;
   const originalNow = Date.now;
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
 
   let nowCalls = 0;
   Date.now = () => {

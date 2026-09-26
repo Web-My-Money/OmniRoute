@@ -6,6 +6,8 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
+import type { ScoringWeights } from "../../open-sse/services/autoCombo/scoring.ts";
 
 const { computeSnapshotWeights } =
   await import("@omniroute/open-sse/services/autoCombo/virtualFactory");
@@ -49,7 +51,7 @@ test("computeSnapshotWeights returns a Map with one entry per candidate", () => 
     contextAffinity: 0,
   };
 
-  const scores = computeSnapshotWeights(candidates, weights);
+  const scores = computeSnapshotWeights(candidates, weights as unknown as ScoringWeights);
 
   assert.equal(scores.size, 2);
   assert.ok(scores.has("p/m1"));
@@ -73,7 +75,7 @@ test("computeSnapshotWeights gives higher scores to reasoning-capable models whe
     quota: 0.5,
   };
 
-  const scores = computeSnapshotWeights(candidates, weights);
+  const scores = computeSnapshotWeights(candidates, weights as unknown as ScoringWeights);
 
   assert.ok(
     scores.get("p/reasoning-model") > scores.get("p/plain-model"),
@@ -96,7 +98,7 @@ test("computeSnapshotWeights gives higher scores to vision-capable models when t
     quota: 0.5,
   };
 
-  const scores = computeSnapshotWeights(candidates, weights);
+  const scores = computeSnapshotWeights(candidates, weights as unknown as ScoringWeights);
 
   assert.ok(
     scores.get("p/vision-model") > scores.get("p/plain-model"),
@@ -122,7 +124,7 @@ test("computeSnapshotWeights gives highest scores to models with both reasoning 
     quota: 0.1,
   };
 
-  const scores = computeSnapshotWeights(candidates, weights);
+  const scores = computeSnapshotWeights(candidates, weights as unknown as ScoringWeights);
 
   assert.ok(
     scores.get("p/full-capable") > scores.get("p/reasoning-only"),
@@ -153,7 +155,7 @@ test("computeSnapshotWeights gives higher stability score to models with more ca
     quota: 0.1,
   };
 
-  const scores = computeSnapshotWeights(candidates, weights);
+  const scores = computeSnapshotWeights(candidates, weights as unknown as ScoringWeights);
 
   assert.ok(
     scores.get("p/rich-model") > scores.get("p/one-cap"),
@@ -176,7 +178,7 @@ test("computeSnapshotWeights gives equal latencyInv baseline when no runtime dat
     quota: 0,
   };
 
-  const scores = computeSnapshotWeights(candidates, weights);
+  const scores = computeSnapshotWeights(candidates, weights as unknown as ScoringWeights);
 
   assert.equal(
     scores.get("p/m1"),
@@ -199,7 +201,7 @@ test("computeSnapshotWeights clamps scores to max 1", () => {
     quota: 10,
   };
 
-  const scores = computeSnapshotWeights(candidates, weights);
+  const scores = computeSnapshotWeights(candidates, weights as unknown as ScoringWeights);
 
   assert.ok(scores.get("p/m1") <= 1, `score should be clamped to ≤1, got ${scores.get("p/m1")}`);
 });

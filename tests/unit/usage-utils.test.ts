@@ -10,6 +10,7 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import type { UsageQuota } from "../../open-sse/services/usage/quota.ts";
 
 (process.env as Record<string, string | undefined>).NODE_ENV = "test";
 

@@ -38,7 +38,7 @@ async function resetStorage() {
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       if (fs.existsSync(TEST_DATA_DIR)) {
-        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       }
       break;
     } catch (error) {
@@ -116,7 +116,7 @@ function installTimerStubs() {
   const timeouts = [];
   const intervals = [];
 
-  globalThis.setTimeout = (fn, ms) => {
+  globalThis.setTimeout = ((fn, ms) => {
     const handle = {
       fn,
       ms,
@@ -129,15 +129,15 @@ function installTimerStubs() {
     };
     timeouts.push(handle);
     return handle;
-  };
+  }) as unknown as typeof setTimeout;
 
   (globalThis.setInterval as unknown as {
     (handler: TimerHandler, timeout?: number, ...restArgs: unknown[]): number;
     <TArgs extends unknown[]>(
       callback: (...args: TArgs) => void,
       delay?: number,
-      ...args: MakeVoidParameterOptional<TArgs>
-    ): Timeout;
+      ...args: TArgs
+    ): unknown;
   }) = (fn, ms) => {
     const handle = {
       fn,
@@ -271,7 +271,7 @@ test.afterEach(() => {
 
 test.after(async () => {
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("processManager reuses an alive persisted pid without spawning a new process", async () => {

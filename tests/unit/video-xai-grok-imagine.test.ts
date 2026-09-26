@@ -42,7 +42,7 @@ test("handleVideoGeneration creates + polls an xAI Grok Imagine video job and re
   let createRequest;
   let pollRequestCount = 0;
 
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
 
@@ -138,7 +138,7 @@ test("handleVideoGeneration surfaces a 502 when xAI returns no request_id", asyn
 test("handleVideoGeneration returns 502 when the xAI job status is failed", async () => {
   const originalFetch = globalThis.fetch;
   const originalSetTimeout = globalThis.setTimeout;
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
 
   globalThis.fetch = async (url) => {
     const stringUrl = String(url);
@@ -175,7 +175,7 @@ test("handleVideoGeneration returns 504 when the xAI job never completes", async
   const originalFetch = globalThis.fetch;
   const originalSetTimeout = globalThis.setTimeout;
   const originalNow = Date.now;
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
 
   let nowCalls = 0;
   Date.now = () => {

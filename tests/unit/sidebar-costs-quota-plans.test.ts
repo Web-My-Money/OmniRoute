@@ -5,6 +5,7 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { SidebarItemId } from "../../src/shared/constants/sidebarVisibility/types.ts";
 
 const sidebarVisibility = await import("../../src/shared/constants/sidebarVisibility.ts");
 

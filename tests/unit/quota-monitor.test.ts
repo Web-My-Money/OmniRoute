@@ -53,7 +53,7 @@ function withFakeTimers(fn) {
   const scheduled = [];
   let nextId = 0;
 
-  globalThis.setTimeout = (callback, delay = 0, ...args) => {
+  globalThis.setTimeout = ((callback, delay = 0, ...args) => {
     const timer = {
       id: ++nextId,
       delay,
@@ -67,7 +67,7 @@ function withFakeTimers(fn) {
     };
     scheduled.push(timer);
     return timer;
-  };
+  }) as unknown as typeof setTimeout;
 
   globalThis.clearTimeout = (timer) => {
     if (timer && typeof timer === "object") {

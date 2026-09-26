@@ -71,7 +71,7 @@ async function resetStorage(): Promise<void> {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
   fallback.clearAllModelLockouts();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -79,7 +79,7 @@ test.beforeEach(resetStorage);
 test.after(() => {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("foreign top candidate is skipped and the existing selector chooses the next free candidate", async () => {

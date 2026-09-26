@@ -20,6 +20,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { ensureBase64ImagesForClaudeWire } from "../../src/lib/guardrails/visionBridgeHelpers.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // zai speaks the claude wire format (open-sse/config/providers/registry/zai/index.ts),
 // so `isClaudeWireFormatModel` routes it through the base64 self-fetch path.
@@ -58,7 +59,7 @@ test("remote image fetched for the claude-wire self-call is downscaled to the lo
     })) as unknown as typeof fetch;
 
   const result = await ensureBase64ImagesForClaudeWire(
-    bodyWithRemoteImage("https://example.com/big.png") as unknown as RequestBody,
+    bodyWithRemoteImage("https://example.com/big.png") as unknown as LooseDeep,
     CLAUDE_WIRE_MODEL,
     fetchImpl
   );
@@ -84,7 +85,7 @@ test("remote non-image bytes pass through untouched (fail-open, no normalization
     })) as unknown as typeof fetch;
 
   const result = await ensureBase64ImagesForClaudeWire(
-    bodyWithRemoteImage("https://example.com/junk.bin") as unknown as RequestBody,
+    bodyWithRemoteImage("https://example.com/junk.bin") as unknown as LooseDeep,
     CLAUDE_WIRE_MODEL,
     fetchImpl
   );

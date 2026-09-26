@@ -6,6 +6,7 @@ import {
   VIDEO_BRIDGE_DRILLDOWN_PATH,
 } from "../../src/lib/guardrails/videoBridgeBrokerAuth.ts";
 import { managementPolicy } from "../../src/server/authz/policies/management.ts";
+import type { PolicyContext } from "../../src/server/authz/context.ts";
 
 function policyContext(path: string, ip = "127.0.0.1") {
   return {

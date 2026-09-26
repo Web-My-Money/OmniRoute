@@ -115,13 +115,18 @@ function makeFakePlaywright() {
 }
 
 function fastService(fake: ReturnType<typeof makeFakePlaywright>) {
-  return new VolcengineConsoleAutoLoginService(async () => fake as unknown as Promise<PwModule>, {
-    pageSettleMs: 1,
-    tabSwitchMs: 1,
-    sendCodeSettleMs: 1,
-    pollIntervalMs: 1,
-    resendCooldownMs: 20,
-  });
+  return new VolcengineConsoleAutoLoginService(
+    (async () => fake) as unknown as ConstructorParameters<
+      typeof VolcengineConsoleAutoLoginService
+    >[0],
+    {
+      pageSettleMs: 1,
+      tabSwitchMs: 1,
+      sendCodeSettleMs: 1,
+      pollIntervalMs: 1,
+      resendCooldownMs: 20,
+    }
+  );
 }
 
 const PHONE_TAB = '.arco-tabs-header-title:has-text("手机号登录")';

@@ -21,6 +21,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { initSystrayUnix } from "../../bin/cli/tray/traySystray.mjs";
 import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 class FakeSysTray {
   static lastOpts: unknown = null;
@@ -53,7 +54,7 @@ test("initSystrayUnix loads the injected SysTray ctor and builds the menu (#4605
     opts,
     async () =>
       FakeSysTray as unknown as Promise<
-        new (...args: unknown[]) => SystrayInstance
+        new (...args: unknown[]) => LooseDeep
       > as unknown as new () => unknown
   );
 

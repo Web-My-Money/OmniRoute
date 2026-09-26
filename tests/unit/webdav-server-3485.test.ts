@@ -144,7 +144,7 @@ const VAULT_ROOT = fs.mkdtempSync(path.join(os.tmpdir(), "omni-webdav-vault-"));
 const ORIG_KEY = process.env.STORAGE_ENCRYPTION_KEY;
 
 test.after(() => {
-  fs.rmSync(VAULT_ROOT, { recursive: true, force: true });
+  fs.rmSync(VAULT_ROOT, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   if (ORIG_KEY === undefined) {
     delete process.env.STORAGE_ENCRYPTION_KEY;
   } else {
@@ -479,8 +479,8 @@ test.before(async () => {
 });
 
 test.after(() => {
-  fs.rmSync(intDataDir, { recursive: true, force: true });
-  fs.rmSync(intVaultDir, { recursive: true, force: true });
+  fs.rmSync(intDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  fs.rmSync(intVaultDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("PUT then GET round-trips a file correctly", async () => {
@@ -665,8 +665,8 @@ test("disabled WebDAV returns 503", async () => {
     });
     assert.equal(res.status, 503);
   } finally {
-    fs.rmSync(disabledDataDir, { recursive: true, force: true });
-    fs.rmSync(disabledVaultDir, { recursive: true, force: true });
+    fs.rmSync(disabledDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+    fs.rmSync(disabledVaultDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
 
@@ -683,7 +683,7 @@ test("no DB / missing config returns 503", async () => {
     });
     assert.equal(res.status, 503);
   } finally {
-    fs.rmSync(emptyDataDir, { recursive: true, force: true });
+    fs.rmSync(emptyDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
 
@@ -748,8 +748,8 @@ test("encrypted password in DB is decrypted and auth works", async () => {
     // OPTIONS with correct creds should succeed (200 or 207)
     assert.ok(res.status < 400, `Expected success with encrypted password, got ${res.status}`);
   } finally {
-    fs.rmSync(encDataDir, { recursive: true, force: true });
-    fs.rmSync(encVaultDir, { recursive: true, force: true });
+    fs.rmSync(encDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+    fs.rmSync(encVaultDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     // Restore encryption key state
     if (ORIG_KEY === undefined) {
       delete process.env.STORAGE_ENCRYPTION_KEY;
@@ -797,6 +797,6 @@ test("resolveDataDir: parity with src/lib/dataPaths.ts across env combos", async
     else process.env.DATA_DIR = ORIG_DATA;
     if (ORIG_XDG === undefined) delete process.env.XDG_CONFIG_HOME;
     else process.env.XDG_CONFIG_HOME = ORIG_XDG;
-    fs.rmSync(tmp, { recursive: true, force: true });
+    fs.rmSync(tmp, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });

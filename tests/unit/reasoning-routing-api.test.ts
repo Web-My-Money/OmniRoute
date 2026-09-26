@@ -38,7 +38,7 @@ type SimulationResponse = {
 async function resetStorage() {
   apiKeysDb.resetApiKeyState();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   rulesDb.invalidateReasoningRoutingRuleCache();
 }
@@ -73,7 +73,7 @@ test.beforeEach(resetStorage);
 
 test.after(async () => {
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("management API CRUD validates and persists reasoning routing rules", async () => {

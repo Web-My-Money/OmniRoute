@@ -404,7 +404,12 @@ test("createResponsesLogger returns null for invalid base paths and swallows flu
   logger.logOutput("output");
 
   const sessionDir = readdirSync(join(logsDir, "logs"))[0];
-  rmSync(join(logsDir, "logs", sessionDir), { recursive: true, force: true });
+  rmSync(join(logsDir, "logs", sessionDir), {
+    recursive: true,
+    force: true,
+    maxRetries: 5,
+    retryDelay: 100,
+  });
   console.log = (...args) => capturedLogs.push(args.join(" "));
 
   try {
@@ -480,8 +485,8 @@ test("createResponsesApiTransformStream clears the keepalive timer when the stre
     <TArgs extends unknown[]>(
       callback: (...args: TArgs) => void,
       delay?: number,
-      ...args: MakeVoidParameterOptional<TArgs>
-    ): Timeout;
+      ...args: TArgs
+    ): unknown;
   }) = function (handler, timeout, ...args) {
     const id = realSetInterval(handler, timeout, ...args);
     live.add(id);

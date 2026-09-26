@@ -41,7 +41,7 @@ async function resetStorage() {
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       if (fs.existsSync(TEST_DATA_DIR)) {
-        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       }
       break;
     } catch (error: unknown) {
@@ -61,7 +61,7 @@ async function resetStorage() {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 function getId(connection: { id?: unknown }): string {
@@ -173,7 +173,7 @@ async function withCursorEnv<T>(fn: (env: CursorEnv) => Promise<T>): Promise<T> 
       else delete process.env.USERPROFILE;
       delete process.env.FAKE_CURSOR_AGENT_LOG;
       delete process.env.FAKE_CURSOR_AGENT_STATUS_MODE;
-      fs.rmSync(tmpHome, { recursive: true, force: true });
+      fs.rmSync(tmpHome, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     },
   };
 

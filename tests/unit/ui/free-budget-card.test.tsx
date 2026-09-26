@@ -308,7 +308,7 @@ describe("FreeBudgetView — keyless section and badges", () => {
   it("badges the keyless free-type distinctly from other free types", () => {
     const html = renderToStaticMarkup(<FreeBudgetView data={layoutData} />);
     const badges =
-      (html as LooseDeep).match(
+      (html as unknown as LooseDeep).match(
         /data-testid="free-type-badge"[^>]*>[^<]*(?:<[^>]*>[^<]*)*<\/span>/g
       ) ?? [];
     expect(badges.some((b) => (b as LooseDeep).includes("keyless"))).toBe(true);
