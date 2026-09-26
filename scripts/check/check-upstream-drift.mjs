@@ -25,6 +25,7 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 const ROOT = process.cwd();
 const MANIFEST_PATH = path.join(ROOT, "config/quality/upstream-patch-manifest.json");
@@ -108,31 +109,31 @@ export function diffWorkingTree(manifest, rootDir = ROOT) {
   return regressions;
 }
 
+export function parseNameStatus(nameStatus) {
+  const tokens = String(nameStatus).split("\0").filter(Boolean);
+  const entries = [];
+  for (let i = 0; i < tokens.length;) {
+    const status = tokens[i++];
+    if (status.startsWith("R") || status.startsWith("C")) i += 1;
+    const file = tokens[i++];
+    if (file) entries.push({ status, file });
+  }
+  return entries;
+}
+
 function generateManifest() {
   // merge-base vs working tree (no commit-ish second arg): uncommitted fixes
   // count too, and the sentinels match what check mode greps on disk.
   const base = git(["merge-base", UPSTREAM_REF, "HEAD"]).trim();
-  // With -z, --name-status emits "STATUS\0PATH\0" pairs (renames emit two paths).
   const nameStatus = git(["diff", base, "--name-status", "-z"]);
-  const tokens = nameStatus.split("\0").filter(Boolean);
   const files = {};
-  for (let i = 0; i < tokens.length; i++) {
-    const status = tokens[i];
+  for (const { status, file } of parseNameStatus(nameStatus)) {
     if (status.startsWith("R") || status.startsWith("C")) {
-      // Rename/copy: old path follows, then new path — track the new one.
-      i += 1;
-      const file = tokens[++i];
-      if (file) files[file] = { sentinels: [] };
+      files[file] = { sentinels: [] };
       continue;
     }
-    const file = tokens[++i];
-    if (!file) continue;
     if (status === "D") {
       files[file] = { deleted: true };
-      continue;
-    }
-    if (status === "R" || status === "C") {
-      skipped++;
       continue;
     }
     const patch = git(["diff", base, "--", file]);
@@ -181,4 +182,4 @@ function main() {
   process.exit(0);
 }
 
-main();
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();
