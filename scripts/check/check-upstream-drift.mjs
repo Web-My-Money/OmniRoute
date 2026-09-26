@@ -30,11 +30,6 @@ import { pathToFileURL } from "node:url";
 const ROOT = process.cwd();
 const MANIFEST_PATH = path.join(ROOT, "config/quality/upstream-patch-manifest.json");
 const UPDATE = process.argv.includes("--update");
-const upstreamIdx = process.argv.indexOf("--upstream");
-const UPSTREAM_REF =
-  upstreamIdx !== -1 && process.argv[upstreamIdx + 1]
-    ? process.argv[upstreamIdx + 1]
-    : loadManifestRef() || "upstream/main";
 
 const MAX_SENTINELS_PER_FILE = 3;
 const MIN_SENTINEL_LEN = 8;
@@ -53,13 +48,25 @@ function git(args) {
 function loadManifestRef() {
   try {
     if (fs.existsSync(MANIFEST_PATH)) {
-      const m = JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf8"));
+      const m = parseManifest(fs.readFileSync(MANIFEST_PATH, "utf8"), MANIFEST_PATH);
       return m.upstreamRef;
     }
   } catch {
     /* fall through to default */
   }
   return null;
+}
+
+/**
+ * Parses the manifest with the gate-facing error used when it is malformed.
+ * Exported for unit testing.
+ */
+export function parseManifest(raw, manifestPath) {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw new Error(`manifest is not valid JSON at ${manifestPath}`);
+  }
 }
 
 /**
@@ -109,49 +116,91 @@ export function diffWorkingTree(manifest, rootDir = ROOT) {
   return regressions;
 }
 
+/**
+ * Resolves the ref used by --update. A following `--flag` is another option, not a ref.
+ * Exported for unit testing.
+ */
+export function resolveUpstreamRef(argv, manifestRef) {
+  const upstreamIdx = argv.indexOf("--upstream");
+  if (upstreamIdx === -1) return manifestRef || "upstream/main";
+  const value = argv[upstreamIdx + 1];
+  if (!value || value.startsWith("-")) {
+    throw new Error("--upstream requires a ref value");
+  }
+  return value;
+}
+
+/**
+ * Parses `git diff --name-status -z` output. Rename/copy records consume both
+ * path tokens and report the destination path so local patches stay attached
+ * to the file that exists in this tree. Exported for unit testing.
+ */
 export function parseNameStatus(nameStatus) {
   const tokens = String(nameStatus).split("\0").filter(Boolean);
   const entries = [];
   for (let i = 0; i < tokens.length;) {
     const status = tokens[i++];
-    if (status.startsWith("R") || status.startsWith("C")) i += 1;
-    const file = tokens[i++];
-    if (file) entries.push({ status, file });
+    if (!/^([ABDMRTUX]|[RC]\d{1,3})$/.test(status)) {
+      throw new Error(`malformed --name-status token: ${status}`);
+    }
+    if (/^[RC]\d{1,3}$/.test(status)) {
+      if (i + 1 >= tokens.length) {
+        throw new Error(`incomplete rename/copy record for ${status}`);
+      }
+      i += 1; // source path
+    } else if (i >= tokens.length) {
+      throw new Error(`incomplete --name-status record for ${status}`);
+    }
+    entries.push({ status, file: tokens[i++] });
   }
   return entries;
 }
 
-function generateManifest() {
-  // merge-base vs working tree (no commit-ish second arg): uncommitted fixes
-  // count too, and the sentinels match what check mode greps on disk.
-  const base = git(["merge-base", UPSTREAM_REF, "HEAD"]).trim();
-  const nameStatus = git(["diff", base, "--name-status", "-z"]);
+/**
+ * Builds the manifest's `files` map from parsed name-status records. `getPatch`
+ * supplies the file's upstream diff; injected so the helper is testable without git.
+ */
+export function buildManifestFiles(entries, getPatch) {
   const files = {};
-  for (const { status, file } of parseNameStatus(nameStatus)) {
-    if (status.startsWith("R") || status.startsWith("C")) {
-      files[file] = { sentinels: [] };
-      continue;
-    }
+  for (const { status, file } of entries) {
     if (status === "D") {
       files[file] = { deleted: true };
       continue;
     }
-    const patch = git(["diff", base, "--", file]);
+    const patch = getPatch(file);
     if (patch.includes("Binary files")) {
       files[file] = { sentinels: [] }; // existence-only check
       continue;
     }
     files[file] = { sentinels: pickSentinels(patch) };
   }
-  return { upstreamRef: UPSTREAM_REF, files };
+  return files;
+}
+
+function generateManifest(upstreamRef) {
+  // merge-base vs working tree (no commit-ish second arg): uncommitted fixes
+  // count too, and the sentinels match what check mode greps on disk.
+  const base = git(["merge-base", upstreamRef, "HEAD"]).trim();
+  const nameStatus = git(["diff", base, "--name-status", "-z"]);
+  const files = buildManifestFiles(parseNameStatus(nameStatus), (file) =>
+    git(["diff", base, "--", file])
+  );
+  return { upstreamRef, files };
 }
 
 function main() {
   if (UPDATE) {
-    const manifest = generateManifest();
+    let upstreamRef;
+    try {
+      upstreamRef = resolveUpstreamRef(process.argv, loadManifestRef());
+    } catch (err) {
+      process.stderr.write(`[upstream-drift] FAIL — ${err.message}\n`);
+      process.exit(2);
+    }
+    const manifest = generateManifest(upstreamRef);
     fs.writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2) + "\n");
     console.log(
-      `[upstream-drift] manifest rewritten — ${Object.keys(manifest.files).length} locally-patched files vs ${UPSTREAM_REF}.`
+      `[upstream-drift] manifest rewritten — ${Object.keys(manifest.files).length} locally-patched files vs ${upstreamRef}.`
     );
     process.exit(0);
   }
@@ -160,7 +209,13 @@ function main() {
     process.stderr.write(`[upstream-drift] FAIL — manifest not found at ${MANIFEST_PATH}\n`);
     process.exit(2);
   }
-  const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf8"));
+  let manifest;
+  try {
+    manifest = parseManifest(fs.readFileSync(MANIFEST_PATH, "utf8"), MANIFEST_PATH);
+  } catch (err) {
+    process.stderr.write(`[upstream-drift] FAIL — ${err.message}\n`);
+    process.exit(2);
+  }
   const regressions = diffWorkingTree(manifest);
 
   if (regressions.length > 0) {
