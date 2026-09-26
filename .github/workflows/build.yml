@@ -5,11 +5,8 @@ on:
   push:
     branches: ["**"]
     paths-ignore:
-      - "docs/**"
       - "tests/**"
-      - "scripts/check/**"
       - "config/quality/**"
-      - "**/*.md"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

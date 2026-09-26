@@ -333,14 +333,14 @@ test("build.yml skips artifact-neutral pushes and cancels superseded builds", ()
 
   assert.ok(pushTrigger, "build.yml must define a push trigger before permissions");
   assert.match(pushTrigger[0], /branches: \["\*\*"\]/);
-  for (const ignoredPath of [
-    "docs/**",
-    "tests/**",
-    "scripts/check/**",
-    "config/quality/**",
-    "**/*.md",
-  ]) {
+  for (const ignoredPath of ["tests/**", "config/quality/**"]) {
     assert.match(pushTrigger[0], new RegExp(`      - "${ignoredPath.replace(/\*/g, "\\*")}"`));
+  }
+  for (const unsafePath of ["docs/**", "scripts/check/**", "**/*.md"]) {
+    assert.doesNotMatch(
+      pushTrigger[0],
+      new RegExp(`      - "${unsafePath.replace(/\*/g, "\\*")}"`)
+    );
   }
   for (const artifactPath of [
     "package.json",
