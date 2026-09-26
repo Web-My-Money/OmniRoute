@@ -1,8 +1,9 @@
-import { test, mock } from "node:test";
+import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { PolicyContext } from "../../../src/server/authz/context.ts";
 
 // Hermetic auth context (6A re-wire fix): the "rejects ..." assertions assume
 // login protection is ON — on a fresh DB (CI) isAuthRequired() is false and the
@@ -28,7 +29,7 @@ const { CLI_TOKEN_HEADER } = await import("../../../src/server/authz/headers.ts"
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   if (originalDataDir === undefined) delete process.env.DATA_DIR;
   else process.env.DATA_DIR = originalDataDir;
 });

@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import type { CsvToJsonlInput } from "../../../../src/lib/batches/schemas.ts";
 
 const { csvToJsonl } = await import("../../../../src/lib/batches/csvToJsonl.ts");
 
@@ -9,10 +10,10 @@ const DEFAULT_MAPPING = {
   id: "custom_id",
   prompt: "body.messages[0].content",
 };
-const DEFAULT_DEFAULTS: LooseDeep = {
+const DEFAULT_DEFAULTS = {
   model: "gpt-4o",
   url: "/v1/chat/completions" as const,
-};
+} as unknown as CsvToJsonlInput["defaults"];
 
 function make(csv: string, mapping = DEFAULT_MAPPING, defaults = DEFAULT_DEFAULTS) {
   return csvToJsonl({ csv, mapping, defaults });

@@ -116,7 +116,7 @@ describe("tierConfig DB module", () => {
       const result = loadTierConfigFromDb();
       assert.equal(result, null);
       assert.ok(warnSpy.mock.calls.length > 0);
-      const payload = warnSpy.mock.calls[0].arguments[0] as LooseDeep;
+      const payload = warnSpy.mock.calls[0].arguments[0] as unknown as LooseDeep;
       const preview = typeof payload.value === "string" ? payload.value : "";
       assert.ok(
         preview.length <= 250,

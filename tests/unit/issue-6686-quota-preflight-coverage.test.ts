@@ -87,7 +87,7 @@ test("#6686: getProviderCredentialsWithQuotaPreflight (now used by every credent
 
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 
   try {
@@ -136,6 +136,6 @@ test("#6686: getProviderCredentialsWithQuotaPreflight (now used by every credent
   } finally {
     core.resetDbInstance();
     apiKeysDb.resetApiKeyState();
-    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });

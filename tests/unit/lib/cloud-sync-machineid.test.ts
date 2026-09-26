@@ -16,7 +16,7 @@ process.env.DATA_DIR = TEST_DATA_DIR;
 const { syncToCloud } = await import("../../../src/lib/cloudSync.ts");
 
 test.after(() => {
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("syncToCloud rejects a missing machineId instead of fetching /sync/undefined", async () => {

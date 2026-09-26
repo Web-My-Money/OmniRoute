@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 
 import { makeManagementSessionRequest } from "../helpers/managementSession.ts";
+import type { NextRequest } from "next/server";
 
 // #3496 — docs/reference/API_REFERENCE.md documented a `/api/guardrails*` and
 // `/api/shadow*` surface that did not exist (doc-fiction, frozen in the
@@ -34,7 +35,7 @@ test.after(() => {
   } catch {
     /* ignore */
   }
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#3496 GET /api/guardrails lists the registered guardrails with status", async () => {

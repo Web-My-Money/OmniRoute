@@ -917,7 +917,7 @@ test("handleImageGeneration sanitizes Antigravity upstream error payloads", asyn
 
     assert.equal(result.success, false);
     assert.equal(result.status, 500);
-    assert.equal((result.error as LooseDeep).error.message, "failed at <path>");
+    assert.equal((result.error as unknown as LooseDeep).error.message, "failed at <path>");
   } finally {
     globalThis.fetch = originalFetch;
   }

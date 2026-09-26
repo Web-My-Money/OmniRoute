@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { KimiBillingStatus } from "../../src/shared/utils/kimiBilling.ts";
 
 const { buildKimiBillingCardRows, KIMI_CODE_ADDITIONAL_CREDITS_URL, sanitizeKimiBillingStatus } =
   await import("../../src/shared/utils/kimiBilling.ts");

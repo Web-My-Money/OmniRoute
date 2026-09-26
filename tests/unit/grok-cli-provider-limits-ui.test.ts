@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { GrokBillingStatus } from "../../src/shared/utils/grokBilling.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-grok-limits-ui-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -20,8 +21,7 @@ const {
   GROK_BUILD_ADDITIONAL_CREDITS_URL,
   sanitizeGrokBillingStatus,
 } = await import("../../src/shared/utils/grokBilling.ts");
-type GrokBillingTranslator =
-  typeof import("../../src/shared/utils/grokBilling.ts").GrokBillingTranslator;
+type GrokBillingTranslator = import("../../src/shared/utils/grokBilling.ts").GrokBillingTranslator;
 
 const baseBilling = {
   currency: "USD" as const,
@@ -30,7 +30,7 @@ const baseBilling = {
 };
 
 test.after(() => {
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("Grok Build product aliases normalize to one stable row and preserve collisions", () => {
@@ -229,7 +229,10 @@ test("Grok billing rows distinguish disabled and unavailable and translate enabl
     "en-US",
     translate
   );
-  assert.equal(disabled.find((row) => row.kind === "status")?.value, "Disabled");
+  assert.equal(
+    (disabled.find((row) => row.kind === "status") as { value?: string } | undefined)?.value,
+    "Disabled"
+  );
 
   const enabled = buildGrokBillingCardRows(
     {
@@ -242,7 +245,7 @@ test("Grok billing rows distinguish disabled and unavailable and translate enabl
         amountMinorUnits: 2000,
         maxMonthlyMinorUnits: 10000,
       },
-    },
+    } as unknown as GrokBillingStatus,
     "en-US",
     translate
   );

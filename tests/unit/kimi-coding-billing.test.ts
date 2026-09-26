@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { ProviderLimitsCacheEntry } from "../../src/lib/db/providerLimits.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-kimi-billing-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -84,7 +85,7 @@ test.afterEach(() => {
 test.after(() => {
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("kimi-coding exposes the official boosterWallet Extra Usage contract", async () => {
