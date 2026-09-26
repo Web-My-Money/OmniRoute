@@ -14,6 +14,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import Database from "better-sqlite3";
+import type { SqliteAdapter } from "../../src/lib/db/adapters/types.ts";
 
 const migrationsDir = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-ccr-migration-"));
 const originalMigrationsDir = process.env.OMNIROUTE_MIGRATIONS_DIR;
@@ -49,7 +50,7 @@ function createLegacyDb(appliedName: string) {
 }
 
 test.after(() => {
-  fs.rmSync(migrationsDir, { recursive: true, force: true });
+  fs.rmSync(migrationsDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   if (originalMigrationsDir === undefined) delete process.env.OMNIROUTE_MIGRATIONS_DIR;
   else process.env.OMNIROUTE_MIGRATIONS_DIR = originalMigrationsDir;
 });

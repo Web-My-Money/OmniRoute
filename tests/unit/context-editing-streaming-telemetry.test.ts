@@ -13,7 +13,6 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
-
 const collector = await import("../../open-sse/utils/streamPayloadCollector.ts");
 const { extractContextEditingTelemetry } = await import("../../open-sse/config/contextEditing.ts");
 

@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 
 import { OMNIROUTE_RESPONSE_HEADERS } from "../../src/shared/constants/headers.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-codex-stream-false-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -139,7 +140,7 @@ function buildResponsesNdjson(text = "Brasilia") {
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -159,7 +160,7 @@ async function invokeChatCore({
 } = {}) {
   const calls = [];
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const headers =
       init.headers instanceof Headers
         ? Object.fromEntries(init.headers.entries())
@@ -207,7 +208,7 @@ test.beforeEach(async () => {
 test.after(async () => {
   globalThis.fetch = originalFetch;
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("CodexExecutor.transformRequest clones the request body before forcing stream=true", () => {

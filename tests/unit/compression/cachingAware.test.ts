@@ -8,6 +8,7 @@ import {
   detectCachingContext,
   getCacheAwareStrategy,
 } from "../../../open-sse/services/compression/cachingAware.ts";
+import type { CachingContext } from "../../../open-sse/services/compression/cachingAware.ts";
 
 describe("detectCachingContext", () => {
   it("returns hasCacheControl=true when body has cache_control", () => {

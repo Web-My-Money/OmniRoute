@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { renderTestGreen } from "../../../open-sse/services/compression/engines/rtk/renderers/testGreen.ts";
+import type { CommandDetectionResult } from "../../../open-sse/services/compression/engines/rtk/commandDetector.ts";
 
 const det = (t: string) => ({
   type: t,

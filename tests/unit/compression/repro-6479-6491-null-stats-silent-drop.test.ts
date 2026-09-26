@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
 import { applyStackedCompression } from "../../../open-sse/services/compression/strategySelector.ts";
+import type { CompressionPipelineStep } from "../../../open-sse/services/compression/types.ts";
 
 /**
  * Regression coverage for #6479 and #6491: a dispatched stacked-pipeline step whose engine

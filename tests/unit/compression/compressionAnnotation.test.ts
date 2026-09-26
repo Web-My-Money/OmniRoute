@@ -5,6 +5,7 @@ import {
   formatCompressionMeta,
 } from "../../../open-sse/services/compression/planResolution.ts";
 import type { CompressionStats } from "../../../open-sse/services/compression/types.ts";
+import type { DerivedPlan } from "../../../open-sse/services/compression/deriveDefaultPlan.ts";
 
 function makeStats(overrides: Partial<CompressionStats> = {}): CompressionStats {
   return {

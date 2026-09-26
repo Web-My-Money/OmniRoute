@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { renderGitDiff } from "../../../open-sse/services/compression/engines/rtk/renderers/gitDiff.ts";
+import type { CommandDetectionResult } from "../../../open-sse/services/compression/engines/rtk/commandDetector.ts";
 
 const det = {
   type: "git-diff",

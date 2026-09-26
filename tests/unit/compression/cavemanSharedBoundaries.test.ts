@@ -4,6 +4,7 @@ import {
   SHARED_BOUNDARIES,
   buildCavemanOutputInstruction,
 } from "../../../open-sse/services/compression/outputMode.ts";
+import type { CavemanOutputModeConfig } from "../../../open-sse/services/compression/types.ts";
 
 test("SHARED_BOUNDARIES is exported and non-empty string", () => {
   assert.equal(typeof SHARED_BOUNDARIES, "string");

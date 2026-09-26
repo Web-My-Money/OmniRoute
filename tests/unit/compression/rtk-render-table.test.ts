@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { renderStructuredTable } from "../../../open-sse/services/compression/engines/rtk/renderers/structuredTable.ts";
+import type { CommandDetectionResult } from "../../../open-sse/services/compression/engines/rtk/commandDetector.ts";
 
 const det = {
   type: "kubectl",

@@ -15,6 +15,7 @@ import assert from "node:assert/strict";
 import { applyCompression } from "@omniroute/open-sse/services/compression/strategySelector.ts";
 import { normalizeStackedPipeline } from "../../../src/lib/db/compression.ts";
 import type { LooseDeep } from "../../helpers/looseTypes.ts";
+import type { CompressionEngineId } from "../../../open-sse/services/compression/types.ts";
 
 test("standard mode compresses even when cavemanConfig.enabled is false (B-MODE-ENGINE-DECOUPLE)", () => {
   const body = {

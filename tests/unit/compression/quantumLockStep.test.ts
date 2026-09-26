@@ -91,6 +91,7 @@ import {
   withQuantumLock,
   withQuantumLockAsync,
 } from "../../../open-sse/services/compression/quantumLock/strategyWrap.ts";
+import type { CompressionResult } from "../../../open-sse/services/compression/types.ts";
 
 const CACHING = { isCachingProvider: true };
 const NOT_CACHING = { isCachingProvider: false };

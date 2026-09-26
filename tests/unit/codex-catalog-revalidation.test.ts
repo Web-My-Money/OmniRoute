@@ -96,7 +96,7 @@ test("resolveCodexCatalogAppVersion uses stable, source-qualified identities", (
       null
     );
   } finally {
-    fs.rmSync(runtimeRoot, { recursive: true, force: true });
+    fs.rmSync(runtimeRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
 

@@ -10,9 +10,10 @@ import {
 import {
   DEFAULT_COMPRESSION_CONFIG,
   type CompressionConfig,
+  type CompressionPipelineStep,
 } from "../../../open-sse/services/compression/types.ts";
 
-const combos = {
+const combos: Record<string, CompressionPipelineStep[]> = {
   c1: [
     { engine: "rtk", intensity: "standard" },
     { engine: "caveman", intensity: "full" },

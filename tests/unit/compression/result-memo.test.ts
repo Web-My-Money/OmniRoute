@@ -8,7 +8,10 @@ import {
   clearMemoStore,
   MEMO_CAP,
 } from "../../../open-sse/services/compression/resultMemo.ts";
-import type { CompressionResult } from "../../../open-sse/services/compression/types.ts";
+import type {
+  CompressionConfig,
+  CompressionResult,
+} from "../../../open-sse/services/compression/types.ts";
 import { DEFAULT_COMPRESSION_CONFIG } from "../../../open-sse/services/compression/types.ts";
 import { applyCompression } from "../../../open-sse/services/compression/strategySelector.ts";
 import type { LooseDeep } from "../../helpers/looseTypes.ts";
