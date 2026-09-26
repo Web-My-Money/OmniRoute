@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { VideoBridgeGuardrail } from "../../../src/lib/guardrails/videoBridge.ts";
-import type { LooseDeep } from "../../helpers/looseTypes.ts";
 import {
   BridgeCache,
   type BridgeCacheEntry,
@@ -50,7 +49,7 @@ test("result cache fingerprints protected bytes instead of trusting a stable HTT
     }),
     getCapabilities: () => ({ supportsVideo: false }),
     selectVisionModel: async () => "openai/gpt-4o-mini",
-    fetchRemote: async (url: string, _options?: LooseDeep) => {
+    fetchRemote: async (url: string, _options?: Record<string, unknown>) => {
       const buffer = contents[Math.min(fetchCalls, contents.length - 1)];
       fetchCalls += 1;
       fetchedContent = buffer.toString("utf8");
@@ -65,10 +64,8 @@ test("result cache fingerprints protected bytes instead of trusting a stable HTT
         framesUsed: 1,
       };
     },
-  };
-  const bridge = new VideoBridgeGuardrail({ deps } as ConstructorParameters<
-    typeof VideoBridgeGuardrail
-  >[0]);
+  } as ConstructorParameters<typeof VideoBridgeGuardrail>[0];
+  const bridge = new VideoBridgeGuardrail({ deps });
 
   const first = await bridge.preCall(remoteVideoPayload(), {});
   const second = await bridge.preCall(remoteVideoPayload(), {});
@@ -189,10 +186,8 @@ test("result cache skips entries that exceed its aggregate byte budget", async (
         framesUsed: 1,
       };
     },
-  };
-  const bridge = new VideoBridgeGuardrail({ deps } as ConstructorParameters<
-    typeof VideoBridgeGuardrail
-  >[0]);
+  } as ConstructorParameters<typeof VideoBridgeGuardrail>[0];
+  const bridge = new VideoBridgeGuardrail({ deps });
   const payload = {
     model: "example/text-only",
     messages: [
@@ -268,10 +263,8 @@ test("result cache expires complete results at its TTL", async () => {
         framesUsed: 1,
       };
     },
-  };
-  const bridge = new VideoBridgeGuardrail({ deps } as ConstructorParameters<
-    typeof VideoBridgeGuardrail
-  >[0]);
+  } as ConstructorParameters<typeof VideoBridgeGuardrail>[0];
+  const bridge = new VideoBridgeGuardrail({ deps });
   const payload = {
     model: "example/text-only",
     messages: [
@@ -312,10 +305,8 @@ test("result cache evicts the least-recently-used content at its entry bound", a
         framesUsed: 1,
       };
     },
-  };
-  const bridge = new VideoBridgeGuardrail({ deps } as ConstructorParameters<
-    typeof VideoBridgeGuardrail
-  >[0]);
+  } as ConstructorParameters<typeof VideoBridgeGuardrail>[0];
+  const bridge = new VideoBridgeGuardrail({ deps });
   const payload = (base64: string) => ({
     model: "example/text-only",
     messages: [
@@ -365,10 +356,8 @@ test("an unavailable result cache fails open to normal video processing", async 
         framesUsed: 1,
       };
     },
-  };
-  const bridge = new VideoBridgeGuardrail({ deps } as ConstructorParameters<
-    typeof VideoBridgeGuardrail
-  >[0]);
+  } as ConstructorParameters<typeof VideoBridgeGuardrail>[0];
+  const bridge = new VideoBridgeGuardrail({ deps });
   const result = await bridge.preCall(
     {
       model: "example/text-only",
@@ -498,10 +487,8 @@ test("a corrupt result-cache payload is discarded and recomputed", async () => {
         framesUsed: 1,
       };
     },
-  };
-  const bridge = new VideoBridgeGuardrail({ deps } as ConstructorParameters<
-    typeof VideoBridgeGuardrail
-  >[0]);
+  } as ConstructorParameters<typeof VideoBridgeGuardrail>[0];
+  const bridge = new VideoBridgeGuardrail({ deps });
   const result = await bridge.preCall(
     {
       model: "example/text-only",
@@ -719,7 +706,7 @@ test("concurrent HTTPS requests share one protected download buffer", async () =
       getCapabilities: () => ({ supportsVideo: false }),
       selectVisionModel: async () => "openai/gpt-4o-mini",
       resultCache,
-      fetchRemote: async (url: string, _options?: LooseDeep) => {
+      fetchRemote: async (url: string, _options?: Record<string, unknown>) => {
         fetchCalls += 1;
         fetchedBuffer = Buffer.from("one-protected-download") as Buffer<ArrayBuffer>;
         markDownloadStarted?.();
@@ -780,7 +767,7 @@ test("cache-disabled production requests still share the bounded protected downl
       }),
       getCapabilities: () => ({ supportsVideo: false }),
       selectVisionModel: async () => "openai/gpt-4o-mini",
-      fetchRemote: async (url: string, _options?: LooseDeep) => {
+      fetchRemote: async (url: string, _options?: Record<string, unknown>) => {
         fetchCalls += 1;
         fetchedBuffer = Buffer.from("bounded-without-result-cache") as Buffer<ArrayBuffer>;
         markDownloadStarted?.();
@@ -876,10 +863,8 @@ test("aborting one singleflight waiter does not cancel another active request", 
       captionCalls += 1;
       return "surviving waiter result";
     },
-  };
-  const bridge = new VideoBridgeGuardrail({ deps } as ConstructorParameters<
-    typeof VideoBridgeGuardrail
-  >[0]);
+  } as ConstructorParameters<typeof VideoBridgeGuardrail>[0];
+  const bridge = new VideoBridgeGuardrail({ deps });
   const context = {
     apiKeyInfo: { id: "tenant-abort-waiter" },
     endpoint: "/v1/chat/completions",
@@ -987,7 +972,7 @@ test("protected download flights are isolated by authenticated principal", async
       getCapabilities: () => ({ supportsVideo: false }),
       selectVisionModel: async () => "openai/gpt-4o-mini",
       resultCache: new BridgeCache({ maxBytes: 4_096, maxEntries: 10, ttlMs: 60_000 }),
-      fetchRemote: async (url: string, _options?: LooseDeep) => {
+      fetchRemote: async (url: string, _options?: Record<string, unknown>) => {
         fetchCalls += 1;
         if (fetchCalls === 2) markBothStarted?.();
         await downloadGate;
