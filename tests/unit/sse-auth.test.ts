@@ -561,7 +561,7 @@ test("concurrent OAuth selections reserve different available accounts atomicall
     name: "codex-occupancy-b",
     priority: 1,
   });
-  assert.ok(second.priority <= Number(first.priority) + 1);
+  assert.ok(Number(second.priority) <= Number(first.priority) + 1);
 
   const [sessionA, sessionB] = await Promise.all([
     getCreds("codex", null, null, "gpt-5.5", {
@@ -582,7 +582,7 @@ test("concurrent OAuth selections reserve different available accounts atomicall
   );
   assert.notEqual(sessionA.connectionId, sessionB.connectionId);
   (sessionA.releaseOAuthSession as (() => void) | undefined)?.();
-  sessionB.releaseOAuthSession?.();
+  (sessionB.releaseOAuthSession as (() => void) | undefined)?.();
 });
 
 test("getProviderCredentials rebinds codex session when affinity connection is excluded", async () => {

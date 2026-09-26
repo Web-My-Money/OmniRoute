@@ -70,9 +70,11 @@ test("legacy Radar migration 143 is rehomed before the canonical API-key migrati
     { version: "153", name: "radar_local_model_state" },
   ]);
   assert.equal(
-    reopened
-      .prepare("SELECT COUNT(*) AS count FROM sqlite_master WHERE type = 'table' AND name = ?")
-      .get("radar_local_model_state")?.count,
+    (
+      reopened
+        .prepare("SELECT COUNT(*) AS count FROM sqlite_master WHERE type = 'table' AND name = ?")
+        .get("radar_local_model_state") as { count: number } | undefined
+    )?.count,
     1
   );
 });

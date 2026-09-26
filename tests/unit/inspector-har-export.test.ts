@@ -58,9 +58,7 @@ test("Bearer tokens in headers are masked", () => {
     },
   });
   const har = toHar([req]);
-  const authHeader = har.log.entries[0].request.headers.find(
-    (h) => h.name === "authorization"
-  );
+  const authHeader = har.log.entries[0].request.headers.find((h) => h.name === "authorization");
   assert.ok(authHeader);
   // Either Bearer regex (authorization:\sBearer prefix) or sk-/long-token regex must mask the value
   assert.ok(!authHeader.value.includes("supersecretvalueabc1234567890XYZ"));
@@ -89,7 +87,7 @@ test("preserves _source custom property", () => {
 test("preserves _detectedKind / _contextKey / _agent / _sessionId / _note", () => {
   const har = toHar([
     makeReq({
-      agent: "claude",
+      agent: "claude-code",
       detectedKind: "llm",
       contextKey: "abc123",
       sessionId: "00000000-0000-4000-8000-000000000099",
@@ -97,7 +95,7 @@ test("preserves _detectedKind / _contextKey / _agent / _sessionId / _note", () =
     }),
   ]);
   const e = har.log.entries[0];
-  assert.equal(e._agent, "claude");
+  assert.equal(e._agent, "claude-code");
   assert.equal(e._detectedKind, "llm");
   assert.equal(e._contextKey, "abc123");
   assert.equal(e._sessionId, "00000000-0000-4000-8000-000000000099");

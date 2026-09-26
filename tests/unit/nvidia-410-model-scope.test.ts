@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-nvidia-410-model-scope-"));
 
@@ -102,7 +103,7 @@ test("NVIDIA 410 Gone stays model-scoped and leaves the connection usable", asyn
   const healthyCredentials = await auth.getProviderCredentials("nvidia", null, null, HEALTHY_MODEL);
 
   assert.equal(
-    healthyCredentials?.connectionId,
+    (healthyCredentials as LooseDeep)?.connectionId,
     connection.id,
     "the same NVIDIA connection must remain selectable for healthy sibling models"
   );

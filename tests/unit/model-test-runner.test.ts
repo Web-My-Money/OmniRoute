@@ -420,7 +420,7 @@ test("runSingleModelTest preserves trusted local limiter HTTP statuses", async (
       const result = await runSingleModelTest({
         providerId: "openai",
         modelId: "gpt-4o",
-        connectionId: connection.id,
+        connectionId: String(connection.id),
         timeoutMs: 5_000,
       });
 

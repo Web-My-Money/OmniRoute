@@ -165,9 +165,12 @@ test("PIIMaskerGuardrail redacts Responses string input under MODE=block", async
     },
     async () => {
       const guardrail = new PIIMaskerGuardrail();
-      const preCall = await guardrail.preCall({
-        input: ["Contact support@example.com"],
-      });
+      const preCall = await guardrail.preCall(
+        {
+          input: ["Contact support@example.com"],
+        },
+        {}
+      );
       assert.ok(preCall?.modifiedPayload);
       const body = preCall?.modifiedPayload as { input?: unknown };
       assert.match(
@@ -175,7 +178,7 @@ test("PIIMaskerGuardrail redacts Responses string input under MODE=block", async
         /\[EMAIL_REDACTED\]/
       );
 
-      const top = await guardrail.preCall({ input: "Reach alice@example.com" });
+      const top = await guardrail.preCall({ input: "Reach alice@example.com" }, {});
       assert.ok(top?.modifiedPayload);
       const topBody = top?.modifiedPayload as { input?: unknown };
       assert.match(String(topBody.input), /\[EMAIL_REDACTED\]/);

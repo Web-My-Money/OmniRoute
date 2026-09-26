@@ -289,7 +289,7 @@ describe("inferMiniMaxPlanLabelFromTotals", () => {
 /* ------------------------------------------------------------------ */
 describe("getAntigravityPlanLabel", () => {
   it("returns a string label", () => {
-    const label = __testing.getAntigravityPlanLabel();
+    const label = __testing.getAntigravityPlanLabel({});
     assert.ok(typeof label === "string");
     assert.ok(label.length > 0);
   });

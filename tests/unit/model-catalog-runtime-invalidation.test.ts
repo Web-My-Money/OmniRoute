@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(
   path.join(os.tmpdir(), "omniroute-model-catalog-runtime-invalidation-")
@@ -97,8 +98,8 @@ test("session-affinity bookkeeping preserves the published model catalog", async
     forcedConnectionId: connection.id as string,
   });
 
-  assert.equal(firstSelection?.connectionId, connection.id);
-  assert.equal(secondSelection?.connectionId, connection.id);
+  assert.equal((firstSelection as LooseDeep)?.connectionId, connection.id);
+  assert.equal((secondSelection as LooseDeep)?.connectionId, connection.id);
   const persisted = await providersDb.getProviderConnectionById(connection.id as string);
   assert.equal(
     persisted?.consecutiveUseCount,

@@ -70,7 +70,7 @@ test("T44: Antigravity still strips standalone thoughtSignature without tool cal
     { projectId: "test-project" }
   );
 
-  assert.deepEqual(transformed.request.contents[0].parts, [{ text: "plain text" }]);
+  assert.deepEqual((transformed as LooseDeep).request.contents[0].parts, [{ text: "plain text" }]);
 });
 
 test("T44: Antigravity preserves skip_thought_signature_validator bypass sentinel", async () => {

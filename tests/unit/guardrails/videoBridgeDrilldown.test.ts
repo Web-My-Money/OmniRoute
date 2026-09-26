@@ -431,7 +431,7 @@ test("drill-down cache returns server-derived audit metadata without retaining t
       version: "video-drilldown/v1",
     },
     durationSeconds: 10,
-    frames: [{ ...frames[0], height: 180, width: 320 }],
+    frames: [{ ...frames[0], height: 180, width: 320 }] as VideoDrilldownFrame[],
   });
 
   const result = cache.get("principal", "session", "sensitive-parent-ref");
@@ -531,7 +531,7 @@ test("drill-down cache rejects an entry larger than the whole byte budget", asyn
           height: 180,
           timestampSeconds: 1,
           width: 320,
-        },
+        } as VideoDrilldownFrame,
       ],
     }),
     /byte budget/i

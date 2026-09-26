@@ -13,7 +13,6 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const testDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-pricing-cache-"));
 process.env.DATA_DIR = testDataDir;
@@ -49,7 +48,7 @@ describe("getModelsDevPricing caching (#9300)", () => {
 
     // Seed pricing data into DB
     modelsDev.saveModelsDevPricing(
-      PRICING_DATA as unknown as LooseDeep as Record<string, Record<string, Record<string, number>>>
+      PRICING_DATA as unknown as Parameters<typeof modelsDev.saveModelsDevPricing>[0]
     );
 
     // Reset cache to ensure a clean read from DB
@@ -95,7 +94,7 @@ describe("getModelsDevPricing caching (#9300)", () => {
     // Save updated pricing
     modelsDev.saveModelsDevPricing({
       openai: { "gpt-4o": { input: 5, output: 20 } },
-    } as Record<string, Record<string, Record<string, number>>>);
+    } as Parameters<typeof modelsDev.saveModelsDevPricing>[0]);
 
     const afterSave = modelsDev.getModelsDevPricing();
     // Must be a different object (cache was invalidated, re-loaded from DB)

@@ -57,7 +57,7 @@ test("no visible Kimi provider website field still points at the unattributed pl
   const allWebCookie = Object.values(providers.WEB_COOKIE_PROVIDERS);
   for (const provider of [...allApikey, ...allOauth, ...allWebCookie]) {
     if (featuredProviders.isKimiPartnerProviderId(provider.id) && (provider as LooseDeep).website) {
-      (assert as LooseDeep).doesNotMatch(
+      assert.doesNotMatch(
         (provider as LooseDeep).website,
         /^https:\/\/platform\.moonshot\.ai\/?$/,
         `${provider.id}.website must not be the unattributed legacy domain`

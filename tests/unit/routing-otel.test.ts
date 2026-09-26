@@ -25,6 +25,7 @@ function event(partial: Partial<RoutingEvent> = {}): RoutingEvent {
     strategy: "auto",
     latencyMs: 120,
     ttftMs: 40,
+    itlMs: null,
     inputTokens: 10,
     outputTokens: 20,
     cost: 0.01,

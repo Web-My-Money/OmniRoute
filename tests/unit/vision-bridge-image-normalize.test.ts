@@ -41,9 +41,9 @@ function bodyWithRemoteImage(url: string) {
 }
 
 test("remote image fetched for the claude-wire self-call is downscaled to the long-edge cap", async (t) => {
-  let sharp: typeof import("sharp");
+  let sharp: typeof import("sharp").default;
   try {
-    sharp = (await import("sharp")).default as never;
+    sharp = (await import("sharp")).default;
   } catch {
     t.skip("sharp not installed");
     return;

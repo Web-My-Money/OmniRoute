@@ -628,14 +628,14 @@ test("fixMissingToolResponses keeps OpenAI role:tool when assistant uses OpenAI 
 });
 
 test("fallbackToolCallId returns the right id shape with and without an index", () => {
-  const noIndex = toolCallHelperLoose.fallbackToolCallId();
+  const noIndex = toolCallHelperLoose.fallbackToolCallId() as unknown as string;
   assert.match(
     noIndex,
     /^call_\d+$/,
     "no-index form must be `call_<ts>` (matches kiro/openai-responses fallback shape)"
   );
 
-  const withIndex = toolCallHelperLoose.fallbackToolCallId(2);
+  const withIndex = toolCallHelperLoose.fallbackToolCallId(2) as unknown as string;
   assert.match(
     withIndex,
     /^call_2_\d+$/,
@@ -643,7 +643,7 @@ test("fallbackToolCallId returns the right id shape with and without an index", 
   );
 
   // index 0 is falsy but defined — must still produce the indexed form, not the no-index form.
-  const zeroIndex = toolCallHelperLoose.fallbackToolCallId(0);
+  const zeroIndex = toolCallHelperLoose.fallbackToolCallId(0) as unknown as string;
   assert.match(zeroIndex, /^call_0_\d+$/, "index 0 must use the indexed form, not the bare form");
 });
 

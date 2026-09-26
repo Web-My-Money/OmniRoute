@@ -16,13 +16,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-const tokenHealthCheck = await import("../../src/lib/tokenHealthCheck.ts");
 const { buildRefreshFailureUpdate, isInRefreshBackoff, getRefreshBackoffUntil } =
-  tokenHealthCheck as unknown as {
-    buildRefreshFailureUpdate: (conn: any, now: string) => any;
-    isInRefreshBackoff: (conn: any, nowMs: number) => boolean;
-    getRefreshBackoffUntil: (streak: number, now: string) => string;
-  };
+  await import("../../src/lib/tokenHealthCheck.ts");
 
 const NOW = "2026-06-11T12:00:00.000Z";
 const NOW_MS = new Date(NOW).getTime();

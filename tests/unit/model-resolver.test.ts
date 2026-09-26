@@ -134,7 +134,7 @@ test("resolveModelAliasFromMap returns null for empty map", () => {
 test("resolveModelAliasFromMap resolves alias from map", () => {
   const aliases = { "gpt-4": "gpt-4o" };
   const result = model.resolveModelAliasFromMap("gpt-4", aliases);
-  assert.ok(result === "gpt-4o" || result === null);
+  assert.ok(result?.model === "gpt-4o" || result === null);
 });
 
 test("CODEX_NATIVE_UNPREFIXED_MODELS is a Set", () => {

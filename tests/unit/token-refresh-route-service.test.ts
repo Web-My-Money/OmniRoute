@@ -54,9 +54,9 @@ async function withMockedNow(now, fn) {
 async function withHttpServer(handler, fn) {
   const server = http.createServer(handler);
 
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
-    server.listen(0, "127.0.0.1", resolve);
+    server.listen(0, "127.0.0.1", () => resolve());
   });
 
   const address = server.address();
@@ -69,7 +69,7 @@ async function withHttpServer(handler, fn) {
       url: `http://127.0.0.1:${address.port}`,
     });
   } finally {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       server.close((error) => {
         if (error) reject(error);
         else resolve();
@@ -89,7 +89,7 @@ async function withConnectProxyServer(fn, options = {}) {
     connectRequests.push(String(req.url || ""));
     const [host, portText] = String(req.url || "").split(":");
     const targetHost = (options as LooseDeep).targetHost || host;
-    const targetPort = Number(options.targetPort || portText || 80);
+    const targetPort = Number((options as LooseDeep).targetPort || portText || 80);
     const upstreamSocket = net.connect(targetPort, targetHost, () => {
       clientSocket.write("HTTP/1.1 200 Connection Established\r\n\r\n");
       if (head && head.length > 0) {
@@ -108,9 +108,9 @@ async function withConnectProxyServer(fn, options = {}) {
     clientSocket.on("error", closeSockets);
   });
 
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
-    server.listen(0, "127.0.0.1", resolve);
+    server.listen(0, "127.0.0.1", () => resolve());
   });
 
   const address = server.address();
@@ -124,7 +124,7 @@ async function withConnectProxyServer(fn, options = {}) {
       connectRequests,
     });
   } finally {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       server.close((error) => {
         if (error) reject(error);
         else resolve();
@@ -161,6 +161,7 @@ test.after(async () => {
 
 test("token refresh wrapper delegates provider-specific refresh helpers and formatter utilities", async () => {
   PROVIDERS["custom-oauth-local-608"] = {
+    format: "openai",
     refreshUrl: "https://auth.example.com/token",
     clientId: "client-id",
     clientSecret: "client-secret",
@@ -260,7 +261,7 @@ test("token refresh wrapper delegates provider-specific refresh helpers and form
         accessToken: "github-access",
         refreshToken: "refresh-github",
       });
-      assert.equal(allTokens.github.accessToken, "github-access");
+      assert.equal((allTokens as LooseDeep).github.accessToken, "github-access");
     }
   );
 

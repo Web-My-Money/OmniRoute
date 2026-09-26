@@ -97,7 +97,8 @@ test("handleEmbedding forwards Jina Omni native text+image URL intact and does n
         normalized: true,
         input: [{ text: "a red bicycle" }, { image: IMAGE_URL }],
       },
-      credentials: { apiKey: "test-jina-token", connectionId: "conn-jina-omni" },
+      credentials: { apiKey: "test-jina-token" },
+      connectionId: "conn-jina-omni",
       log: null,
     });
     assert.equal(result.success, true, result.error);

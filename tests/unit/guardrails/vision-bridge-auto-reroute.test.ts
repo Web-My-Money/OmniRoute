@@ -20,7 +20,7 @@ let mockSettings: Record<string, unknown> = {};
 let visionCallCount = 0;
 let credentialsMock: (model: string) => Promise<boolean | null> = async () => null;
 
-function createGuardrail(options?: Parameters<typeof VisionBridgeGuardrail>[0]) {
+function createGuardrail(options?: ConstructorParameters<typeof VisionBridgeGuardrail>[0]) {
   return new VisionBridgeGuardrail({
     ...options,
     deps: {

@@ -31,7 +31,13 @@ describe("WebSessionCredentialGuide cookie acquisition paths", () => {
     act(() => {
       root?.render(
         <WebSessionCredentialGuide
-          requirement={{ kind: "cookie", credentialName: "session-token" }}
+          requirement={{
+            kind: "cookie",
+            credentialName: "session-token",
+            placeholder: "session-token",
+            acceptsFullCookieHeader: false,
+            storageKeys: [] as const,
+          }}
           providerName="Example AI"
           providerWebsite="https://example.ai/login"
           t={t}

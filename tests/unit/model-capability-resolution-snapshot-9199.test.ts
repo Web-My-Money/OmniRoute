@@ -484,7 +484,7 @@ test("#9199 snapshot-backed resolution matches ordinary resolvers across resolut
   assert.equal(
     modelCapabilities.getResolvedModelCapabilities(
       { provider: "parity-provider", model: "parity-model" },
-      snapshot
+      snapshot as unknown as ResolveModelCapabilitiesOptions
     ).maxOutputTokens,
     99999,
     "max_token override must win over synced limit_output"
@@ -497,7 +497,7 @@ test("#9199 snapshot-backed resolution matches ordinary resolvers across resolut
   assert.equal(
     modelCapabilities.getResolvedModelCapabilities(
       { provider: "opencode", model: "zen-only-model" },
-      snapshot
+      snapshot as unknown as ResolveModelCapabilitiesOptions
     ).contextWindow,
     333333,
     "canonical opencode must resolve capabilities stored under opencode-zen"
@@ -538,14 +538,14 @@ test("#9199 snapshot-backed resolution matches ordinary resolvers across resolut
   assert.equal(
     modelCapabilities.getResolvedModelCapabilities(
       { provider: "missing-provider", model: "gpt-4o-mini" },
-      snapshot
+      snapshot as unknown as ResolveModelCapabilitiesOptions
     ).maxOutputTokens,
     staticSpec.maxOutputTokens
   );
   assert.equal(
     modelCapabilities.getResolvedModelCapabilities(
       { provider: "missing-provider", model: "gpt-4o-mini" },
-      snapshot
+      snapshot as unknown as ResolveModelCapabilitiesOptions
     ).contextWindow,
     staticSpec.contextWindow
   );
@@ -563,7 +563,7 @@ test("#9199 snapshot-backed resolution matches ordinary resolvers across resolut
   assert.equal(
     modelCapabilities.getResolvedModelCapabilities(
       { provider: "missing-provider", model: "missing-model" },
-      snapshot
+      snapshot as unknown as ResolveModelCapabilitiesOptions
     ).contextWindow,
     null
   );

@@ -1131,7 +1131,10 @@ test("unified xAI OAuth card includes canonical and legacy connection provider I
   );
   assert.equal(resolveProviderOAuthBackendId("xai", providers.APIKEY_PROVIDERS.xai), "xai-oauth");
   assert.equal(
-    resolveProviderOAuthBackendId("openai", providers.APIKEY_PROVIDERS.openai),
+    resolveProviderOAuthBackendId(
+      "openai",
+      providers.APIKEY_PROVIDERS.openai as { oauthProviderId?: unknown }
+    ),
     "openai"
   );
   assert.equal(providers.OAUTH_PROVIDERS["xai-oauth"].hiddenFromDashboard, true);

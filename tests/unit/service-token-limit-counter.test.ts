@@ -20,7 +20,7 @@ describe("tokenLimitCounter", () => {
 
   describe("recordTokenUsage", () => {
     it("does not throw for empty limits", () => {
-      mod.recordTokenUsage([], { input: 10, output: 5, reasoning: 0 });
+      mod.recordTokenUsage("", "openai", "gpt-4o", 15);
     });
   });
 });

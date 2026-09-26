@@ -10,14 +10,7 @@ function withFakeIntervals(fn) {
   const intervals = [];
   let nextId = 0;
 
-  (globalThis.setInterval as unknown as {
-    (handler: TimerHandler, timeout?: number, ...restArgs: unknown[]): number;
-    <TArgs extends unknown[]>(
-      callback: (...args: TArgs) => void,
-      delay?: number,
-      ...args: TArgs
-    ): unknown;
-  }) = (callback, delay = 0, ...args) => {
+  globalThis.setInterval = ((callback, delay = 0, ...args) => {
     const interval = {
       id: ++nextId,
       callback,
@@ -27,7 +20,7 @@ function withFakeIntervals(fn) {
     };
     intervals.push(interval);
     return interval;
-  };
+  }) as unknown as typeof setInterval;
 
   globalThis.clearInterval = (interval) => {
     if (interval && typeof interval === "object") {

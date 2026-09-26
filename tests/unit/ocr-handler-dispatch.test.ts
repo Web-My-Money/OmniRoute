@@ -113,7 +113,9 @@ test("azure DI poll returns a non-ok response (401) and fails fast without exhau
 });
 
 test("azure DI poll never resolves and times out after 30 attempts with a 504", async () => {
-  const script = [{ status: 202, headers: { "Operation-Location": "https://poll/op/1" } }];
+  const script: Array<{ status: number; headers?: Record<string, string>; json?: unknown }> = [
+    { status: 202, headers: { "Operation-Location": "https://poll/op/1" } },
+  ];
   for (let i = 0; i < 30; i++) {
     script.push({ status: 200, json: { status: "running" } });
   }

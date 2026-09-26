@@ -20,7 +20,7 @@ async function withEnv(overrides, fn) {
     if (value === undefined) {
       delete process.env[key];
     } else {
-      (process.env[key] as unknown as string) = value;
+      process.env[key] = value as string;
     }
   }
 
@@ -40,7 +40,7 @@ async function withEnv(overrides, fn) {
 async function withHttpServer(handler, fn) {
   const server = http.createServer(handler);
 
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
     server.listen(0, "127.0.0.1", resolve);
   });
@@ -51,7 +51,7 @@ async function withHttpServer(handler, fn) {
   try {
     return await fn(`http://127.0.0.1:${address.port}`);
   } finally {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       server.close((error) => {
         if (error) reject(error);
         else resolve();

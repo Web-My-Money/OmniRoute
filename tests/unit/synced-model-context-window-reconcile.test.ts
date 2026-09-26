@@ -36,8 +36,6 @@ const core = await import("../../src/lib/db/core.ts");
 const persistence = await import("../../src/lib/db/models/syncedAvailableModelPersistence.ts");
 const resolver = await import("../../src/lib/contextWindowResolver.ts");
 const reconcileContextWindows = resolver.reconcileContextWindows;
-type DiscoveredWindow = DiscoveredWindow;
-type ReconcileDeps = ReconcileDeps;
 
 function resetStorage() {
   core.resetDbInstance();

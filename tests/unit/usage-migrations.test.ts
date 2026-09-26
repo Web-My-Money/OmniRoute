@@ -211,7 +211,7 @@ test("migrateUsageJsonToSqlite migrates usage history aliases, TTFT, and account
       `
     )
     .all()
-    .map((row) => ({ ...row }));
+    .map((row) => ({ ...(row as LooseDeep) }));
 
   assert.deepEqual(rows, [
     {
@@ -312,7 +312,7 @@ test("migrateUsageJsonToSqlite migrates call logs to summary rows and ignores du
 
   assert.equal(rows.length, 2);
   assert.deepEqual(
-    { ...rows[0] },
+    { ...(rows[0] as LooseDeep) },
     {
       id: "call-1",
       method: "GET",

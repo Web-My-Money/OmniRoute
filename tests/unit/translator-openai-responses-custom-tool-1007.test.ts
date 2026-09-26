@@ -41,7 +41,7 @@ test("Responses -> Chat: custom tool is normalized to a { input: string } functi
     {}
   );
 
-  assert.equal((Array as LooseDeep).isArray(result.tools), true);
+  assert.equal(Array.isArray((result as LooseDeep).tools), true);
   const tool = (result as LooseDeep).tools[0];
   assert.equal(tool.type, "function");
   assert.equal(tool.function.name, "apply_patch");

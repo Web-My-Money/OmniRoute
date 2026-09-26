@@ -92,11 +92,11 @@ test("ensureBase64ImagesForClaudeWire: resolves remote URLs to base64 for claude
         })
     );
     const part = out.messages[0].content[1];
-    (assert as LooseDeep).ok(
+    assert.ok(
       (part as LooseDeep).image_url.url.startsWith("data:image/png;base64,"),
       "remote URL must be resolved to a base64 data URI"
     );
-    assert.ok(part.image_url.url.includes(pngBase64));
+    assert.ok((part as LooseDeep).image_url.url.includes(pngBase64));
   } finally {
     globalThis.fetch = originalFetch;
   }

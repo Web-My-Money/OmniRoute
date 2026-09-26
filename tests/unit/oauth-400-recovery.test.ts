@@ -236,7 +236,7 @@ test.after(() => {
   fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
-test("isTokenExpired treats a corrupt expiresAt string as expired (refreshable)", () => {
+test("isTokenExpired treats a corrupt expiresAt string as expired (refreshable)", async () => {
   // Direct unit check — the integration path exercises this via
   // testOAuthConnection, but the NaN guard deserves its own assertion.
   const corrupt = baseConnection({
@@ -267,5 +267,5 @@ test("isTokenExpired treats a corrupt expiresAt string as expired (refreshable)"
     assert.ok(refreshCalls >= 1, "corrupt expiresAt + refreshToken must refresh proactively");
     return r;
   });
-  return promise;
+  await promise;
 });

@@ -123,7 +123,7 @@ describe("proxyDispatcher CONNECT tunneling (undici 8.6+ proxyTunnel)", () => {
       res.writeHead(200);
       res.end("ok");
     });
-    await new Promise((r) => target.listen(0, r));
+    await new Promise<void>((r) => target.listen(0, r));
     const targetPort = (target.address() as { port: number }).port;
 
     // Proxy that ONLY speaks CONNECT: 501 on a forwarded origin request, tunnels on CONNECT.
@@ -144,7 +144,7 @@ describe("proxyDispatcher CONNECT tunneling (undici 8.6+ proxyTunnel)", () => {
       });
       upstream.on("error", () => socket.destroy());
     });
-    await new Promise((r) => proxy.listen(0, r));
+    await new Promise<void>((r) => proxy.listen(0, r));
     const proxyPort = (proxy.address() as { port: number }).port;
 
     try {

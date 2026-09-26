@@ -435,6 +435,7 @@ test("handleResponsesCore rejects invalid Responses API input that cannot be tra
         onRequestSuccess: null,
         onDisconnect: null,
         connectionId: null,
+        signal: null,
       }),
     (error) =>
       error instanceof Error && error.message.includes("file_search tool type is not supported")

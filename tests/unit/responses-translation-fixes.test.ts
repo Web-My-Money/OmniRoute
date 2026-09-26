@@ -798,6 +798,7 @@ test("Responses→Chat streaming: response.completed finalizes tool_calls when c
     toolCallIndex: 0,
     currentToolCallId: "call_def",
     finishReasonSent: false,
+    finishReason: null as string | null,
   };
 
   const chunk = { type: "response.completed", data: { response: {} } };

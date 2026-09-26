@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { looseCreds } from "../helpers/looseTypes.ts";
+import { looseCreds, type LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-auth-exclusive-lease-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -247,7 +247,7 @@ test("generic lease selection is provider-neutral across GLM and OpenAI fixtures
     assert.equal(selected?.connectionId, connection.id, provider);
     leaseDb.releaseExclusiveConnectionLease({
       leaseOwnerId: OWNERS[0],
-      generation: selected!.exclusiveLease.generation,
+      generation: (selected!.exclusiveLease as LooseDeep).generation,
       apiKeyId: key.id,
     });
   }

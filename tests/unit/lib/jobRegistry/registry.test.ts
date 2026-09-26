@@ -1,16 +1,16 @@
 /** JobRegistry runtime tests . Uses real timers + isolated temp DB. */
 
 // Access private internals (avoids `as any`).
-type TestRegistry = JobRegistry & {
+type TestRegistry = Omit<JobRegistry, "timers"> & {
   timers: Map<string, unknown>;
   cronFailCount: Map<string, number>;
 };
 function regInternals(reg: JobRegistry): TestRegistry {
-  return reg as TestRegistry;
+  return reg as unknown as TestRegistry;
 }
 
 import test from "node:test";
-import type { JobRegistry } from "../../../src/lib/jobRegistry/registry.ts";
+import type { JobRegistry } from "@/lib/jobRegistry/registry.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";

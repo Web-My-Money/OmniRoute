@@ -339,7 +339,7 @@ test("claudeRequestToXaiResponses: translates tools from Anthropic to xAI functi
   };
   const out = claudeRequestToXaiResponses(req);
   assert.ok(Array.isArray(out.tools));
-  const tool = (out.tools as Array<Record<string, unknown>>)[0];
+  const tool = (out.tools as unknown as Array<Record<string, unknown>>)[0];
   assert.equal(tool.type, "function");
   const fn = tool.function as LooseDeep;
   assert.equal(fn.name, "search");
@@ -436,7 +436,7 @@ test("geminiRequestToXaiResponses: converts functionDeclarations to xAI tools", 
   };
   const out = geminiRequestToXaiResponses(req);
   assert.ok(Array.isArray(out.tools));
-  const tool = (out.tools as Array<Record<string, unknown>>)[0];
+  const tool = (out.tools as unknown as Array<Record<string, unknown>>)[0];
   assert.equal(tool.type, "function");
   const fn = tool.function as LooseDeep;
   assert.equal(fn.name, "search");

@@ -19,7 +19,7 @@ import assert from "node:assert/strict";
 const { REGISTRY } = await import("../../open-sse/config/providerRegistry.ts");
 
 test("#2361 llm7 is registered with the OpenAI-compatible v1 endpoint", () => {
-  const entry = (REGISTRY as Record<string, Record<string, unknown>>).llm7;
+  const entry = (REGISTRY as unknown as Record<string, Record<string, unknown>>).llm7;
   assert.ok(entry, "llm7 should be present in the executor registry");
   assert.equal(entry.format, "openai");
   assert.equal(entry.baseUrl, "https://api.llm7.io/v1/chat/completions");
@@ -29,7 +29,7 @@ test("#2361 llm7 is registered with the OpenAI-compatible v1 endpoint", () => {
 });
 
 test("#2360 cohere routes via the OpenAI-compatible compatibility layer", () => {
-  const entry = (REGISTRY as Record<string, Record<string, unknown>>).cohere;
+  const entry = (REGISTRY as unknown as Record<string, Record<string, unknown>>).cohere;
   assert.ok(entry, "cohere should be present in the executor registry");
   assert.equal(entry.format, "openai");
   // Must be the compatibility endpoint, NOT the native /v2/chat one

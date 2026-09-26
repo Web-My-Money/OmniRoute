@@ -854,7 +854,7 @@ test.afterEach(() => {
 });
 
 test("chatgpt-web validator: accepts a valid session response with accessToken", async () => {
-  let captured: { url: string; opts: MockRequestInit } | null = null;
+  let captured: { url: string; opts: TlsFetchOptions } | null = null;
   __setTlsFetchOverrideForTesting(async (url, opts) => {
     captured = { url, opts };
     return makeTlsResponse(
@@ -2375,7 +2375,7 @@ function makeClaudeTlsResponse(status: number, body: string, headers: Record<str
 }
 
 test("claude-web validator: 200 from /api/organizations → valid", async () => {
-  let captured: { url: string; opts: MockRequestInit } | null = null;
+  let captured: { url: string; opts: TlsFetchOptions } | null = null;
   __setClaudeTlsFetchOverride(async (url, opts) => {
     captured = { url, opts };
     return makeClaudeTlsResponse(200, JSON.stringify({ orgs: [] }));

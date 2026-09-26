@@ -45,7 +45,7 @@ describe("services/webFetchInterception — prepareWebFetchFallbackBody (#7339)"
     assert.equal(fallback.convertedToolCount, 1);
     assert.equal(nextBody.tools.length, 1);
     assert.equal(
-      (nextBody.tools[0] as { function: { name: string } }).function.name,
+      (nextBody.tools[0] as unknown as { function: { name: string } }).function.name,
       OMNIROUTE_WEB_FETCH_FALLBACK_TOOL_NAME
     );
   });

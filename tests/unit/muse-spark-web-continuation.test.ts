@@ -17,7 +17,7 @@ class MockWebSocket {
   onmessage: ((evt: MockWsMessage) => void) | null = null;
   onclose: (() => void) | null = null;
   onerror: ((evt: Error) => void) | null = null;
-  readyState = WebSocket.CONNECTING;
+  readyState: number = WebSocket.CONNECTING;
   sentData: (Uint8Array | string)[] = [];
   url: string;
 
@@ -25,7 +25,7 @@ class MockWebSocket {
     this.url = url;
     MockWebSocket.instances.push(this);
     setTimeout(() => {
-      (this.readyState as unknown as 0) = WebSocket.OPEN;
+      this.readyState = WebSocket.OPEN;
       this.onopen?.();
     }, 0);
   }
@@ -49,7 +49,7 @@ class MockWebSocket {
   }
 
   close() {
-    (this.readyState as unknown as 0) = WebSocket.CLOSED;
+    this.readyState = WebSocket.CLOSED;
     this.onclose?.();
   }
 }
@@ -200,7 +200,7 @@ test("muse-spark-web: WebSocket error returns error status", async () => {
     onmessage: ((evt: MockWsMessage) => void) | null = null;
     onclose: (() => void) | null = null;
     onerror: ((evt: Error) => void) | null = null;
-    readyState = WebSocket.CONNECTING;
+    readyState: number = WebSocket.CONNECTING;
     url: string;
     constructor(url: string) {
       this.url = url;
@@ -303,7 +303,7 @@ class FailingWebSocket {
   onmessage: ((evt: MockWsMessage) => void) | null = null;
   onclose: (() => void) | null = null;
   onerror: ((evt: Error) => void) | null = null;
-  readyState = WebSocket.CONNECTING;
+  readyState: number = WebSocket.CONNECTING;
   url: string;
   constructor(url: string) {
     this.url = url;

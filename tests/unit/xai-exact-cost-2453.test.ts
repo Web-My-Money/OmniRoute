@@ -19,6 +19,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 import { calculateCost, computeCostFromPricing } from "../../src/lib/usage/costCalculator.ts";
 import { extractUsageFromResponse } from "../../open-sse/handlers/usageExtractor.ts";
 import { extractUsage, normalizeUsage } from "../../open-sse/utils/usageTracking.ts";
@@ -38,10 +39,7 @@ test("computeCostFromPricing: xAI exact cost_in_usd_ticks overrides the token-ba
     ...TOKENS_1M_EACH,
     cost_in_usd_ticks: DOC_EXAMPLE_TICKS,
   });
-  assert.ok(
-    Math.abs(cost - DOC_EXAMPLE_USD) < 1e-9,
-    `expected ${DOC_EXAMPLE_USD}, got ${cost}`
-  );
+  assert.ok(Math.abs(cost - DOC_EXAMPLE_USD) < 1e-9, `expected ${DOC_EXAMPLE_USD}, got ${cost}`);
   assert.notEqual(cost, 3, "must not fall back to the $3 token-based estimate");
 });
 
@@ -87,13 +85,16 @@ test("normalizeUsage: passes through a finite cost_in_usd_ticks", () => {
 });
 
 test("normalizeUsage: drops a non-finite cost_in_usd_ticks", () => {
-  const normalized = normalizeUsage({ prompt_tokens: 10, cost_in_usd_ticks: "not-a-number" });
+  const normalized = normalizeUsage({
+    prompt_tokens: 10,
+    cost_in_usd_ticks: "not-a-number",
+  } as LooseDeep);
   assert.equal(normalized.cost_in_usd_ticks, undefined);
 });
 
 test("normalizeUsage: rejects null, empty, and negative exact costs", () => {
   for (const value of [null, "", -1]) {
-    const normalized = normalizeUsage({ prompt_tokens: 10, cost_in_usd_ticks: value });
+    const normalized = normalizeUsage({ prompt_tokens: 10, cost_in_usd_ticks: value } as LooseDeep);
     assert.equal(normalized.cost_in_usd_ticks, undefined, `unexpected exact cost for ${value}`);
   }
 });
@@ -128,7 +129,7 @@ test("extractUsageFromResponse: xAI OpenAI-shaped usage carries cost_in_usd_tick
     },
     "xai"
   );
-  assert.equal(usage.cost_in_usd_ticks, DOC_EXAMPLE_TICKS);
+  assert.equal((usage as LooseDeep).cost_in_usd_ticks, DOC_EXAMPLE_TICKS);
 });
 
 test("extractUsageFromResponse CONTROL: non-xAI OpenAI usage without the field stays unchanged (no stray key)", () => {
@@ -160,5 +161,5 @@ test("extractUsage (streaming): xAI OpenAI-format chunk carries cost_in_usd_tick
       cost_in_usd_ticks: DOC_EXAMPLE_TICKS,
     },
   });
-  assert.equal(usage.cost_in_usd_ticks, DOC_EXAMPLE_TICKS);
+  assert.equal((usage as LooseDeep).cost_in_usd_ticks, DOC_EXAMPLE_TICKS);
 });

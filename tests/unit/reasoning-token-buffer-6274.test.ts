@@ -30,7 +30,7 @@ const { saveModelsDevCapabilities, clearModelsDevCapabilities } =
 const { resolveReasoningBufferedMaxTokens, REASONING_BUFFER_MIN_TRIGGER } =
   await import("../../open-sse/services/reasoningTokenBuffer.ts");
 
-function capabilityEntry(limitContext: unknown, overrides: Record<string, unknown> = {}) {
+function capabilityEntry(limitContext: number, overrides: Record<string, unknown> = {}) {
   return {
     tool_call: true,
     reasoning: false,

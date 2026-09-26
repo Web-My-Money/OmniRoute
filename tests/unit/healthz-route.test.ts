@@ -20,7 +20,7 @@ test("/healthz follows the native server lifecycle without static caching", asyn
   assert.equal(routeModule.dynamic, "force-dynamic");
   assert.equal(getServerLifecyclePhase(), "starting");
 
-  const starting = await routeModule.GET(new Request("http://localhost/healthz"));
+  const starting = await routeModule.GET();
   assert.equal(starting.status, 503);
   assert.equal(starting.headers.get("Cache-Control"), "no-store");
   assert.equal(starting.headers.get("Content-Type"), "text/plain; charset=utf-8");
@@ -28,27 +28,23 @@ test("/healthz follows the native server lifecycle without static caching", asyn
   assert.equal(await starting.text(), "starting\n");
 
   markServerReady();
-  const ready = await routeModule.GET(new Request("http://localhost/healthz"));
+  const ready = await routeModule.GET();
   assert.equal(ready.status, 200);
   assert.equal(ready.headers.get("Content-Length"), "3");
   assert.equal(await ready.text(), "ok\n");
 
-  const readyHead = await routeModule.HEAD(
-    new Request("http://localhost/healthz", { method: "HEAD" })
-  );
+  const readyHead = await routeModule.HEAD();
   assert.equal(readyHead.status, 200);
   assert.equal(readyHead.headers.get("Content-Length"), "3");
   assert.equal(await readyHead.text(), "");
 
   markServerStopping();
-  const stopping = await routeModule.GET(new Request("http://localhost/healthz"));
+  const stopping = await routeModule.GET();
   assert.equal(stopping.status, 503);
   assert.equal(stopping.headers.get("Content-Length"), "9");
   assert.equal(await stopping.text(), "stopping\n");
 
-  const stoppingHead = await routeModule.HEAD(
-    new Request("http://localhost/healthz", { method: "HEAD" })
-  );
+  const stoppingHead = await routeModule.HEAD();
   assert.equal(stoppingHead.status, 503);
   assert.equal(stoppingHead.headers.get("Content-Length"), "9");
   assert.equal(await stoppingHead.text(), "");
@@ -58,7 +54,9 @@ test("/healthz follows the native server lifecycle without static caching", asyn
 });
 
 test("native startup and shutdown hooks drive the health lifecycle", () => {
-  const startupSource = fs.readFileSync("src/instrumentation-node.ts", "utf8");
+  const startupSource = fs
+    .readFileSync("src/instrumentation-node.ts", "utf8")
+    .replace(/\r\n/g, "\n");
   const registerStart = startupSource.indexOf("export async function registerNodejs");
   const markStarting = startupSource.indexOf("markServerStarting();", registerStart);
   const firstStartupAwait = startupSource.indexOf("await ", registerStart);
@@ -68,7 +66,9 @@ test("native startup and shutdown hooks drive the health lifecycle", () => {
   assert.ok(markReady > firstStartupAwait);
   assert.equal(startupSource.slice(markReady).trim(), "markServerReady();\n}");
 
-  const shutdownSource = fs.readFileSync("src/lib/gracefulShutdown.ts", "utf8");
+  const shutdownSource = fs
+    .readFileSync("src/lib/gracefulShutdown.ts", "utf8")
+    .replace(/\r\n/g, "\n");
   const drainingFlag = shutdownSource.indexOf("state.shuttingDown = true;");
   const markStopping = shutdownSource.indexOf("markServerStopping();", drainingFlag);
   const drainAwait = shutdownSource.indexOf("await waitForDrain();", drainingFlag);

@@ -337,8 +337,8 @@ test("Gemini stream: stores thoughtSignature when signature-only part precedes f
 
   const toolCall = result.find((event: any) => event.choices?.[0]?.delta?.tool_calls)?.choices[0]
     .delta.tool_calls[0];
-  (assert as LooseDeep).equal(toolCall.id, "call_split_1");
-  assert.equal(state.pendingThoughtSignature, null);
+  assert.equal(toolCall.id, "call_split_1");
+  assert.equal((state as LooseDeep).pendingThoughtSignature, null);
   assert.equal(resolveGeminiThoughtSignature("conn-antigravity-1:call_split_1"), "sig-split-1");
 });
 

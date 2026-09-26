@@ -409,7 +409,7 @@ test("codex.mergeCodexLiveModelsWithLocalCatalog merges capacity limits conserva
         name: "Live GPT 5.5",
         inputTokenLimit: 300000,
       },
-    ],
+    ] as CodexDiscoveryModel[],
     [
       {
         id: "gpt-5.6-sol",
@@ -489,7 +489,7 @@ test("codex.buildCodexDiscoveryCatalog merges then filters in one step", () => {
         inputTokenLimit: 111,
         supportsVision: true,
       },
-    ],
+    ] as CodexDiscoveryModel[],
     [
       {
         id: "gpt-5.6-sol",
@@ -498,7 +498,7 @@ test("codex.buildCodexDiscoveryCatalog merges then filters in one step", () => {
         maxOutputTokens: 128000,
       },
       { id: "gpt-5.6-sol-max", name: "GPT 5.6 Sol Max" },
-    ]
+    ] as CodexDiscoveryModel[]
   );
   const ids = catalog.map((model) => model.id);
   assert.ok(ids.includes("brand-new-codex"));
@@ -511,8 +511,8 @@ test("codex.buildCodexDiscoveryCatalog merges then filters in one step", () => {
 
   // Optional curated helper still available for diagnostics only.
   const curated = reconcileCuratedCodexCatalog(
-    [{ id: "brand-new-codex", name: "Brand New" }],
-    [{ id: "gpt-5.6-sol", name: "GPT 5.6 Sol" }]
+    [{ id: "brand-new-codex", name: "Brand New" }] as CodexDiscoveryModel[],
+    [{ id: "gpt-5.6-sol", name: "GPT 5.6 Sol" }] as CodexDiscoveryModel[]
   );
   assert.deepEqual(
     curated.models.map((model) => model.id),

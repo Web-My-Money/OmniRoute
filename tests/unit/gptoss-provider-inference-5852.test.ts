@@ -28,17 +28,18 @@ test("gpt-oss-120b resolves into its cataloged open-weight providers, not openai
   // Multiple providers catalog this open-weight model id, so the resolver correctly
   // reports it as ambiguous (asking the caller to disambiguate with a provider/model
   // prefix) instead of silently defaulting to openai (which doesn't carry it → 404).
-  assert.equal(info.errorType, "ambiguous_model");
+  assert.equal((info as LooseDeep).errorType, "ambiguous_model");
   assert.ok(
-    Array.isArray(info.candidateProviders) && (info as LooseDeep).candidateProviders.length > 0
+    Array.isArray((info as LooseDeep).candidateProviders) &&
+      (info as LooseDeep).candidateProviders.length > 0
   );
-  (assert as LooseDeep).ok(
+  assert.ok(
     (info as LooseDeep).candidateProviders.some((p: string) => KNOWN_GPT_OSS_120B_PROVIDERS.has(p)),
     `expected at least one candidate from ${[...KNOWN_GPT_OSS_120B_PROVIDERS].join(
       ", "
-    )}, got ${JSON.stringify(info.candidateProviders)}`
+    )}, got ${JSON.stringify((info as LooseDeep).candidateProviders)}`
   );
-  (assert as LooseDeep).ok(
+  assert.ok(
     !(info as LooseDeep).candidateProviders.includes("openai"),
     "openai must not be listed as a candidate for gpt-oss-120b"
   );

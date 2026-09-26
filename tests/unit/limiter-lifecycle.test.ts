@@ -221,7 +221,6 @@ test("request queue refresh treats zero limits as unbounded for existing limiter
   );
 
   await rateLimitManager.applyRequestQueueSettings({
-    enabled: true,
     autoEnableApiKeyProviders: false,
     maxWaitMs: 100,
     requestsPerMinute: 0,

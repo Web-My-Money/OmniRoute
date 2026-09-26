@@ -57,6 +57,7 @@ test("Kimi billing-cycle quota errors remain active and recover at the cached re
   assert.equal(after.testStatus, "unavailable");
   assert.equal(after.lastErrorType, "quota_exhausted");
   assert.ok(
-    Math.abs(new Date(after.rateLimitedUntil).getTime() - new Date(resetAt).getTime()) < 100
+    Math.abs(new Date(after.rateLimitedUntil as string).getTime() - new Date(resetAt).getTime()) <
+      100
   );
 });

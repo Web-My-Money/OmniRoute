@@ -39,7 +39,7 @@ async function resetStorage() {
 
 function getCreatedConnectionId(connection: { id?: unknown }): string {
   assert.equal(typeof connection.id, "string");
-  return connection.id;
+  return connection.id as string;
 }
 
 test.after(async () => {

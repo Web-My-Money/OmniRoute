@@ -327,7 +327,7 @@ test("VB-S12: reroutes auto/ prefix model to vision model (auto/vision)", async 
   assert.strictEqual(result.block, false);
   assert.ok(result.modifiedPayload, "auto/vision should reroute to vision model");
   assert.strictEqual(
-    result.modifiedPayload?.model,
+    (result.modifiedPayload as LooseDeep)?.model,
     "openai/gpt-4o-mini",
     "should reroute to configured vision model"
   );
@@ -355,7 +355,7 @@ test("VB-S12b: reroutes auto prefix to best vision model when images present", a
   assert.strictEqual(result.block, false);
   assert.ok(result.modifiedPayload, "auto should reroute to vision model");
   assert.strictEqual(
-    result.modifiedPayload?.model,
+    (result.modifiedPayload as LooseDeep)?.model,
     "openai/gpt-4o-mini",
     "should reroute to configured vision model"
   );

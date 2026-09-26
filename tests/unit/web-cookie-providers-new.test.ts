@@ -77,8 +77,8 @@ function mockFetchCapture(status = 200, responseBody?: ReadableStream | string) 
 
   globalThis.fetch = async (url: MockFetchInput, opts?: MockFetchInit) => {
     capturedUrl = String(url);
-    (capturedHeaders as unknown as Record<string, string>) = opts?.headers || {};
-    (capturedBody as unknown as string) = opts?.body || null;
+    capturedHeaders = (opts?.headers || {}) as unknown as Record<string, string>;
+    capturedBody = (opts?.body || null) as unknown as string;
     return new Response(body || "", {
       status,
       headers: { "Content-Type": "text/event-stream; charset=utf-8" },
@@ -804,7 +804,7 @@ test("All executors handle Cookie: prefix", async () => {
   const original = globalThis.fetch;
   let lastHeaders: Record<string, string> = {};
   globalThis.fetch = async (_url: MockFetchInput, opts?: MockFetchInit) => {
-    (lastHeaders as unknown as Record<string, string>) = opts?.headers || {};
+    lastHeaders = (opts?.headers || {}) as unknown as Record<string, string>;
     // Poe expects JSON response with chatWithBot
     const body = JSON.stringify({ data: { chatWithBot: { text: "ok" } } });
     return new Response(body, {
@@ -841,7 +841,7 @@ test("All executors handle bare cookie value", async () => {
   const original = globalThis.fetch;
   let lastHeaders: Record<string, string> = {};
   globalThis.fetch = async (_url: MockFetchInput, opts?: MockFetchInit) => {
-    (lastHeaders as unknown as Record<string, string>) = opts?.headers || {};
+    lastHeaders = (opts?.headers || {}) as unknown as Record<string, string>;
     // Poe expects JSON response with chatWithBot
     const body = JSON.stringify({ data: { chatWithBot: { text: "ok" } } });
     return new Response(body, {

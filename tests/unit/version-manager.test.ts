@@ -131,14 +131,7 @@ function installTimerStubs() {
     return handle;
   }) as unknown as typeof setTimeout;
 
-  (globalThis.setInterval as unknown as {
-    (handler: TimerHandler, timeout?: number, ...restArgs: unknown[]): number;
-    <TArgs extends unknown[]>(
-      callback: (...args: TArgs) => void,
-      delay?: number,
-      ...args: TArgs
-    ): unknown;
-  }) = (fn, ms) => {
+  globalThis.setInterval = ((fn, ms) => {
     const handle = {
       fn,
       ms,
@@ -151,7 +144,7 @@ function installTimerStubs() {
     };
     intervals.push(handle);
     return handle;
-  };
+  }) as unknown as typeof setInterval;
 
   globalThis.clearTimeout = (handle) => {
     if (handle) {

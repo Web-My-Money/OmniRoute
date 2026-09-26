@@ -135,9 +135,9 @@ test("GitHub access-token health keeps network failures active", async () => {
 async function withHttpServer(handler, fn) {
   const server = http.createServer(handler);
 
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
-    server.listen(0, "127.0.0.1", resolve);
+    server.listen(0, "127.0.0.1", () => resolve());
   });
 
   const address = server.address();
@@ -150,7 +150,7 @@ async function withHttpServer(handler, fn) {
       url: `http://127.0.0.1:${address.port}`,
     });
   } finally {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       server.close((error) => {
         if (error) reject(error);
         else resolve();
@@ -186,9 +186,9 @@ async function withConnectProxyServer(fn) {
     clientSocket.on("error", closeSockets);
   });
 
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
-    server.listen(0, "127.0.0.1", resolve);
+    server.listen(0, "127.0.0.1", () => resolve());
   });
 
   const address = server.address();
@@ -201,7 +201,7 @@ async function withConnectProxyServer(fn) {
       url: `http://127.0.0.1:${address.port}`,
     });
   } finally {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       server.close((error) => {
         if (error) reject(error);
         else resolve();

@@ -102,7 +102,7 @@ test("standalone asset helpers detect and rehydrate missing standalone static as
       log(message) {
         logs.push(message);
       },
-    },
+    } as unknown as Console,
   });
 
   assert.equal(changed, true);

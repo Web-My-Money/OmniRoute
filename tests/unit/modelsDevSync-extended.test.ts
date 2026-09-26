@@ -583,7 +583,7 @@ test.describe("modelsDevSync-extended", { concurrency: 1 }, async () => {
     let aborted = false;
 
     globalThis.fetch = async (_url, init) =>
-      await new Promise((_resolve, reject) => {
+      await new Promise<Response>((_resolve, reject) => {
         const signal = init?.signal;
         const onAbort = () => {
           aborted = true;

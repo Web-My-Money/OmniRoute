@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
+import type { MemorySettings } from "../../src/lib/memory/settings.ts";
 import {
   DEFAULT_MEMORY_SETTINGS,
   normalizeMemorySettings,
@@ -68,7 +69,7 @@ describe("memory settings helpers", () => {
         retentionDays: 10,
         strategy: "recent",
         skillsEnabled: false,
-      }),
+      } as MemorySettings),
       {
         enabled: false,
         maxTokens: 0,

@@ -99,7 +99,7 @@ test("handleComboChat filters priority targets by metadata.tags using any-match 
     handleSingleModel: async (_body, modelStr, target) => {
       attempts.push({
         model: modelStr,
-        allowedConnectionIds: Array.isArray(target?.allowedConnectionIds)
+        allowedConnectionIds: Array.isArray((target as LooseDeep)?.allowedConnectionIds)
           ? (target as LooseDeep).allowedConnectionIds
           : null,
       });

@@ -1191,12 +1191,14 @@ test("getAccessToken per-connection mutex: logs concurrent refresh with waiter c
           );
           assert.ok(concurrentLogs.length >= 1, "logged at least one concurrent refresh event");
           assert.ok(
-            concurrentLogs.some((e) => e.meta?.connectionId === "conn-log-test"),
+            concurrentLogs.some((e) => (e.meta as LooseDeep)?.connectionId === "conn-log-test"),
             "log includes connectionId"
           );
           assert.ok(
             concurrentLogs.some(
-              (e) => typeof e.meta?.waiters === "number" && (e.meta as LooseDeep).waiters >= 1
+              (e) =>
+                typeof (e.meta as LooseDeep)?.waiters === "number" &&
+                (e.meta as LooseDeep).waiters >= 1
             ),
             "log includes waiter count"
           );

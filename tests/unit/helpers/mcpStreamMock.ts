@@ -25,7 +25,8 @@ export function makeMcpStreamFetch({
     if (!u.includes("/api/mcp/stream")) {
       return makeMcpResp({ error: "not found" }, 404);
     }
-    const body = init?.body ? JSON.parse((init as LooseDeep).body) : {};
+    const initBody = (init as LooseDeep | undefined)?.body;
+    const body = initBody ? JSON.parse(initBody) : {};
     if (body.method === "initialize") {
       return makeMcpResp(
         {

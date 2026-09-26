@@ -195,7 +195,7 @@ test("public login bootstrap route POST hashes and stores passwords", async () =
   assert.equal(settings.requireLogin, true);
   assert.ok(settings.password);
   assert.notEqual(settings.password, password);
-  assert.equal(await bcrypt.compare(password, settings.password), true);
+  assert.equal(await bcrypt.compare(password, settings.password as string), true);
 });
 
 test("login bootstrap route POST rejects unauthenticated writes after setup is complete", async () => {
@@ -241,7 +241,7 @@ test("login bootstrap route POST allows first password creation after setup comp
   assert.deepEqual(body, { success: true });
   assert.equal(settings.requireLogin, true);
   assert.ok(settings.password);
-  assert.equal(await bcrypt.compare("first-secret", settings.password), true);
+  assert.equal(await bcrypt.compare("first-secret", settings.password as string), true);
 });
 
 test("public login bootstrap route POST returns 500 when hashing fails", async () => {

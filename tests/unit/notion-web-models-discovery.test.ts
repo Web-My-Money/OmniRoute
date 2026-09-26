@@ -333,7 +333,7 @@ test("notion-web models route returns live getAvailableModels catalog", async ()
   try {
     const response = await modelsRoute.GET(
       new Request(`http://localhost/api/providers/${connection.id}/models?refresh=true`),
-      { params: { id: connection.id } }
+      { params: { id: connection.id as string } }
     );
     assert.equal(response.status, 200);
     const body = await response.json();

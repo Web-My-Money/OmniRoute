@@ -55,12 +55,12 @@ test("OpenRouter mid-stream 502 provider_unavailable is surfaced as upstreamErro
     "failed",
     "status must be 'failed', not a false 'completed'"
   );
-  assert.ok(completedEvent.data.response.error, "error must not be null");
+  assert.ok((completedEvent.data.response as LooseDeep).error, "error must not be null");
   assert.match(
     (completedEvent.data.response as LooseDeep).error.message,
     /Worker local total request limit reached/
   );
-  assert.equal(completedEvent.data.response.output.length, 0);
+  assert.equal((completedEvent.data.response as LooseDeep).output.length, 0);
 });
 
 test("OpenRouter mid-stream error with a rate-limit code maps to a 429 upstreamError", () => {
@@ -82,5 +82,5 @@ test("OpenRouter mid-stream error with a rate-limit code maps to a 429 upstreamE
   const completedEvent = flushEvents.find((e) => e.event === "response.completed");
   assert.ok(completedEvent);
   assert.equal((completedEvent.data.response as LooseDeep).status, "failed");
-  assert.equal(completedEvent.data.response.error.code, "429");
+  assert.equal((completedEvent.data.response as LooseDeep).error.code, "429");
 });

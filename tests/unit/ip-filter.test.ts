@@ -144,7 +144,7 @@ test("checkRequestIP: skips invalid XFF entries and uses next valid IP", () => {
       },
     },
   };
-  assert.equal(checkRequestIP(req).allowed, true);
+  assert.equal(checkRequestIP(req, null).allowed, true);
 });
 
 test("checkRequestIP: all-invalid XFF falls back to x-real-ip", () => {
@@ -158,7 +158,7 @@ test("checkRequestIP: all-invalid XFF falls back to x-real-ip", () => {
       },
     },
   };
-  assert.equal(checkRequestIP(req).allowed, true);
+  assert.equal(checkRequestIP(req, null).allowed, true);
 });
 
 test("checkRequestIP: empty headers fall back to request.ip", () => {
@@ -171,7 +171,7 @@ test("checkRequestIP: empty headers fall back to request.ip", () => {
     },
     ip: "7.7.7.7",
   };
-  assert.equal(checkRequestIP(req).allowed, true);
+  assert.equal(checkRequestIP(req, null).allowed, true);
 });
 
 // ─── Config API ─────────────────────────────────────────────────────────────

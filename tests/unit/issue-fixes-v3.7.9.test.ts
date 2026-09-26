@@ -82,7 +82,7 @@ describe("#1898 — Zero-argument MCP tool schema normalization", () => {
     const result = claudeToOpenAIRequest("gpt-4o", claudeBody, false);
 
     assert.ok((result as LooseDeep).tools, "should have tools");
-    assert.equal(result.tools.length, 1);
+    assert.equal((result.tools as unknown[]).length, 1);
     const params = result.tools[0].function.parameters;
     assert.equal(params.type, "object");
     assert.deepStrictEqual(params.properties, {}, "should inject empty properties");

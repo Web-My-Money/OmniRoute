@@ -89,7 +89,7 @@ async function drainEvents(
 const { registerSupervisor, getSupervisor } = await import("../../../src/lib/services/registry.ts");
 const { ServiceSupervisor } = await import("../../../src/lib/services/ServiceSupervisor.ts");
 
-function makeTestSupervisor(tool: string): ServiceSupervisor {
+function makeTestSupervisor(tool: string): InstanceType<typeof ServiceSupervisor> {
   return new ServiceSupervisor({
     tool,
     port: 29999,

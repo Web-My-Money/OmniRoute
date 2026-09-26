@@ -480,18 +480,11 @@ test("createResponsesApiTransformStream clears the keepalive timer when the stre
   const realSetInterval = globalThis.setInterval;
   const realClearInterval = globalThis.clearInterval;
   const live = new Set();
-  (globalThis.setInterval as unknown as {
-    (handler: TimerHandler, timeout?: number, ...restArgs: unknown[]): number;
-    <TArgs extends unknown[]>(
-      callback: (...args: TArgs) => void,
-      delay?: number,
-      ...args: TArgs
-    ): unknown;
-  }) = function (handler, timeout, ...args) {
+  globalThis.setInterval = function (handler, timeout, ...args) {
     const id = realSetInterval(handler, timeout, ...args);
     live.add(id);
     return id;
-  };
+  } as unknown as typeof setInterval;
   globalThis.clearInterval = function (id) {
     live.delete(id);
     return realClearInterval(id);

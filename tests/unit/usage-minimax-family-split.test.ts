@@ -30,7 +30,7 @@ test("leaf exposes the twelve MiniMax helpers the host re-exposes via __testing"
 });
 
 test("host __testing re-exports the same MiniMax function identities", () => {
-  const t = (HOST as Record<string, Record<string, unknown>>).__testing;
+  const t = (HOST as unknown as Record<string, Record<string, unknown>>).__testing;
   assert.equal(t.getMiniMaxUsage, M.getMiniMaxUsage);
   assert.equal(t.getMiniMaxPlanLabel, M.getMiniMaxPlanLabel);
   assert.equal(t.getMiniMaxSessionTotal, M.getMiniMaxSessionTotal);

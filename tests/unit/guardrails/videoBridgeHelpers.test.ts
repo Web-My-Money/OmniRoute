@@ -232,7 +232,7 @@ test("aborts an in-flight caption at the total video deadline without starting l
           shape: "input_video",
         },
         { frameCount: 2, timeoutMs: 25 },
-        async (_frame, _timestampSeconds, signal) => {
+        async (_frame, _timestampSeconds, signal): Promise<string> => {
           captionCalls += 1;
           await new Promise<never>((_resolve, reject) => {
             signal.addEventListener(
@@ -245,6 +245,7 @@ test("aborts an in-flight caption at the total video deadline without starting l
               { once: true }
             );
           });
+          return "";
         },
         {
           extractFrames: async () => ({

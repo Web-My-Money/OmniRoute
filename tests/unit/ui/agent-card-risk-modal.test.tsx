@@ -104,9 +104,8 @@ describe("AgentCard RiskNoticeModal", { timeout: 30000 }, () => {
   });
 
   it("first DNS activation opens risk modal (does NOT call onDnsToggle yet)", async () => {
-    const { AgentCard } = await import(
-      "../../../src/app/(dashboard)/dashboard/tools/agent-bridge/components/AgentCard"
-    );
+    const { AgentCard } =
+      await import("../../../src/app/(dashboard)/dashboard/tools/agent-bridge/components/AgentCard");
 
     const onDnsToggle = vi.fn().mockResolvedValue(undefined);
     const container = makeContainer();
@@ -114,7 +113,7 @@ describe("AgentCard RiskNoticeModal", { timeout: 30000 }, () => {
     await act(async () => {
       const root = createRoot(container);
       root.render(
-        React.createElement(AgentCard, {
+        React.createElement(AgentCard as unknown as React.ElementType, {
           target: mockTarget,
           agentState: baseAgentState,
           serverRunning: true,
@@ -149,9 +148,8 @@ describe("AgentCard RiskNoticeModal", { timeout: 30000 }, () => {
   }, 30000);
 
   it("accepting risk modal closes modal and calls onDnsToggle with true", async () => {
-    const { AgentCard } = await import(
-      "../../../src/app/(dashboard)/dashboard/tools/agent-bridge/components/AgentCard"
-    );
+    const { AgentCard } =
+      await import("../../../src/app/(dashboard)/dashboard/tools/agent-bridge/components/AgentCard");
 
     const onDnsToggle = vi.fn().mockResolvedValue(undefined);
     const container = makeContainer();
@@ -159,7 +157,7 @@ describe("AgentCard RiskNoticeModal", { timeout: 30000 }, () => {
     await act(async () => {
       const root = createRoot(container);
       root.render(
-        React.createElement(AgentCard, {
+        React.createElement(AgentCard as unknown as React.ElementType, {
           target: mockTarget,
           agentState: baseAgentState,
           serverRunning: true,
@@ -209,9 +207,8 @@ describe("AgentCard RiskNoticeModal", { timeout: 30000 }, () => {
   }, 30000);
 
   it("accepting risk writes localStorage exactly once (RiskNoticeModal is sole writer)", async () => {
-    const { AgentCard } = await import(
-      "../../../src/app/(dashboard)/dashboard/tools/agent-bridge/components/AgentCard"
-    );
+    const { AgentCard } =
+      await import("../../../src/app/(dashboard)/dashboard/tools/agent-bridge/components/AgentCard");
 
     const setItemSpy = vi.spyOn(Storage.prototype, "setItem");
 
@@ -221,7 +218,7 @@ describe("AgentCard RiskNoticeModal", { timeout: 30000 }, () => {
     await act(async () => {
       const root = createRoot(container);
       root.render(
-        React.createElement(AgentCard, {
+        React.createElement(AgentCard as unknown as React.ElementType, {
           target: mockTarget,
           agentState: baseAgentState,
           serverRunning: true,
@@ -271,9 +268,8 @@ describe("AgentCard RiskNoticeModal", { timeout: 30000 }, () => {
       // ignore
     }
 
-    const { AgentCard } = await import(
-      "../../../src/app/(dashboard)/dashboard/tools/agent-bridge/components/AgentCard"
-    );
+    const { AgentCard } =
+      await import("../../../src/app/(dashboard)/dashboard/tools/agent-bridge/components/AgentCard");
 
     const onDnsToggle = vi.fn().mockResolvedValue(undefined);
     const container = makeContainer();
@@ -281,7 +277,7 @@ describe("AgentCard RiskNoticeModal", { timeout: 30000 }, () => {
     await act(async () => {
       const root = createRoot(container);
       root.render(
-        React.createElement(AgentCard, {
+        React.createElement(AgentCard as unknown as React.ElementType, {
           target: mockTarget,
           agentState: baseAgentState,
           serverRunning: true,
@@ -314,9 +310,8 @@ describe("AgentCard RiskNoticeModal", { timeout: 30000 }, () => {
   }, 30000);
 
   it("cancelling risk modal keeps modal closed and does NOT call onDnsToggle", async () => {
-    const { AgentCard } = await import(
-      "../../../src/app/(dashboard)/dashboard/tools/agent-bridge/components/AgentCard"
-    );
+    const { AgentCard } =
+      await import("../../../src/app/(dashboard)/dashboard/tools/agent-bridge/components/AgentCard");
 
     const onDnsToggle = vi.fn().mockResolvedValue(undefined);
     const container = makeContainer();
@@ -324,7 +319,7 @@ describe("AgentCard RiskNoticeModal", { timeout: 30000 }, () => {
     await act(async () => {
       const root = createRoot(container);
       root.render(
-        React.createElement(AgentCard, {
+        React.createElement(AgentCard as unknown as React.ElementType, {
           target: mockTarget,
           agentState: baseAgentState,
           serverRunning: true,

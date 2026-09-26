@@ -90,13 +90,13 @@ test("Grok Build OAuth Provider - mapTokens from auth.json", () => {
 });
 
 test("Grok Build OAuth Provider - mapTokens from empty string", () => {
-  const result = mapTokensLoose("", null);
+  const result = mapTokensLoose("");
   assert.equal(result.accessToken, "");
 });
 
 test("Grok Build OAuth Provider - mapTokens from object with accessToken", () => {
   const input = { accessToken: "direct-token" };
-  const result = mapTokensLoose(input, null);
+  const result = mapTokensLoose(input);
   assert.equal(result.accessToken, "direct-token");
 });
 
@@ -111,7 +111,7 @@ test("Grok Build OAuth Provider - mapTokens from route-wrapped auth.json", () =>
     },
   };
   const wrapped = { accessToken: authJson };
-  const result = mapTokensLoose(wrapped, null);
+  const result = mapTokensLoose(wrapped);
 
   assert.ok(
     result.accessToken.startsWith("eyJ"),

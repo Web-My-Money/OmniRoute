@@ -198,7 +198,7 @@ test("T27: non-stream execute materializes provider responses before returning",
     response: new WeirdResponse(JSON.stringify({ ok: true }), {
       status: 200,
       headers: { "content-type": "application/json" },
-    }),
+    }) as unknown as Response,
     url: "https://api.githubcopilot.com/chat/completions",
     headers: {},
     transformedBody: {},

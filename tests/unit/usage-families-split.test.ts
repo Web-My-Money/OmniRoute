@@ -37,7 +37,7 @@ test("host re-exports the kiro symbols the kiro-* tests import, with the same id
 });
 
 test("host __testing stays wired to the moved claude/kiro internals", () => {
-  const testing = (HOST as Record<string, Record<string, unknown>>).__testing;
+  const testing = (HOST as unknown as Record<string, Record<string, unknown>>).__testing;
   assert.equal(testing.getClaudePlanLabel, (CLAUDE as LooseDeep).getClaudePlanLabel);
   assert.equal(testing.getKiroUsage, (KIRO as LooseDeep).getKiroUsage);
 });

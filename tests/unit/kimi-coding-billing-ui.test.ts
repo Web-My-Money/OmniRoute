@@ -39,7 +39,7 @@ test("Kimi billing rows show balance, wallet status, monthly spend, cap and buy 
       monthlyLimitEnabled: true,
       monthlyLimitMinorUnits: 5000,
       extraUsageStatus: "enabled",
-    },
+    } as KimiBillingStatus,
     "en-US"
   );
 
@@ -97,7 +97,7 @@ test("Kimi billing labels support localized translation fallbacks", () => {
         extraCreditsMinorUnits: 0,
         monthlyLimitEnabled: false,
         extraUsageStatus: "disabled",
-      },
+      } as KimiBillingStatus,
       "zh-CN",
       translate
     ),
@@ -138,7 +138,10 @@ test("Kimi billing sanitizer strips private fields and rejects forged public con
     extraUsageStatus: "disabled",
     additionalCreditsUrl: KIMI_CODE_ADDITIONAL_CREDITS_URL,
   });
-  assert.equal(buildKimiBillingCardRows(billing!, "zh-CN")[0]?.value, "¥0.00");
+  assert.equal(
+    (buildKimiBillingCardRows(billing!, "zh-CN")[0] as { value?: string })?.value,
+    "¥0.00"
+  );
   assert.equal(isKimiBillingStatus(billing!), true);
   assert.deepEqual(sanitizeProviderBillingStatus(billing), billing);
 

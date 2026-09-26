@@ -56,7 +56,7 @@ class NeverOpensWebSocket {
   onmessage: ((evt: { data: string }) => void) | null = null;
   onclose: (() => void) | null = null;
   onerror: ((evt: Error) => void) | null = null;
-  readyState = WebSocket.CONNECTING;
+  readyState: number = WebSocket.CONNECTING;
   url: string;
   constructor(url: string) {
     this.url = url;
@@ -72,12 +72,12 @@ class OpensThenSilentWebSocket {
   onmessage: ((evt: { data: string }) => void) | null = null;
   onclose: (() => void) | null = null;
   onerror: ((evt: Error) => void) | null = null;
-  readyState = WebSocket.CONNECTING;
+  readyState: number = WebSocket.CONNECTING;
   url: string;
   constructor(url: string) {
     this.url = url;
     setTimeout(() => {
-      (this.readyState as unknown as 0) = WebSocket.OPEN;
+      this.readyState = WebSocket.OPEN;
       this.onopen?.();
     }, 0);
   }

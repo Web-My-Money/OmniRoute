@@ -44,14 +44,25 @@ const MODEL = "deepseek-v4-flash";
 const TARGET = `${PROVIDER}/${MODEL}`;
 const REAL_UPSTREAM_OUTPUT_CAP = 65536; // per reporter's boundary test table
 
-function capabilityEntry(limitContext: unknown, overrides: Record<string, unknown> = {}) {
+function capabilityEntry(limitContext: number, overrides: Record<string, unknown> = {}) {
   return {
     reasoning: false,
     tool_call: true,
     attachment: false,
     temperature: true,
     structured_output: true,
-    limit: { context: limitContext, output: limitContext },
+    modalities_input: "[]",
+    modalities_output: "[]",
+    knowledge_cutoff: null,
+    release_date: null,
+    last_updated: null,
+    status: null,
+    family: null,
+    open_weights: null,
+    limit_context: limitContext,
+    limit_input: null,
+    limit_output: limitContext,
+    interleaved_field: null,
     ...overrides,
   };
 }

@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { buildKiroPayload } = await import("../../open-sse/translator/request/openai-to-kiro.ts");
 
@@ -22,7 +23,11 @@ test("#5231: assistant-text-ending request never leaks the literal 'Continue' fi
   );
 
   const synthesized = result.conversationState.currentMessage.userInputMessage.content;
-  assert.match(synthesized, /\n\n\.\.\.$/, "synthesized trailing turn must end with the neutral filler");
+  assert.match(
+    synthesized,
+    /\n\n\.\.\.$/,
+    "synthesized trailing turn must end with the neutral filler"
+  );
   assert.ok(
     !/\bContinue\b/.test(synthesized),
     `synthesized trailing turn must not contain the literal "Continue", got: ${synthesized}`
@@ -58,7 +63,7 @@ test("#5231: a trailing tool-result turn is promoted as-is, NOT replaced by the 
     `trailing tool-result turn must be promoted as-is, got synthesized filler: ${current.content}`
   );
   assert.ok(
-    (current.userInputMessageContext?.toolResults?.length ?? 0) > 0,
+    ((current.userInputMessageContext as LooseDeep)?.toolResults?.length ?? 0) > 0,
     "promoted trailing turn must carry the tool results"
   );
 });
