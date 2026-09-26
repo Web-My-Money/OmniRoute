@@ -2,6 +2,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 import { getCliToken, CLI_TOKEN_HEADER } from "./utils/cliToken.mjs";
 import { resolveActiveContext, resolveActiveContextAsync } from "./contexts.mjs";
 
+/** @type {Readonly<{ maxAttempts: number; baseMs: number; maxMs: number; jitter: boolean; retryableStatuses: number[]; retryableErrorCodes: string[] }>} */
 export const RETRY_DEFAULTS = Object.freeze({
   maxAttempts: 3,
   baseMs: 500,

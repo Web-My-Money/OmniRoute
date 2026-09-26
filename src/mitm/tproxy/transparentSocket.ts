@@ -48,7 +48,7 @@ const ADDON_REL_PATHS = [
 function addonCandidates(cwd: string): string[] {
   return [
     ...ADDON_REL_PATHS.map((p) => `./${p}`),
-    ...ADDON_REL_PATHS.map((p) => path.join(cwd, "src", "mitm", "tproxy", p)),
+    ...ADDON_REL_PATHS.map((p) => path.posix.join(cwd, "src", "mitm", "tproxy", p)),
   ];
 }
 

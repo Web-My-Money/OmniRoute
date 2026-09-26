@@ -10,7 +10,7 @@ declare const EdgeRuntime: string | undefined;
  * Wire format & schema details live in ../utils/cursorAgentProtobuf.ts.
  */
 
-import { BaseExecutor, mergeUpstreamExtraHeaders } from "./base.ts";
+import { BaseExecutor, mergeUpstreamExtraHeaders, type ExecuteInput } from "./base.ts";
 import { PROVIDERS, HTTP_STATUS } from "../config/constants.ts";
 import { getAccessToken } from "../services/tokenRefresh.ts";
 import {
@@ -1249,7 +1249,15 @@ export class CursorExecutor extends BaseExecutor {
     });
   }
 
-  async execute({ model, body, stream, credentials, signal, log, upstreamExtraHeaders }) {
+  async execute({
+    model,
+    body,
+    stream,
+    credentials,
+    signal,
+    log,
+    upstreamExtraHeaders,
+  }: ExecuteInput) {
     const fallbackUrl = this.buildUrl();
     const executionCredentials = await this.resolveExecutionCredentials(credentials);
     if (executionCredentials instanceof Response) {
@@ -1288,20 +1296,26 @@ export class CursorExecutor extends BaseExecutor {
     const headers = this.buildHeaders(executionCredentials);
     mergeUpstreamExtraHeaders(headers, upstreamExtraHeaders);
 
-    const messages: ChatMessage[] = body.messages || [];
+    const requestBody = (body ?? {}) as {
+      messages?: ChatMessage[];
+      conversation_id?: string;
+      tools?: unknown;
+      tool_choice?: unknown;
+    };
+    const messages: ChatMessage[] = requestBody.messages || [];
     const conversationId: string =
-      typeof body.conversation_id === "string" && body.conversation_id
-        ? body.conversation_id
+      typeof requestBody.conversation_id === "string" && requestBody.conversation_id
+        ? requestBody.conversation_id
         : crypto.randomUUID();
     const lastMessage = messages[messages.length - 1];
     const isToolFollowUp = lastMessage?.role === "tool";
 
     // Tools embedded in the RequestContext ack throughout the turn —
     // synced with mcp_tools in the encoded request body.
-    const declaredMcpTools: McpToolDefinition[] | undefined = Array.isArray(body.tools)
-      ? openAIToolsToMcpDefs(body.tools as OpenAITool[])
+    const declaredMcpTools: McpToolDefinition[] | undefined = Array.isArray(requestBody.tools)
+      ? openAIToolsToMcpDefs(requestBody.tools as OpenAITool[])
       : undefined;
-    const mcpTools = selectCursorBridgeTools(declaredMcpTools, body.tool_choice);
+    const mcpTools = selectCursorBridgeTools(declaredMcpTools, requestBody.tool_choice);
     const clientPlatform = inferCursorClientPlatform(messages);
     const todoHistory = extractLatestTodoHistory(messages);
 
@@ -1358,7 +1372,7 @@ export class CursorExecutor extends BaseExecutor {
     if (isToolFollowUp) {
       session = cursorSessionManager.acquire(conversationId);
       // #9029: content-based session match when client lacks conversation_id.
-      if (!session && !body.conversation_id)
+      if (!session && !requestBody.conversation_id)
         session = cursorSessionManager.findByToolCallIds(
           messages.filter((m) => m.role === "tool" && m.tool_call_id).map((m) => m.tool_call_id!)
         );
@@ -1406,7 +1420,7 @@ export class CursorExecutor extends BaseExecutor {
       // parts (base64 / remote) into inlined cursor images.
       let built;
       try {
-        built = await this.buildRequest(model, body);
+        built = await this.buildRequest(model, requestBody);
       } catch (err) {
         // Image resolution failures (invalid / oversized / SSRF-blocked) are
         // client errors — return a sanitized 400 rather than a 500.
@@ -1479,7 +1493,7 @@ export class CursorExecutor extends BaseExecutor {
             const ctx = newStreamCtx(model, (s) => controller.enqueue(enc.encode(s)));
             try {
               await this.driveH2(h2, ctx, mcpTools, blobStore, clientPlatform, todoHistory, signal);
-              this.finalizeSseStream(ctx, body);
+              this.finalizeSseStream(ctx, requestBody);
               finishLifecycle(ctx, false);
               controller.close();
             } catch (err) {
@@ -1489,7 +1503,7 @@ export class CursorExecutor extends BaseExecutor {
                 isCursorBenignCancelError(err) &&
                 (ctx.totalText.length > 0 || ctx.pendingToolCalls.size > 0)
               ) {
-                this.finalizeSseStream(ctx, body);
+                this.finalizeSseStream(ctx, requestBody);
                 finishLifecycle(ctx, false);
                 controller.close();
                 return;
@@ -1527,7 +1541,7 @@ export class CursorExecutor extends BaseExecutor {
       ) {
         finishLifecycle(ctx, false);
         return {
-          response: this.buildResponseFromCtx(ctx, body),
+          response: this.buildResponseFromCtx(ctx, requestBody),
           url,
           headers,
           transformedBody: body,
@@ -1545,7 +1559,7 @@ export class CursorExecutor extends BaseExecutor {
     }
     finishLifecycle(ctx, false);
     return {
-      response: this.buildResponseFromCtx(ctx, body),
+      response: this.buildResponseFromCtx(ctx, requestBody),
       url,
       headers,
       transformedBody: body,

@@ -119,7 +119,7 @@ export async function notifyTrayReady(port, token) {
 
 /** Starts a detached tray worker and waits until its server and tray are ready. */
 export async function startDetachedTray(
-  { cliPath, port, maxRestarts, tlsCert, tlsKey, timeoutMs = 60000 },
+  { cliPath, port, maxRestarts, tlsCert = undefined, tlsKey = undefined, timeoutMs = 60000 },
   { platform = process.platform, spawnProcess = spawn } = {}
 ) {
   const token = randomBytes(32).toString("hex");

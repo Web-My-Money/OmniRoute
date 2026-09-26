@@ -14,7 +14,10 @@
  * (see shouldPreserveCacheControl).
  */
 
-import type { RoutingStrategyValue } from "../../src/shared/constants/routingStrategies";
+import type {
+  AnyRoutingStrategyValue,
+  RoutingStrategyValue,
+} from "../../src/shared/constants/routingStrategies";
 
 /**
  * Cache control preservation modes
@@ -264,7 +267,7 @@ export function shouldPreserveCacheControl({
 }: {
   userAgent: string | null | undefined;
   isCombo: boolean;
-  comboStrategy?: RoutingStrategyValue | null;
+  comboStrategy?: AnyRoutingStrategyValue | null;
   targetProvider: string | null | undefined;
   targetFormat?: string | null;
   settings?: CacheControlSettings;

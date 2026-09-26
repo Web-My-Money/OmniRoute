@@ -137,7 +137,7 @@ export const claude = {
     if (!tokens?.access_token) return null;
     return await fetchClaudeBootstrap(tokens.access_token);
   },
-  mapTokens: (tokens, extra) => {
+  mapTokens: (tokens, extra = undefined) => {
     const plan = extractClaudePlan(tokens, extra);
     const bs = extra || {};
     const providerSpecificData: any = {

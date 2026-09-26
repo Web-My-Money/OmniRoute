@@ -3838,7 +3838,7 @@
   },
   "tests/unit/cc-compatible-provider.test.ts": {
     "@typescript-eslint/no-explicit-any": {
-      "count": 37
+      "count": 36
     }
   },
   "tests/unit/chat-body-admission.test.ts": {
@@ -4100,9 +4100,6 @@
   "tests/unit/cli-oauth-commands.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 20
-    },
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
     }
   },
   "tests/unit/cli-oneproxy-commands.test.ts": {
@@ -4912,11 +4909,6 @@
       "count": 19
     }
   },
-  "tests/unit/eviction-guards-codexQuotaFetcher.test.ts": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
-    }
-  },
   "tests/unit/executor-agy.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 1
@@ -5184,7 +5176,7 @@
   },
   "tests/unit/memory-cache-safe-injection.test.ts": {
     "@typescript-eslint/no-explicit-any": {
-      "count": 4
+      "count": 3
     }
   },
   "tests/unit/memory-embedding-remote.test.ts": {
@@ -5194,11 +5186,6 @@
   },
   "tests/unit/memory-extraction.test.ts": {
     "@typescript-eslint/no-unused-vars": {
-      "count": 1
-    }
-  },
-  "tests/unit/memory-glm-injection.test.ts": {
-    "@typescript-eslint/no-explicit-any": {
       "count": 1
     }
   },
@@ -6177,11 +6164,6 @@
   "tests/unit/tlsClient-circuit-breaker.test.ts": {
     "@typescript-eslint/no-unused-vars": {
       "count": 1
-    }
-  },
-  "tests/unit/token-health-check-circuit-breaker.test.ts": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 3
     }
   },
   "tests/unit/token-health-check.test.ts": {

@@ -103,7 +103,7 @@ export const openference = {
     return { userInfo };
   },
 
-  mapTokens: (tokens, extra) => {
+  mapTokens: (tokens, extra = undefined) => {
     const identity = decodeOpenferenceIdTokenIdentity(tokens.id_token);
     const userInfo = (extra?.userInfo ?? {}) as Record<string, unknown>;
     const email = identity.email || getOpenferenceUserEmail(userInfo);

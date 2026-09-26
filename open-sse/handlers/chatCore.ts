@@ -487,7 +487,7 @@ type ChatCoreExecutorResult = ReturnType<typeof normalizeExecutorResult> & {
  * @param {string} options.connectionId - Connection ID for usage tracking
  * @param {object} options.apiKeyInfo - API key metadata for usage attribution
  * @param {string} options.userAgent - Client user agent for caching decisions
- * @param {string} options.comboName - Combo name if this is a combo request
+ * @param {string} [options.comboName] - Combo name if this is a combo request
  * @param {string} options.comboStrategy - Combo routing strategy (e.g., 'priority', 'cost-optimized')
  * @param {boolean} options.isCombo - Whether this request is from a combo
  * @param {string} options.connectionId - Connection ID for settings lookup
@@ -507,7 +507,7 @@ export async function handleChatCore({
   connectionId = undefined,
   apiKeyInfo = null,
   userAgent,
-  comboName,
+  comboName = undefined,
   comboStrategy = null,
   isCombo = false,
   routingComboId = null,

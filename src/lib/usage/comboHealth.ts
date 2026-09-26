@@ -8,7 +8,7 @@ import type {
   ComboRecord,
   ComboHealthMetrics,
   ComboHealthResponse,
-  QuotaSnapshotRow,
+  QuotaSnapshot,
   UtilizationTimeRange,
 } from "@/shared/types/utilization";
 
@@ -113,7 +113,7 @@ function calculateGini(values: number[]): number {
   return (2 * weightedSum) / (count * sum) - (count + 1) / count;
 }
 
-function buildProviderHealth(provider: string, snapshots: QuotaSnapshotRow[]): ProviderHealth {
+function buildProviderHealth(provider: string, snapshots: QuotaSnapshot[]): ProviderHealth {
   if (snapshots.length === 0) {
     return {
       provider,
@@ -123,7 +123,7 @@ function buildProviderHealth(provider: string, snapshots: QuotaSnapshotRow[]): P
     };
   }
 
-  const histories = new Map<string, QuotaSnapshotRow[]>();
+  const histories = new Map<string, QuotaSnapshot[]>();
   for (const snapshot of snapshots) {
     const snapshotView = snapshot as unknown as QuotaSnapshotView;
     const connectionId = snapshotView.connectionId || "unknown";
@@ -196,7 +196,7 @@ function buildProviderHealth(provider: string, snapshots: QuotaSnapshotRow[]): P
 function buildConnectionHealth(
   provider: string,
   connectionId: string,
-  snapshots: QuotaSnapshotRow[]
+  snapshots: QuotaSnapshot[]
 ): ProviderHealth | null {
   if (snapshots.length === 0) return null;
 
