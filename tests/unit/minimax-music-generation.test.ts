@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-minimax-music-"));
 
@@ -24,7 +26,7 @@ function stubFetch(payload: unknown, status = 200) {
   const captured: Captured[] = [];
   const originalFetch = globalThis.fetch;
 
-  globalThis.fetch = (async (url: string | URL | Request, options: RequestInit = {}) => {
+  globalThis.fetch = (async (url: string | URL | Request, options: MockRequestInit = {}) => {
     const headers = new Headers(options.headers ?? {});
     captured.push({
       url: String(url),
@@ -72,7 +74,7 @@ test("handleMusicGeneration dispatches minimax-music and normalizes the audio UR
   });
 
   try {
-    const result = await handleMusicGeneration({
+    const result = await looseAsync(handleMusicGeneration)({
       body: {
         model: "minimax/music-3.0",
         prompt: "warm lo-fi guitar loop",
@@ -122,7 +124,7 @@ test("minimax-music forwards cover inputs and honors the hex output format", asy
   });
 
   try {
-    const result = await handleMusicGeneration({
+    const result = await looseAsync(handleMusicGeneration)({
       body: {
         model: "minimax/music-cover",
         prompt: "cover this take",
@@ -156,7 +158,7 @@ test("minimax-music targets the regional endpoint via the connection base URL", 
   });
 
   try {
-    const result = await handleMusicGeneration({
+    const result = await looseAsync(handleMusicGeneration)({
       body: { model: "minimax/music-2.6", prompt: "guzheng ballad", aigc_watermark: true },
       credentials: {
         apiKey: "minimax-key",
@@ -179,7 +181,7 @@ test("minimax-music surfaces base_resp failures returned with HTTP 200", async (
 
   try {
     const logged: string[] = [];
-    const result = await handleMusicGeneration({
+    const result = await looseAsync(handleMusicGeneration)({
       body: { model: "minimax/music-3.0", prompt: "x" },
       credentials: { apiKey: "minimax-key" },
       log: { info: () => {}, error: (_scope: string, message: string) => logged.push(message) },
@@ -198,7 +200,7 @@ test("minimax-music reports an unfinished generation instead of polling", async 
   const stub = stubFetch({ data: { status: 1 }, base_resp: { status_code: 0 } });
 
   try {
-    const result = await handleMusicGeneration({
+    const result = await looseAsync(handleMusicGeneration)({
       body: { model: "minimax/music-3.0-free", prompt: "x" },
       credentials: { apiKey: "minimax-key" },
       log: null,
@@ -216,7 +218,7 @@ test("minimax-music rejects a completed response that carries no audio", async (
   const stub = stubFetch({ data: { status: 2 }, base_resp: { status_code: 0 } });
 
   try {
-    const result = await handleMusicGeneration({
+    const result = await looseAsync(handleMusicGeneration)({
       body: { model: "minimax/music-3.0", prompt: "x" },
       credentials: { apiKey: "minimax-key" },
       log: null,
@@ -234,7 +236,7 @@ test("minimax-music propagates upstream HTTP failures", async () => {
   const stub = stubFetch({ base_resp: { status_code: 2013, status_msg: "invalid params" } }, 400);
 
   try {
-    const result = await handleMusicGeneration({
+    const result = await looseAsync(handleMusicGeneration)({
       body: { model: "minimax/music-3.0", prompt: "x" },
       credentials: { apiKey: "minimax-key" },
       log: null,
@@ -252,7 +254,7 @@ test("minimax-music refuses to call upstream without a credential", async () => 
   const stub = stubFetch({});
 
   try {
-    const result = await handleMusicGeneration({
+    const result = await looseAsync(handleMusicGeneration)({
       body: { model: "minimax/music-3.0", prompt: "x" },
       credentials: null,
       log: null,

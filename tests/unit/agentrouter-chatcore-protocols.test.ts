@@ -4,6 +4,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-agentrouter-chatcore-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -38,20 +40,20 @@ test.afterEach(async () => {
   globalThis.fetch = originalFetch;
   await flushAsyncSideEffects();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 });
 
 test.after(() => {
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("AgentRouter Responses requests automatically use the native Responses protocol", async () => {
   let captured: { url: string; headers: Headers; body: Record<string, unknown> } | null = null;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const body = JSON.parse(String(init.body || "{}"));
     captured = {
       url: String(url),
@@ -95,7 +97,7 @@ test("AgentRouter Responses requests automatically use the native Responses prot
     max_output_tokens: 16,
     stream: false,
   };
-  const result = await handleChatCore({
+  const result = await looseAsync(handleChatCore)({
     body: structuredClone(body),
     modelInfo: {
       provider: "agentrouter",
@@ -133,7 +135,7 @@ test("AgentRouter Responses requests automatically use the native Responses prot
 test("AgentRouter OpenAI Chat requests automatically use the native Chat protocol", async () => {
   let captured: { url: string; headers: Headers; body: Record<string, unknown> } | null = null;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: new Headers(init.headers),
@@ -163,7 +165,7 @@ test("AgentRouter OpenAI Chat requests automatically use the native Chat protoco
     max_completion_tokens: 16,
     stream: false,
   };
-  const result = await handleChatCore({
+  const result = await looseAsync(handleChatCore)({
     body: structuredClone(body),
     modelInfo: { provider: "agentrouter", model: "gpt-5.6-sol", extendedContext: false },
     credentials: {
@@ -194,7 +196,7 @@ test("AgentRouter OpenAI Chat requests automatically use the native Chat protoco
 test("AgentRouter Anthropic requests automatically use the native Messages protocol", async () => {
   let captured: { url: string; headers: Headers; body: Record<string, unknown> } | null = null;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: new Headers(init.headers),
@@ -225,7 +227,7 @@ test("AgentRouter Anthropic requests automatically use the native Messages proto
     max_tokens: 16,
     stream: false,
   };
-  const result = await handleChatCore({
+  const result = await looseAsync(handleChatCore)({
     body: structuredClone(body),
     modelInfo: { provider: "agentrouter", model: "claude-opus-4-8", extendedContext: false },
     credentials: { apiKey: "test-agentrouter-key", providerSpecificData: {} },
@@ -252,7 +254,7 @@ test("AgentRouter Anthropic requests automatically use the native Messages proto
 test("AgentRouter Responses streaming stays native without a connection protocol override", async () => {
   let captured: { url: string; headers: Headers; body: Record<string, unknown> } | null = null;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: new Headers(init.headers),
@@ -294,7 +296,7 @@ test("AgentRouter Responses streaming stays native without a connection protocol
     stream: true,
     store: false,
   };
-  const result = await handleChatCore({
+  const result = await looseAsync(handleChatCore)({
     body: structuredClone(body),
     modelInfo: { provider: "agentrouter", model: "gpt-5.6-sol", extendedContext: false },
     credentials: { apiKey: "test-agentrouter-key", providerSpecificData: {} },
@@ -331,7 +333,7 @@ test("AgentRouter Responses streaming stays native without a connection protocol
 test("AgentRouter OpenAI Chat streaming stays native without a connection protocol override", async () => {
   let captured: { url: string; headers: Headers; body: Record<string, unknown> } | null = null;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: new Headers(init.headers),
@@ -373,7 +375,7 @@ test("AgentRouter OpenAI Chat streaming stays native without a connection protoc
     max_completion_tokens: 16,
     stream: true,
   };
-  const result = await handleChatCore({
+  const result = await looseAsync(handleChatCore)({
     body: structuredClone(body),
     modelInfo: { provider: "agentrouter", model: "gpt-5.6-sol", extendedContext: false },
     credentials: { apiKey: "test-agentrouter-key", providerSpecificData: {} },
@@ -400,7 +402,7 @@ test("AgentRouter OpenAI Chat streaming stays native without a connection protoc
 test("AgentRouter Anthropic streaming stays native without a connection protocol override", async () => {
   let captured: { url: string; headers: Headers; body: Record<string, unknown> } | null = null;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: new Headers(init.headers),
@@ -440,7 +442,7 @@ test("AgentRouter Anthropic streaming stays native without a connection protocol
     max_tokens: 16,
     stream: true,
   };
-  const result = await handleChatCore({
+  const result = await looseAsync(handleChatCore)({
     body: structuredClone(body),
     modelInfo: { provider: "agentrouter", model: "claude-opus-4-8", extendedContext: false },
     credentials: { apiKey: "test-agentrouter-key", providerSpecificData: {} },

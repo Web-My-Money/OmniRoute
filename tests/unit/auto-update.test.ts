@@ -1,3 +1,5 @@
+type ExecFileMock = Parameters<typeof autoUpdate.detectComposeCommand>[0];
+type LaunchOptions = Parameters<typeof autoUpdate.launchAutoUpdate>[0];
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -30,26 +32,26 @@ test("auto update config normalizes env values and local source installs to sour
 });
 
 test("detectComposeCommand prefers docker compose and falls back to docker-compose", async () => {
-  const dockerCompose = await autoUpdate.detectComposeCommand(async (command, args) => {
+  const dockerCompose = await autoUpdate.detectComposeCommand((async (command, args) => {
     if (command === "docker" && args[0] === "compose") {
       return { stdout: "Docker Compose version v2", stderr: "" };
     }
     throw new Error("unexpected");
-  });
+  }) as unknown as ExecFileMock);
   assert.equal(dockerCompose, "docker compose");
 
-  const dockerComposeLegacy = await autoUpdate.detectComposeCommand(async (command, args) => {
+  const dockerComposeLegacy = await autoUpdate.detectComposeCommand((async (command, args) => {
     if (command === "docker") throw new Error("missing");
     if (command === "docker-compose" && args[0] === "version") {
       return { stdout: "docker-compose 1.29", stderr: "" };
     }
     throw new Error("unexpected");
-  });
+  }) as unknown as ExecFileMock);
   assert.equal(dockerComposeLegacy, "docker-compose");
 
-  const none = await autoUpdate.detectComposeCommand(async () => {
+  const none = await autoUpdate.detectComposeCommand((async () => {
     throw new Error("missing");
-  });
+  }) as unknown as ExecFileMock);
   assert.equal(none, null);
 });
 
@@ -65,12 +67,12 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
       patchCommits: [],
       logPath: "/tmp/log",
     },
-    async (command, args) => {
+    (async (command, args) => {
       if (command === "git" && args[0] === "--version") {
         return { stdout: "git version 2.0", stderr: "" };
       }
       throw new Error(`unexpected: ${command}`);
-    },
+    }) as unknown as ExecFileMock,
     async () => true
   );
 
@@ -91,7 +93,7 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
       patchCommits: [],
       logPath: "/tmp/log",
     },
-    async () => ({ stdout: "git version 2.0", stderr: "" }),
+    (async () => ({ stdout: "git version 2.0", stderr: "" })) as unknown as ExecFileMock,
     async () => false
   );
   assert.equal(sourceMissingGitRepo.supported, false);
@@ -108,9 +110,9 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
       patchCommits: [],
       logPath: "/tmp/log",
     },
-    async () => {
+    (async () => {
       throw new Error("git missing");
-    },
+    }) as unknown as ExecFileMock,
     async () => true
   );
   assert.equal(sourceMissingGit.supported, false);
@@ -127,7 +129,7 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
       patchCommits: [],
       logPath: "/tmp/log",
     },
-    async () => ({ stdout: "", stderr: "" }),
+    (async () => ({ stdout: "", stderr: "" })) as unknown as ExecFileMock,
     async (targetPath) => targetPath !== "/repo"
   );
   assert.equal(missingRepo.supported, false);
@@ -144,7 +146,7 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
       patchCommits: [],
       logPath: "/tmp/log",
     },
-    async () => ({ stdout: "", stderr: "" }),
+    (async () => ({ stdout: "", stderr: "" })) as unknown as ExecFileMock,
     async (targetPath) => targetPath === "/repo"
   );
   assert.equal(missingComposeFile.supported, false);
@@ -161,10 +163,10 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
       patchCommits: [],
       logPath: "/tmp/log",
     },
-    async (command) => {
+    (async (command) => {
       if (command === "git") throw new Error("git missing");
       return { stdout: "", stderr: "" };
-    },
+    }) as unknown as ExecFileMock,
     async () => true
   );
   assert.equal(missingGit.supported, false);
@@ -181,10 +183,10 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
       patchCommits: [],
       logPath: "/tmp/log",
     },
-    async (command) => {
+    (async (command) => {
       if (command === "git") return { stdout: "git version 2", stderr: "" };
       throw new Error("compose missing");
-    },
+    }) as unknown as ExecFileMock,
     async () => true
   );
   assert.equal(missingComposeCommand.supported, false);
@@ -201,7 +203,7 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
       patchCommits: [],
       logPath: "/tmp/log",
     },
-    async (command, args) => {
+    (async (command, args) => {
       if (command === "git" && args[0] === "--version") {
         return { stdout: "git version 2.0", stderr: "" };
       }
@@ -209,7 +211,7 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
         return { stdout: "Docker Compose version v2", stderr: "" };
       }
       throw new Error(`unexpected: ${command}`);
-    },
+    }) as unknown as ExecFileMock,
     async () => true
   );
   assert.deepEqual(supported, {
@@ -221,10 +223,10 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
 
 test("ensureGitTagExists verifies refs/tags paths and throws a clear error when missing", async () => {
   const calls = [];
-  await autoUpdate.ensureGitTagExists("v3.6.0", async (command, args, options) => {
+  await autoUpdate.ensureGitTagExists("v3.6.0", (async (command, args, options) => {
     calls.push({ command, args, options });
     return { stdout: "deadbeef", stderr: "" };
-  });
+  }) as unknown as ExecFileMock);
 
   assert.deepEqual(calls, [
     {
@@ -238,9 +240,9 @@ test("ensureGitTagExists verifies refs/tags paths and throws a clear error when 
   ]);
 
   await assert.rejects(
-    autoUpdate.ensureGitTagExists("v9.9.9", async () => {
+    autoUpdate.ensureGitTagExists("v9.9.9", (async () => {
       throw new Error("missing tag");
-    }),
+    }) as unknown as ExecFileMock),
     /Git tag not found: v9\.9\.9/
   );
 });
@@ -291,7 +293,7 @@ test("launchAutoUpdate returns validation failures and starts detached update sc
       AUTO_UPDATE_LOG_PATH: "/tmp/auto-update-source.log",
     },
     existsImpl: async () => false,
-  });
+  } as unknown as LaunchOptions);
 
   assert.equal(unsupported.started, false);
   assert.equal(unsupported.channel, "source");
@@ -320,7 +322,7 @@ test("launchAutoUpdate returns validation failures and starts detached update sc
         },
       };
     },
-  });
+  } as unknown as LaunchOptions);
 
   assert.equal(sourceStarted.started, true);
   assert.equal(sourceStarted.channel, "source");
@@ -371,7 +373,7 @@ test("launchAutoUpdate returns validation failures and starts detached update sc
     },
     existsImpl: async (targetPath) =>
       targetPath === repoDir || targetPath === composeFile || targetPath === "/var/run/docker.sock",
-  });
+  } as unknown as LaunchOptions);
 
   try {
     assert.equal(started.started, true);
@@ -396,7 +398,7 @@ test("launchAutoUpdate returns validation failures and starts detached update sc
     assert.equal(spawnCalls[0].unrefCalled, true);
     assert.match(spawnCalls[0].args[1], /git cherry-pick --keep-redundant-commits 'abc123'/);
   } finally {
-    fs.rmSync(tempRoot, { recursive: true, force: true });
+    fs.rmSync(tempRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
 
@@ -419,6 +421,6 @@ test("resolveProjectRoot walks up from start dir to nearest package.json or .git
     const lonelyResult = autoUpdate.resolveProjectRoot("/my-fallback", lonely);
     assert.equal(lonelyResult, "/my-fallback");
   } finally {
-    fs.rmSync(tempRoot, { recursive: true, force: true });
+    fs.rmSync(tempRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });

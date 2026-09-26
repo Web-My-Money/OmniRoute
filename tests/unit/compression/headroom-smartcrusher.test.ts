@@ -7,10 +7,11 @@
 
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 // Lazy imports resolved inside tests so RED gives clean "module not found" errors,
 // not mysterious runtime crashes before any assertion.
-let headroomEngine: import("../../../open-sse/services/compression/engines/headroom/index.ts").headroomEngine;
+let headroomEngine: (typeof import("../../../open-sse/services/compression/engines/headroom/index.ts"))["headroomEngine"];
 let encodeTabular: (arr: Record<string, unknown>[]) => string;
 let decodeTabular: (text: string) => Record<string, unknown>[];
 let getCompressionEngine: (
@@ -109,13 +110,20 @@ describe("tabular encoder round-trip", () => {
     // A null nested object must not be flattened (its leaves would encode absent and
     // unflatten to a missing key). These must all survive as null, not disappear.
     const cases: Record<string, unknown>[][] = [
-      [{ id: 0, meta: { a: 1, b: 2 } }, { id: 1, meta: null }, { id: 2, meta: { a: 3, b: 4 } }],
+      [
+        { id: 0, meta: { a: 1, b: 2 } },
+        { id: 1, meta: null },
+        { id: 2, meta: { a: 3, b: 4 } },
+      ],
       [
         { id: 0, meta: { owner: { name: "a" } } },
         { id: 1, meta: { owner: null } },
         { id: 2, meta: { owner: { name: "c" } } },
       ],
-      [{ id: 0, o: { p: { team: { x: 1 } } } }, { id: 1, o: { p: { team: null } } }],
+      [
+        { id: 0, o: { p: { team: { x: 1 } } } },
+        { id: 1, o: { p: { team: null } } },
+      ],
     ];
     for (const original of cases) {
       assert.deepEqual(decodeTabular(encodeTabular(original)), original);
@@ -139,22 +147,21 @@ describe("tabular codec — prototype-pollution safety", () => {
     );
     const decoded = decodeTabular(encodeTabular(rows));
     assert.deepEqual(decoded, rows);
-    assert.equal(({} as Record<string, unknown>).polluted, undefined);
+    assert.equal(({} as LooseDeep).polluted, undefined);
   });
 
   it("round-trips a top-level __proto__ column without polluting", async () => {
     const rows = Array.from({ length: 3 }, (_, i) => JSON.parse(`{"id":${i},"__proto__":"x${i}"}`));
     const decoded = decodeTabular(encodeTabular(rows));
     assert.deepEqual(decoded, rows);
-    assert.equal(({} as Record<string, unknown>).x0, undefined);
+    assert.equal(({} as LooseDeep).x0, undefined);
   });
 
   it("does not pollute or throw when decoding hostile GCF with a >__proto__> path column", async () => {
     const hostile =
-      "```gcf-generic\nGCF profile=generic\n" +
-      '## [1]{id,"a>__proto__>polluted"}\n@0 0|1\n```';
+      "```gcf-generic\nGCF profile=generic\n" + '## [1]{id,"a>__proto__>polluted"}\n@0 0|1\n```';
     decodeTabular(hostile);
-    assert.equal(({} as Record<string, unknown>).polluted, undefined);
+    assert.equal(({} as LooseDeep).polluted, undefined);
   });
 
   it("round-trips keys named toString/constructor/valueOf (own-property, not prototype-chain)", async () => {

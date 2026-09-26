@@ -5,8 +5,7 @@ import {
   normalizeCodexTools,
   stripRedundantOneOfConstEnum,
 } from "../../open-sse/executors/codex/tools.ts";
-
-type JsonRecord = Record<string, unknown>;
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const PRODUCTION_ACTION_VALUES = [
   "read_file",

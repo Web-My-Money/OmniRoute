@@ -27,6 +27,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-vb-cred-"));
 
@@ -40,13 +41,13 @@ const { hasUsableCredentialsForModel, hasTerminalConnectionStatus } =
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ── alias → canonical id resolution (#10702) ────────────────────────────────
@@ -54,13 +55,13 @@ test.after(() => {
 test("alias-keyed model finds a row stored under the canonical provider id (#10702)", async () => {
   await resetStorage();
   // The connection is stored under the canonical id "command-code".
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "command-code",
     authType: "apikey",
     apiKey: "cc-real-key",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   // The model id uses the public alias prefix "cmd" — before the fix this
   // queried provider = "cmd", found no row, and returned false.
@@ -86,26 +87,26 @@ test("canonical-id noauth model is usable with NO stored row", async () => {
 
 test("noauth provider is NOT usable when a row carries a terminal status", async () => {
   await resetStorage();
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "opencode",
     authType: "no-auth",
     name: "opencode-account",
     isActive: true,
     testStatus: "banned",
-  });
+  })) as JsonRecord & { id: string };
   const usable = await hasUsableCredentialsForModel("oc/mimo-v2.5-free");
   assert.equal(usable, false, "a banned noauth row must block the provider");
 });
 
 test("noauth provider with a healthy row is usable", async () => {
   await resetStorage();
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "opencode",
     authType: "no-auth",
     name: "opencode-account",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   const usable = await hasUsableCredentialsForModel("oc/mimo-v2.5-free");
   assert.equal(usable, true);
 });
@@ -120,26 +121,26 @@ test("keyed provider with no active connection is NOT usable", async () => {
 
 test("keyed provider with a usable active connection is usable", async () => {
   await resetStorage();
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-real-key",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   const usable = await hasUsableCredentialsForModel("openai/gpt-4o-mini");
   assert.equal(usable, true);
 });
 
 test("keyed provider with only a banned connection is NOT usable", async () => {
   await resetStorage();
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-dead-key",
     isActive: true,
     testStatus: "banned",
-  });
+  })) as JsonRecord & { id: string };
   const usable = await hasUsableCredentialsForModel("openai/gpt-4o-mini");
   assert.equal(usable, false);
 });

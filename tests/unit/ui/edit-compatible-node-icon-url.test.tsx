@@ -7,6 +7,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) => key,
@@ -92,7 +93,7 @@ const NODE = {
 
 describe("EditCompatibleNodeModal — iconUrl field-level validation", () => {
   it("shows an inline error for an unsafe scheme and does NOT call onSave", async () => {
-    const onSave = vi.fn(async () => {});
+    const onSave = vi.fn(async (_payload: LooseDeep) => {});
     const { el } = render({ ...NODE, iconUrl: "javascript:alert(1)" });
     const modal = el.querySelector('[role="dialog"]')!;
 
@@ -107,7 +108,7 @@ describe("EditCompatibleNodeModal — iconUrl field-level validation", () => {
   });
 
   it("shows an inline error for a non-image data URL and does NOT call onSave", async () => {
-    const onSave = vi.fn(async () => {});
+    const onSave = vi.fn(async (_payload: LooseDeep) => {});
     const { el } = render({ ...NODE, iconUrl: "data:text/html;base64,QUJD" });
     const modal = el.querySelector('[role="dialog"]')!;
 
@@ -122,7 +123,7 @@ describe("EditCompatibleNodeModal — iconUrl field-level validation", () => {
   });
 
   it("accepts a valid data:image/*;base64 iconUrl and calls onSave with it", async () => {
-    const onSave = vi.fn(async () => {});
+    const onSave = vi.fn(async (_payload: LooseDeep) => {});
     const { el } = render({ ...NODE, iconUrl: "" }, onSave);
     const modal = el.querySelector('[role="dialog"]')!;
 
@@ -138,7 +139,7 @@ describe("EditCompatibleNodeModal — iconUrl field-level validation", () => {
   });
 
   it("shows an inline error for an over-limit data URL and does NOT call onSave", async () => {
-    const onSave = vi.fn(async () => {});
+    const onSave = vi.fn(async (_payload: LooseDeep) => {});
     const { el } = render({ ...NODE, iconUrl: "" }, onSave);
     const modal = el.querySelector('[role="dialog"]')!;
     const tooLong = "data:image/png;base64," + "A".repeat(256 * 1024);

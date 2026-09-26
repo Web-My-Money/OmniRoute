@@ -11,6 +11,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { createChatPipelineHarness } from "../integration/_chatPipelineHarness.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const harness = await createChatPipelineHarness("adaptive-admission-route-matrix");
 assert.ok(
@@ -235,18 +236,18 @@ async function assertAdmissionOversized(response: Response, fetchCalls: number) 
 const ROUTE_CASES: RouteCase[] = [
   {
     name: "chat.completions",
-    invoke: (request) => chatCompletionsRoute.POST(request),
+    invoke: async (request) => chatCompletionsRoute.POST(request),
     buildRequest: () =>
       jsonRequest("http://localhost/v1/chat/completions", chatBody("chat-completions")),
   },
   {
     name: "messages",
-    invoke: (request) => messagesRoute.POST(request, {}),
+    invoke: async (request) => messagesRoute.POST(request, {}),
     buildRequest: () => jsonRequest("http://localhost/v1/messages", messagesBody("messages")),
   },
   {
     name: "responses",
-    invoke: (request) => responsesRoute.POST(request, {}),
+    invoke: async (request) => responsesRoute.POST(request),
     buildRequest: () =>
       jsonRequest("http://localhost/v1/responses", responsesBody("responses"), {
         Accept: "application/json",
@@ -254,7 +255,7 @@ const ROUTE_CASES: RouteCase[] = [
   },
   {
     name: "responses.catch-all",
-    invoke: (request) => responsesCatchAllRoute.POST(request),
+    invoke: async (request) => responsesCatchAllRoute.POST(request),
     buildRequest: () =>
       jsonRequest(
         "http://localhost/v1/responses/input_items",
@@ -264,24 +265,24 @@ const ROUTE_CASES: RouteCase[] = [
   },
   {
     name: "completions.legacy",
-    invoke: (request) => completionsRoute.POST(request),
+    invoke: async (request) => completionsRoute.POST(request),
     buildRequest: () =>
       jsonRequest("http://localhost/v1/completions", completionsBody("legacy-completions")),
   },
   {
     name: "ollama.api.chat",
-    invoke: (request) => ollamaRoute.POST(request),
+    invoke: async (request) => ollamaRoute.POST(request),
     buildRequest: () => jsonRequest("http://localhost/api/chat", chatBody("ollama")),
   },
   {
     name: "antigravity",
-    invoke: (request) => antigravityRoute.POST(request),
+    invoke: async (request) => antigravityRoute.POST(request),
     buildRequest: () =>
       jsonRequest("http://localhost/v1/antigravity", antigravityBody("antigravity")),
   },
   {
     name: "providers.pinned",
-    invoke: (request) =>
+    invoke: async (request) =>
       providerPinnedRoute.POST(request, { params: Promise.resolve({ provider: "openai" }) }),
     buildRequest: () =>
       jsonRequest("http://localhost/v1/providers/openai/chat/completions", {
@@ -292,14 +293,14 @@ const ROUTE_CASES: RouteCase[] = [
   },
   {
     name: "relay.chat.completions",
-    invoke: (request) => relayRoute.POST(request),
+    invoke: async (request) => relayRoute.POST(request),
     buildRequest: () => {
       throw new Error("relay buildRequest is set per-test after token insert");
     },
   },
   {
     name: "gemini.v1beta.generateContent",
-    invoke: (request) =>
+    invoke: async (request) =>
       geminiRoute.POST(request, {
         params: Promise.resolve({ path: ["openai", "gpt-4o-mini:generateContent"] }),
       }),
@@ -347,7 +348,7 @@ test(
     });
     const connectionId = String(connection.id);
     const beforeConnection = connectionFailureState(
-      (await getProviderConnectionById(connectionId)) as Record<string, unknown> | null
+      (await getProviderConnectionById(connectionId)) as LooseDeep | null
     );
     const breaker = getCircuitBreaker("openai");
     const beforeBreaker = breakerSnapshot(breaker);
@@ -403,9 +404,7 @@ test(
     assert.equal(fetchCalls, 0);
 
     assert.deepEqual(
-      connectionFailureState(
-        (await getProviderConnectionById(connectionId)) as Record<string, unknown> | null
-      ),
+      connectionFailureState((await getProviderConnectionById(connectionId)) as LooseDeep | null),
       beforeConnection
     );
     assert.deepEqual(breakerSnapshot(breaker), beforeBreaker);

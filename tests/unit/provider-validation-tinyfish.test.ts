@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 // TinyFish Fetch API added as a webFetch-kind provider (docs.tinyfish.ai/fetch-api).
 // These tests pin the validator dispatch (tinyfish -> POST api.fetch.tinyfish.ai with
@@ -21,7 +22,7 @@ function headerValue(init: RequestInit | undefined, name: string): string | unde
 
 test("tinyfish validator probes api.fetch.tinyfish.ai with X-API-Key auth and accepts a 200", async () => {
   const calls: { url: string; init: RequestInit }[] = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({ url: String(url), init });
     return new Response(JSON.stringify({ results: [{}], errors: [] }), { status: 200 });
   };

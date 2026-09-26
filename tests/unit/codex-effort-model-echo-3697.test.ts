@@ -6,10 +6,10 @@ import {
   echoModelInObject,
   echoModelInSseLine,
 } from "../../open-sse/services/responseModelEcho.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
-const { openaiToOpenAIResponsesResponse } = await import(
-  "../../open-sse/translator/response/openai-responses.ts"
-);
+const { openaiToOpenAIResponsesResponse } =
+  await import("../../open-sse/translator/response/openai-responses.ts");
 const { initState } = await import("../../open-sse/translator/index.ts");
 const { FORMATS } = await import("../../open-sse/translator/formats.ts");
 
@@ -18,11 +18,14 @@ const { FORMATS } = await import("../../open-sse/translator/formats.ts");
 // (`gpt-5.5`), so the Codex CLI status line/model button shows the active effort.
 
 function collectResponsesEvents(chunks: Array<Record<string, unknown> | null>) {
-  const state = initState(FORMATS.OPENAI_RESPONSES) as Record<string, unknown>;
+  const state = initState(FORMATS.OPENAI_RESPONSES) as LooseDeep;
   const events: Array<{ event: string; data: Record<string, unknown> }> = [];
   for (const chunk of chunks) {
     const result = openaiToOpenAIResponsesResponse(chunk as never, state as never);
-    if (result) events.push(...(result as never));
+    if (result)
+      events.push(
+        ...(result as unknown[] as Array<{ event: string; data: Record<string, unknown> }>)
+      );
   }
   return events;
 }
@@ -59,8 +62,8 @@ test("OpenAI -> Responses translator carries the upstream model into response.cr
 
   const created = events.find((e) => e.event === "response.created");
   const completed = events.find((e) => e.event === "response.completed");
-  assert.equal((created!.data.response as Record<string, unknown>).model, "gpt-5.5");
-  assert.equal((completed!.data.response as Record<string, unknown>).model, "gpt-5.5");
+  assert.equal((created!.data.response as LooseDeep).model, "gpt-5.5");
+  assert.equal((completed!.data.response as LooseDeep).model, "gpt-5.5");
 });
 
 test("OpenAI -> Responses translator omits model when the upstream never sent one (no regression)", () => {
@@ -78,8 +81,8 @@ test("OpenAI -> Responses translator omits model when the upstream never sent on
 
   const created = events.find((e) => e.event === "response.created");
   const completed = events.find((e) => e.event === "response.completed");
-  assert.equal("model" in (created!.data.response as Record<string, unknown>), false);
-  assert.equal("model" in (completed!.data.response as Record<string, unknown>), false);
+  assert.equal("model" in (created!.data.response as LooseDeep), false);
+  assert.equal("model" in (completed!.data.response as LooseDeep), false);
 });
 
 test("full shim pipeline: bare upstream model in Responses payloads gets rewritten to the requested effort-suffixed id", () => {
@@ -104,8 +107,8 @@ test("full shim pipeline: bare upstream model in Responses payloads gets rewritt
   // Non-stream / object form (chatCore's non-streaming return path).
   echoModelInObject(created, requestedModel);
   echoModelInObject(completed, requestedModel);
-  assert.equal((created.response as Record<string, unknown>).model, requestedModel);
-  assert.equal((completed.response as Record<string, unknown>).model, requestedModel);
+  assert.equal((created.response as LooseDeep).model, requestedModel);
+  assert.equal((completed.response as LooseDeep).model, requestedModel);
 
   // Streaming SSE-line form (chatCore's createModelEchoTransform pipe stage).
   const sseLine = `data: ${JSON.stringify({

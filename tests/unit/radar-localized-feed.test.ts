@@ -3,15 +3,16 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { RadarFeedSchema } from "../../src/lib/radar/feedSchema.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const fixture = JSON.parse(
   readFileSync(new URL("../fixtures/radar-feed-canonical.json", import.meta.url), "utf8")
-) as Record<string, unknown>;
+) as LooseDeep;
 
 test("canonical fixture carries D25 localized setup and accepts localized quirks", () => {
   const localized = structuredClone(fixture) as {
     models: Array<{ setup: { steps: unknown[] } | null }>;
-    quirks: Array<{ title: unknown; body: unknown }>;
+    quirks: Array<Record<string, unknown>>;
   };
   localized.quirks = [
     {
@@ -32,7 +33,7 @@ test("canonical fixture carries D25 localized setup and accepts localized quirks
 test("RadarFeedSchema preserves schema-v1 legacy setup and quirk strings", () => {
   const legacy = structuredClone(fixture) as {
     models: Array<{ setup: { steps: unknown[] } | null }>;
-    quirks: Array<{ title: unknown; body: unknown }>;
+    quirks: Array<Record<string, unknown>>;
   };
   legacy.models[0]!.setup!.steps[0] = "Create an account";
   legacy.quirks[0]!.title = "Shared quota";

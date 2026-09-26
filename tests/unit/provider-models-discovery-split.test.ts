@@ -24,6 +24,7 @@ import {
   isNamedOpenAIStyleProvider,
 } from "../../src/app/api/providers/[id]/models/discovery/providerSets.ts";
 import { PROVIDER_MODELS_CONFIG } from "../../src/app/api/providers/[id]/models/discovery/providerModelsConfig.ts";
+import type { CodexDiscoveryModelIdentity } from "../../src/shared/services/codexDiscoveryPolicy.ts";
 import { isCodexDiscoveryModelExcluded as isSharedCodexDiscoveryModelExcluded } from "../../src/shared/services/codexDiscoveryPolicy.ts";
 import {
   applyCodexDiscoveryFilters,
@@ -40,6 +41,7 @@ import {
   normalizeCodexGithubCatalogResponse,
   normalizeCodexModelsResponse,
   reconcileCuratedCodexCatalog,
+  type CodexDiscoveryModel,
 } from "../../src/app/api/providers/[id]/models/discovery/codex.ts";
 
 // ── helpers leaf ─────────────────────────────────────────────────────────────
@@ -407,7 +409,7 @@ test("codex.mergeCodexLiveModelsWithLocalCatalog merges capacity limits conserva
         name: "Live GPT 5.5",
         inputTokenLimit: 300000,
       },
-    ],
+    ] as CodexDiscoveryModel[],
     [
       {
         id: "gpt-5.6-sol",
@@ -442,16 +444,25 @@ test("codex.mergeCodexLiveModelsWithLocalCatalog merges capacity limits conserva
 });
 
 test("codex discovery filters drop the GPT-5.4 family but keep other remote models", () => {
-  assert.equal(isCodexDiscoveryModelExcluded({ id: "gpt-5.4", name: "x" }), true);
-  assert.equal(isCodexDiscoveryModelExcluded({ id: "gpt-5.4-mini", name: "x" }), true);
-  assert.equal(isCodexDiscoveryModelExcluded({ id: "gpt-5.6-sol", name: "x" }), false);
+  assert.equal(
+    isCodexDiscoveryModelExcluded({ id: "gpt-5.4", name: "x" } as CodexDiscoveryModelIdentity),
+    true
+  );
+  assert.equal(
+    isCodexDiscoveryModelExcluded({ id: "gpt-5.4-mini", name: "x" } as CodexDiscoveryModelIdentity),
+    true
+  );
+  assert.equal(
+    isCodexDiscoveryModelExcluded({ id: "gpt-5.6-sol", name: "x" } as CodexDiscoveryModelIdentity),
+    false
+  );
 
   const filtered = applyCodexDiscoveryFilters([
     { id: "gpt-5.4", name: "Retired" },
     { id: "gpt-5.4-pro", name: "Retired Pro" },
     { id: "future-codex-model", name: "Future" },
     { id: "gpt-5.6-sol", name: "Sol" },
-  ]);
+  ] as CodexDiscoveryModel[]);
   assert.deepEqual(
     filtered.map((model) => model.id),
     ["future-codex-model", "gpt-5.6-sol"]
@@ -478,7 +489,7 @@ test("codex.buildCodexDiscoveryCatalog merges then filters in one step", () => {
         inputTokenLimit: 111,
         supportsVision: true,
       },
-    ],
+    ] as CodexDiscoveryModel[],
     [
       {
         id: "gpt-5.6-sol",
@@ -487,7 +498,7 @@ test("codex.buildCodexDiscoveryCatalog merges then filters in one step", () => {
         maxOutputTokens: 128000,
       },
       { id: "gpt-5.6-sol-max", name: "GPT 5.6 Sol Max" },
-    ]
+    ] as CodexDiscoveryModel[]
   );
   const ids = catalog.map((model) => model.id);
   assert.ok(ids.includes("brand-new-codex"));
@@ -500,8 +511,8 @@ test("codex.buildCodexDiscoveryCatalog merges then filters in one step", () => {
 
   // Optional curated helper still available for diagnostics only.
   const curated = reconcileCuratedCodexCatalog(
-    [{ id: "brand-new-codex", name: "Brand New" }],
-    [{ id: "gpt-5.6-sol", name: "GPT 5.6 Sol" }]
+    [{ id: "brand-new-codex", name: "Brand New" }] as CodexDiscoveryModel[],
+    [{ id: "gpt-5.6-sol", name: "GPT 5.6 Sol" }] as CodexDiscoveryModel[]
   );
   assert.deepEqual(
     curated.models.map((model) => model.id),

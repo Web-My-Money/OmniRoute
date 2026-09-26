@@ -17,13 +17,13 @@ const searchRoute = await import("../../src/app/api/skills/skillssh/route.ts");
 const installRoute = await import("../../src/app/api/skills/skillssh/install/route.ts");
 
 function clearSkillRegistry() {
-  skillRegistry.registeredSkills?.clear?.();
-  skillRegistry.versionCache?.clear?.();
+  skillRegistry["registeredSkills"]?.clear?.();
+  skillRegistry["versionCache"]?.clear?.();
 }
 
 function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(tmpDir, { recursive: true, force: true });
+  fs.rmSync(tmpDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(tmpDir, { recursive: true });
   clearSkillRegistry();
   core.getDbInstance();
@@ -42,7 +42,7 @@ test.after(() => {
   clearSkillRegistry();
   globalThis.fetch = originalFetch;
   process.env.DATA_DIR = originalDataDir;
-  fs.rmSync(tmpDir, { recursive: true, force: true });
+  fs.rmSync(tmpDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ── Zod schema validation tests ──

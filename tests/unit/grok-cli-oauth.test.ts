@@ -5,6 +5,9 @@ const { grokCli } = await import("../../src/lib/oauth/providers/grok-cli.ts");
 const { GrokCliExecutor } = await import("@omniroute/open-sse/executors/grok-cli");
 const { getGrokBuildClientVersion } = await import("@omniroute/open-sse/config/grokBuild.ts");
 const { resolvePublicCred } = await import("@omniroute/open-sse/utils/publicCreds");
+import { looseSync } from "../helpers/looseTypes.ts";
+
+const mapTokensLoose = looseSync(grokCli.mapTokens);
 
 test("Grok Build OAuth Provider - config", () => {
   assert.ok(grokCli.config.clientId, "clientId should be defined");
@@ -61,7 +64,7 @@ test("Grok Build OAuth Provider - mapTokens from raw JWT", () => {
   const payload = { sub: "12345", email: "test@example.com", team_id: "team-67890", tier: 1 };
   const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString("base64url");
   const mockJwt = `eyJhbGciOiJFUzI1NiJ9.${payloadBase64}.signature`;
-  const result = grokCli.mapTokens(mockJwt, null);
+  const result = mapTokensLoose(mockJwt);
 
   assert.equal(result.accessToken, mockJwt);
   assert.equal(result.refreshToken, null);
@@ -79,7 +82,7 @@ test("Grok Build OAuth Provider - mapTokens from auth.json", () => {
       refresh_token: "test-refresh-token",
     },
   };
-  const result = grokCli.mapTokens(authJson, null);
+  const result = mapTokensLoose(authJson);
 
   assert.ok(result.accessToken.includes("eyJ"), "accessToken should be JWT");
   assert.equal(result.refreshToken, "test-refresh-token");
@@ -87,13 +90,13 @@ test("Grok Build OAuth Provider - mapTokens from auth.json", () => {
 });
 
 test("Grok Build OAuth Provider - mapTokens from empty string", () => {
-  const result = grokCli.mapTokens("", null);
+  const result = mapTokensLoose("");
   assert.equal(result.accessToken, "");
 });
 
 test("Grok Build OAuth Provider - mapTokens from object with accessToken", () => {
   const input = { accessToken: "direct-token" };
-  const result = grokCli.mapTokens(input, null);
+  const result = mapTokensLoose(input);
   assert.equal(result.accessToken, "direct-token");
 });
 
@@ -108,7 +111,7 @@ test("Grok Build OAuth Provider - mapTokens from route-wrapped auth.json", () =>
     },
   };
   const wrapped = { accessToken: authJson };
-  const result = grokCli.mapTokens(wrapped, null);
+  const result = mapTokensLoose(wrapped);
 
   assert.ok(
     result.accessToken.startsWith("eyJ"),
@@ -131,7 +134,7 @@ test("Grok Build OAuth Provider - mapTokens from direct auth.json has rawAuthJso
       refresh_token: "direct-refresh",
     },
   };
-  const result = grokCli.mapTokens(authJson, null);
+  const result = mapTokensLoose(authJson);
 
   assert.ok(result.accessToken.startsWith("eyJ"));
   assert.equal(result.refreshToken, "direct-refresh");
@@ -156,7 +159,7 @@ test("Grok Build OAuth Provider - prefers the active issuer/client auth.json sco
     },
   };
 
-  const result = grokCli.mapTokens(authJson, null);
+  const result = mapTokensLoose(authJson);
 
   assert.equal(result.email, "preferred@example.com");
   assert.equal(result.refreshToken, "preferred-refresh");
@@ -166,7 +169,7 @@ test("Grok Build OAuth Provider - mapTokens from raw JWT has no rawAuthJson", ()
   const payload = { sub: "12345", email: "test@example.com" };
   const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString("base64url");
   const mockJwt = `eyJhbGciOiJFUzI1NiJ9.${payloadBase64}.signature`;
-  const result = grokCli.mapTokens(mockJwt, null);
+  const result = mapTokensLoose(mockJwt);
 
   assert.equal(result.accessToken, mockJwt);
   assert.equal(result.refreshToken, null);
@@ -178,7 +181,7 @@ test("Grok Build OAuth Provider - mapTokens extracts expiresIn from JWT exp (dyn
   const payload = { sub: "12345", email: "test@example.com", exp: futureSec };
   const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString("base64url");
   const mockJwt = `eyJhbGciOiJFUzI1NiJ9.${payloadBase64}.signature`;
-  const result = grokCli.mapTokens(mockJwt, null);
+  const result = mapTokensLoose(mockJwt);
 
   assert.ok(result.expiresIn > 0);
   assert.ok(Math.abs(result.expiresIn - 1200) <= 2);
@@ -193,7 +196,7 @@ test("Grok Build OAuth Provider - mapTokens extracts expiresIn from JSON expires
       expires_at: futureDateStr,
     },
   };
-  const result = grokCli.mapTokens(authJson, null);
+  const result = mapTokensLoose(authJson);
 
   assert.ok(result.expiresIn > 0);
   assert.ok(Math.abs(result.expiresIn - 1800) <= 2);
@@ -203,7 +206,7 @@ test("Grok Build OAuth Provider - mapTokens falls back to 21600 if no exp or exp
   const payload = { sub: "12345", email: "test@example.com" };
   const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString("base64url");
   const mockJwt = `eyJhbGciOiJFUzI1NiJ9.${payloadBase64}.signature`;
-  const result = grokCli.mapTokens(mockJwt, null);
+  const result = mapTokensLoose(mockJwt);
 
   assert.equal(result.expiresIn, 21600);
 });
@@ -218,7 +221,7 @@ test("Grok Build OAuth Provider - mapTokens clamps expired JWT exp to a positive
   const payload = { sub: "12345", email: "test@example.com", exp: pastSec };
   const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString("base64url");
   const mockJwt = `eyJhbGciOiJFUzI1NiJ9.${payloadBase64}.signature`;
-  const result = grokCli.mapTokens(mockJwt, null);
+  const result = mapTokensLoose(mockJwt);
 
   assert.ok(result.expiresIn >= 1, `expected expiresIn >= 1, got ${result.expiresIn}`);
 });
@@ -232,7 +235,7 @@ test("Grok Build OAuth Provider - mapTokens clamps expired JSON expires_at to a 
       expires_at: pastDateStr,
     },
   };
-  const result = grokCli.mapTokens(authJson, null);
+  const result = mapTokensLoose(authJson);
 
   assert.ok(result.expiresIn >= 1, `expected expiresIn >= 1, got ${result.expiresIn}`);
 });

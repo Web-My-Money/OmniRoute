@@ -4,6 +4,7 @@ import {
   checkKimiWebConnectionIfNeeded,
   defaultKimiRefreshJitterSec,
 } from "../../src/lib/tokenHealthCheckKimi.ts";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 describe("Kimi Background Health Sweep", () => {
   it("skips non-kimi-web connections", async () => {
@@ -54,7 +55,7 @@ describe("Kimi Background Health Sweep", () => {
           expiresAtSec: nowSec + 900,
         };
       },
-      persistFn: async () => {},
+      persistFn: (async () => ({})) as (id: string, data: JsonRecord) => Promise<JsonRecord>,
     });
 
     assert.equal(handled, true);
@@ -92,7 +93,7 @@ describe("Kimi Background Health Sweep", () => {
           expiresAtSec: nowSec + 900,
         };
       },
-      persistFn: async () => {},
+      persistFn: (async () => ({})) as (id: string, data: JsonRecord) => Promise<JsonRecord>,
     });
 
     // Handled (it is a kimi-web connection) but not refreshed.

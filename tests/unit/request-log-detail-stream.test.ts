@@ -6,6 +6,7 @@ import { dirname, resolve } from "node:path";
 import React from "react";
 import { renderToStaticMarkup as reactRenderToStaticMarkup } from "react-dom/server";
 import { NextIntlClientProvider } from "next-intl";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { default: RequestLoggerDetail } =
   await import("../../src/shared/components/RequestLoggerDetail.tsx");
@@ -21,8 +22,12 @@ const enMessages = JSON.parse(
 function renderToStaticMarkup(element: React.ReactElement) {
   return reactRenderToStaticMarkup(
     React.createElement(
-      NextIntlClientProvider,
-      { locale: "en", timeZone: "UTC", messages: { requestLogger: enMessages.requestLogger } },
+      NextIntlClientProvider as React.ElementType,
+      {
+        locale: "en",
+        timeZone: "UTC",
+        messages: { requestLogger: enMessages.requestLogger },
+      } as LooseDeep,
       element
     )
   );
@@ -30,7 +35,7 @@ function renderToStaticMarkup(element: React.ReactElement) {
 
 test("event stream shows only when debugEnabled and appears above legacy response", () => {
   const html = renderToStaticMarkup(
-    React.createElement(RequestLoggerDetail, {
+    React.createElement(RequestLoggerDetail as unknown as React.ElementType, {
       log: {
         status: 504,
         method: "POST",
@@ -85,7 +90,7 @@ test("event stream shows only when debugEnabled and appears above legacy respons
 // panes silently lost the ability to collapse from that point on.
 test("Provider Event Stream and Client Event Stream panes are collapsible", () => {
   const html = renderToStaticMarkup(
-    React.createElement(RequestLoggerDetail, {
+    React.createElement(RequestLoggerDetail as unknown as React.ElementType, {
       log: {
         status: 200,
         method: "POST",
@@ -127,7 +132,7 @@ test("Provider Event Stream and Client Event Stream panes are collapsible", () =
 
 test("event stream hidden when debugEnabled is false", () => {
   const html = renderToStaticMarkup(
-    React.createElement(RequestLoggerDetail, {
+    React.createElement(RequestLoggerDetail as unknown as React.ElementType, {
       log: {
         status: 504,
         method: "POST",
@@ -162,7 +167,7 @@ test("event stream hidden when debugEnabled is false", () => {
 
 test("status discrepancy shows both OmniRoute and provider statuses", () => {
   const html = renderToStaticMarkup(
-    React.createElement(RequestLoggerDetail, {
+    React.createElement(RequestLoggerDetail as unknown as React.ElementType, {
       log: {
         status: 504,
         method: "POST",
@@ -220,7 +225,7 @@ test("request logger detail renders stream chunks correctly", () => {
   };
 
   const html = renderToStaticMarkup(
-    React.createElement(RequestLoggerDetail, {
+    React.createElement(RequestLoggerDetail as unknown as React.ElementType, {
       log,
       detail,
       loading: false,

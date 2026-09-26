@@ -13,6 +13,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-ctxlimit-8378-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -37,7 +38,7 @@ const originalSiblingEnv = process.env[SIBLING_LIMIT_ENV];
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -51,10 +52,7 @@ test.before(async () => {
 
   await combosDb.createCombo({
     name: COMBO_NAME,
-    models: [
-      `${MAIN_PROVIDER}/${MAIN_MODEL}`,
-      `${SIBLING_PROVIDER}/${SIBLING_MODEL}`,
-    ],
+    models: [`${MAIN_PROVIDER}/${MAIN_MODEL}`, `${SIBLING_PROVIDER}/${SIBLING_MODEL}`],
   });
 
   // Defensive: nothing in the expected (fixed) code path should ever reach
@@ -77,7 +75,7 @@ test.after(() => {
     process.env[SIBLING_LIMIT_ENV] = originalSiblingEnv;
   }
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#8378: enforceOutputTokenBudget honors the combo-resolved context limit, not the plain per-target lookup", async () => {
@@ -88,7 +86,7 @@ test("#8378: enforceOutputTokenBudget honors the combo-resolved context limit, n
   // the combo-resolved limit rejects this request.
   const longContent = "x".repeat(22_500);
 
-  const result = await handleChatCore({
+  const result = await looseAsync(handleChatCore)({
     body: {
       model: MAIN_MODEL,
       messages: [{ role: "user", content: longContent }],

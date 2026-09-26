@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import type { NextRequest } from "next/server";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-a2a-enabled-route-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -19,7 +20,7 @@ const a2aRoute = await import("../../src/app/a2a/route.ts");
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -38,7 +39,7 @@ test.beforeEach(async () => {
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 
   if (ORIGINAL_DATA_DIR === undefined) {
     delete process.env.DATA_DIR;
@@ -54,8 +55,12 @@ test.after(() => {
 });
 
 test("A2A status reports disabled and offline when the endpoint is off", async () => {
-  const response = await statusRoute.GET();
-  const body = (await response.json()) as Record<string, unknown>;
+  const response = await statusRoute.GET(
+    new Request("http://localhost/api/a2a/status") as unknown as Parameters<
+      typeof statusRoute.GET
+    >[0]
+  );
+  const body = (await response.json()) as LooseDeep;
 
   assert.equal(response.status, 200);
   assert.equal(body.status, "disabled");
@@ -107,8 +112,12 @@ test("A2A JSON-RPC checks auth before returning disabled state", async () => {
 test("A2A status reports online only after enabling the endpoint", async () => {
   await settingsDb.updateSettings({ a2aEnabled: true });
 
-  const response = await statusRoute.GET();
-  const body = (await response.json()) as Record<string, unknown>;
+  const response = await statusRoute.GET(
+    new Request("http://localhost/api/a2a/status") as unknown as Parameters<
+      typeof statusRoute.GET
+    >[0]
+  );
+  const body = (await response.json()) as LooseDeep;
 
   assert.equal(response.status, 200);
   assert.equal(body.status, "ok");

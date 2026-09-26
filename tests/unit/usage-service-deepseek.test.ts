@@ -1,6 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { getUsageForProvider } from "../../open-sse/services/usage.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+
+// getUsageForProvider returns a per-provider union; tests assert the branch
+// their mock produced.
+const getUsage = (...args: Parameters<typeof getUsageForProvider>) =>
+  getUsageForProvider(...args) as unknown as Promise<LooseDeep & JsonRecord>;
 import { invalidateDeepseekQuotaCache } from "../../open-sse/services/deepseekQuotaFetcher.ts";
 
 const originalFetch = globalThis.fetch;
@@ -26,7 +33,7 @@ test("getUsageForProvider handles deepseek with valid balance", async () => {
       { status: 200, headers: { "content-type": "application/json" } }
     );
 
-  const result = await getUsageForProvider({
+  const result = await getUsage({
     id: "test-id",
     provider: "deepseek",
     apiKey: "test-key",
@@ -62,7 +69,7 @@ test("getUsageForProvider handles deepseek with insufficient balance", async () 
       { status: 200, headers: { "content-type": "application/json" } }
     );
 
-  const result = await getUsageForProvider({
+  const result = await getUsage({
     id: "test-id-2",
     provider: "deepseek",
     apiKey: "test-key",
@@ -94,7 +101,7 @@ test("getUsageForProvider handles deepseek with CNY currency", async () => {
       { status: 200, headers: { "content-type": "application/json" } }
     );
 
-  const result = await getUsageForProvider({
+  const result = await getUsage({
     id: "test-id-3",
     provider: "deepseek",
     apiKey: "test-key",
@@ -131,7 +138,7 @@ test("getUsageForProvider handles deepseek with both USD and CNY balances", asyn
       { status: 200, headers: { "content-type": "application/json" } }
     );
 
-  const result = await getUsageForProvider({
+  const result = await getUsage({
     id: "test-id-multi",
     provider: "deepseek",
     apiKey: "test-key",
@@ -152,7 +159,7 @@ test("getUsageForProvider returns message when deepseek API key is missing", asy
     throw new Error("Fetch should not be called");
   };
 
-  const result = await getUsageForProvider({
+  const result = await getUsage({
     id: "test-id-4",
     provider: "deepseek",
     apiKey: "",
@@ -166,7 +173,7 @@ test("getUsageForProvider handles deepseek network error gracefully", async () =
     throw new Error("Network error");
   };
 
-  const result = await getUsageForProvider({
+  const result = await getUsage({
     id: "test-id-5",
     provider: "deepseek",
     apiKey: "test-key",

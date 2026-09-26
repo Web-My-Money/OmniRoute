@@ -1,5 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const mod = await import("../../open-sse/services/batchProcessor.ts");
 
@@ -75,7 +76,7 @@ describe("batchProcessor helpers", () => {
         method: "POST",
       });
       assert.equal(result.stream, false);
-      assert.equal(result.model, "gpt-4");
+      assert.equal((result as LooseDeep).model, "gpt-4");
     });
 
     it("does not add stream for embeddings endpoint", () => {

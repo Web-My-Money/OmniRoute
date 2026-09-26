@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import type { AntigravityCollectedStream } from "../../open-sse/executors/antigravity/sseCollect.ts";
 
 // Split-guard for the antigravity executor SSE-collect extraction.
 // The pure SSE-payload -> collected-stream parser lives in antigravity/sseCollect.ts
@@ -44,5 +45,7 @@ test("SSE-collect helpers are callable and tolerate empty/garbage input", async 
   assert.deepEqual(stripZeroWidth(42), 42);
   // A malformed payload must not throw (defensive parse).
   const collected = { textContent: "" };
-  assert.doesNotThrow(() => processAntigravitySSEPayload("not-json", collected));
+  assert.doesNotThrow(() =>
+    processAntigravitySSEPayload("not-json", collected as unknown as AntigravityCollectedStream)
+  );
 });

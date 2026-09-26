@@ -23,6 +23,7 @@ import {
   createManagementSessionHeaders,
   TEST_MANAGEMENT_JWT_SECRET,
 } from "../helpers/managementSession.ts";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // ---------------------------------------------------------------------------
 // Isolated temp DB for this test suite
@@ -72,7 +73,7 @@ function buildUnauthRequest(url = "http://localhost/api/search/providers"): Requ
 
 /** Seed an active provider connection. */
 async function seedActiveConnection(provider: string) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name: `${provider}-test`,
@@ -81,13 +82,13 @@ async function seedActiveConnection(provider: string) {
     testStatus: "active",
     rateLimitedUntil: null,
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 /** Seed a rate-limited provider connection (rateLimitedUntil in future). */
 async function seedRateLimitedConnection(provider: string) {
   const future = new Date(Date.now() + 60_000).toISOString();
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name: `${provider}-ratelimited`,
@@ -96,13 +97,13 @@ async function seedRateLimitedConnection(provider: string) {
     testStatus: "unavailable",
     rateLimitedUntil: future,
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 /** Reset DB state between tests. */
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -116,7 +117,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ---------------------------------------------------------------------------

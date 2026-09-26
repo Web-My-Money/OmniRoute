@@ -14,6 +14,8 @@ import {
   resetHooks,
   type HookRegistration,
 } from "../../src/lib/plugins/hooks.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
+import type { PluginContext } from "../../src/lib/plugins/hooks.ts";
 
 // ── Setup ──
 
@@ -112,12 +114,12 @@ test("emitHookBlocking returns on first blocker", async () => {
 test("emitHookBlocking preserves accumulated body/metadata on block", async () => {
   registerHook("onRequest", "p1", () => ({ body: { from: "p1" }, metadata: { key: "value" } }));
   registerHook("onRequest", "blocker", (payload: unknown) => {
-    const p = payload as Record<string, unknown>;
+    const p = payload as LooseDeep;
     return {
       blocked: true,
       response: "blocked",
       body: p.body,
-      metadata: { ...((p.metadata as Record<string, unknown>) || {}), extra: "from-blocker" },
+      metadata: { ...((p.metadata as LooseDeep) || {}), extra: "from-blocker" },
     };
   });
   const result = await emitHookBlocking("onRequest", { body: {}, metadata: {} });
@@ -129,13 +131,23 @@ test("emitHookBlocking preserves accumulated body/metadata on block", async () =
 
 test("runOnRequest delegates to emitHookBlocking", async () => {
   registerHook("onRequest", "p1", () => ({ body: { modified: true } }));
-  const result = await runOnRequest({ requestId: "test", body: {}, model: "test", metadata: {} });
+  const result = await runOnRequest({
+    requestId: "test",
+    body: {},
+    model: "test",
+    metadata: {},
+  } as unknown as PluginContext);
   assert.deepEqual(result.body, { modified: true });
 });
 
 test("runOnRequest can block", async () => {
   registerHook("onRequest", "blocker", () => ({ blocked: true, response: { error: "nope" } }));
-  const result = await runOnRequest({ requestId: "test", body: {}, model: "test", metadata: {} });
+  const result = await runOnRequest({
+    requestId: "test",
+    body: {},
+    model: "test",
+    metadata: {},
+  } as unknown as PluginContext);
   assert.ok(result.blocked);
 });
 
@@ -144,7 +156,7 @@ test("runOnRequest can block", async () => {
 test("runOnResponse chains response through handlers", async () => {
   registerHook("onResponse", "p1", () => ({ response: { modified: "by-p1" } }));
   const result = await runOnResponse(
-    { requestId: "test", body: {}, model: "test", metadata: {} },
+    { requestId: "test", body: {}, model: "test", metadata: {} } as unknown as PluginContext,
     { original: true }
   );
   assert.deepEqual(result, { modified: "by-p1" });
@@ -153,7 +165,7 @@ test("runOnResponse chains response through handlers", async () => {
 test("runOnResponse passes through if no modification", async () => {
   registerHook("onResponse", "p1", () => undefined);
   const result = await runOnResponse(
-    { requestId: "test", body: {}, model: "test", metadata: {} },
+    { requestId: "test", body: {}, model: "test", metadata: {} } as unknown as PluginContext,
     { original: true }
   );
   assert.deepEqual(result, { original: true });
@@ -164,10 +176,10 @@ test("runOnResponse passes through if no modification", async () => {
 test("runOnError fires emitHook", async () => {
   let errorReceived: Error | null = null;
   registerHook("onError", "p1", (payload: unknown) => {
-    errorReceived = (payload as Record<string, unknown>).error as Error;
+    errorReceived = (payload as LooseDeep).error as Error;
   });
   await runOnError(
-    { requestId: "test", body: {}, model: "test", metadata: {} },
+    { requestId: "test", body: {}, model: "test", metadata: {} } as unknown as PluginContext,
     new Error("test error")
   );
   assert.ok(errorReceived);

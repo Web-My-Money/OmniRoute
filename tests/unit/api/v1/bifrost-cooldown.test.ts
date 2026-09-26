@@ -13,13 +13,17 @@ afterEach(() => {
 });
 
 test("bifrost cooldown defaults to a short retry suppression window", () => {
-  assert.equal(getBifrostFailureCooldownMs({}), 5000);
+  assert.equal(getBifrostFailureCooldownMs({} as NodeJS.ProcessEnv), 5000);
   assert.equal(
-    getBifrostFailureCooldownMs({ OMNIROUTE_BIFROST_FAILURE_COOLDOWN_MS: "250" }),
+    getBifrostFailureCooldownMs({
+      OMNIROUTE_BIFROST_FAILURE_COOLDOWN_MS: "250",
+    } as NodeJS.ProcessEnv),
     250
   );
   assert.equal(
-    getBifrostFailureCooldownMs({ OMNIROUTE_BIFROST_FAILURE_COOLDOWN_MS: "bad" }),
+    getBifrostFailureCooldownMs({
+      OMNIROUTE_BIFROST_FAILURE_COOLDOWN_MS: "bad",
+    } as NodeJS.ProcessEnv),
     5000
   );
 });

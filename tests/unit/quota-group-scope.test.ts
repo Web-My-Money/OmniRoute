@@ -22,6 +22,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-quota-group-scope-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -43,7 +44,7 @@ async function resetStorage() {
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       if (fs.existsSync(TEST_DATA_DIR)) {
-        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       }
       break;
     } catch (error: unknown) {
@@ -64,7 +65,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ---------------------------------------------------------------------------
@@ -76,18 +77,18 @@ test("resolveQuotaKeyScope: key in pool A sees ALL connections/providers of grou
   const groupG = groupsDb.createGroup("GroupG");
 
   // Create connections for each pool
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "conn-openrouter-g",
     apiKey: "sk-openrouter-g",
-  });
-  const connB = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const connB = (await providersDb.createProviderConnection({
     provider: "baidu",
     authType: "apikey",
     name: "conn-baidu-g",
     apiKey: "sk-baidu-g",
-  });
+  })) as JsonRecord & { id: string };
   const idA = (connA as Record<string, unknown>).id as string;
   const idB = (connB as Record<string, unknown>).id as string;
 
@@ -100,7 +101,10 @@ test("resolveQuotaKeyScope: key in pool A sees ALL connections/providers of grou
 
   // Must include both connections
   assert.ok(scope.connectionIds.includes(idA), "should include pool A connection");
-  assert.ok(scope.connectionIds.includes(idB), "should include pool B connection (group expansion)");
+  assert.ok(
+    scope.connectionIds.includes(idB),
+    "should include pool B connection (group expansion)"
+  );
   assert.equal(scope.connectionIds.length, 2, "exactly 2 connections");
 
   // Must include both providers
@@ -121,18 +125,18 @@ test("resolveQuotaKeyScope: key in pool from group H does NOT see group G models
   const groupG = groupsDb.createGroup("GroupG2");
   const groupH = groupsDb.createGroup("GroupH2");
 
-  const connG = await providersDb.createProviderConnection({
+  const connG = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "conn-g2",
     apiKey: "sk-g2",
-  });
-  const connH = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const connH = (await providersDb.createProviderConnection({
     provider: "baidu",
     authType: "apikey",
     name: "conn-h2",
     apiKey: "sk-h2",
-  });
+  })) as JsonRecord & { id: string };
   const idG = (connG as Record<string, unknown>).id as string;
   const idH = (connH as Record<string, unknown>).id as string;
 
@@ -160,18 +164,18 @@ test("resolveQuotaKeyScope: key in pool from group H does NOT see group G models
 test("resolveQuotaKeyScope: two pools in the same group expand once (deduplicated group slug)", async () => {
   const groupG = groupsDb.createGroup("GroupGDedup");
 
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "conn-dedup-a",
     apiKey: "sk-dedup-a",
-  });
-  const connB = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const connB = (await providersDb.createProviderConnection({
     provider: "baidu",
     authType: "apikey",
     name: "conn-dedup-b",
     apiKey: "sk-dedup-b",
-  });
+  })) as JsonRecord & { id: string };
   const idA = (connA as Record<string, unknown>).id as string;
   const idB = (connB as Record<string, unknown>).id as string;
 
@@ -207,7 +211,10 @@ test("filterModelsToQuotaPools: keeps both providers' qtSd/<group>/... models fr
   assert.equal(result.length, 2, "should return both providers' models for the group");
   assert.ok(result.some((m) => m.id === `qtSd/${groupSlug}/openrouter/gpt-5.5`));
   assert.ok(result.some((m) => m.id === `qtSd/${groupSlug}/baidu/ernie-4.5`));
-  assert.ok(!result.some((m) => m.id === `qtSd/otherg/openrouter/gpt-5.5`), "other group filtered out");
+  assert.ok(
+    !result.some((m) => m.id === `qtSd/otherg/openrouter/gpt-5.5`),
+    "other group filtered out"
+  );
   assert.ok(!result.some((m) => m.id === "gpt-5.5"), "non-quota model filtered out");
 });
 
@@ -233,14 +240,18 @@ test("resolveQuotaKeyScope: orphan pool in group that also has a valid pool — 
   const groupG = groupsDb.createGroup("GroupGPartial");
 
   // One valid connection pool
-  const connValid = await providersDb.createProviderConnection({
+  const connValid = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "conn-partial-valid",
     apiKey: "sk-partial-valid",
-  });
+  })) as JsonRecord & { id: string };
   const idValid = (connValid as Record<string, unknown>).id as string;
-  const validPool = poolsDb.createPool({ connectionId: idValid, name: "Valid Pool G", groupId: groupG.id });
+  const validPool = poolsDb.createPool({
+    connectionId: idValid,
+    name: "Valid Pool G",
+    groupId: groupG.id,
+  });
 
   // One orphan pool in the same group
   const orphanPool = poolsDb.createPool({
@@ -254,7 +265,10 @@ test("resolveQuotaKeyScope: orphan pool in group that also has a valid pool — 
 
   // The group has a valid connection (the validPool's connection) so group slug should be included
   const expectedSlug = quotaGroupSlug(groupG.name);
-  assert.ok(scope.poolSlugs.includes(expectedSlug), "group slug should be included since group has valid connection");
+  assert.ok(
+    scope.poolSlugs.includes(expectedSlug),
+    "group slug should be included since group has valid connection"
+  );
   assert.ok(scope.connectionIds.includes(idValid), "should include the valid pool's connection");
   assert.ok(scope.providers.includes("openrouter"), "should include openrouter from valid pool");
 

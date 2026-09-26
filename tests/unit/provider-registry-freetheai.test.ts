@@ -21,7 +21,7 @@ const { AGGREGATOR_PROVIDER_IDS } = await import("../../src/shared/constants/pro
 const { APIKEY_PROVIDERS } = await import("../../src/shared/constants/providers/apikey/index.ts");
 
 test("#6670 freetheai is registered in the executor registry with an OpenAI-compatible shape", () => {
-  const entry = (REGISTRY as Record<string, Record<string, unknown>>).freetheai;
+  const entry = (REGISTRY as unknown as Record<string, Record<string, unknown>>).freetheai;
   assert.ok(entry, "freetheai should be present in the executor registry");
   assert.equal(entry.format, "openai");
   assert.equal(entry.executor, "default");
@@ -30,12 +30,18 @@ test("#6670 freetheai is registered in the executor registry with an OpenAI-comp
   assert.equal(entry.authType, "apikey");
   assert.equal(entry.authHeader, "bearer");
   assert.equal(entry.passthroughModels, true);
-  assert.ok(Array.isArray(entry.models) && entry.models.length > 0, "must seed a fallback model list");
+  assert.ok(
+    Array.isArray(entry.models) && entry.models.length > 0,
+    "must seed a fallback model list"
+  );
 });
 
 test("#6670 freetheai resolves through getExecutor() as a DefaultExecutor instance", () => {
   const executor = getExecutor("freetheai");
-  assert.ok(executor instanceof DefaultExecutor, "freetheai has no custom executor — must fall through to DefaultExecutor");
+  assert.ok(
+    executor instanceof DefaultExecutor,
+    "freetheai has no custom executor — must fall through to DefaultExecutor"
+  );
 });
 
 test("#6670 freetheai is classified as an aggregator/gateway provider", () => {

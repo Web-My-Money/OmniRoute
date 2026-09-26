@@ -4,6 +4,10 @@ import dns from "node:dns";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { toRecord } from "../../src/shared/types/json.ts";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-images-"));
 
@@ -33,6 +37,22 @@ const { IMAGE_PROVIDERS, parseImageModel, getAllImageModels } =
   await import("../../open-sse/config/imageRegistry.ts");
 const { handleImageGeneration } = await import("../../open-sse/handlers/imageGeneration.ts");
 
+// Test-local loose accessors: handleImageGeneration returns a per-provider
+// result union — tests assert whichever branch the mocked provider produced,
+// so a loose record keeps assertions honest without per-site narrowing.
+type LooseImageResult = JsonRecord & {
+  success?: boolean;
+  status?: number;
+  error?: string | null;
+};
+const runImage = async (...args: Parameters<typeof handleImageGeneration>) =>
+  (await handleImageGeneration(...args)) as LooseImageResult;
+
+const resultRows = (r: unknown): JsonRecord[] => {
+  const rows = toRecord(toRecord(r).data).data;
+  return Array.isArray(rows) ? (rows as JsonRecord[]) : [];
+};
+
 function immediateTimeout(callback, _ms, ...args) {
   if (typeof callback === "function") callback(...args);
   return 0;
@@ -58,7 +78,7 @@ test("handleImageGeneration routes OpenAI-compatible providers and forwards imag
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers,
@@ -75,7 +95,7 @@ test("handleImageGeneration routes OpenAI-compatible providers and forwards imag
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "openai/gpt-image-2",
         prompt: "city skyline",
@@ -101,7 +121,7 @@ test("handleImageGeneration routes OpenAI-compatible providers and forwards imag
       response_format: "url",
       style: "vivid",
     });
-    assert.equal(result.data.data[0].url, "https://cdn.example.com/image.png");
+    assert.equal(resultRows(result)[0].url, "https://cdn.example.com/image.png");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -111,7 +131,7 @@ test("handleImageGeneration uses synthetic OpenAI-compatible routing for resolve
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       body: JSON.parse(String(options.body || "{}")),
@@ -125,7 +145,7 @@ test("handleImageGeneration uses synthetic OpenAI-compatible routing for resolve
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "custom-provider/super-image",
         prompt: "retro poster",
@@ -145,7 +165,7 @@ test("handleImageGeneration uses synthetic OpenAI-compatible routing for resolve
       model: "super-image",
       prompt: "retro poster",
     });
-    assert.equal(result.data.data[0].b64_json, "ZmFrZQ==");
+    assert.equal(resultRows(result)[0].b64_json, "ZmFrZQ==");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -156,7 +176,7 @@ test("handleImageGeneration polls KIE image tasks and returns URLs on success", 
   let createPayload;
   let pollUrl = "";
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     if (stringUrl === "https://api.kie.ai/api/v1/gpt4o-image/generate") {
       createPayload = JSON.parse(String(options.body || "{}"));
@@ -189,7 +209,7 @@ test("handleImageGeneration polls KIE image tasks and returns URLs on success", 
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "kie/gpt4o-image",
         prompt: "city skyline at dusk",
@@ -205,7 +225,7 @@ test("handleImageGeneration polls KIE image tasks and returns URLs on success", 
     assert.equal(createPayload.size, "1:1");
     assert.equal(createPayload.nVariants, 1);
     assert.match(pollUrl, /taskId=kie-task-1/);
-    assert.equal(result.data.data[0].url, "https://example.com/kie-image.png");
+    assert.equal(resultRows(result)[0].url, "https://example.com/kie-image.png");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -215,7 +235,7 @@ test("handleImageGeneration maps Hyperbolic size parameters and normalizes base6
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (_url, options = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     captured = JSON.parse(String(options.body || "{}"));
     return new Response(
       JSON.stringify({
@@ -226,7 +246,7 @@ test("handleImageGeneration maps Hyperbolic size parameters and normalizes base6
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "hyperbolic/FLUX.1-dev",
         prompt: "futuristic tower",
@@ -244,8 +264,8 @@ test("handleImageGeneration maps Hyperbolic size parameters and normalizes base6
       backend: "auto",
     });
     assert.equal(result.success, true);
-    assert.equal(result.data.data[0].b64_json, "aW1hZ2UtMQ==");
-    assert.equal(result.data.data[0].revised_prompt, "futuristic tower");
+    assert.equal(resultRows(result)[0].b64_json, "aW1hZ2UtMQ==");
+    assert.equal(resultRows(result)[0].revised_prompt, "futuristic tower");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -255,7 +275,7 @@ test("handleImageGeneration maps SD WebUI payload shape and batch size", async (
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (_url, options = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     captured = JSON.parse(String(options.body || "{}"));
     return new Response(
       JSON.stringify({
@@ -266,7 +286,7 @@ test("handleImageGeneration maps SD WebUI payload shape and batch size", async (
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "sdwebui/sdxl-base-1.0",
         prompt: "forest cabin",
@@ -295,14 +315,14 @@ test("handleImageGeneration maps SD WebUI payload shape and batch size", async (
         sd_model_checkpoint: "sdxl-base-1.0",
       },
     });
-    assert.equal(result.data.data[0].b64_json, "YmFzZTY0LWltYWdl");
+    assert.equal(resultRows(result)[0].b64_json, "YmFzZTY0LWltYWdl");
   } finally {
     globalThis.fetch = originalFetch;
   }
 });
 
 test("handleImageGeneration rejects invalid model strings", async () => {
-  const result = await handleImageGeneration({
+  const result = await runImage({
     body: {
       model: "not-a-provider-qualified-image-model",
       prompt: "oops",
@@ -317,7 +337,7 @@ test("handleImageGeneration rejects invalid model strings", async () => {
 });
 
 test("handleImageGeneration treats unknown provider prefixes as invalid image models", async () => {
-  const result = await handleImageGeneration({
+  const result = await runImage({
     body: {
       model: "mystery/model-1",
       prompt: "oops",
@@ -366,7 +386,7 @@ test("handleImageGeneration calls Fal AI with Key auth and normalizes URL result
   const originalFetch = globalThis.fetch;
   let requestCapture;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     if (stringUrl === "https://fal.run/fal-ai/flux-pro/v1.1-ultra") {
       requestCapture = {
@@ -394,7 +414,7 @@ test("handleImageGeneration calls Fal AI with Key auth and normalizes URL result
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "fal-ai/fal-ai/flux-pro/v1.1-ultra",
         prompt: "cinematic skyline",
@@ -414,7 +434,7 @@ test("handleImageGeneration calls Fal AI with Key auth and normalizes URL result
     assert.equal(requestCapture.body.image_url, "https://example.com/source.png");
     assert.equal(requestCapture.body.num_images, 2);
     assert.equal(requestCapture.body.sync_mode, true);
-    assert.equal(result.data.data[0].b64_json, "BQYH");
+    assert.equal(resultRows(result)[0].b64_json, "BQYH");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -424,7 +444,7 @@ test("handleImageGeneration routes Stability AI edit models to native endpoints"
   const originalFetch = globalThis.fetch;
   let requestCapture;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     if (stringUrl === "https://example.com/stability-input.png") {
       return new Response(new Uint8Array([4, 5]), {
@@ -450,7 +470,7 @@ test("handleImageGeneration routes Stability AI edit models to native endpoints"
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "stability-ai/inpaint",
         prompt: "replace the sky with aurora",
@@ -474,7 +494,7 @@ test("handleImageGeneration routes Stability AI edit models to native endpoints"
     assert.equal(requestCapture.body.get("output_format"), "png");
     assert.equal((requestCapture.body.get("image") as Blob).size, 2);
     assert.equal((requestCapture.body.get("mask") as Blob).size, 1);
-    assert.equal(result.data.data[0].b64_json, "c3RhYmlsaXR5LWltYWdl");
+    assert.equal(resultRows(result)[0].b64_json, "c3RhYmlsaXR5LWltYWdl");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -484,7 +504,7 @@ test("handleImageGeneration sends Stability AI text generation as multipart form
   const originalFetch = globalThis.fetch;
   let requestCapture;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     if (stringUrl === "https://api.stability.ai/v2beta/stable-image/generate/core") {
       requestCapture = {
@@ -503,7 +523,7 @@ test("handleImageGeneration sends Stability AI text generation as multipart form
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "stability-ai/stable-image-core",
         prompt: "city near beach",
@@ -524,7 +544,7 @@ test("handleImageGeneration sends Stability AI text generation as multipart form
     assert.equal(requestCapture.body.get("mode"), "text-to-image");
     assert.equal(requestCapture.body.get("aspect_ratio"), "1:1");
     assert.equal(requestCapture.body.get("output_format"), "png");
-    assert.equal(result.data.data[0].b64_json, "c3RhYmlsaXR5LWNvcmU=");
+    assert.equal(resultRows(result)[0].b64_json, "c3RhYmlsaXR5LWNvcmU=");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -536,8 +556,8 @@ test("handleImageGeneration polls Black Forest Labs results and sends base64 inp
   let createCapture;
   let pollCapture;
 
-  globalThis.setTimeout = immediateTimeout;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     if (stringUrl === "https://example.com/bfl-input.png") {
       return new Response(new Uint8Array([1, 2]), {
@@ -585,7 +605,7 @@ test("handleImageGeneration polls Black Forest Labs results and sends base64 inp
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "black-forest-labs/flux-kontext-pro",
         prompt: "change the car color to blue",
@@ -603,7 +623,7 @@ test("handleImageGeneration polls Black Forest Labs results and sends base64 inp
     assert.equal(createCapture.body.input_image, "AQI=");
     assert.equal(createCapture.body.aspect_ratio, "9:16");
     assert.equal(pollCapture.headers["x-key"], "bfl-key");
-    assert.equal(result.data.data[0].b64_json, "CQgH");
+    assert.equal(resultRows(result)[0].b64_json, "CQgH");
   } finally {
     globalThis.fetch = originalFetch;
     globalThis.setTimeout = originalSetTimeout;
@@ -614,7 +634,7 @@ test("handleImageGeneration calls native Recraft endpoint with model in body", a
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers,
@@ -630,7 +650,7 @@ test("handleImageGeneration calls native Recraft endpoint with model in body", a
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "recraft/recraftv3",
         prompt: "vector fox logo",
@@ -650,7 +670,7 @@ test("handleImageGeneration calls native Recraft endpoint with model in body", a
       size: "1024x1024",
       style: "digital_illustration",
     });
-    assert.equal(result.data.data[0].url, "https://cdn.example.com/recraft.png");
+    assert.equal(resultRows(result)[0].url, "https://cdn.example.com/recraft.png");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -660,7 +680,7 @@ test("handleImageGeneration uploads source images to Topaz and returns base64 ou
   const originalFetch = globalThis.fetch;
   let requestCapture;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     if (stringUrl === "https://example.com/topaz-input.png") {
       return new Response(new Uint8Array([1, 2, 3]), {
@@ -689,7 +709,7 @@ test("handleImageGeneration uploads source images to Topaz and returns base64 ou
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "topaz/topaz-enhance",
         prompt: "enhance image",
@@ -707,7 +727,7 @@ test("handleImageGeneration uploads source images to Topaz and returns base64 ou
     assert.equal(requestCapture.outputWidth, "2048");
     assert.equal(requestCapture.outputHeight, "2048");
     assert.ok(requestCapture.image instanceof File);
-    assert.equal(result.data.data[0].b64_json, "BwcH");
+    assert.equal(resultRows(result)[0].b64_json, "BwcH");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -717,7 +737,7 @@ test("handleImageGeneration sends Antigravity image requests with native image_g
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers,
@@ -747,7 +767,7 @@ test("handleImageGeneration sends Antigravity image requests with native image_g
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "antigravity/gemini-3.1-flash-image-preview",
         prompt: "painted beach",
@@ -780,7 +800,7 @@ test("handleImageGeneration sends Antigravity image requests with native image_g
         imageConfig: { aspectRatio: "1:1" },
       },
     });
-    assert.deepEqual(result.data.data, [
+    assert.deepEqual(resultRows(result), [
       { b64_json: "YmFzZTY0LWdlbWluaQ==", revised_prompt: "painted beach" },
     ]);
   } finally {
@@ -795,7 +815,7 @@ test("handleImageGeneration rejects Antigravity image requests without projectId
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "antigravity/gemini-3.1-flash-image",
         prompt: "painted forest",
@@ -817,7 +837,7 @@ test("handleImageGeneration sends Antigravity image requests without billing pro
   const originalFetch = globalThis.fetch;
   const calls = [];
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     calls.push({
       url: String(url),
       headers: options.headers,
@@ -846,7 +866,7 @@ test("handleImageGeneration sends Antigravity image requests without billing pro
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "antigravity/gemini-3.1-flash-image",
         prompt: "painted forest",
@@ -860,7 +880,7 @@ test("handleImageGeneration sends Antigravity image requests without billing pro
     assert.equal(calls.length, 1);
     assert.equal(calls[0].headers["x-goog-user-project"], undefined);
     assert.equal(calls[0].body.project, "project-123");
-    assert.deepEqual(result.data.data, [
+    assert.deepEqual(resultRows(result), [
       { b64_json: "YmFzZTY0LXJldHJ5", revised_prompt: "painted forest" },
     ]);
   } finally {
@@ -885,7 +905,7 @@ test("handleImageGeneration sanitizes Antigravity upstream error payloads", asyn
     );
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "antigravity/gemini-3.1-flash-image",
         prompt: "painted forest",
@@ -897,7 +917,7 @@ test("handleImageGeneration sanitizes Antigravity upstream error payloads", asyn
 
     assert.equal(result.success, false);
     assert.equal(result.status, 500);
-    assert.equal(result.error.error.message, "failed at <path>");
+    assert.equal((result.error as unknown as LooseDeep).error.message, "failed at <path>");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -907,7 +927,7 @@ test("handleImageGeneration retries Nebius against the fallback URL after retrya
   const originalFetch = globalThis.fetch;
   const calls = [];
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     calls.push({
       url: String(url),
       body: JSON.parse(String(options.body || "{}")),
@@ -928,7 +948,7 @@ test("handleImageGeneration retries Nebius against the fallback URL after retrya
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "nebius/black-forest-labs/flux-dev",
         prompt: "fallback skyline",
@@ -946,7 +966,7 @@ test("handleImageGeneration retries Nebius against the fallback URL after retrya
       model: "black-forest-labs/flux-dev",
       prompt: "fallback skyline",
     });
-    assert.deepEqual(result.data.data, [{ url: "https://cdn.example.com/fallback.png" }]);
+    assert.deepEqual(resultRows(result), [{ url: "https://cdn.example.com/fallback.png" }]);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -956,7 +976,7 @@ test("handleImageGeneration supports NanoBanana synchronous flash responses", as
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       body: JSON.parse(String(options.body || "{}")),
@@ -970,7 +990,7 @@ test("handleImageGeneration supports NanoBanana synchronous flash responses", as
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "nanobanana/nanobanana-flash",
         prompt: "banana robot",
@@ -990,7 +1010,7 @@ test("handleImageGeneration supports NanoBanana synchronous flash responses", as
       numImages: 2,
       image_size: "9:16",
     });
-    assert.deepEqual(result.data.data, [
+    assert.deepEqual(resultRows(result), [
       { b64_json: "bmFub2JhbmFuYS1pbWFnZQ==", revised_prompt: "banana robot" },
     ]);
   } finally {
@@ -1002,7 +1022,7 @@ test("handleImageGeneration uses the NanoBanana pro endpoint and keeps sync data
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       body: JSON.parse(String(options.body || "{}")),
@@ -1017,7 +1037,7 @@ test("handleImageGeneration uses the NanoBanana pro endpoint and keeps sync data
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "nanobanana/nanobanana-pro",
         prompt: "banana pro",
@@ -1037,7 +1057,7 @@ test("handleImageGeneration uses the NanoBanana pro endpoint and keeps sync data
       aspectRatio: "1:1",
       imageUrls: ["https://example.com/ref.png"],
     });
-    assert.deepEqual(result.data.data, [
+    assert.deepEqual(resultRows(result), [
       { url: "https://cdn.example.com/pro-image.png", revised_prompt: "banana pro" },
     ]);
   } finally {
@@ -1049,7 +1069,7 @@ test("handleImageGeneration polls NanoBanana task results and converts URLs to b
   const originalFetch = globalThis.fetch;
   const calls = [];
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     calls.push(stringUrl);
 
@@ -1080,7 +1100,7 @@ test("handleImageGeneration polls NanoBanana task results and converts URLs to b
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "nanobanana/nanobanana-flash",
         prompt: "banana async",
@@ -1096,7 +1116,9 @@ test("handleImageGeneration polls NanoBanana task results and converts URLs to b
       "https://api.nanobananaapi.ai/api/v1/nanobanana/record-info?taskId=task-1",
       "https://cdn.example.com/result.png",
     ]);
-    assert.deepEqual(result.data.data, [{ b64_json: "AQIDBA==", revised_prompt: "banana async" }]);
+    assert.deepEqual(resultRows(result), [
+      { b64_json: "AQIDBA==", revised_prompt: "banana async" },
+    ]);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -1112,7 +1134,7 @@ test("handleImageGeneration rejects NanoBanana submissions that never return a t
     });
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "nanobanana/nanobanana-flash",
         prompt: "banana missing task",
@@ -1134,8 +1156,8 @@ test("handleImageGeneration executes ComfyUI workflows and normalizes image outp
   const originalSetTimeout = globalThis.setTimeout;
   let promptBody;
 
-  globalThis.setTimeout = immediateTimeout;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
 
     if (stringUrl === "http://localhost:8188/prompt") {
@@ -1169,7 +1191,7 @@ test("handleImageGeneration executes ComfyUI workflows and normalizes image outp
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "comfyui/flux-dev",
         prompt: "comfy forest",
@@ -1185,7 +1207,7 @@ test("handleImageGeneration executes ComfyUI workflows and normalizes image outp
     assert.equal(promptBody.prompt["5"].inputs.width, 768);
     assert.equal(promptBody.prompt["5"].inputs.height, 512);
     assert.equal(promptBody.prompt["5"].inputs.batch_size, 2);
-    assert.deepEqual(result.data.data, [{ b64_json: "CQkJ", revised_prompt: "comfy forest" }]);
+    assert.deepEqual(resultRows(result), [{ b64_json: "CQkJ", revised_prompt: "comfy forest" }]);
   } finally {
     globalThis.fetch = originalFetch;
     globalThis.setTimeout = originalSetTimeout;
@@ -1198,7 +1220,7 @@ test("handleImageGeneration returns provider errors when ComfyUI submission fail
   globalThis.fetch = async () => new Response("boom", { status: 500 });
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "comfyui/flux-dev",
         prompt: "broken workflow",
@@ -1230,7 +1252,7 @@ test("handleImageGeneration supports dynamically registered Imagen3 providers", 
     supportedSizes: ["1024x1024"],
   };
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers,
@@ -1247,7 +1269,7 @@ test("handleImageGeneration supports dynamically registered Imagen3 providers", 
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "imagen3/image-gen",
         prompt: "vertex skyline",
@@ -1265,7 +1287,7 @@ test("handleImageGeneration supports dynamically registered Imagen3 providers", 
       aspect_ratio: "16:9",
       number_of_images: 1,
     });
-    assert.deepEqual(result.data.data, [
+    assert.deepEqual(resultRows(result), [
       { b64_json: "aW1hZ2VuLTM=", revised_prompt: "vertex skyline" },
     ]);
   } finally {
@@ -1301,7 +1323,7 @@ test("handleImageGeneration preserves Imagen3 data arrays when providers already
     );
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "imagen3/image-gen",
         prompt: "normalized payload",
@@ -1311,7 +1333,9 @@ test("handleImageGeneration preserves Imagen3 data arrays when providers already
     });
 
     assert.equal(result.success, true);
-    assert.deepEqual(result.data.data, [{ url: "https://cdn.example.com/already-normalized.png" }]);
+    assert.deepEqual(resultRows(result), [
+      { url: "https://cdn.example.com/already-normalized.png" },
+    ]);
   } finally {
     globalThis.fetch = originalFetch;
     if (originalProvider) {
@@ -1341,7 +1365,7 @@ test("handleImageGeneration returns provider errors when Imagen3 fetch throws", 
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "imagen3/image-gen",
         prompt: "broken imagen",
@@ -1376,7 +1400,7 @@ test("handleImageGeneration uses the default synthetic base URL for resolved cus
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "custom-provider/super-image",
         prompt: "fallback base url",
@@ -1403,7 +1427,7 @@ test("handleImageGeneration logs OpenAI-compatible upstream failures and transpo
   globalThis.fetch = async () => new Response("primary unavailable", { status: 503 });
 
   try {
-    const failed = await handleImageGeneration({
+    const failed = await runImage({
       body: {
         model: "openai/gpt-image-2",
         prompt: "broken upstream",
@@ -1424,7 +1448,7 @@ test("handleImageGeneration logs OpenAI-compatible upstream failures and transpo
   };
 
   try {
-    const errored = await handleImageGeneration({
+    const errored = await runImage({
       body: {
         model: "openai/gpt-image-2",
         prompt: "transport issue",
@@ -1463,7 +1487,7 @@ test("handleImageGeneration logs Nebius fallback attempts before succeeding", as
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "nebius/black-forest-labs/flux-dev",
         prompt: "fallback logging",
@@ -1489,7 +1513,7 @@ test("handleImageGeneration surfaces Hyperbolic upstream failures and fetch exce
   globalThis.fetch = async () => new Response("hyperbolic unavailable", { status: 429 });
 
   try {
-    const failed = await handleImageGeneration({
+    const failed = await runImage({
       body: {
         model: "hyperbolic/FLUX.1-dev",
         prompt: "too busy",
@@ -1510,7 +1534,7 @@ test("handleImageGeneration surfaces Hyperbolic upstream failures and fetch exce
   };
 
   try {
-    const errored = await handleImageGeneration({
+    const errored = await runImage({
       body: {
         model: "hyperbolic/FLUX.1-dev",
         prompt: "network issue",
@@ -1545,7 +1569,7 @@ test("handleImageGeneration handles NanoBanana missing statusUrl, failed tasks a
     });
 
   try {
-    const missingStatusUrl = await handleImageGeneration({
+    const missingStatusUrl = await runImage({
       body: {
         model: "nanobanana/nanobanana-flash",
         prompt: "missing status url",
@@ -1580,7 +1604,7 @@ test("handleImageGeneration handles NanoBanana missing statusUrl, failed tasks a
   };
 
   try {
-    const failedTask = await handleImageGeneration({
+    const failedTask = await runImage({
       body: {
         model: "nanobanana/nanobanana-flash",
         prompt: "failed task",
@@ -1615,7 +1639,7 @@ test("handleImageGeneration handles NanoBanana missing statusUrl, failed tasks a
   };
 
   try {
-    const completedWithoutPayload = await handleImageGeneration({
+    const completedWithoutPayload = await runImage({
       body: {
         model: "nanobanana/nanobanana-flash",
         prompt: "empty payload",
@@ -1626,7 +1650,7 @@ test("handleImageGeneration handles NanoBanana missing statusUrl, failed tasks a
     });
 
     assert.equal(completedWithoutPayload.success, true);
-    assert.deepEqual(completedWithoutPayload.data.data, []);
+    assert.deepEqual(resultRows(completedWithoutPayload), []);
     assert.equal(
       log.entries.some(
         (entry) => entry.level === "warn" && /completed without image payload/.test(entry.message)
@@ -1645,7 +1669,7 @@ test("handleImageGeneration surfaces SD WebUI upstream and transport failures", 
   globalThis.fetch = async () => new Response("sdwebui error", { status: 500 });
 
   try {
-    const failed = await handleImageGeneration({
+    const failed = await runImage({
       body: {
         model: "sdwebui/sdxl-base-1.0",
         prompt: "broken sdwebui",
@@ -1666,7 +1690,7 @@ test("handleImageGeneration surfaces SD WebUI upstream and transport failures", 
   };
 
   try {
-    const errored = await handleImageGeneration({
+    const errored = await runImage({
       body: {
         model: "sdwebui/sdxl-base-1.0",
         prompt: "sdwebui transport issue",
@@ -1704,7 +1728,7 @@ test("handleImageGeneration normalizes Imagen3 single-image payloads and non-ok 
     });
 
   try {
-    const singleObject = await handleImageGeneration({
+    const singleObject = await runImage({
       body: {
         model: "imagen3/image-gen",
         prompt: "single image",
@@ -1714,7 +1738,7 @@ test("handleImageGeneration normalizes Imagen3 single-image payloads and non-ok 
     });
 
     assert.equal(singleObject.success, true);
-    assert.deepEqual(singleObject.data.data, [
+    assert.deepEqual(resultRows(singleObject), [
       { b64_json: "aW1hZ2VuLXNpbmdsZQ==", url: undefined, revised_prompt: "single image" },
     ]);
   } finally {
@@ -1724,7 +1748,7 @@ test("handleImageGeneration normalizes Imagen3 single-image payloads and non-ok 
   globalThis.fetch = async () => new Response("imagen failed", { status: 503 });
 
   try {
-    const failed = await handleImageGeneration({
+    const failed = await runImage({
       body: {
         model: "imagen3/image-gen",
         prompt: "imagen failed",
@@ -1790,7 +1814,7 @@ test("extractImageGenerationCalls ignores unrelated events and malformed lines",
 test("handleImageGeneration routes codex image requests through /responses with image_generation tool", async () => {
   const originalFetch = globalThis.fetch;
   let captured;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers,
@@ -1812,7 +1836,7 @@ test("handleImageGeneration routes codex image requests through /responses with 
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: {
         model: "codex/gpt-5.6-sol",
         prompt: "Draw a happy red kitten",
@@ -1835,8 +1859,8 @@ test("handleImageGeneration routes codex image requests through /responses with 
     assert.deepEqual(captured.body.tools, [{ type: "image_generation", output_format: "png" }]);
     assert.equal(captured.body.input[0].role, "user");
     assert.equal(captured.body.input[0].content[0].text, "Draw a happy red kitten");
-    assert.equal(result.data.data[0].b64_json, "a2l0dGVu");
-    assert.equal(result.data.data[0].revised_prompt, "happy red kitten");
+    assert.equal(resultRows(result)[0].b64_json, "a2l0dGVu");
+    assert.equal(resultRows(result)[0].revised_prompt, "happy red kitten");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -1852,14 +1876,14 @@ test("handleImageGeneration (codex) returns a data URL when response_format is n
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: { model: "cx/gpt-5.6-sol", prompt: "kitten" },
       credentials: { accessToken: "codex-token" },
       log: null,
     });
     assert.equal(result.success, true);
-    assert.equal(result.data.data[0].url, "data:image/png;base64,YWJjZA==");
-    assert.equal(result.data.data[0].b64_json, undefined);
+    assert.equal(resultRows(result)[0].url, "data:image/png;base64,YWJjZA==");
+    assert.equal(resultRows(result)[0].b64_json, undefined);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -1871,7 +1895,7 @@ test("handleImageGeneration (codex) fans out n>1 requests in parallel", async ()
   let releaseFirst;
   let pending;
 
-  globalThis.fetch = async (_url, options = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     const index = calls.length;
     calls.push(JSON.parse(String(options.body || "{}")));
     const sse = buildCodexSSE([
@@ -1884,7 +1908,7 @@ test("handleImageGeneration (codex) fans out n>1 requests in parallel", async ()
     ]);
 
     if (index === 0) {
-      return new Promise((resolve) => {
+      return new Promise<Response>((resolve) => {
         releaseFirst = () => resolve(new Response(sse, { status: 200 }));
       });
     }
@@ -1916,7 +1940,7 @@ test("handleImageGeneration (codex) fans out n>1 requests in parallel", async ()
 
     assert.equal(result.success, true);
     assert.deepEqual(
-      result.data.data.map((item) => item.b64_json),
+      resultRows(result).map((item) => item.b64_json),
       ["Zmlyc3Q=", "c2Vjb25k"]
     );
   } finally {
@@ -1936,7 +1960,7 @@ test("handleImageGeneration (codex) surfaces an error when no image_generation_c
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: { model: "codex/gpt-5.6-sol", prompt: "kitten" },
       credentials: { accessToken: "codex-token" },
       log: null,
@@ -1962,7 +1986,7 @@ test("handleImageGeneration (codex) sanitizes upstream HTTP errors", async () =>
     );
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: { model: "codex/gpt-5.6-sol", prompt: "kitten" },
       credentials: { accessToken: "codex-token" },
       log: null,
@@ -1981,7 +2005,7 @@ test("handleImageGeneration (codex) sanitizes upstream HTTP errors", async () =>
 test("handleImageGeneration (codex) forwards size and maps GPT-Image quality to hosted tool config", async () => {
   const originalFetch = globalThis.fetch;
   let captured;
-  globalThis.fetch = async (_url, options = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     captured = JSON.parse(String(options.body || "{}"));
     const sse = buildCodexSSE([
       { type: "image_generation_call", id: "ig_1", status: "completed", result: "YWJj" },
@@ -1990,7 +2014,7 @@ test("handleImageGeneration (codex) forwards size and maps GPT-Image quality to 
   };
 
   try {
-    await handleImageGeneration({
+    await runImage({
       body: {
         model: "codex/gpt-5.6-sol",
         prompt: "kitten",
@@ -2009,14 +2033,14 @@ test("handleImageGeneration (codex) forwards size and maps GPT-Image quality to 
       },
     ]);
 
-    await handleImageGeneration({
+    await runImage({
       body: { model: "codex/gpt-5.6-sol", prompt: "kitten", quality: "standard" },
       credentials: { accessToken: "codex-token" },
       log: null,
     });
     assert.equal(captured.tools[0].quality, "medium");
 
-    await handleImageGeneration({
+    await runImage({
       body: { model: "codex/gpt-5.6-sol", prompt: "kitten" },
       credentials: { accessToken: "codex-token" },
       log: null,
@@ -2046,7 +2070,7 @@ test("handleImageGeneration (codex) marks the ChatGPT-account model-access 400 a
     );
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: { model: "codex/gpt-5.6-sol", prompt: "kitten" },
       credentials: { accessToken: "codex-token" },
       log: null,
@@ -2068,7 +2092,7 @@ test("handleImageGeneration (codex) does not mark an ordinary 400 as retryable",
     });
 
   try {
-    const result = await handleImageGeneration({
+    const result = await runImage({
       body: { model: "codex/gpt-5.6-sol", prompt: "kitten" },
       credentials: { accessToken: "codex-token" },
       log: null,

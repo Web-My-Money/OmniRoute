@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-vscode-responses-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -28,7 +29,7 @@ type MetadataModel = {
 async function resetStorage() {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -39,7 +40,7 @@ test.beforeEach(async () => {
 test.after(() => {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("vscode model metadata routes keep Responses text-generation models", async () => {
@@ -48,7 +49,7 @@ test("vscode model metadata routes keep Responses text-generation models", async
     password: "hashed-password",
     requireAuthForModels: true,
   });
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: "codex-vscode-responses-model",
@@ -56,7 +57,7 @@ test("vscode model metadata routes keep Responses text-generation models", async
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
   await modelsDb.replaceSyncedAvailableModelsForConnection("codex", connection.id, [
     {
       id: "future-codex-responses",
@@ -86,9 +87,7 @@ test("vscode model metadata routes keep Responses text-generation models", async
   ]);
   const rawBody = (await rawResponse.json()) as { data?: MetadataModel[] };
   const groupedBody = (await groupedResponse.json()) as { data?: MetadataModel[] };
-  const rawModel = (rawBody.data || []).find(
-    (entry) => entry.id === "cx/future-codex-responses"
-  );
+  const rawModel = (rawBody.data || []).find((entry) => entry.id === "cx/future-codex-responses");
   const groupedModel = (groupedBody.data || []).find(
     (entry) => entry.root === "future-codex-responses"
   );

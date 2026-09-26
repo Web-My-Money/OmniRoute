@@ -4,6 +4,7 @@ import { restoreClaudeToolName } from "../../open-sse/services/claudeCodeToolRem
 import { openaiToClaudeResponse } from "../../open-sse/translator/response/openai-to-claude.ts";
 import { translateNonStreamingResponse } from "../../open-sse/handlers/responseTranslator.ts";
 import { FORMATS } from "../../open-sse/translator/formats.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 interface ClaudeEvent {
   type: string;
@@ -150,7 +151,7 @@ describe("translateNonStreamingResponse restores Claude Code tool casing", () =>
       FORMATS.CLAUDE,
       null
     );
-    const toolUse = out.content.find((b) => b.type === "tool_use");
+    const toolUse = (out.content as LooseDeep).find((b) => b.type === "tool_use");
     assert.equal(toolUse.name, "Bash");
     assert.equal(toolUse.input.command, "echo ok");
   });
@@ -162,7 +163,7 @@ describe("translateNonStreamingResponse restores Claude Code tool casing", () =>
       FORMATS.CLAUDE,
       new Map([["croncreate", "croncreate"]])
     );
-    assert.equal(out.content.find((b) => b.type === "tool_use").name, "CronCreate");
+    assert.equal((out.content as LooseDeep).find((b) => b.type === "tool_use").name, "CronCreate");
   });
 
   it("request-side aliases still win over canonical casing", () => {
@@ -172,7 +173,10 @@ describe("translateNonStreamingResponse restores Claude Code tool casing", () =>
       FORMATS.CLAUDE,
       new Map([["read", "mcp__fs__read"]])
     );
-    assert.equal(out.content.find((b) => b.type === "tool_use").name, "mcp__fs__read");
+    assert.equal(
+      (out.content as LooseDeep).find((b) => b.type === "tool_use").name,
+      "mcp__fs__read"
+    );
   });
 
   it("keeps canonical casing the upstream echoed verbatim when no alias map exists (live repro #11085)", () => {
@@ -186,7 +190,7 @@ describe("translateNonStreamingResponse restores Claude Code tool casing", () =>
       FORMATS.CLAUDE,
       null
     );
-    assert.equal(out.content.find((b) => b.type === "tool_use").name, "CronCreate");
+    assert.equal((out.content as LooseDeep).find((b) => b.type === "tool_use").name, "CronCreate");
     assert.equal(restoreClaudeToolName("Bash", null), "Bash");
     assert.equal(restoreClaudeToolName("WebSearch", null), "WebSearch");
     assert.equal(restoreClaudeToolName("TaskCreate", new Map()), "TaskCreate");

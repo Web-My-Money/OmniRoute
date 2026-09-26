@@ -8,6 +8,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-access-token-1290-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -20,7 +21,7 @@ async function resetStorage() {
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       if (fs.existsSync(TEST_DATA_DIR)) {
-        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       }
       break;
     } catch (error: unknown) {
@@ -41,24 +42,24 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("createProviderConnection: authType access_token never dedups — same email creates a new row each time", async () => {
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "access_token",
     accessToken: "eyJfirst.token.sig",
     email: "user@example.com",
     testStatus: "active",
-  });
-  const second = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const second = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "access_token",
     accessToken: "eyJsecond.token.sig",
     email: "user@example.com",
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   assert.notEqual(first.id, second.id);
 
@@ -71,42 +72,42 @@ test("createProviderConnection: authType access_token never dedups — same emai
 });
 
 test("createProviderConnection: authType access_token falls back to email for the connection name", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "access_token",
     accessToken: "eyJtoken.sig",
     email: "labeled@example.com",
-  });
+  })) as JsonRecord & { id: string };
 
   assert.equal(conn.name, "labeled@example.com");
 });
 
 test("createProviderConnection: authType access_token prefers an explicit name over email", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "access_token",
     accessToken: "eyJtoken.sig",
     email: "labeled@example.com",
     name: "My Bare Token",
-  });
+  })) as JsonRecord & { id: string };
 
   assert.equal(conn.name, "My Bare Token");
 });
 
 test("createProviderConnection: authType access_token does not collide with an existing oauth row for the same email", async () => {
-  const oauthConn = await providersDb.createProviderConnection({
+  const oauthConn = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     accessToken: "oauth-access",
     refreshToken: "oauth-refresh",
     email: "shared@example.com",
-  });
-  const tokenConn = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const tokenConn = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "access_token",
     accessToken: "eyJbare.token.sig",
     email: "shared@example.com",
-  });
+  })) as JsonRecord & { id: string };
 
   assert.notEqual(oauthConn.id, tokenConn.id);
 

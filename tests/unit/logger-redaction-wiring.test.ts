@@ -7,7 +7,7 @@ import { join } from "node:path";
 // Configure file logging BEFORE importing the logger (buildLogger runs at import time).
 const dir = mkdtempSync(join(tmpdir(), "omniroute-logredact-"));
 const logFile = join(dir, "app.log");
-process.env.NODE_ENV = "production"; // JSON to file, no pino-pretty
+(process.env as Record<string, string | undefined>).NODE_ENV = "production"; // JSON to file, no pino-pretty
 process.env.APP_LOG_TO_FILE = "true";
 process.env.APP_LOG_FILE_PATH = logFile;
 process.env.APP_LOG_LEVEL = "debug";

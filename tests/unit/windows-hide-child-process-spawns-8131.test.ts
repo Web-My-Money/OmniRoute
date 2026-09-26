@@ -22,7 +22,7 @@ import { buildServiceSpawnOptions } from "../../src/lib/services/ServiceSupervis
 import { buildCliproxyapiSpawnOptions } from "../../src/lib/versionManager/processManager.ts";
 
 test("ServiceSupervisor: buildServiceSpawnOptions sets windowsHide: true (#8131)", () => {
-  const opts = buildServiceSpawnOptions({ FOO: "bar" }, "/tmp/cwd");
+  const opts = buildServiceSpawnOptions({ FOO: "bar" } as NodeJS.ProcessEnv, "/tmp/cwd");
   assert.equal(opts.windowsHide, true);
   // Sanity: the rest of the previously-inline options object still round-trips.
   assert.equal(opts.env?.FOO, "bar");

@@ -12,6 +12,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-repro-6912-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -20,12 +22,10 @@ const core = await import("../../src/lib/db/core.ts");
 const { clearCache } = await import("../../src/lib/semanticCache.ts");
 const { clearIdempotency } = await import("../../src/lib/idempotencyLayer.ts");
 const { clearInflight } = await import("../../open-sse/services/requestDedup.ts");
-const { resetAll: resetAccountSemaphores } = await import(
-  "../../open-sse/services/accountSemaphore.ts"
-);
-const { handleChatCore, clearUpstreamProxyConfigCache } = await import(
-  "../../open-sse/handlers/chatCore.ts"
-);
+const { resetAll: resetAccountSemaphores } =
+  await import("../../open-sse/services/accountSemaphore.ts");
+const { handleChatCore, clearUpstreamProxyConfigCache } =
+  await import("../../open-sse/handlers/chatCore.ts");
 const { resetPayloadRulesConfigForTests } = await import("../../open-sse/services/payloadRules.ts");
 
 const originalFetch = globalThis.fetch;
@@ -69,7 +69,7 @@ function buildOpenAIResponse(text = "ok") {
 async function invokeChatCore({ body, provider, model, endpoint = "/v1/chat/completions" }) {
   const calls: Array<{ url: string; headers: Record<string, string>; parsedBody: unknown }> = [];
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const headers = toPlainHeaders(init.headers);
     const captured = {
       url: String(url),
@@ -83,7 +83,7 @@ async function invokeChatCore({ body, provider, model, endpoint = "/v1/chat/comp
 
   try {
     const requestBody = structuredClone(body);
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body: requestBody,
       modelInfo: { provider, model, extendedContext: false },
       credentials: { apiKey: "sk-test", providerSpecificData: {} },
@@ -115,7 +115,7 @@ async function resetStorage() {
   clearIdempotency();
   clearInflight();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -127,7 +127,7 @@ test.afterEach(async () => {
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#6912: chatCore renames max_completion_tokens to max_tokens for volcengine/DeepSeek-V4-Flash", async () => {
@@ -142,7 +142,11 @@ test("#6912: chatCore renames max_completion_tokens to max_tokens for volcengine
     },
   });
 
-  assert.equal(call.body.max_tokens, 30, "expected max_completion_tokens to be normalized to max_tokens for volcengine");
+  assert.equal(
+    call.body.max_tokens,
+    30,
+    "expected max_completion_tokens to be normalized to max_tokens for volcengine"
+  );
   assert.equal(call.body.max_completion_tokens, undefined);
 });
 
@@ -159,7 +163,11 @@ test("#6912: chatCore does not clobber an already-present max_tokens", async () 
     },
   });
 
-  assert.equal(call.body.max_tokens, 500, "existing max_tokens must win over max_completion_tokens");
+  assert.equal(
+    call.body.max_tokens,
+    500,
+    "existing max_tokens must win over max_completion_tokens"
+  );
   assert.equal(call.body.max_completion_tokens, undefined);
 });
 

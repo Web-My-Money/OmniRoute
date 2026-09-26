@@ -28,6 +28,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-opencode-free-routing-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -39,17 +40,17 @@ const { getModelInfoCore } = await import("../../open-sse/services/model.ts");
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("bare big-pickle routes to an opencode-family provider when an opencode connection is active", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "opencode",
     authType: "apikey",
     name: "opencode-active-big-pickle",
     isActive: true,
     testStatus: "unknown",
-  });
+  })) as JsonRecord & { id: string };
 
   const info = await getModelInfoCore("big-pickle", null);
   assert.ok(
@@ -60,13 +61,13 @@ test("bare big-pickle routes to an opencode-family provider when an opencode con
 });
 
 test("bare deepseek-v4-flash-free (-free suffix) routes to an opencode-family provider when active", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "opencode",
     authType: "apikey",
     name: "opencode-active-free-suffix",
     isActive: true,
     testStatus: "unknown",
-  });
+  })) as JsonRecord & { id: string };
 
   const info = await getModelInfoCore("deepseek-v4-flash-free", null);
   assert.ok(
@@ -77,20 +78,20 @@ test("bare deepseek-v4-flash-free (-free suffix) routes to an opencode-family pr
 });
 
 test("big-pickle still resolves to opencode when BOTH opencode + opencode-zen connections are active but their synced catalogs are stale and omit big-pickle [core regression]", async () => {
-  const connOc = await providersDb.createProviderConnection({
+  const connOc = (await providersDb.createProviderConnection({
     provider: "opencode",
     authType: "apikey",
     name: "opencode-stale-catalog",
     isActive: true,
     testStatus: "unknown",
-  });
-  const connZen = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const connZen = (await providersDb.createProviderConnection({
     provider: "opencode-zen",
     authType: "apikey",
     name: "opencode-zen-stale-catalog",
     isActive: true,
     testStatus: "unknown",
-  });
+  })) as JsonRecord & { id: string };
 
   // Simulate a live catalog sync that is stale/incomplete for both
   // connections — neither includes "big-pickle" — which would otherwise

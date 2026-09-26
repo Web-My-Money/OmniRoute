@@ -15,6 +15,8 @@ import {
 } from "../../../open-sse/services/compression/types.ts";
 
 const baseConfig: CompressionConfig = {
+  engines: {},
+  activeComboId: null,
   enabled: true,
   defaultMode: "lite",
   autoTriggerTokens: 0,

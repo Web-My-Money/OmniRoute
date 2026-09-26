@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-zed-hosted-models-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -36,12 +37,12 @@ async function resetStorage() {
   globalThis.fetch = originalFetch;
   zedAuth.clearZedCaches();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 async function seedZedConnection(accessToken: string) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "zed-hosted",
     authType: "oauth",
     name: `zed-${Math.random().toString(16).slice(2, 8)}`,
@@ -49,7 +50,7 @@ async function seedZedConnection(accessToken: string) {
     isActive: true,
     testStatus: "active",
     providerSpecificData: { userId: 4242, organizationId: "org-personal" },
-  });
+  })) as JsonRecord & { id: string };
 }
 
 async function callRoute(connectionId: string, search = "?refresh=true") {
@@ -67,7 +68,7 @@ test.after(async () => {
   globalThis.fetch = originalFetch;
   zedAuth.clearZedCaches();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("zed-hosted model discovery mints an LLM token and lists the live catalog", async () => {
@@ -160,7 +161,7 @@ test("zed-hosted model discovery resolves the organization when the connection h
   // (src/lib/oauth/providers/zed-hosted.ts) — a connection can legitimately land
   // without one, in which case the mint has to discover it via /client/users/me.
   const accessToken = "zed-account-token-no-org";
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "zed-hosted",
     authType: "oauth",
     name: `zed-${Math.random().toString(16).slice(2, 8)}`,
@@ -168,7 +169,7 @@ test("zed-hosted model discovery resolves the organization when the connection h
     isActive: true,
     testStatus: "active",
     providerSpecificData: { userId: 4242 },
-  });
+  })) as JsonRecord & { id: string };
   const seen: string[] = [];
 
   globalThis.fetch = async (url, init) => {

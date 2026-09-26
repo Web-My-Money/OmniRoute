@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
+import type { MemoryType } from "../../src/lib/memory/types.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-chatcore-sanitization-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -99,6 +102,16 @@ async function invokeChatCore({
   apiKeyInfo = null,
   userAgent = "unit-test",
   responseFactory,
+}: {
+  body?: JsonRecord;
+  accept?: string;
+  provider?: string;
+  model?: string;
+  endpoint?: string;
+  credentials?: { apiKey: string; providerSpecificData: JsonRecord };
+  apiKeyInfo?: JsonRecord | null;
+  userAgent?: string;
+  responseFactory?: (captured: JsonRecord) => Response | Promise<Response>;
 } = {}) {
   const originalFetch = globalThis.fetch;
   const calls = [];
@@ -112,7 +125,7 @@ async function invokeChatCore({
       !jsonStreamDefault &&
       !String(accept).includes("json"));
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const parsedBody = init.body ? JSON.parse(String(init.body)) : null;
     const captured = {
       url: String(url),
@@ -126,7 +139,7 @@ async function invokeChatCore({
 
   try {
     const requestBody = structuredClone(body);
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body: requestBody,
       modelInfo: { provider, model, extendedContext: false },
       credentials: structuredClone(credentials),
@@ -138,6 +151,11 @@ async function invokeChatCore({
       },
       apiKeyInfo,
       userAgent,
+      onCredentialsRefreshed: null,
+      onRequestSuccess: null,
+      onStreamFailure: null,
+      onDisconnect: null,
+      connectionId: null,
     });
 
     return { result, call: calls.at(-1), calls };
@@ -152,7 +170,7 @@ test.after(() => {
     db.close();
   } catch {}
 
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("chatCore sanitization normalizes max_output_tokens into max_tokens", async () => {
@@ -569,7 +587,7 @@ test("chatCore injects memories when enabled and memories are found", async () =
   await createMemory({
     apiKeyId,
     sessionId: "session-1",
-    type: "factual",
+    type: "factual" as MemoryType,
     key: "preference",
     content: "User prefers concise Rust examples.",
     metadata: {},
@@ -633,7 +651,7 @@ test("chatCore does not share or persist memories when apiKeyInfo is missing", a
   await createMemory({
     apiKeyId: "local",
     sessionId: "shared-local-session",
-    type: "factual",
+    type: "factual" as MemoryType,
     key: "pref:theme",
     content: "Shared local memory should stay isolated.",
     metadata: {},
@@ -828,3 +846,5 @@ test("chatCore request memory extraction for responses input ignores assistant i
   assert.match(memories[0].content, /tea/i);
   assert.doesNotMatch(memories[0].content, /coffee/i);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

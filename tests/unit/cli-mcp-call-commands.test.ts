@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ---- helpers ----
 
@@ -37,9 +39,9 @@ function makeMcpStreamFetch(
   toolResult: { content: { type: string; text: string }[] } = {
     content: [{ type: "text", text: "hello" }],
   },
-  callStatus = 200,
+  callStatus = 200
 ) {
-  return ((url: string, opts: unknown) => {
+  return ((url: string, opts: MockRequestInit) => {
     const u = String(url);
     if (!u.includes("/api/mcp/stream")) {
       return Promise.resolve(makeResp({ error: "not found" }, 404));
@@ -53,19 +55,14 @@ function makeMcpStreamFetch(
         makeResp(
           { jsonrpc: "2.0", id: 1, result: { protocolVersion: "2024-11-05", capabilities: {} } },
           200,
-          { "mcp-session-id": "test-session-123" },
-        ),
+          { "mcp-session-id": "test-session-123" }
+        )
       );
     }
 
     // tools/call
     if (body && body.method === "tools/call") {
-      return Promise.resolve(
-        makeResp(
-          { jsonrpc: "2.0", id: 2, result: toolResult },
-          callStatus,
-        ),
-      );
+      return Promise.resolve(makeResp({ jsonrpc: "2.0", id: 2, result: toolResult }, callStatus));
     }
 
     return Promise.resolve(makeResp({ error: "unknown method" }, 400));
@@ -77,7 +74,7 @@ function makeMcpStreamFetch(
 test("mcp call sends JSON-RPC initialize then tools/call", async () => {
   const calls: Array<{ url: string; body: unknown }> = [];
   const origFetch = globalThis.fetch;
-  globalThis.fetch = ((url: string, opts: unknown) => {
+  globalThis.fetch = ((url: string, opts: MockRequestInit) => {
     const u = String(url);
     const body = opts?.body ? JSON.parse(opts.body) : null;
     calls.push({ url: u, body });
@@ -87,8 +84,8 @@ test("mcp call sends JSON-RPC initialize then tools/call", async () => {
         makeResp(
           { jsonrpc: "2.0", id: 1, result: { protocolVersion: "2024-11-05", capabilities: {} } },
           200,
-          { "mcp-session-id": "sess-1" },
-        ),
+          { "mcp-session-id": "sess-1" }
+        )
       );
     }
     if (body && body.method === "tools/call") {
@@ -97,29 +94,27 @@ test("mcp call sends JSON-RPC initialize then tools/call", async () => {
           jsonrpc: "2.0",
           id: 2,
           result: { content: [{ type: "text", text: "ok" }] },
-        }),
+        })
       );
     }
     return Promise.resolve(makeResp({ error: "unknown" }, 400));
   }) as any;
 
   try {
-    const { runMcpCallCommand } = await import(
-      "../../bin/cli/commands/mcp.mjs"
-    );
+    const { runMcpCallCommand } = await import("../../bin/cli/commands/mcp.mjs");
     const exitCode = await runMcpCallCommand(
       "omniroute_get_health",
       {},
       { stream: false },
-      { baseUrl: "http://localhost:20128" },
+      { baseUrl: "http://localhost:20128" }
     );
     assert.equal(exitCode, 0);
 
     assert.equal(calls.length, 2);
-    assert.equal(calls[0].body.method, "initialize");
-    assert.equal(calls[1].body.method, "tools/call");
-    assert.equal(calls[1].body.params.name, "omniroute_get_health");
-    assert.deepEqual(calls[1].body.params.arguments, {});
+    assert.equal((calls[0].body as LooseDeep).method, "initialize");
+    assert.equal((calls[1].body as LooseDeep).method, "tools/call");
+    assert.equal((calls[1].body as LooseDeep).params.name, "omniroute_get_health");
+    assert.deepEqual((calls[1].body as LooseDeep).params.arguments, {});
   } finally {
     globalThis.fetch = origFetch;
   }
@@ -128,15 +123,15 @@ test("mcp call sends JSON-RPC initialize then tools/call", async () => {
 test("mcp call passes session-id header on tools/call", async () => {
   let callHeaders: Record<string, string> = {};
   const origFetch = globalThis.fetch;
-  globalThis.fetch = ((_url: string, opts: unknown) => {
+  globalThis.fetch = ((_url: string, opts: MockRequestInit) => {
     const body = opts?.body ? JSON.parse(opts.body) : null;
     if (body && body.method === "initialize") {
       return Promise.resolve(
         makeResp(
           { jsonrpc: "2.0", id: 1, result: { protocolVersion: "2024-11-05", capabilities: {} } },
           200,
-          { "mcp-session-id": "sess-abc" },
-        ),
+          { "mcp-session-id": "sess-abc" }
+        )
       );
     }
     if (body && body.method === "tools/call") {
@@ -146,21 +141,19 @@ test("mcp call passes session-id header on tools/call", async () => {
           jsonrpc: "2.0",
           id: 2,
           result: { content: [{ type: "text", text: "ok" }] },
-        }),
+        })
       );
     }
     return Promise.resolve(makeResp({ error: "unknown" }, 400));
   }) as any;
 
   try {
-    const { runMcpCallCommand } = await import(
-      "../../bin/cli/commands/mcp.mjs"
-    );
+    const { runMcpCallCommand } = await import("../../bin/cli/commands/mcp.mjs");
     const exitCode = await runMcpCallCommand(
       "test_tool",
       { key: "val" },
       { stream: false },
-      { baseUrl: "http://localhost:20128" },
+      { baseUrl: "http://localhost:20128" }
     );
     assert.equal(exitCode, 0);
     assert.equal(callHeaders["mcp-session-id"], "sess-abc");
@@ -176,15 +169,8 @@ test("mcp call prints result content to stdout", async () => {
   });
 
   const output = await captureStdout(async () => {
-    const { runMcpCallCommand } = await import(
-      "../../bin/cli/commands/mcp.mjs"
-    );
-    await runMcpCallCommand(
-      "test",
-      {},
-      { stream: false },
-      { baseUrl: "http://localhost:20128" },
-    );
+    const { runMcpCallCommand } = await import("../../bin/cli/commands/mcp.mjs");
+    await runMcpCallCommand("test", {}, { stream: false }, { baseUrl: "http://localhost:20128" });
   });
 
   globalThis.fetch = origFetch;
@@ -193,15 +179,15 @@ test("mcp call prints result content to stdout", async () => {
 
 test("mcp call prints error on non-ok response", async () => {
   const origFetch = globalThis.fetch;
-  globalThis.fetch = ((_url: string, opts: unknown) => {
+  globalThis.fetch = ((_url: string, opts: MockRequestInit) => {
     const body = opts?.body ? JSON.parse(opts.body) : null;
     if (body && body.method === "initialize") {
       return Promise.resolve(
         makeResp(
           { jsonrpc: "2.0", id: 1, result: { protocolVersion: "2024-11-05", capabilities: {} } },
           200,
-          { "mcp-session-id": "sess-1" },
-        ),
+          { "mcp-session-id": "sess-1" }
+        )
       );
     }
     if (body && body.method === "tools/call") {
@@ -211,14 +197,12 @@ test("mcp call prints error on non-ok response", async () => {
   }) as any;
 
   try {
-    const { runMcpCallCommand } = await import(
-      "../../bin/cli/commands/mcp.mjs"
-    );
+    const { runMcpCallCommand } = await import("../../bin/cli/commands/mcp.mjs");
     const exitCode = await runMcpCallCommand(
       "bad_tool",
       {},
       { stream: false },
-      { baseUrl: "http://localhost:20128" },
+      { baseUrl: "http://localhost:20128" }
     );
     assert.equal(exitCode, 1);
   } finally {
@@ -228,15 +212,15 @@ test("mcp call prints error on non-ok response", async () => {
 
 test("mcp call with stream reads SSE data", async () => {
   const origFetch = globalThis.fetch;
-  globalThis.fetch = ((_url: string, opts: unknown) => {
+  globalThis.fetch = ((_url: string, opts: MockRequestInit) => {
     const body = opts?.body ? JSON.parse(opts.body) : null;
     if (body && body.method === "initialize") {
       return Promise.resolve(
         makeResp(
           { jsonrpc: "2.0", id: 1, result: { protocolVersion: "2024-11-05", capabilities: {} } },
           200,
-          { "mcp-session-id": "sess-stream" },
-        ),
+          { "mcp-session-id": "sess-stream" }
+        )
       );
     }
     if (body && body.method === "tools/call") {
@@ -261,15 +245,8 @@ test("mcp call with stream reads SSE data", async () => {
   }) as any;
 
   const output = await captureStdout(async () => {
-    const { runMcpCallCommand } = await import(
-      "../../bin/cli/commands/mcp.mjs"
-    );
-    await runMcpCallCommand(
-      "test",
-      {},
-      { stream: true },
-      { baseUrl: "http://localhost:20128" },
-    );
+    const { runMcpCallCommand } = await import("../../bin/cli/commands/mcp.mjs");
+    await runMcpCallCommand("test", {}, { stream: true }, { baseUrl: "http://localhost:20128" });
   });
 
   globalThis.fetch = origFetch;
@@ -297,9 +274,7 @@ test("mcp status reads online field", async () => {
   }) as any;
 
   const output = await captureStdout(async () => {
-    const { runMcpStatusCommand } = await import(
-      "../../bin/cli/commands/mcp.mjs"
-    );
+    const { runMcpStatusCommand } = await import("../../bin/cli/commands/mcp.mjs");
     const exitCode = await runMcpStatusCommand({});
     assert.equal(exitCode, 0);
   });
@@ -324,16 +299,14 @@ test("mcp status json mode prints full object", async () => {
           transport: "stdio",
           enabled: true,
           toolsCount: 107,
-        }),
+        })
       );
     }
     return Promise.resolve(makeResp({ error: "not found" }, 404));
   }) as any;
 
   const output = await captureStdout(async () => {
-    const { runMcpStatusCommand } = await import(
-      "../../bin/cli/commands/mcp.mjs"
-    );
+    const { runMcpStatusCommand } = await import("../../bin/cli/commands/mcp.mjs");
     const exitCode = await runMcpStatusCommand({ json: true });
     assert.equal(exitCode, 0);
   });

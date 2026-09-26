@@ -3361,9 +3361,6 @@
   "tests/integration/memory-pipeline.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 1
-    },
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
     }
   },
   "tests/integration/memory-reindex.test.ts": {
@@ -3841,7 +3838,7 @@
   },
   "tests/unit/cc-compatible-provider.test.ts": {
     "@typescript-eslint/no-explicit-any": {
-      "count": 37
+      "count": 36
     }
   },
   "tests/unit/chat-body-admission.test.ts": {
@@ -4103,9 +4100,6 @@
   "tests/unit/cli-oauth-commands.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 20
-    },
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
     }
   },
   "tests/unit/cli-oneproxy-commands.test.ts": {
@@ -4915,11 +4909,6 @@
       "count": 19
     }
   },
-  "tests/unit/eviction-guards-codexQuotaFetcher.test.ts": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
-    }
-  },
   "tests/unit/executor-agy.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 1
@@ -4943,11 +4932,6 @@
   "tests/unit/executor-cloudflare-ai.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 4
-    }
-  },
-  "tests/unit/executor-codex.test.ts": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 3
     }
   },
   "tests/unit/executor-default-base.test.ts": {
@@ -5155,11 +5139,6 @@
       "count": 1
     }
   },
-  "tests/unit/lib/managementCliToken.test.ts": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
-    }
-  },
   "tests/unit/lib/warmupScheduler/redisCircuitBreakerStore.test.ts": {
     "@typescript-eslint/no-unused-vars": {
       "count": 3
@@ -5197,7 +5176,7 @@
   },
   "tests/unit/memory-cache-safe-injection.test.ts": {
     "@typescript-eslint/no-explicit-any": {
-      "count": 4
+      "count": 3
     }
   },
   "tests/unit/memory-embedding-remote.test.ts": {
@@ -5207,11 +5186,6 @@
   },
   "tests/unit/memory-extraction.test.ts": {
     "@typescript-eslint/no-unused-vars": {
-      "count": 1
-    }
-  },
-  "tests/unit/memory-glm-injection.test.ts": {
-    "@typescript-eslint/no-explicit-any": {
       "count": 1
     }
   },
@@ -5280,11 +5254,6 @@
       "count": 16
     }
   },
-  "tests/unit/model-sync-scheduler.test.ts": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 1
-    }
-  },
   "tests/unit/model-test-route.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 3
@@ -5351,11 +5320,6 @@
   "tests/unit/ocr-route.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 8
-    }
-  },
-  "tests/unit/oidc-callback.test.ts": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 2
     }
   },
   "tests/unit/openai-tool-opaque-object-schema.test.ts": {
@@ -5864,11 +5828,6 @@
       "count": 83
     }
   },
-  "tests/unit/responses-transformer.test.ts": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
-    }
-  },
   "tests/unit/responses-translation-fixes.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 35
@@ -6207,11 +6166,6 @@
       "count": 1
     }
   },
-  "tests/unit/token-health-check-circuit-breaker.test.ts": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 3
-    }
-  },
   "tests/unit/token-health-check.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 10
@@ -6513,14 +6467,6 @@
       "count": 1
     }
   },
-  "tests/unit/version-manager.test.ts": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 1
-    },
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
-    }
-  },
   "tests/unit/versionManager-orchestrator.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 2
@@ -6553,11 +6499,6 @@
     }
   },
   "tests/unit/waitForServer-tcp-fallback-6800.test.mjs": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
-    }
-  },
-  "tests/unit/warmupScheduler.test.ts": {
     "@typescript-eslint/no-unused-vars": {
       "count": 1
     }

@@ -14,9 +14,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-const { claudeToOpenAIRequest } = await import(
-  "../../open-sse/translator/request/claude-to-openai.ts"
-);
+const { claudeToOpenAIRequest } =
+  await import("../../open-sse/translator/request/claude-to-openai.ts");
 
 test("Claude -> OpenAI strips x-anthropic-billing-header from array system entries", () => {
   const result = claudeToOpenAIRequest(
@@ -29,7 +28,7 @@ test("Claude -> OpenAI strips x-anthropic-billing-header from array system entri
       messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
     },
     true
-  ) as { messages: Array<{ role: string; content: string }> };
+  ) as unknown as { messages: Array<{ role: string; content: string }> };
 
   const sys = result.messages.find((m) => m.role === "system");
   assert.ok(sys, "system message present");
@@ -38,16 +37,8 @@ test("Claude -> OpenAI strips x-anthropic-billing-header from array system entri
     false,
     "billing header line must be stripped"
   );
-  assert.equal(
-    sys!.content.includes("Real system rule A"),
-    true,
-    "real rule must survive"
-  );
-  assert.equal(
-    sys!.content.includes("Real system rule B"),
-    true,
-    "second block must survive"
-  );
+  assert.equal(sys!.content.includes("Real system rule A"), true, "real rule must survive");
+  assert.equal(sys!.content.includes("Real system rule B"), true, "second block must survive");
 });
 
 test("Claude -> OpenAI strips x-anthropic-billing-header from a string system field", () => {
@@ -58,7 +49,7 @@ test("Claude -> OpenAI strips x-anthropic-billing-header from a string system fi
       messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
     },
     true
-  ) as { messages: Array<{ role: string; content: string }> };
+  ) as unknown as { messages: Array<{ role: string; content: string }> };
 
   const sys = result.messages.find((m) => m.role === "system");
   assert.ok(sys, "system message present");
@@ -73,7 +64,7 @@ test("Claude -> OpenAI leaves unrelated system content intact (no false positive
       messages: [{ role: "user", content: [{ type: "text", text: "hi" }] }],
     },
     true
-  ) as { messages: Array<{ role: string; content: string }> };
+  ) as unknown as { messages: Array<{ role: string; content: string }> };
 
   const sys = result.messages.find((m) => m.role === "system");
   assert.equal(sys!.content, "Normal system prompt with no billing header.");

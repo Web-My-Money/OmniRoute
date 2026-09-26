@@ -17,10 +17,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
-const TEST_DATA_DIR = fs.mkdtempSync(
-  path.join(os.tmpdir(), "omniroute-quota-combo-groups-")
-);
+const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-quota-combo-groups-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
 
 const core = await import("../../src/lib/db/core.ts");
@@ -29,9 +28,8 @@ const providersDb = await import("../../src/lib/db/providers.ts");
 const combosDb = await import("../../src/lib/db/combos.ts");
 const { createGroup } = await import("../../src/lib/db/quotaGroups.ts");
 const { syncQuotaCombos } = await import("../../src/lib/quota/quotaCombos.ts");
-const { isQuotaModelName, parseQuotaModelName, quotaGroupSlug } = await import(
-  "../../src/lib/quota/quotaModelNaming.ts"
-);
+const { isQuotaModelName, parseQuotaModelName, quotaGroupSlug } =
+  await import("../../src/lib/quota/quotaModelNaming.ts");
 
 // ---------------------------------------------------------------------------
 // Lifecycle
@@ -42,7 +40,7 @@ async function resetStorage() {
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       if (fs.existsSync(TEST_DATA_DIR)) {
-        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       }
       break;
     } catch (error: unknown) {
@@ -63,7 +61,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ---------------------------------------------------------------------------
@@ -89,12 +87,12 @@ test("G1: two pools in same group → combos named qtSd/<group>/provider/model (
   const group = createGroup("MyGroup");
 
   // Pool A: openrouter
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "g1-or-conn",
     apiKey: "sk-g1-or",
-  });
+  })) as JsonRecord & { id: string };
   const idA = (connA as Record<string, unknown>).id as string;
   const poolA = poolsDb.createPool({
     connectionId: idA,
@@ -103,12 +101,12 @@ test("G1: two pools in same group → combos named qtSd/<group>/provider/model (
   });
 
   // Pool B: baidu
-  const connB = await providersDb.createProviderConnection({
+  const connB = (await providersDb.createProviderConnection({
     provider: "baidu",
     authType: "apikey",
     name: "g1-baidu-conn",
     apiKey: "sk-g1-baidu",
-  });
+  })) as JsonRecord & { id: string };
   const idB = (connB as Record<string, unknown>).id as string;
   const poolB = poolsDb.createPool({
     connectionId: idB,
@@ -139,7 +137,10 @@ test("G1: two pools in same group → combos named qtSd/<group>/provider/model (
     const p = parseQuotaModelName(c.name);
     return p?.groupSlug === groupSlug && p?.provider === "openrouter";
   });
-  assert.ok(orCombos.length > 0, `Expected openrouter combos under qtSd/${groupSlug}/openrouter/...`);
+  assert.ok(
+    orCombos.length > 0,
+    `Expected openrouter combos under qtSd/${groupSlug}/openrouter/...`
+  );
 
   // Combos for baidu must exist under the group slug
   const baiduCombos = allCombos.filter((c) => {
@@ -158,12 +159,12 @@ test("G2: re-syncing pool A (openrouter) does not delete pool B (baidu) combos i
   const groupSlug = quotaGroupSlug(group.name);
 
   // Pool A: openrouter
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "g2-or-conn",
     apiKey: "sk-g2-or",
-  });
+  })) as JsonRecord & { id: string };
   const idA = (connA as Record<string, unknown>).id as string;
   const poolA = poolsDb.createPool({
     connectionId: idA,
@@ -172,12 +173,12 @@ test("G2: re-syncing pool A (openrouter) does not delete pool B (baidu) combos i
   });
 
   // Pool B: baidu
-  const connB = await providersDb.createProviderConnection({
+  const connB = (await providersDb.createProviderConnection({
     provider: "baidu",
     authType: "apikey",
     name: "g2-baidu-conn",
     apiKey: "sk-g2-baidu",
-  });
+  })) as JsonRecord & { id: string };
   const idB = (connB as Record<string, unknown>).id as string;
   const poolB = poolsDb.createPool({
     connectionId: idB,
@@ -227,12 +228,12 @@ test("G2: re-syncing pool A (openrouter) does not delete pool B (baidu) combos i
 
 test("G3: pool in default 'group-demo' group produces combos under groupdemo slug", async () => {
   // Create a pool without specifying a groupId → defaults to "group-demo"
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "apikey",
     name: "g3-glm-conn",
     apiKey: "sk-g3-glm",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as Record<string, unknown>).id as string;
   const pool = poolsDb.createPool({
     connectionId: connId,
@@ -268,12 +269,12 @@ test("G4: stale same-group same-provider combo is pruned on re-sync", async () =
   const group = createGroup("PruneGroup");
   const groupSlug = quotaGroupSlug(group.name); // "prunegroup"
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "g4-or-conn",
     apiKey: "sk-g4-or",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as Record<string, unknown>).id as string;
   const pool = poolsDb.createPool({
     connectionId: connId,
@@ -287,7 +288,14 @@ test("G4: stale same-group same-provider combo is pruned on re-sync", async () =
   const staleComboName = `qtSd/${groupSlug}/openrouter/fake-stale-model`;
   await combosDb.createCombo({
     name: staleComboName,
-    models: [{ kind: "model", model: "openrouter/fake-stale-model", providerId: "openrouter", weight: 100 }],
+    models: [
+      {
+        kind: "model",
+        model: "openrouter/fake-stale-model",
+        providerId: "openrouter",
+        weight: 100,
+      },
+    ],
     strategy: "priority",
     isHidden: true,
   });

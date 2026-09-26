@@ -36,7 +36,7 @@ test("TransformStream invokes transformer.cancel() when the readable side is can
       cancelled = true;
       seenReason = reason;
     },
-  });
+  } as unknown as Transformer);
 
   const writer = ts.writable.getWriter();
   const reader = ts.readable.getReader();
@@ -81,7 +81,7 @@ test("a transformer cancel handler can clear an interval (the leak this guards)"
     cancel() {
       stop?.();
     },
-  });
+  } as unknown as Transformer);
 
   const reader = ts.readable.getReader();
   await reader.cancel(new Error("disconnect"));

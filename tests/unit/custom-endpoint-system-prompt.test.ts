@@ -16,10 +16,9 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
-const { injectCustomSystemPrompt } = await import(
-  "../../open-sse/services/systemPrompt.ts"
-);
+const { injectCustomSystemPrompt } = await import("../../open-sse/services/systemPrompt.ts");
 
 // ─── injectCustomSystemPrompt ────────────────────────────────────────────────
 
@@ -31,7 +30,7 @@ test("injectCustomSystemPrompt: appends to existing string system message", () =
     ],
   };
   const result = injectCustomSystemPrompt(body, "Always respond formally.");
-  const sysMsg = result.messages.find((m) => m.role === "system");
+  const sysMsg = (result.messages as LooseDeep).find((m) => m.role === "system");
   assert.ok(sysMsg, "system message must exist");
   assert.ok(
     typeof sysMsg.content === "string" && sysMsg.content.includes("You are a helpful assistant."),
@@ -51,7 +50,7 @@ test("injectCustomSystemPrompt: appends to existing array-content system message
     ],
   };
   const result = injectCustomSystemPrompt(body, "Speak like a pirate.");
-  const sysMsg = result.messages.find((m) => m.role === "system");
+  const sysMsg = (result.messages as LooseDeep).find((m) => m.role === "system");
   assert.ok(sysMsg, "system message must exist");
   assert.ok(Array.isArray(sysMsg.content), "content must remain array");
   const texts = (sysMsg.content as Array<{ type: string; text: string }>).map((c) => c.text);
@@ -105,7 +104,7 @@ test("injectCustomSystemPrompt: no-op when body has _skipSystemPrompt flag", () 
     _skipSystemPrompt: true,
     messages: [{ role: "user", content: "Hello" }],
   };
-  const result = injectCustomSystemPrompt(body as Record<string, unknown>, "Be formal.");
+  const result = injectCustomSystemPrompt(body as LooseDeep, "Be formal.");
   assert.deepEqual(result, body, "body unchanged when _skipSystemPrompt is set");
 });
 
@@ -144,11 +143,7 @@ test("settings defaults include customSystemPromptEnabled=false and customSystem
     false,
     "customSystemPromptEnabled default is false"
   );
-  assert.equal(
-    settings.customSystemPrompt,
-    "",
-    "customSystemPrompt default is empty string"
-  );
+  assert.equal(settings.customSystemPrompt, "", "customSystemPrompt default is empty string");
 
   t.after(() => {
     resetDbInstance();

@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { ProviderLimitsCacheEntry } from "../../src/lib/db/providerLimits.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-kimi-billing-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -83,12 +85,12 @@ test.afterEach(() => {
 test.after(() => {
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("kimi-coding exposes the official boosterWallet Extra Usage contract", async () => {
   const calls: Array<{ url: string; headers: Headers }> = [];
-  globalThis.fetch = (async (input: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = (async (input: string | URL | Request, init: MockRequestInit = {}) => {
     calls.push({ url: String(input), headers: new Headers(init.headers) });
     return new Response(
       JSON.stringify(
@@ -311,7 +313,7 @@ test("currency precedence and monthly-cap fields match the official parser", asy
 
 test("both Kimi auth modes receive billing without additional requests", async () => {
   const calls: Array<{ headers: Headers }> = [];
-  globalThis.fetch = (async (_input: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = (async (_input: string | URL | Request, init: MockRequestInit = {}) => {
     calls.push({ headers: new Headers(init.headers) });
     return new Response(JSON.stringify(successPayload()), { status: 200 });
   }) as typeof fetch;
@@ -414,6 +416,20 @@ test("message-only Kimi failures preserve last-known-good billing", () => {
     fetchedAt: "2026-08-19T00:00:00.000Z",
   };
 
-  assert.equal(mergeProviderLimitsCacheEntry("kimi-coding", failure, previous), previous);
-  assert.equal(mergeProviderLimitsCacheEntry("kimi-coding-apikey", failure, previous), previous);
+  assert.equal(
+    mergeProviderLimitsCacheEntry(
+      "kimi-coding",
+      failure,
+      previous as unknown as ProviderLimitsCacheEntry
+    ),
+    previous
+  );
+  assert.equal(
+    mergeProviderLimitsCacheEntry(
+      "kimi-coding-apikey",
+      failure,
+      previous as unknown as ProviderLimitsCacheEntry
+    ),
+    previous
+  );
 });

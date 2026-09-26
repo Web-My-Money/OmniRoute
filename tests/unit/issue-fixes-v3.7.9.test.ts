@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 // Import the translator to test through the public API
 import { claudeToOpenAIRequest } from "../../open-sse/translator/request/claude-to-openai.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 describe("#1914 — normalizeCodexTools: Chat Completions → Responses format", () => {
   // We test the codex normalizer indirectly through the executor's transformRequest.
@@ -40,7 +41,7 @@ describe("#1914 — normalizeCodexTools: Chat Completions → Responses format",
     };
 
     // Verify the legacy shape has no top-level name (the bug symptom)
-    assert.equal(typeof legacyTool.name, "undefined");
+    assert.equal(typeof (legacyTool as LooseDeep).name, "undefined");
     assert.equal(typeof legacyTool.function.name, "string");
   });
 
@@ -53,12 +54,12 @@ describe("#1914 — normalizeCodexTools: Chat Completions → Responses format",
     };
 
     const rawName =
-      typeof invalidTool.name === "string"
-        ? invalidTool.name
+      typeof (invalidTool as LooseDeep).name === "string"
+        ? (invalidTool as LooseDeep).name
         : invalidTool.function &&
             typeof invalidTool.function === "object" &&
-            typeof invalidTool.function.name === "string"
-          ? invalidTool.function.name
+            typeof ((invalidTool as LooseDeep).function as LooseDeep).name === "string"
+          ? (invalidTool.function as LooseDeep).name
           : "";
     const name = rawName.trim();
     assert.equal(name, "", "tool with no name should resolve to empty string");
@@ -80,8 +81,8 @@ describe("#1898 — Zero-argument MCP tool schema normalization", () => {
 
     const result = claudeToOpenAIRequest("gpt-4o", claudeBody, false);
 
-    assert.ok(result.tools, "should have tools");
-    assert.equal(result.tools.length, 1);
+    assert.ok((result as LooseDeep).tools, "should have tools");
+    assert.equal((result.tools as unknown[]).length, 1);
     const params = result.tools[0].function.parameters;
     assert.equal(params.type, "object");
     assert.deepStrictEqual(params.properties, {}, "should inject empty properties");

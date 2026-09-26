@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { looseCreds } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-codex-quota-hydrate-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -13,6 +14,7 @@ const providersDb = await import("../../src/lib/db/providers.ts");
 const quotaSnapshotsDb = await import("../../src/lib/db/quotaSnapshots.ts");
 const quotaCache = await import("../../src/domain/quotaCache.ts");
 const auth = await import("../../src/sse/services/auth.ts");
+const getCreds = looseCreds(auth.getProviderCredentials);
 
 function futureIso(ms = 60_000) {
   return new Date(Date.now() + ms).toISOString();
@@ -21,7 +23,7 @@ function futureIso(ms = 60_000) {
 async function resetStorage() {
   core.resetDbInstance();
   quotaCache.__clearForTests();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -31,11 +33,11 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("Codex selection ignores hydrated Spark-only exhaustion for normal Codex models", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: "codex-normal-hydrated-spark-exhausted",
@@ -45,7 +47,7 @@ test("Codex selection ignores hydrated Spark-only exhaustion for normal Codex mo
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
   const connectionId = (connection as { id: string }).id;
 
   const snapshots = [
@@ -71,13 +73,8 @@ test("Codex selection ignores hydrated Spark-only exhaustion for normal Codex mo
   // the exhausted Spark snapshot into the connection-level exhausted flag.
   quotaCache.__clearForTests();
 
-  const normalSelected = await auth.getProviderCredentials("codex", null, null, "codex/gpt-5.5");
-  const sparkSelected = await auth.getProviderCredentials(
-    "codex",
-    null,
-    null,
-    "gpt-5.3-codex-spark"
-  );
+  const normalSelected = await getCreds("codex", null, null, "codex/gpt-5.5");
+  const sparkSelected = await getCreds("codex", null, null, "gpt-5.3-codex-spark");
 
   assert.equal(normalSelected.connectionId, connectionId);
   assert.equal(sparkSelected.allRateLimited, true);
@@ -85,7 +82,7 @@ test("Codex selection ignores hydrated Spark-only exhaustion for normal Codex mo
 
 test("Codex selection hydrates authoritative scoped quota metadata after restart", async () => {
   const sparkResetAt = futureIso(180_000);
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: "codex-authoritative-scoped-restart",
@@ -118,18 +115,13 @@ test("Codex selection hydrates authoritative scoped quota metadata after restart
       codexExhaustedWindowByScope: { spark: "5h" },
       codexScopeRateLimitSource: { spark: "quota_reset" },
     },
-  });
+  })) as JsonRecord & { id: string };
   const connectionId = (connection as { id: string }).id;
 
   quotaCache.__clearForTests();
 
-  const normalSelected = await auth.getProviderCredentials("codex", null, null, "codex/gpt-5.5");
-  const sparkSelected = await auth.getProviderCredentials(
-    "codex",
-    null,
-    null,
-    "gpt-5.3-codex-spark"
-  );
+  const normalSelected = await getCreds("codex", null, null, "codex/gpt-5.5");
+  const sparkSelected = await getCreds("codex", null, null, "gpt-5.3-codex-spark");
 
   assert.equal(normalSelected.connectionId, connectionId);
   assert.equal(sparkSelected.allRateLimited, true);
@@ -147,7 +139,7 @@ test("Codex selection hydrates authoritative scoped quota metadata after restart
 
 test("legacy Codex quota metadata hydrates only its embedded child scope", async () => {
   const sparkResetAt = futureIso(180_000);
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: "codex-legacy-scoped-restart",
@@ -169,19 +161,16 @@ test("legacy Codex quota metadata hydrates only its embedded child scope", async
       },
       codexExhaustedWindow: "5h",
     },
-  });
+  })) as JsonRecord & { id: string };
   const connectionId = (connection as { id: string }).id;
 
   quotaCache.__clearForTests();
 
-  const normalSelected = await auth.getProviderCredentials("codex", null, null, "codex/gpt-5.5");
-  const sparkSelected = await auth.getProviderCredentials(
-    "codex",
-    null,
-    null,
-    "gpt-5.3-codex-spark"
-  );
+  const normalSelected = await getCreds("codex", null, null, "codex/gpt-5.5");
+  const sparkSelected = await getCreds("codex", null, null, "gpt-5.3-codex-spark");
 
   assert.equal(normalSelected.connectionId, connectionId);
   assert.equal(sparkSelected.allRateLimited, true);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

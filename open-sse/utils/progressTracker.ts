@@ -96,7 +96,7 @@ export function createProgressTransform({
       cancel() {
         clearInterval(intervalId);
       },
-    },
+    } as unknown as Transformer,
     { highWaterMark: 16384 },
     { highWaterMark: 16384 }
   );

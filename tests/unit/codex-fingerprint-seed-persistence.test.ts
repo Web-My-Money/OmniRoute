@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-codex-seed-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -14,25 +15,25 @@ const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 beforeEach(resetStorage);
 after(() => {
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 async function createCodexOAuthConnection(providerSpecificData?: Record<string, unknown>) {
   const suffix = Math.random().toString(16).slice(2, 10);
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: `codex-${suffix}`,
     accessToken: `access-${suffix}`,
     refreshToken: `refresh-${suffix}`,
     providerSpecificData,
-  });
+  })) as JsonRecord & { id: string };
   assert.ok(connection && typeof connection.id === "string");
   return connection;
 }
@@ -99,12 +100,12 @@ test("a client-supplied seed is replaced by a system-managed one", async () => {
 
 test("non-OAuth codex connections are never seeded", async () => {
   const suffix = Math.random().toString(16).slice(2, 10);
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "apikey",
     name: `codex-key-${suffix}`,
     apiKey: `sk-codex-${suffix}`,
-  });
+  })) as JsonRecord & { id: string };
   assert.ok(connection);
   const psd = (connection.providerSpecificData ?? {}) as Record<string, unknown>;
   assert.equal(psd.codexFingerprintSeed, undefined);

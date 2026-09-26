@@ -45,7 +45,7 @@ async function resetStorage() {
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       if (fs.existsSync(TEST_DATA_DIR)) {
-        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       }
       break;
     } catch (error: unknown) {
@@ -109,7 +109,7 @@ test.beforeEach(async () => {
 test.after(async () => {
   apiKeysDb.resetApiKeyState();
   coreDb.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ---------------------------------------------------------------------------
@@ -276,7 +276,7 @@ test("disableNonPublicModels=true + existing combo name → not rejected by publ
   // Create a combo via the DB helper if available:
   let comboDb: { createCombo?: (input: Record<string, unknown>) => { name: string } } | null = null;
   try {
-    comboDb = (await import("../../src/lib/db/combos.ts")) as typeof comboDb;
+    comboDb = (await import("../../src/lib/db/combos.ts")) as unknown as typeof comboDb;
   } catch {
     comboDb = null;
   }

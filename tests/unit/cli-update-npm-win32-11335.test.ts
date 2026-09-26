@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // #11335 — `omniroute update` printed "Could not check latest version. Is npm
 // available?" on Windows while `npm view omniroute version` worked in the same
@@ -18,7 +19,7 @@ test("#11335 win32 resolves npm.cmd and runs it through a shell", () => {
 
   const win = npmExecOptions("win32", { timeoutMs: 15000 });
   assert.equal(win.shell, true, "win32 must enable the shell so npm.cmd can be spawned");
-  assert.equal(win.windowsHide, true);
+  assert.equal((win as LooseDeep).windowsHide, true);
   assert.equal(win.timeout, 15000);
 });
 

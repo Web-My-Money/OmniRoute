@@ -13,6 +13,8 @@
  * serve the same connection when the scheduled target keeps failing.
  */
 import test from "node:test";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
+import type { ComboLike } from "../../open-sse/services/combo/types.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -39,14 +41,35 @@ function rrCombo(name: string) {
     // per-conversation pin; stickyLimit defaults to 1 (true round-robin).
     config: { maxRetries: 0, disableSessionStickiness: true },
     models: [
-      { kind: "model", provider: "codex", providerId: "codex", model: "m-a", connectionId: "conn-A", id: `${name}-0` },
-      { kind: "model", provider: "codex", providerId: "codex", model: "m-b", connectionId: "conn-B", id: `${name}-1` },
-      { kind: "model", provider: "glm-cn", providerId: "glm-cn", model: "m-c", connectionId: "conn-C", id: `${name}-2` },
+      {
+        kind: "model",
+        provider: "codex",
+        providerId: "codex",
+        model: "m-a",
+        connectionId: "conn-A",
+        id: `${name}-0`,
+      },
+      {
+        kind: "model",
+        provider: "codex",
+        providerId: "codex",
+        model: "m-b",
+        connectionId: "conn-B",
+        id: `${name}-1`,
+      },
+      {
+        kind: "model",
+        provider: "glm-cn",
+        providerId: "glm-cn",
+        model: "m-c",
+        connectionId: "conn-C",
+        id: `${name}-2`,
+      },
     ],
   };
 }
 
-async function dispatchServedConnection(combo: Record<string, unknown>): Promise<string> {
+async function dispatchServedConnection(combo: ComboLike): Promise<string> {
   let served = "?";
   await handleComboChat({
     body: { model: combo.name, messages: [{ role: "user", content: "hi" }], stream: false },
@@ -57,11 +80,7 @@ async function dispatchServedConnection(combo: Record<string, unknown>): Promise
     signal: undefined,
     settings: {},
     log: makeLog(),
-    handleSingleModel: async (
-      _b: unknown,
-      modelStr: string,
-      target?: { connectionId?: string | null }
-    ) => {
+    handleSingleModel: async (_b: unknown, modelStr: string, target?: LooseDeep) => {
       const conn = target?.connectionId ?? "?";
       // conn-A always fails with a fallback-eligible status so rotation must fall through.
       if (conn === "conn-A") {
@@ -89,7 +108,7 @@ test.after(() => {
   }
   if (ORIGINAL_DATA_DIR === undefined) delete process.env.DATA_DIR;
   else process.env.DATA_DIR = ORIGINAL_DATA_DIR;
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#948: two consecutive requests do not reuse the fallback-served model", async () => {

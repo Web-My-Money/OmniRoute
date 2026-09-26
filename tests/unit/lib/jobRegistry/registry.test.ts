@@ -1,15 +1,16 @@
 /** JobRegistry runtime tests . Uses real timers + isolated temp DB. */
 
 // Access private internals (avoids `as any`).
-type TestRegistry = JobRegistry & {
+type TestRegistry = Omit<JobRegistry, "timers"> & {
   timers: Map<string, unknown>;
   cronFailCount: Map<string, number>;
 };
 function regInternals(reg: JobRegistry): TestRegistry {
-  return reg as TestRegistry;
+  return reg as unknown as TestRegistry;
 }
 
 import test from "node:test";
+import type { JobRegistry } from "@/lib/jobRegistry/registry.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -56,7 +57,7 @@ function resetAll() {
   }
   __resetJobRegistry();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -67,7 +68,7 @@ test.beforeEach(() => {
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("register + start (interval) fires handler immediately", async () => {

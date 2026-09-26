@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-model-catalog-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -21,7 +22,7 @@ const v1ModelsCatalog = await import("../../src/app/api/v1/models/catalog.ts");
 async function resetStorage() {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   // #6408 added a 1.5s TTL response cache to getUnifiedModelsResponse keyed only by
   // (prefix, isCodex client, apiKey) — NOT by DB/settings state. Without clearing it
@@ -31,7 +32,7 @@ async function resetStorage() {
 }
 
 async function seedConnection(provider: string, overrides: Record<string, unknown> = {}) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: (overrides.authType as string) || "apikey",
     name: (overrides.name as string) || `${provider}-${Math.random().toString(16).slice(2, 8)}`,
@@ -40,10 +41,10 @@ async function seedConnection(provider: string, overrides: Record<string, unknow
     isActive: (overrides.isActive as boolean) ?? true,
     testStatus: (overrides.testStatus as string) || "active",
     providerSpecificData: (overrides.providerSpecificData as Record<string, unknown>) || {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
-function capability(overrides = {}) {
+function capability(overrides: JsonRecord = {}) {
   return {
     tool_call: null,
     reasoning: null,
@@ -73,7 +74,7 @@ test.beforeEach(async () => {
 test.after(async () => {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("v1 models catalog requires auth when the route is protected and login is enabled", async () => {

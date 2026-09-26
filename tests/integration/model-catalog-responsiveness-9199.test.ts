@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-catalog-9199-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -19,7 +20,7 @@ const healthRoute = await import("../../src/app/api/health/ping/route.ts");
 async function resetStorage() {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   modelsCatalog.__resetCatalogBuilderRunsForTest();
 }
@@ -30,7 +31,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test(
@@ -87,7 +88,7 @@ test(
       requireAuthForModels: true,
       password: "",
     });
-    await providersDb.createProviderConnection({
+    (await providersDb.createProviderConnection({
       provider: "openai",
       authType: "apikey",
       name: "openai-catalog-9199",
@@ -96,7 +97,7 @@ test(
       testStatus: "active",
       rateLimitedUntil: null,
       providerSpecificData: {},
-    });
+    })) as JsonRecord & { id: string };
     const apiKey = await apiKeysDb.createApiKey("catalog pricing", "machine-pricing-9199");
     const db = core.getDbInstance();
     db.prepare("INSERT OR REPLACE INTO key_value (namespace, key, value) VALUES (?, ?, ?)").run(

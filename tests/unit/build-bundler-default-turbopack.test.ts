@@ -8,19 +8,23 @@ import assert from "node:assert/strict";
 const buildIsolated = await import("../../scripts/build/build-next-isolated.mjs");
 
 test("resolveNextBuildBundlerFlag defaults to --turbopack when the env var is unset", () => {
-  assert.equal(buildIsolated.resolveNextBuildBundlerFlag({}), "--turbopack");
+  assert.equal(buildIsolated.resolveNextBuildBundlerFlag({} as NodeJS.ProcessEnv), "--turbopack");
 });
 
 test("resolveNextBuildBundlerFlag keeps --turbopack for explicit opt-in", () => {
   assert.equal(
-    buildIsolated.resolveNextBuildBundlerFlag({ OMNIROUTE_USE_TURBOPACK: "1" }),
+    buildIsolated.resolveNextBuildBundlerFlag({
+      OMNIROUTE_USE_TURBOPACK: "1",
+    } as NodeJS.ProcessEnv),
     "--turbopack"
   );
 });
 
 test("resolveNextBuildBundlerFlag honors the webpack escape hatch (=0)", () => {
   assert.equal(
-    buildIsolated.resolveNextBuildBundlerFlag({ OMNIROUTE_USE_TURBOPACK: "0" }),
+    buildIsolated.resolveNextBuildBundlerFlag({
+      OMNIROUTE_USE_TURBOPACK: "0",
+    } as NodeJS.ProcessEnv),
     "--webpack"
   );
 });
@@ -28,7 +32,9 @@ test("resolveNextBuildBundlerFlag honors the webpack escape hatch (=0)", () => {
 test("resolveNextBuildBundlerFlag treats other values as the turbopack default", () => {
   // Only the documented "0" opts out — junk values must not silently flip the bundler.
   assert.equal(
-    buildIsolated.resolveNextBuildBundlerFlag({ OMNIROUTE_USE_TURBOPACK: "yes" }),
+    buildIsolated.resolveNextBuildBundlerFlag({
+      OMNIROUTE_USE_TURBOPACK: "yes",
+    } as NodeJS.ProcessEnv),
     "--turbopack"
   );
 });

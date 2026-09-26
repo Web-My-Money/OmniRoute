@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-bailian-coding-plan-media-"));
 
@@ -99,7 +101,7 @@ test("Bailian image models use only the Coding Plan endpoint and key", async () 
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers,
@@ -125,7 +127,7 @@ test("Bailian image models use only the Coding Plan endpoint and key", async () 
       "qwen-image-2.0",
       "qwen-image-2.0-pro",
     ]) {
-      const result = await handleImageGeneration({
+      const result = await looseAsync(handleImageGeneration)({
         body: {
           model: `bailian-coding-plan/${model}`,
           prompt: "A watercolor horse",
@@ -157,8 +159,8 @@ test("HappyHorse video generation uses only the Bailian Coding Plan endpoint and
   const originalSetTimeout = globalThis.setTimeout;
   let captured;
 
-  globalThis.setTimeout = immediateTimeout;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     if (stringUrl.endsWith("/services/aigc/video-generation/video-synthesis")) {
       captured = {
@@ -180,7 +182,7 @@ test("HappyHorse video generation uses only the Bailian Coding Plan endpoint and
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: {
         model: "bailian-coding-plan/happyhorse-1.1-i2v",
         image_url: "https://cdn.example.com/first-frame.png",
@@ -209,7 +211,7 @@ test("HappyHorse video generation uses only the Bailian Coding Plan endpoint and
 });
 
 test("Bailian Coding Plan rejects models outside its own media allowlists", async () => {
-  const imageResult = await handleImageGeneration({
+  const imageResult = await looseAsync(handleImageGeneration)({
     body: {
       model: "bailian-coding-plan/qwen-image-3.0-pro",
       prompt: "wrong catalog",
@@ -217,7 +219,7 @@ test("Bailian Coding Plan rejects models outside its own media allowlists", asyn
     credentials: { apiKey: "bailian-plan-key" },
     log: null,
   });
-  const videoResult = await handleVideoGeneration({
+  const videoResult = await looseAsync(handleVideoGeneration)({
     body: {
       model: "bailian-coding-plan/wan2.7-videoedit",
       prompt: "wrong catalog",

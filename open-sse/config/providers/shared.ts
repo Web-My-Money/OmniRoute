@@ -224,8 +224,7 @@ export interface RegistryEntry {
  * repeated across 40+ provider files.
  */
 export function buildOpenAiCompatibleRegistryEntry(
-  overrides: Pick<RegistryEntry, "id"> &
-    Partial<Omit<RegistryEntry, "id" | "format" | "executor" | "authType" | "authHeader">>
+  overrides: Pick<RegistryEntry, "id"> & Partial<Omit<RegistryEntry, "id">>
 ): RegistryEntry {
   return {
     format: "openai",

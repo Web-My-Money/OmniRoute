@@ -4,6 +4,9 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { ComboLike, SingleModelTarget } from "../../open-sse/services/combo/types.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-strategies-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -24,7 +27,7 @@ const { saveModelsDevCapabilities } = await import("../../src/lib/modelsDevSync.
 
 after(() => {
   dbCore.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   if (ORIGINAL_DATA_DIR === undefined) {
     delete process.env.DATA_DIR;
   } else {
@@ -84,8 +87,8 @@ async function selectedModelFor(combo: Record<string, unknown>, body: Record<str
   const calls: string[] = [];
   const response = await handleComboChat({
     body,
-    combo,
-    allCombos: [combo],
+    combo: combo as unknown as ComboLike,
+    allCombos: [combo as unknown as ComboLike],
     isModelAvailable: undefined,
     relayOptions: undefined,
     signal: undefined,
@@ -180,20 +183,16 @@ async function selectedConnectionFor(
   const calls: Array<string | null> = [];
   const response = await handleComboChat({
     body: reqBodyTextArray,
-    combo,
-    allCombos: [combo],
+    combo: combo as unknown as ComboLike,
+    allCombos: [combo as unknown as ComboLike],
     isModelAvailable: undefined,
     relayOptions: undefined,
     signal: undefined,
     settings: {},
     log: makeLog(),
     apiKeyAllowedConnections: options.apiKeyAllowedConnections,
-    handleSingleModel: async (
-      _body: unknown,
-      modelStr: string,
-      target?: { connectionId?: string | null; allowedConnectionIds?: string[] | null }
-    ) => {
-      calls.push(target?.connectionId ?? null);
+    handleSingleModel: async (_body: unknown, modelStr: string, target?: SingleModelTarget) => {
+      calls.push((target as LooseDeep)?.connectionId ?? null);
       return okResponse(modelStr);
     },
   });
@@ -588,20 +587,20 @@ test("reset-aware quota SWR serves stale ordering while refreshing in background
 
 test("reset-aware strategy respects API-key allowed connections during expansion", async () => {
   const provider = `limited-provider-${randomUUID()}`;
-  const disallowed = await providersDb.createProviderConnection({
+  const disallowed = (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name: `disallowed-${randomUUID()}`,
     apiKey: "sk-disallowed",
     isActive: true,
-  });
-  const allowed = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const allowed = (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name: `allowed-${randomUUID()}`,
     apiKey: "sk-allowed",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
   const allowedId = String(allowed.id);
   const disallowedId = String(disallowed.id);
   const fetchedConnectionIds: string[] = [];
@@ -641,14 +640,14 @@ test("reset-aware strategy parses numeric reset timestamps from quota telemetry"
   const provider = `timestamp-provider-${randomUUID()}`;
   const soon = `timestamp-soon-${randomUUID()}`;
   const later = `timestamp-later-${randomUUID()}`;
-  const soonResetSeconds = Math.floor((Date.now() + 24 * 3600 * 1000) / 1000);
-  const laterResetMs = Date.now() + 5 * 24 * 3600 * 1000;
+  const soonResetIso = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+  const laterResetIso = new Date(Date.now() + 5 * 24 * 3600 * 1000).toISOString();
 
   registerQuotaFetcher(provider, async (connectionId) => ({
     used: connectionId === soon ? 40 : 20,
     total: 100,
     percentUsed: connectionId === soon ? 0.4 : 0.2,
-    resetAt: connectionId === soon ? soonResetSeconds : laterResetMs,
+    resetAt: connectionId === soon ? soonResetIso : laterResetIso,
   }));
 
   const combo = {
@@ -725,8 +724,8 @@ test("priority combo advances to next model when first returns 400 'model not su
   const calls: string[] = [];
   const response = await handleComboChat({
     body: reqBodyTextArray,
-    combo,
-    allCombos: [combo],
+    combo: combo as unknown as ComboLike,
+    allCombos: [combo as unknown as ComboLike],
     isModelAvailable: undefined,
     relayOptions: undefined,
     signal: undefined,

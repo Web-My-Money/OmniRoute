@@ -13,7 +13,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-// @ts-expect-error — plain .mjs gate script, no type declarations by design
+//
 import { classifyPrTarget } from "../../scripts/check/check-pr-self-target.mjs";
 
 test("the #8912 shape is rejected: same branch on both sides", () => {

@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import os from "node:os";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // Regression guard for issue #6686:
 // "Account selection can pick accounts already out of quota (no live quota
@@ -86,13 +87,13 @@ test("#6686: getProviderCredentialsWithQuotaPreflight (now used by every credent
 
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 
   try {
     const provider = "issue6686";
 
-    const account = await providersDb.createProviderConnection({
+    const account = (await providersDb.createProviderConnection({
       provider,
       authType: "apikey",
       name: "issue-6686-exhausted",
@@ -105,7 +106,7 @@ test("#6686: getProviderCredentialsWithQuotaPreflight (now used by every credent
       providerSpecificData: {
         quotaPreflightEnabled: true,
       },
-    });
+    })) as JsonRecord & { id: string };
 
     // A registered upstream quota fetcher — what
     // getProviderCredentialsWithQuotaPreflight() calls to discover the
@@ -135,6 +136,6 @@ test("#6686: getProviderCredentialsWithQuotaPreflight (now used by every credent
   } finally {
     core.resetDbInstance();
     apiKeysDb.resetApiKeyState();
-    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });

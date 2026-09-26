@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(
   path.join(os.tmpdir(), "omniroute-model-catalog-runtime-invalidation-")
@@ -25,13 +27,13 @@ const auth = await import("../../src/sse/services/auth.ts");
 async function resetStorage() {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   v1ModelsCatalog.__resetCatalogBuilderRunsForTest();
 }
 
 async function seedOpenAiConnection() {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "openai-catalog-invalidation",
@@ -39,7 +41,7 @@ async function seedOpenAiConnection() {
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 function catalogRequest() {
@@ -77,7 +79,7 @@ test.beforeEach(async () => {
 test.after(async () => {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("session-affinity bookkeeping preserves the published model catalog", async () => {
@@ -96,8 +98,8 @@ test("session-affinity bookkeeping preserves the published model catalog", async
     forcedConnectionId: connection.id as string,
   });
 
-  assert.equal(firstSelection?.connectionId, connection.id);
-  assert.equal(secondSelection?.connectionId, connection.id);
+  assert.equal((firstSelection as LooseDeep)?.connectionId, connection.id);
+  assert.equal((secondSelection as LooseDeep)?.connectionId, connection.id);
   const persisted = await providersDb.getProviderConnectionById(connection.id as string);
   assert.equal(
     persisted?.consecutiveUseCount,

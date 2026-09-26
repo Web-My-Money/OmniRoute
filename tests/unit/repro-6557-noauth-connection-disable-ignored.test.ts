@@ -25,6 +25,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-repro-6557-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -37,7 +38,7 @@ const virtualFactory = await import("../../open-sse/services/autoCombo/virtualFa
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -47,7 +48,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 
   if (ORIGINAL_DATA_DIR === undefined) {
     delete process.env.DATA_DIR;
@@ -57,12 +58,12 @@ test.after(async () => {
 });
 
 test("#6557: disabling the opencode no-auth provider's own connection (isActive=false, the toggle on the main Providers grid card) does NOT remove it from the auto-combo candidate pool", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "opencode",
     authType: "no-auth",
     name: "OpenCode Free Account 1",
     providerSpecificData: { fingerprints: ["11111111111111111111111111111111"] },
-  });
+  })) as JsonRecord & { id: string };
 
   const beforeCombo = await virtualFactory.createVirtualAutoCombo(undefined);
   assert.ok(

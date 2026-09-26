@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-bare-routing-fallback-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -26,17 +27,17 @@ const { getModelInfoCore } = await import("../../open-sse/services/model.ts");
 //  - Explicit `provider/model` prefixes always win over the bare inference.
 
 test.before(async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "codex@example.com",
     providerSpecificData: { workspaceId: "ws-routing-fallback" },
-  });
+  })) as JsonRecord & { id: string };
 });
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("bare gpt-5.6-sol routes to codex (precedence via CODEX_NATIVE_UNPREFIXED_MODELS)", async () => {

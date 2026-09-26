@@ -16,9 +16,9 @@ test("normalizeDataUri never throws and preserves the uri on failure", async () 
 
 // Só roda quando sharp estiver instalado (optionalDependency presente no devbox):
 test("downscales a large PNG to the long-edge cap when sharp is available", async (t) => {
-  let sharp: typeof import("sharp");
+  let sharp: (typeof import("sharp"))["default"];
   try {
-    sharp = (await import("sharp")).default as never;
+    sharp = (await import("sharp")).default;
   } catch {
     t.skip("sharp not installed");
     return;
@@ -33,9 +33,9 @@ test("downscales a large PNG to the long-edge cap when sharp is available", asyn
 });
 
 test("downscales a height-dominant PNG to the long-edge cap on the height axis", async (t) => {
-  let sharp: typeof import("sharp");
+  let sharp: (typeof import("sharp"))["default"];
   try {
-    sharp = (await import("sharp")).default as never;
+    sharp = (await import("sharp")).default;
   } catch {
     t.skip("sharp not installed");
     return;

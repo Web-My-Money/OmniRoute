@@ -36,6 +36,7 @@ const {
 
 const PROFILE = {
   baseCooldownMs: 125,
+  maxCooldownMs: 60000,
   useUpstreamRetryHints: false,
   maxBackoffSteps: 3,
   failureThreshold: 60,

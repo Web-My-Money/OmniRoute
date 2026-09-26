@@ -116,7 +116,8 @@ export function assertLocalAcpUrl(url: string): void {
 }
 
 function isIsolatedHome(value: string): boolean {
-  return value === "/home/bridge" || value.includes("/.sandbox/");
+  const normalized = value.split(path.sep).join("/");
+  return normalized === "/home/bridge" || normalized.includes("/.sandbox/");
 }
 
 export function buildDevinChildEnv(
@@ -177,12 +178,19 @@ export async function runAcpTurn(args: {
   log?: ExecuteInput["log"];
 }) {
   const timeoutMs = Number(process.env.DEVIN_AGENTIC_ACP_TIMEOUT_MS || 120000);
-  const child = spawn(args.devinBin, ["acp", "--agent-type", "summarizer"], {
-    env: args.env,
-    cwd: args.env.HOME,
-    stdio: ["pipe", "pipe", "pipe"],
-    shell: false,
-  });
+  // A Node-script bin (`.cjs`/`.mjs`/`.js`) is spawnable via the shebang on
+  // POSIX but raises EFTYPE on Windows — route it through the Node executable.
+  const isJsBin = /\.(?:cjs|mjs|js)$/i.test(args.devinBin);
+  const child = spawn(
+    isJsBin ? process.execPath : args.devinBin,
+    [...(isJsBin ? [args.devinBin] : []), "acp", "--agent-type", "summarizer"],
+    {
+      env: args.env,
+      cwd: args.env.HOME,
+      stdio: ["pipe", "pipe", "pipe"],
+      shell: false,
+    }
+  );
 
   let nextId = 1;
   let buffer = "";

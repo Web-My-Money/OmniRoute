@@ -53,10 +53,14 @@ test("mergeAlibabaFreeTierProbeResults persists capable and no-free-tier sets", 
     "free"
   );
 
-  assert.ok(merged.alibabaFreeTierCapableModels?.includes("qwen3.6-plus"));
-  assert.ok(merged.alibabaFreeTierCapableModels?.includes("qwen3-coder-plus"));
-  assert.ok(merged.alibabaNoFreeTierModels?.includes("kimi-k2.7-code"));
-  assert.ok(merged.alibabaFreeDrainedModels?.includes("qwen3.6-plus"));
+  assert.ok(
+    (merged.alibabaFreeTierCapableModels as string[] | undefined)?.includes("qwen3.6-plus")
+  );
+  assert.ok(
+    (merged.alibabaFreeTierCapableModels as string[] | undefined)?.includes("qwen3-coder-plus")
+  );
+  assert.ok((merged.alibabaNoFreeTierModels as string[] | undefined)?.includes("kimi-k2.7-code"));
+  assert.ok((merged.alibabaFreeDrainedModels as string[] | undefined)?.includes("qwen3.6-plus"));
 });
 
 test("filterAlibabaFreeEligibleModels excludes drained and paid-only families", () => {

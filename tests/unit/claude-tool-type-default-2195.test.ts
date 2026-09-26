@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Port of 9router#2196 (fixes #2195): Claude's tool schema requires each tool to
 // carry an explicit `type` discriminator. Anthropic's first-party API infers
@@ -7,9 +8,8 @@ import assert from "node:assert/strict";
 // reject the payload with HTTP 400. defaultClaudeToolType() backfills the missing
 // `type` so legacy Claude-format tool definitions survive strict gateways.
 
-const { defaultClaudeToolType } = await import(
-  "../../open-sse/handlers/chatCore/claudeToolDefaults.ts"
-);
+const { defaultClaudeToolType } =
+  await import("../../open-sse/handlers/chatCore/claudeToolDefaults.ts");
 
 test("backfills type:'custom' on a Claude tool missing the type field", () => {
   const tools = [
@@ -59,7 +59,7 @@ test("does not mutate the original tool objects (returns new entries for default
   const original = { name: "x", input_schema: {} };
   const tools = [original];
   const out = defaultClaudeToolType(tools) as Array<Record<string, unknown>>;
-  assert.equal(original.type, undefined, "original tool must stay untouched");
+  assert.equal((original as LooseDeep).type, undefined, "original tool must stay untouched");
   assert.equal(out[0].type, "custom");
 });
 
@@ -73,7 +73,7 @@ test("passes non-object array entries through unchanged (no garbage wrapping)", 
     42,
   ];
   const out = defaultClaudeToolType(tools) as unknown[];
-  assert.equal((out[0] as Record<string, unknown>).type, "custom", "real object gets defaulted");
+  assert.equal((out[0] as LooseDeep).type, "custom", "real object gets defaulted");
   assert.equal(out[1], null, "null passes through unchanged");
   assert.equal(out[2], "weird", "string passes through unchanged");
   assert.equal(out[3], 42, "number passes through unchanged");

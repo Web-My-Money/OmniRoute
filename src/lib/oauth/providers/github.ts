@@ -73,7 +73,7 @@ export const github = {
 
     return { copilotToken, userInfo };
   },
-  mapTokens: (tokens, extra) => ({
+  mapTokens: (tokens, extra = undefined) => ({
     accessToken: tokens.access_token,
     refreshToken: tokens.refresh_token,
     expiresIn: tokens.expires_in,

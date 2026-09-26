@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-model-catalog-low-noise-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -22,12 +23,12 @@ type ModelsResponseBody = {
 async function resetStorage() {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 async function seedConnection(provider: string, accessToken: string) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: "oauth",
     name: `${provider}-low-noise`,
@@ -36,7 +37,7 @@ async function seedConnection(provider: string, accessToken: string) {
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 async function getIds(url = "http://localhost/api/v1/models"): Promise<Set<string>> {
@@ -52,7 +53,7 @@ test.beforeEach(async () => {
 test.after(async () => {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("MODELS_CATALOG_PREFIX_MODE=alias suppresses canonical provider-id prefixes", async () => {

@@ -20,6 +20,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-gpt55-routing-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -31,17 +32,17 @@ const { resolveModelOrError } = await import("../../src/sse/handlers/chatHelpers
 
 test.before(async () => {
   // Codex-only active account (no openai connection).
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "codex@example.com",
     providerSpecificData: { workspaceId: "ws-1" },
-  });
+  })) as JsonRecord & { id: string };
 });
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ── Defect B: suffixed bare names infer codex, not openai ─────────────────────

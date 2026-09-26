@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { jinaReaderFetch } = await import("../../open-sse/executors/jina-reader-fetch.ts");
 
@@ -9,7 +10,7 @@ test("jinaReaderFetch calls r.jina.ai/{url} with Bearer auth", async () => {
   const originalFetch = globalThis.fetch;
   let captured: { url: string; headers: Record<string, string> } = { url: "", headers: {} };
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: (init as RequestInit).headers as Record<string, string>,
@@ -151,7 +152,7 @@ test("jinaReaderFetch sets X-Return-Format header to html for html format", asyn
   const originalFetch = globalThis.fetch;
   let capturedHeaders: Record<string, string> = {};
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     capturedHeaders = (init as RequestInit).headers as Record<string, string>;
     return new Response("<html>content</html>", {
       status: 200,

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { looseCreds } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-auth-ag-retry-v2-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -11,6 +12,7 @@ const core = await import("../../src/lib/db/core.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
 const settingsDb = await import("../../src/lib/db/settings.ts");
 const auth = await import("../../src/sse/services/auth.ts");
+const getCreds = looseCreds(auth.getProviderCredentials);
 
 type CreatedConnection = { id: string };
 
@@ -23,19 +25,19 @@ function connectionId(connection: unknown): string {
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("round-robin same-model retry treats multi-exclude as fallback LRU and skips all excluded accounts", async () => {
   await resetStorage();
 
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     email: "first@example.test",
@@ -43,8 +45,8 @@ test("round-robin same-model retry treats multi-exclude as fallback LRU and skip
     isActive: true,
     testStatus: "active",
     priority: 1,
-  });
-  const second = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const second = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     email: "second@example.test",
@@ -52,13 +54,13 @@ test("round-robin same-model retry treats multi-exclude as fallback LRU and skip
     isActive: true,
     testStatus: "active",
     priority: 2,
-  });
+  })) as JsonRecord & { id: string };
   // Two NON-excluded eligible accounts with diverging lastUsedAt so sticky
   // (most-recently-used) and fallback LRU (least-recently-used) pick different
   // accounts — this is what makes the test discriminate the
   // `excludedConnectionIds.size > 0` fallback branch. `recent` is the sticky
   // pick; `stale` is the LRU pick.
-  const recent = await providersDb.createProviderConnection({
+  const recent = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     email: "recent@example.test",
@@ -66,8 +68,8 @@ test("round-robin same-model retry treats multi-exclude as fallback LRU and skip
     isActive: true,
     testStatus: "active",
     priority: 3,
-  });
-  const stale = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const stale = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     email: "stale@example.test",
@@ -75,7 +77,7 @@ test("round-robin same-model retry treats multi-exclude as fallback LRU and skip
     isActive: true,
     testStatus: "active",
     priority: 4,
-  });
+  })) as JsonRecord & { id: string };
 
   const firstId = connectionId(first);
   const secondId = connectionId(second);
@@ -105,7 +107,7 @@ test("round-robin same-model retry treats multi-exclude as fallback LRU and skip
 
   await settingsDb.updateSettings({ fallbackStrategy: "round-robin", stickyRoundRobinLimit: 3 });
 
-  const selected = await auth.getProviderCredentials("antigravity", null, null, "gemini-3-pro", {
+  const selected = await getCreds("antigravity", null, null, "gemini-3-pro", {
     excludeConnectionIds: [firstId, secondId],
   });
 
@@ -123,14 +125,14 @@ test("round-robin same-model retry treats multi-exclude as fallback LRU and skip
 test("Antigravity 429 rate-limited locks only the exact model so siblings stay eligible", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     email: "quota@example.test",
     accessToken: "tok-quota",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   const connId = connectionId(conn);
 
   const result = await auth.markAccountUnavailable(
@@ -152,12 +154,7 @@ test("Antigravity 429 rate-limited locks only the exact model so siblings stay e
 
   // The exhausted model itself is locked: getProviderCredentials reports
   // model-scope cooldown for that exact model on the only connection.
-  const sameModel = await auth.getProviderCredentials(
-    "antigravity",
-    null,
-    null,
-    "gemini-3-pro"
-  );
+  const sameModel = await getCreds("antigravity", null, null, "gemini-3-pro");
   assert.ok(sameModel);
   assert.ok("allRateLimited" in sameModel && sameModel.allRateLimited);
   assert.equal(sameModel.cooldownScope, "model");
@@ -166,12 +163,7 @@ test("Antigravity 429 rate-limited locks only the exact model so siblings stay e
   // Sibling model on the SAME connection stays eligible — the whole point
   // of the exact-model lock: a Claude/Gemini 429 must not disable unrelated
   // models on the same account.
-  const siblingModel = await auth.getProviderCredentials(
-    "antigravity",
-    null,
-    null,
-    "gemini-2.5-pro"
-  );
+  const siblingModel = await getCreds("antigravity", null, null, "gemini-2.5-pro");
   assert.ok(siblingModel && !("allRateLimited" in siblingModel && siblingModel.allRateLimited));
   assert.equal(siblingModel.connectionId, connId);
 
@@ -180,3 +172,5 @@ test("Antigravity 429 rate-limited locks only the exact model so siblings stay e
   const { clearModelLock } = await import("../../open-sse/services/accountFallback.ts");
   assert.equal(clearModelLock("antigravity", connId, "gemini-3-pro"), true);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

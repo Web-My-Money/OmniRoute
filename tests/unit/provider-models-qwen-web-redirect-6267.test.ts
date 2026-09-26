@@ -15,6 +15,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-qwen-web-redirect-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -28,7 +29,7 @@ const originalFetch = globalThis.fetch;
 async function resetStorage() {
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -43,7 +44,7 @@ interface SeedOverrides {
 }
 
 async function seedConnection(provider: string, overrides: SeedOverrides = {}) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: overrides.authType || "apikey",
     name: overrides.name || `${provider}-${Math.random().toString(16).slice(2, 8)}`,
@@ -52,7 +53,7 @@ async function seedConnection(provider: string, overrides: SeedOverrides = {}) {
     isActive: overrides.isActive ?? true,
     testStatus: overrides.testStatus || "active",
     providerSpecificData: overrides.providerSpecificData || {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 async function callRoute(connectionId: string, search = "") {
@@ -69,7 +70,7 @@ test.beforeEach(async () => {
 test.after(async () => {
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("qwen-web model import degrades to the local catalog when the /models endpoint 307s (#6267)", async () => {

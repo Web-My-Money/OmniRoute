@@ -9,7 +9,7 @@ import {
   runSizeLimit,
   evaluateBundleSizeRatchet,
   readBaselineBundleSizeValue,
-  // @ts-expect-error — .mjs helper has no type declarations; runtime shape is known.
+  //
 } from "../../../scripts/check/check-bundle-size.mjs";
 
 type RatchetVerdict = { regressed: boolean; improved: boolean };
@@ -196,7 +196,7 @@ function withTmpBundleBaseline(content: string | null, fn: (p: string) => void) 
   try {
     fn(p);
   } finally {
-    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 }
 

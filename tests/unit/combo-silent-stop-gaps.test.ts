@@ -32,7 +32,7 @@ const { evaluateCase } = await import("../../src/lib/evals/evalRunner.ts");
 const { withItemDispatchTimeout } = await import("../../open-sse/services/batchProcessor.ts");
 const { saveModelsDevCapabilities } = await import("../../src/lib/modelsDevSync.ts");
 
-function capabilityEntry(limitContext: unknown, overrides: Record<string, unknown> = {}) {
+function capabilityEntry(limitContext: number, overrides: Record<string, unknown> = {}) {
   return {
     tool_call: true,
     reasoning: false,
@@ -90,7 +90,7 @@ test.after(async () => {
     process.env.DATA_DIR = ORIGINAL_DATA_DIR;
   }
   try {
-    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   } catch {
     /* best effort */
   }

@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert";
 import { createFile, deleteFile } from "@/lib/db/files";
 import { GET, parseFilesListQuery } from "@/app/api/v1/files/route";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 describe("GET /v1/files limit validation", () => {
   it("defaults to 20 when limit is absent", () => {
@@ -28,9 +29,9 @@ describe("GET /v1/files limit validation", () => {
         new URLSearchParams(`limit=${encodeURIComponent(rawLimit)}`)
       );
       assert.equal(parsed.ok, false, `limit=${rawLimit} should be rejected`);
-      if (parsed.ok) continue;
-      assert.equal(parsed.response.status, 400);
-      const body = await parsed.response.json();
+      if ((parsed as LooseDeep).ok) continue;
+      assert.equal((parsed as LooseDeep).response.status, 400);
+      const body = await (parsed as LooseDeep).response.json();
       assert.equal(body.error.type, "invalid_request_error");
     }
   });

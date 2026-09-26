@@ -97,6 +97,8 @@ describe("RTK raw output retention", () => {
       "stacked",
       {
         config: {
+          engines: {},
+          activeComboId: null,
           enabled: true,
           defaultMode: "stacked",
           autoTriggerTokens: 0,

@@ -27,7 +27,7 @@ const CANONICAL_ALIAS_PROVIDER = "nous-research";
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   for (const lockout of accountFallback.getAllModelLockouts()) {
     if (lockout.provider === PROVIDER) {
@@ -55,7 +55,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 
   if (ORIGINAL_DATA_DIR === undefined) delete process.env.DATA_DIR;
   else process.env.DATA_DIR = ORIGINAL_DATA_DIR;
@@ -252,13 +252,13 @@ test("provider health matrix treats recovered models as degraded instead of erro
 
 test("provider health matrix route requires management auth", async () => {
   await enableManagementAuth();
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: PROVIDER,
     authType: "apikey",
     name: "matrix-key",
     apiKey: "test-key",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const unauthenticated = await route.GET(
     new Request("http://localhost/api/providers/health-matrix?includeHealthy=true")
@@ -292,3 +292,5 @@ test("provider health matrix route rejects invalid query parameters", async () =
   );
   assert.equal(invalidBoolean.status, 400);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

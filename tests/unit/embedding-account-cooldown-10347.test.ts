@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-embed-cooldown-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -14,24 +15,24 @@ const auth = await import("../../src/sse/services/auth.ts");
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 async function seedConnection(provider: string): Promise<string> {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     apiKey: `${provider}-key`,
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   return (conn as Record<string, unknown>).id as string;
 }
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#10347: markAccountUnavailable triggers cooldown on embedding 402", async () => {

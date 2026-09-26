@@ -20,6 +20,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // #10460/#10525: DATA_DIR must be assigned BEFORE any transitive DB import —
 // core.ts captures resolveWritableDataDir at module-load time.
@@ -55,7 +56,7 @@ let seedSeq = 0;
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -66,14 +67,14 @@ async function seedConnection(
   provider: string,
   overrides: Record<string, unknown> = {}
 ): Promise<string> {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     apiKey: `${provider}-key-${++seedSeq}`,
     isActive: true,
     testStatus: "active",
     ...overrides,
-  });
+  })) as JsonRecord & { id: string };
   return (conn as Record<string, unknown>).id as string;
 }
 
@@ -97,7 +98,7 @@ function seedProxyLog(connectionId: string, egressIp: string, provider: string =
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("siblings sharing the egress IP are cooled down with the same cooldown", async () => {

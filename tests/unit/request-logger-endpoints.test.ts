@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-reqlogger-ep-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -13,7 +14,7 @@ const callLogs = await import("../../src/lib/usage/callLogs.ts");
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // Captured stream chunks are prefixed with a per-chunk arrival timestamp
@@ -58,7 +59,7 @@ test("trackPendingRequest creates a detail entry", () => {
   assert.ok(detail.id, "should have an id");
   assert.ok(detail.startedAt > 0, "should have startedAt timestamp");
   assert.ok(detail.clientRequest, "should preserve clientRequest");
-  assert.equal(detail.clientRequest.messages[0].content, "hi");
+  assert.equal((detail.clientRequest as LooseDeep).messages[0].content, "hi");
 });
 
 test("trackPendingRequest decrements and removes detail on finish", () => {

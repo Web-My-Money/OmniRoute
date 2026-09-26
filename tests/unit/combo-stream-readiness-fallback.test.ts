@@ -139,7 +139,7 @@ test("streaming quality peek releases OpenAI-compatible reasoning-only SSE immed
     new Promise<"timeout">((resolve) => setTimeout(() => resolve("timeout"), 50)),
   ]);
 
-  assert.notEqual(result, "timeout", "quality peek should not wait for the full OpenAI stream");
+  if (result === "timeout") assert.fail("quality peek should not wait for the full OpenAI stream");
   assert.equal(result.valid, true);
   assert.ok(result.clonedResponse, "quality peek should replay the already-read prefix");
 
@@ -206,7 +206,7 @@ test("streaming quality peek waits past OpenAI-compatible empty header chunks", 
     new Promise<"timeout">((resolve) => setTimeout(() => resolve("timeout"), 100)),
   ]);
 
-  assert.notEqual(result, "timeout", "quality peek should release when reasoning starts");
+  if (result === "timeout") assert.fail("quality peek should release when reasoning starts");
   assert.equal(result.valid, true);
   assert.ok(result.clonedResponse, "quality peek should replay both buffered chunks");
 
@@ -264,7 +264,7 @@ test("streaming quality peek waits past OpenAI-compatible finish-only chunks", a
     new Promise<"timeout">((resolve) => setTimeout(() => resolve("timeout"), 100)),
   ]);
 
-  assert.notEqual(result, "timeout", "quality peek should release when content starts");
+  if (result === "timeout") assert.fail("quality peek should release when content starts");
   assert.equal(result.valid, true);
   assert.ok(result.clonedResponse, "quality peek should replay buffered finish and content chunks");
 
@@ -323,7 +323,7 @@ test("streaming quality peek waits past Responses lifecycle-only events", async 
     new Promise<"timeout">((resolve) => setTimeout(() => resolve("timeout"), 100)),
   ]);
 
-  assert.notEqual(result, "timeout", "quality peek should release on Responses text delta");
+  if (result === "timeout") assert.fail("quality peek should release on Responses text delta");
   assert.equal(result.valid, true);
   assert.ok(result.clonedResponse);
 
@@ -374,7 +374,7 @@ test("streaming quality peek waits past Gemini finish-only candidates", async ()
     new Promise<"timeout">((resolve) => setTimeout(() => resolve("timeout"), 100)),
   ]);
 
-  assert.notEqual(result, "timeout", "quality peek should release on Gemini text parts");
+  if (result === "timeout") assert.fail("quality peek should release on Gemini text parts");
   assert.equal(result.valid, true);
   assert.ok(result.clonedResponse);
 
@@ -414,7 +414,7 @@ test("streaming quality peek parses legal multi-line SSE data before releasing",
     new Promise<"timeout">((resolve) => setTimeout(() => resolve("timeout"), 100)),
   ]);
 
-  assert.notEqual(result, "timeout", "quality peek should release on multi-line SSE reasoning");
+  if (result === "timeout") assert.fail("quality peek should release on multi-line SSE reasoning");
   assert.equal(result.valid, true);
   assert.ok(result.clonedResponse);
 });

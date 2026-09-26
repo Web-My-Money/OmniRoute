@@ -27,7 +27,11 @@ describe("Context Requirements Integration", () => {
       contextFilterMode: "strict" as const,
     };
 
-    const result = applyContextRequirements(targets, requirements, mockLog);
+    const result = applyContextRequirements(
+      targets as unknown as ResolvedComboTarget[],
+      requirements,
+      mockLog
+    );
     assert.ok(result.length < targets.length);
     assert.ok(
       result.every((target) => targets.some((original) => original.modelStr === target.modelStr)),
@@ -49,7 +53,11 @@ describe("Context Requirements Integration", () => {
       { modelStr: "gpt-4", provider: "openai", weight: 1 },
     ];
 
-    const result = applyContextRequirements(targets, undefined, mockLog);
+    const result = applyContextRequirements(
+      targets as unknown as ResolvedComboTarget[],
+      undefined,
+      mockLog
+    );
     assert.equal(result.length, targets.length);
     assert.equal(result, targets); // Same reference
   });
@@ -78,7 +86,11 @@ describe("Context Requirements Integration", () => {
       contextFilterMode: "strict" as const,
     };
 
-    const result = applyContextRequirements(targets, requirements, mockLog);
+    const result = applyContextRequirements(
+      targets as unknown as ResolvedComboTarget[],
+      requirements,
+      mockLog
+    );
     assert.equal(result.length, 2);
     assert.ok(
       result.every(
@@ -99,7 +111,11 @@ describe("Context Requirements Integration", () => {
       contextFilterMode: "lenient" as const,
     };
 
-    const result = applyContextRequirements(targets, requirements, mockLog);
+    const result = applyContextRequirements(
+      targets as unknown as ResolvedComboTarget[],
+      requirements,
+      mockLog
+    );
 
     // Should include unknown-model in lenient mode
     assert.ok(
@@ -120,7 +136,11 @@ describe("Context Requirements Integration", () => {
       contextFilterMode: "strict" as const,
     };
 
-    const result = applyContextRequirements(targets, requirements, mockLog);
+    const result = applyContextRequirements(
+      targets as unknown as ResolvedComboTarget[],
+      requirements,
+      mockLog
+    );
 
     assert.ok(
       !result.some((t) => t.modelStr === "unknown-model"),

@@ -210,7 +210,7 @@ test.before(async () => {
   });
 
   // Seed connection with 3 fingerprints
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: providerId,
     authType: "apikey",
     name: "fp-mimocode-multi-device",
@@ -227,7 +227,7 @@ test.before(async () => {
         { fingerprint: "fp-device-ccc", proxy: null },
       ],
     },
-  });
+  })) as JsonRecord & { id: string };
 
   // Create round-robin combo
   await combosDb.createCombo({
@@ -280,7 +280,7 @@ test.after(async () => {
   if (app) await stopProcess(app.child);
   await upstream.stop();
   core.closeDbInstance();
-  await fsp.rm(TEST_DATA_DIR, { recursive: true, force: true });
+  await fsp.rm(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ── Tests ──────────────────────────────────────────────────────────────────
@@ -341,3 +341,5 @@ test("round-robin combo handles 5 sequential requests", async () => {
   const state = upstream.getState(TOKEN);
   assert.equal(state.hits, 5, `expected 5 hits, got ${state.hits}`);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

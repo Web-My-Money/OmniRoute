@@ -16,7 +16,7 @@ test("OpenAI -> Cloud Code Gemini applies native request defaults", () => {
       reasoning_effort: "high",
     },
     true
-  ) as {
+  ) as unknown as {
     model: string;
     generationConfig: { thinkingConfig: { includeThoughts: boolean }; topK?: number };
     contents: Array<{ parts: Array<{ text: string }> }>;

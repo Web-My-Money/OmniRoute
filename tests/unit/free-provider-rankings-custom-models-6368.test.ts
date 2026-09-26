@@ -25,6 +25,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-rankings-6368-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -39,7 +40,7 @@ const CUSTOM_MODEL_ID = "claude-fable-5-6368";
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("mergeProviderModels: additively includes custom models, de-duping by id", () => {
@@ -72,13 +73,13 @@ test("#6368: a provider whose only scored model is a user-added custom model app
 
   await modelsDb.addCustomModel("openrouter", CUSTOM_MODEL_ID, "Claude Fable 5");
 
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "openrouter-main-6368",
     apiKey: "test-token",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const unfiltered = await rankings.computeFreeProviderRankings(undefined, 100, {});
   const orUnfiltered = unfiltered.find((r) => r.id === "openrouter");

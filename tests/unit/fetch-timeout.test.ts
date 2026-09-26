@@ -25,11 +25,11 @@ test("fetchWithTimeout forwards options and exposes the configured timeout", asy
   let seenOptions = null;
   const expectedResponse = { ok: true, status: 204 };
 
-  globalThis.fetch = async (url, options) => {
+  globalThis.fetch = (async (url, options) => {
     seenUrl = url;
     seenOptions = options;
     return expectedResponse;
-  };
+  }) as unknown as typeof fetch;
 
   const response = await mod.fetchWithTimeout("https://example.test/ping", {
     method: "POST",

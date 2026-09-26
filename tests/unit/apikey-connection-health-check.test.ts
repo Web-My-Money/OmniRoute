@@ -14,8 +14,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-apikey-health-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -29,7 +30,7 @@ async function resetStorage() {
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       if (fs.existsSync(TEST_DATA_DIR)) {
-        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       }
       break;
     } catch (error: any) {
@@ -45,14 +46,14 @@ async function resetStorage() {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("API-key-only gemini connection is NOT marked expired by health check", async () => {
   await resetStorage();
 
   // Create a gemini connection with an API key but no refresh token
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "gemini",
     name: "gemini-apikey-test",
     apiKey: "AIzaSyTest1234567890abcdefghijklmnop",
@@ -60,7 +61,7 @@ test("API-key-only gemini connection is NOT marked expired by health check", asy
     testStatus: "active",
     healthCheckInterval: 60,
     // No refreshToken — this is an API-key-only connection
-  });
+  })) as JsonRecord & { id: string };
 
   assert.equal(conn.testStatus, "active", "precondition: connection starts as active");
 
@@ -86,7 +87,7 @@ test("gemini connection WITHOUT apiKey AND WITHOUT refreshToken IS marked expire
   await resetStorage();
 
   // Create a gemini OAuth connection that lost its refresh token
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "gemini",
     name: "gemini-oauth-no-refresh",
     accessToken: "ya29.expired-token",
@@ -94,7 +95,7 @@ test("gemini connection WITHOUT apiKey AND WITHOUT refreshToken IS marked expire
     testStatus: "active",
     healthCheckInterval: 60,
     // No apiKey, no refreshToken — this is a broken OAuth connection
-  });
+  })) as JsonRecord & { id: string };
 
   assert.equal(conn.testStatus, "active", "precondition: connection starts as active");
 
@@ -120,14 +121,14 @@ test("API-key-only antigravity connection is NOT marked expired by health check"
   await resetStorage();
 
   // antigravity also supports token refresh — verify the fix applies to all providers
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "antigravity",
     name: "agy-apikey-test",
     apiKey: "sk-ant-test1234567890",
     isActive: true,
     testStatus: "active",
     healthCheckInterval: 60,
-  });
+  })) as JsonRecord & { id: string };
 
   await checkConnection(conn);
 
@@ -147,7 +148,7 @@ test("connection with both apiKey and refreshToken: refresh path is tried", asyn
   // The health check tries the refresh token path first.
   // With a stale/invalid refresh token, the connection gets marked expired
   // even though an API key exists — the refresh path takes precedence.
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "gemini",
     name: "gemini-dual-auth",
     apiKey: "AIzaSyTest1234567890abcdefghijklmnop",
@@ -156,7 +157,7 @@ test("connection with both apiKey and refreshToken: refresh path is tried", asyn
     isActive: true,
     testStatus: "active",
     healthCheckInterval: 60,
-  });
+  })) as JsonRecord & { id: string };
 
   await checkConnection(conn);
 
@@ -177,39 +178,39 @@ test("sweep processes all connections with inter-batch stagger + jitter delay", 
 
   // Create multiple connections; set isActive=false so checkConnection
   // returns immediately at the !conn.isActive guard without OAuth calls.
-  const c1 = await providersDb.createProviderConnection({
+  const c1 = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "oauth",
     name: "Stagger Test 1",
     email: "t1@example.com",
     refreshToken: "test-rt",
     isActive: false,
-  });
-  const c2 = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const c2 = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "oauth",
     name: "Stagger Test 2",
     email: "t2@example.com",
     refreshToken: "test-rt",
     isActive: false,
-  });
-  const c3 = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const c3 = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "oauth",
     name: "Stagger Test 3",
     email: "t3@example.com",
     refreshToken: "test-rt",
     isActive: false,
-  });
+  })) as JsonRecord & { id: string };
   for (let i = 4; i <= 21; i++) {
-    await providersDb.createProviderConnection({
+    (await providersDb.createProviderConnection({
       provider: "openai",
       authType: "oauth",
       name: `Stagger Test ${i}`,
       email: `t${i}@example.com`,
       refreshToken: "test-rt",
       isActive: false,
-    });
+    })) as JsonRecord & { id: string };
   }
 
   // Clear any health-check skip config

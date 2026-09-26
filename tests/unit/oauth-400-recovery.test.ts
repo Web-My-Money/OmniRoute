@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Isolated DATA_DIR: the refresh path persists tokens through the real
 // updateProviderConnection — without this the test would write into the
@@ -208,7 +209,8 @@ test("antigravity/agy 400 stays inconclusive (no reactive refresh masks the verd
   // ?? binds looser than === — without parentheses this reads as
   // (warning ?? diagnosis?.code) === 'probe_inconclusive'. Split explicitly.
   const warningOk =
-    typeof result.warning === "string" || result.diagnosis?.code === "probe_inconclusive";
+    typeof result.warning === "string" ||
+    (result as LooseDeep).diagnosis?.code === "probe_inconclusive";
   assert.ok(warningOk, "inconclusive 400 must surface a warning or the probe_inconclusive code");
 });
 
@@ -231,10 +233,10 @@ test("isReactive400Recoverable fixtures compile with the real helper signature",
 });
 
 test.after(() => {
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
-test("isTokenExpired treats a corrupt expiresAt string as expired (refreshable)", () => {
+test("isTokenExpired treats a corrupt expiresAt string as expired (refreshable)", async () => {
   // Direct unit check — the integration path exercises this via
   // testOAuthConnection, but the NaN guard deserves its own assertion.
   const corrupt = baseConnection({
@@ -265,5 +267,5 @@ test("isTokenExpired treats a corrupt expiresAt string as expired (refreshable)"
     assert.ok(refreshCalls >= 1, "corrupt expiresAt + refreshToken must refresh proactively");
     return r;
   });
-  return promise;
+  await promise;
 });

@@ -10,6 +10,7 @@ import proxyFetch, {
 } from "../../open-sse/utils/proxyFetch.ts";
 import { getDefaultDispatcher } from "../../open-sse/utils/proxyDispatcher.ts";
 import tlsClient from "../../open-sse/utils/tlsClient.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 async function withEnv(overrides, fn) {
   const previous = new Map();
@@ -19,7 +20,7 @@ async function withEnv(overrides, fn) {
     if (value === undefined) {
       delete process.env[key];
     } else {
-      process.env[key] = value;
+      process.env[key] = value as string;
     }
   }
 
@@ -39,7 +40,7 @@ async function withEnv(overrides, fn) {
 async function withHttpServer(handler, fn) {
   const server = http.createServer(handler);
 
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
     server.listen(0, "127.0.0.1", resolve);
   });
@@ -50,7 +51,7 @@ async function withHttpServer(handler, fn) {
   try {
     return await fn(`http://127.0.0.1:${address.port}`);
   } finally {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       server.close((error) => {
         if (error) reject(error);
         else resolve();
@@ -128,7 +129,7 @@ test("proxy fetch uses TLS fingerprint transport when enabled and available", as
     },
     async () => {
       setTlsAvailable(true);
-      tlsClient.fetch = async (url, options = {}) => {
+      tlsClient.fetch = async (url, options: MockRequestInit = {}) => {
         assert.equal(url, "https://omniroute.example.test/hello");
         assert.equal(options.method, "POST");
         return Response.json({ via: "tls-client" });

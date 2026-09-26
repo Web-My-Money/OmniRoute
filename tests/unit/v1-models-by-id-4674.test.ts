@@ -1,10 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import {
-  findModelById,
-  handleGetModelById,
-} from "@/app/api/v1/models/modelById";
+import { findModelById, handleGetModelById } from "@/app/api/v1/models/modelById";
 
 // #4674 — GET /v1/models/{model} previously had no route handler, so the request
 // fell through to the Next.js catch-all and returned the HTML dashboard instead of
@@ -67,7 +64,14 @@ test("findModelById tolerates a non-array catalog", () => {
 
 test("handleGetModelById returns 200 JSON for an existing model", async () => {
   const req = new Request("http://localhost:20128/v1/models/gpt-5");
-  const res = await handleGetModelById(req, "gpt-5", listResponse);
+  const res = await handleGetModelById(
+    req,
+    "gpt-5",
+    listResponse as unknown as (
+      request: Request,
+      corsHeaders?: Record<string, string>
+    ) => Promise<Response>
+  );
   assert.equal(res.status, 200);
   assert.match(res.headers.get("content-type") || "", /application\/json/);
   const body = await res.json();
@@ -77,7 +81,14 @@ test("handleGetModelById returns 200 JSON for an existing model", async () => {
 
 test("handleGetModelById returns 404 JSON (not HTML) for an unknown model", async () => {
   const req = new Request("http://localhost:20128/v1/models/ghost");
-  const res = await handleGetModelById(req, "ghost", listResponse);
+  const res = await handleGetModelById(
+    req,
+    "ghost",
+    listResponse as unknown as (
+      request: Request,
+      corsHeaders?: Record<string, string>
+    ) => Promise<Response>
+  );
   assert.equal(res.status, 404);
   // The whole point of #4674: never serve the HTML dashboard here.
   const ct = res.headers.get("content-type") || "";

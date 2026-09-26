@@ -8,6 +8,7 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { budgetToEffort, applyThinking, normalizeXaiReasoningEffort } =
   await import("../../src/lib/providers/xai/thinking.ts");
@@ -57,7 +58,7 @@ test("applyThinking: honors xAI-native reasoning.effort verbatim", () => {
   const req = { reasoning: { effort: "high" }, foo: 1 };
   const out = applyThinking(req as Parameters<typeof applyThinking>[0]);
   assert.deepStrictEqual(out.reasoning, { effort: "high" });
-  assert.equal((out as Record<string, unknown>).foo, 1);
+  assert.equal((out as LooseDeep).foo, 1);
 });
 
 test("normalizeXaiReasoningEffort: downgrades max/xhigh to xAI-supported high", () => {
@@ -147,7 +148,7 @@ test("chatRequestToXaiResponses: converts system message to instructions", () =>
   const out = chatRequestToXaiResponses(req);
   assert.equal(out.instructions, "You are a helpful assistant.");
   assert.equal(out.input.length, 1);
-  assert.equal((out.input[0] as Record<string, unknown>).role, "user");
+  assert.equal((out.input[0] as LooseDeep).role, "user");
 });
 
 test("chatRequestToXaiResponses: converts tool message to function_call_output", () => {
@@ -198,10 +199,10 @@ test("xaiCompletedToChatJson: extracts output_text content into message", () => 
       },
     ],
   };
-  const result = xaiCompletedToChatJson(completed) as Record<string, unknown>;
+  const result = xaiCompletedToChatJson(completed) as LooseDeep;
   const choices = result.choices as Array<Record<string, unknown>>;
   assert.equal(choices[0].finish_reason, "stop");
-  const message = choices[0].message as Record<string, unknown>;
+  const message = choices[0].message as LooseDeep;
   assert.equal(message.content, "Hello!");
 });
 
@@ -218,14 +219,14 @@ test("xaiCompletedToChatJson: maps function_call to tool_calls with finish_reaso
       },
     ],
   };
-  const result = xaiCompletedToChatJson(completed) as Record<string, unknown>;
+  const result = xaiCompletedToChatJson(completed) as LooseDeep;
   const choices = result.choices as Array<Record<string, unknown>>;
   assert.equal(choices[0].finish_reason, "tool_calls");
-  const message = choices[0].message as Record<string, unknown>;
+  const message = choices[0].message as LooseDeep;
   const toolCalls = message.tool_calls as Array<Record<string, unknown>>;
   assert.equal(toolCalls.length, 1);
   assert.equal(toolCalls[0].id, "call_1");
-  const fn = toolCalls[0].function as Record<string, unknown>;
+  const fn = toolCalls[0].function as LooseDeep;
   assert.equal(fn.name, "get_weather");
 });
 
@@ -295,7 +296,7 @@ test("claudeRequestToXaiResponses: converts text content to input_text block", (
   };
   const out = claudeRequestToXaiResponses(req);
   assert.equal(out.input.length, 1);
-  const inputItem = out.input[0] as Record<string, unknown>;
+  const inputItem = out.input[0] as LooseDeep;
   const content = inputItem.content as Array<Record<string, unknown>>;
   assert.equal(content[0].type, "input_text");
   assert.equal(content[0].text, "Hello");
@@ -318,7 +319,7 @@ test("claudeRequestToXaiResponses: extracts tool_result to function_call_output"
     ],
   };
   const out = claudeRequestToXaiResponses(req);
-  const item = out.input[0] as Record<string, unknown>;
+  const item = out.input[0] as LooseDeep;
   assert.equal(item.type, "function_call_output");
   assert.equal(item.call_id, "tu_123");
   assert.equal(item.output, "result data");
@@ -338,9 +339,9 @@ test("claudeRequestToXaiResponses: translates tools from Anthropic to xAI functi
   };
   const out = claudeRequestToXaiResponses(req);
   assert.ok(Array.isArray(out.tools));
-  const tool = (out.tools as Array<Record<string, unknown>>)[0];
+  const tool = (out.tools as unknown as Array<Record<string, unknown>>)[0];
   assert.equal(tool.type, "function");
-  const fn = tool.function as Record<string, unknown>;
+  const fn = tool.function as LooseDeep;
   assert.equal(fn.name, "search");
 });
 
@@ -367,7 +368,7 @@ test("xaiCompletedToClaudeJson: converts output_text to text content block", () 
       },
     ],
   };
-  const result = xaiCompletedToClaudeJson(completed) as Record<string, unknown>;
+  const result = xaiCompletedToClaudeJson(completed) as LooseDeep;
   assert.equal(result.role, "assistant");
   assert.equal(result.stop_reason, "end_turn");
   const content = result.content as Array<Record<string, unknown>>;
@@ -388,7 +389,7 @@ test("xaiCompletedToClaudeJson: converts function_call to tool_use block", () =>
       },
     ],
   };
-  const result = xaiCompletedToClaudeJson(completed) as Record<string, unknown>;
+  const result = xaiCompletedToClaudeJson(completed) as LooseDeep;
   assert.equal(result.stop_reason, "tool_use");
   const content = result.content as Array<Record<string, unknown>>;
   assert.equal(content[0].type, "tool_use");
@@ -403,7 +404,7 @@ test("geminiRequestToXaiResponses: converts text parts to input_text blocks", ()
   };
   const out = geminiRequestToXaiResponses(req, "grok-4");
   assert.equal(out.model, "grok-4");
-  const item = out.input[0] as Record<string, unknown>;
+  const item = out.input[0] as LooseDeep;
   const content = item.content as Array<Record<string, unknown>>;
   assert.equal(content[0].type, "input_text");
   assert.equal(content[0].text, "Hello");
@@ -435,9 +436,9 @@ test("geminiRequestToXaiResponses: converts functionDeclarations to xAI tools", 
   };
   const out = geminiRequestToXaiResponses(req);
   assert.ok(Array.isArray(out.tools));
-  const tool = (out.tools as Array<Record<string, unknown>>)[0];
+  const tool = (out.tools as unknown as Array<Record<string, unknown>>)[0];
   assert.equal(tool.type, "function");
-  const fn = tool.function as Record<string, unknown>;
+  const fn = tool.function as LooseDeep;
   assert.equal(fn.name, "search");
 });
 
@@ -455,7 +456,7 @@ test("geminiRequestToXaiResponses: converts model role to assistant", () => {
     contents: [{ role: "model", parts: [{ text: "Hi" }] }],
   };
   const out = geminiRequestToXaiResponses(req);
-  const item = out.input[0] as Record<string, unknown>;
+  const item = out.input[0] as LooseDeep;
   assert.equal(item.role, "assistant");
 });
 
@@ -472,9 +473,9 @@ test("xaiCompletedToGeminiJson: converts output_text to Gemini candidate text pa
       },
     ],
   };
-  const result = xaiCompletedToGeminiJson(completed) as Record<string, unknown>;
+  const result = xaiCompletedToGeminiJson(completed) as LooseDeep;
   const candidates = result.candidates as Array<Record<string, unknown>>;
-  const content = candidates[0].content as Record<string, unknown>;
+  const content = candidates[0].content as LooseDeep;
   const parts = content.parts as Array<Record<string, unknown>>;
   assert.equal(parts[0].text, "Hello Gemini!");
   assert.equal(candidates[0].finishReason, "STOP");
@@ -492,11 +493,11 @@ test("xaiCompletedToGeminiJson: converts function_call to functionCall part", ()
       },
     ],
   };
-  const result = xaiCompletedToGeminiJson(completed) as Record<string, unknown>;
+  const result = xaiCompletedToGeminiJson(completed) as LooseDeep;
   const candidates = result.candidates as Array<Record<string, unknown>>;
-  const content = candidates[0].content as Record<string, unknown>;
+  const content = candidates[0].content as LooseDeep;
   const parts = content.parts as Array<Record<string, unknown>>;
-  const fc = parts[0].functionCall as Record<string, unknown>;
+  const fc = parts[0].functionCall as LooseDeep;
   assert.equal(fc.name, "lookup");
   assert.deepStrictEqual(fc.args, { q: "test" });
 });
@@ -507,8 +508,8 @@ test("xaiCompletedToGeminiJson: maps usage to usageMetadata", () => {
     output: [],
     usage: { input_tokens: 10, output_tokens: 20 },
   };
-  const result = xaiCompletedToGeminiJson(completed) as Record<string, unknown>;
-  const meta = result.usageMetadata as Record<string, unknown>;
+  const result = xaiCompletedToGeminiJson(completed) as LooseDeep;
+  const meta = result.usageMetadata as LooseDeep;
   assert.equal(meta.promptTokenCount, 10);
   assert.equal(meta.candidatesTokenCount, 20);
   assert.equal(meta.totalTokenCount, 30);

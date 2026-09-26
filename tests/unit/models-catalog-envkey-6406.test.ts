@@ -9,6 +9,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-envkey-6406-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -29,12 +30,12 @@ interface ModelsCatalogResponseBody {
 async function resetStorage() {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 async function seedOpenAi() {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "openai-envkey-6406",
@@ -42,7 +43,7 @@ async function seedOpenAi() {
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {
@@ -52,7 +53,7 @@ test.beforeEach(async () => {
 test.after(async () => {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   delete process.env.OMNIROUTE_API_KEY;
 });
 

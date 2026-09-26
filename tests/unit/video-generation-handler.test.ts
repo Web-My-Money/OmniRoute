@@ -3,6 +3,21 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+
+// handleVideoGeneration returns a per-provider result union; tests assert the
+// branch their mock produced, so read it through this loose shape.
+type LooseVideoResult = JsonRecord & {
+  success?: boolean;
+  status?: number;
+  error?: string | null;
+  data?: {
+    created?: number;
+    data?: Array<JsonRecord & { url?: string; format?: string }>;
+  };
+};
+const runVideo = async (...args: Parameters<typeof handleVideoGeneration>) =>
+  (await handleVideoGeneration(...args)) as LooseVideoResult;
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-video-"));
 
@@ -15,7 +30,7 @@ function immediateTimeout(callback, _ms, ...args) {
 }
 
 test("handleVideoGeneration rejects invalid model strings", async () => {
-  const result = await handleVideoGeneration({
+  const result = await runVideo({
     body: { model: "invalid-video-model", prompt: "x" },
     credentials: null,
     log: null,
@@ -27,7 +42,7 @@ test("handleVideoGeneration rejects invalid model strings", async () => {
 });
 
 test("handleVideoGeneration treats unknown provider prefixes as invalid video models", async () => {
-  const result = await handleVideoGeneration({
+  const result = await runVideo({
     body: { model: "mystery/model-1", prompt: "x" },
     credentials: null,
     log: null,
@@ -42,7 +57,7 @@ test("handleVideoGeneration routes SD WebUI payloads and normalizes mp4 output",
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       body: JSON.parse(String(options.body || "{}")),
@@ -57,7 +72,7 @@ test("handleVideoGeneration routes SD WebUI payloads and normalizes mp4 output",
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await runVideo({
       body: {
         model: "sdwebui/animatediff-webui",
         prompt: "ocean wave",
@@ -95,7 +110,7 @@ test("handleVideoGeneration polls KIE market tasks and returns video URLs", asyn
   let createBody;
   let pollUrl = "";
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
 
     if (stringUrl === "https://api.kie.ai/api/v1/jobs/createTask") {
@@ -126,7 +141,7 @@ test("handleVideoGeneration polls KIE market tasks and returns video URLs", asyn
   try {
     assert.ok(VIDEO_PROVIDERS.kie.models.some((model) => model.id === "kling-3.0/video"));
 
-    const result = await handleVideoGeneration({
+    const result = await runVideo({
       body: {
         model: "kie/kling-3.0/video",
         prompt: "cinematic shot of neon city rain",
@@ -151,8 +166,8 @@ test("handleVideoGeneration executes ComfyUI workflow and returns fetched output
   const originalSetTimeout = globalThis.setTimeout;
   let promptBody;
 
-  globalThis.setTimeout = immediateTimeout;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
 
     if (stringUrl === "http://localhost:8188/prompt") {
@@ -186,7 +201,7 @@ test("handleVideoGeneration executes ComfyUI workflow and returns fetched output
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await runVideo({
       body: {
         model: "comfyui/animatediff",
         prompt: "neon car",
@@ -233,7 +248,7 @@ test("handleVideoGeneration returns unknown provider when registry lookup disapp
     },
   });
 
-  const result = await handleVideoGeneration({
+  const result = await runVideo({
     body: { model: "flakyprovider/ghost-model", prompt: "x" },
     credentials: null,
     log: null,
@@ -257,7 +272,7 @@ test("handleVideoGeneration rejects unsupported provider formats", async () => {
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await runVideo({
       body: { model: "fakeprovider/broken-model", prompt: "x" },
       credentials: null,
       log: null,
@@ -280,7 +295,7 @@ test("handleVideoGeneration normalizes SD WebUI image arrays and applies default
   const logEntries = [];
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       body: JSON.parse(String(options.body || "{}")),
@@ -295,7 +310,7 @@ test("handleVideoGeneration normalizes SD WebUI image arrays and applies default
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await runVideo({
       body: {
         model: "sdwebui/animatediff-webui",
         prompt: "forest path",
@@ -337,7 +352,7 @@ test("handleVideoGeneration returns SD WebUI upstream errors and logs them", asy
   globalThis.fetch = async () => new Response("provider busy", { status: 503 });
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await runVideo({
       body: {
         model: "sdwebui/animatediff-webui",
         prompt: "storm",
@@ -368,8 +383,8 @@ test("handleVideoGeneration returns provider errors for ComfyUI failures and log
   const logEntries = [];
   let promptBody;
 
-  globalThis.setTimeout = immediateTimeout;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
 
     if (stringUrl === "http://localhost:8188/prompt") {
@@ -403,7 +418,7 @@ test("handleVideoGeneration returns provider errors for ComfyUI failures and log
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await runVideo({
       body: {
         model: "comfyui/animatediff",
         prompt: "night drive",
@@ -439,8 +454,8 @@ test("handleVideoGeneration submits, polls and downloads Runway text-to-video ta
   const seen = [];
   let pollCount = 0;
 
-  globalThis.setTimeout = immediateTimeout;
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const target = String(url);
     seen.push({ url: target, init });
 
@@ -481,7 +496,7 @@ test("handleVideoGeneration submits, polls and downloads Runway text-to-video ta
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await runVideo({
       body: {
         model: "runwayml/gen4.5",
         prompt: "cinematic sunrise",
@@ -514,8 +529,8 @@ test("handleVideoGeneration routes Runway image-to-video requests and can return
   const originalSetTimeout = globalThis.setTimeout;
   let submittedBody;
 
-  globalThis.setTimeout = immediateTimeout;
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const target = String(url);
 
     if (target === "https://api.dev.runwayml.com/v1/image_to_video") {
@@ -538,7 +553,7 @@ test("handleVideoGeneration routes Runway image-to-video requests and can return
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await runVideo({
       body: {
         model: "runwayml/gen4_turbo",
         prompt: "make the frame move",
@@ -568,7 +583,7 @@ test("handleVideoGeneration routes Runway image-to-video requests and can return
 });
 
 test("handleVideoGeneration rejects Runway models that require promptImage", async () => {
-  const result = await handleVideoGeneration({
+  const result = await runVideo({
     body: {
       model: "runwayml/gen4_turbo",
       prompt: "animate this",
@@ -585,7 +600,7 @@ test("handleVideoGeneration uses OpenAI-compatible handler for resolved custom v
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       body: JSON.parse(String(options.body || "{}")),
@@ -602,7 +617,7 @@ test("handleVideoGeneration uses OpenAI-compatible handler for resolved custom v
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await runVideo({
       body: {
         model: "custom-provider/super-video",
         prompt: "a cat playing piano",
@@ -638,7 +653,7 @@ test("handleVideoGeneration honors resolvedProvider for bare (prefix-less) custo
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       body: JSON.parse(String(options.body || "{}")),
@@ -655,7 +670,7 @@ test("handleVideoGeneration honors resolvedProvider for bare (prefix-less) custo
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await runVideo({
       body: {
         model: "super-video",
         prompt: "a cat playing piano",
@@ -686,3 +701,5 @@ test("handleVideoGeneration honors resolvedProvider for bare (prefix-less) custo
     globalThis.fetch = originalFetch;
   }
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

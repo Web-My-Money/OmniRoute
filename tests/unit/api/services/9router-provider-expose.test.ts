@@ -10,7 +10,7 @@ import path from "node:path";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-9router-provider-expose-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 process.env.DISABLE_SQLITE_AUTO_BACKUP = "true";
 
 // Initialise DB first.
@@ -23,7 +23,7 @@ const { POST } = await import("../../../../src/app/api/services/9router/provider
 
 function resetDb() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 

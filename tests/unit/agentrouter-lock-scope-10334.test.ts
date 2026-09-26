@@ -13,6 +13,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-agentrouter-lock-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -21,9 +22,8 @@ const core = await import("../../src/lib/db/core.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
 const auth = await import("../../src/sse/services/auth.ts");
 const accountFallback = await import("../../open-sse/services/accountFallback.ts");
-const { applyComboTargetExhaustion } = await import(
-  "../../open-sse/services/combo/targetExhaustion.ts"
-);
+const { applyComboTargetExhaustion } =
+  await import("../../open-sse/services/combo/targetExhaustion.ts");
 const { classifyProviderError } = await import("../../open-sse/services/errorClassifier.ts");
 
 const QUOTA_EXHAUSTED_429 = '{"error":{"message":"账户额度不足，请充值后重试"}}';
@@ -31,7 +31,7 @@ const MODEL_ACCESS_DENIED_403 = '{"error":{"message":"无权访问模型 claude-
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -39,20 +39,20 @@ async function seedConnection(
   provider: string,
   overrides: Record<string, unknown> = {}
 ): Promise<string> {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     apiKey: `${provider}-key`,
     isActive: true,
     testStatus: "active",
     ...overrides,
-  });
+  })) as JsonRecord & { id: string };
   return (conn as Record<string, unknown>).id as string;
 }
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("agentrouter 429 account quota exhausted -> connection cooldown, never terminal", async () => {

@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-codex-synced-routing-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -19,7 +20,7 @@ const FUTURE_CODEX_MODEL = "codex-next-preview";
 const FUTURE_NON_GPT_MODEL = "orion-preview-2027";
 
 async function seedConnection(provider: TestProvider, isActive = true) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: provider === "codex" ? "oauth" : "apikey",
     name: `${provider}-routing-test`,
@@ -27,7 +28,7 @@ async function seedConnection(provider: TestProvider, isActive = true) {
     apiKey: provider !== "codex" ? `sk-${provider}-routing-test` : undefined,
     isActive,
     providerSpecificData: provider === "codex" ? { workspaceId: "ws-routing-test" } : undefined,
-  });
+  })) as JsonRecord & { id: string };
 }
 
 async function seedSyncedModel(provider: TestProvider, modelId: string, isActive = true) {
@@ -46,13 +47,13 @@ async function seedSyncedModel(provider: TestProvider, modelId: string, isActive
 
 test.beforeEach(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 });
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("bare GPT-5.6 model routes through Codex when it is the only active provider", async () => {

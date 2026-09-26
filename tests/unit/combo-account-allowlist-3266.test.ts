@@ -14,10 +14,12 @@
  *   3. getProviderCredentials never hands back a connection outside the allowlist.
  */
 import test from "node:test";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-allowlist-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -42,19 +44,19 @@ function okResponse(content: string) {
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 async function seedConn(name: string, tags?: string[]) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name,
     apiKey: `sk-${name}`,
     isActive: true,
     ...(tags ? { providerSpecificData: { tags } } : {}),
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {
@@ -63,7 +65,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ── 1. Schema parse ─────────────────────────────────────────────────────────
@@ -139,11 +141,7 @@ test("handleComboChat propagates a step allowlist onto target.allowedConnectionI
         },
       ],
     },
-    handleSingleModel: async (
-      _body: unknown,
-      modelStr: string,
-      target: { allowedConnectionIds?: unknown }
-    ) => {
+    handleSingleModel: async (_body: unknown, modelStr: string, target?: LooseDeep) => {
       captured = Array.isArray(target?.allowedConnectionIds) ? target.allowedConnectionIds : null;
       return okResponse(modelStr);
     },
@@ -241,11 +239,7 @@ test("a step allowlist intersects with tag routing — most-restrictive wins (#3
         },
       ],
     },
-    handleSingleModel: async (
-      _body: unknown,
-      modelStr: string,
-      target: { allowedConnectionIds?: unknown }
-    ) => {
+    handleSingleModel: async (_body: unknown, modelStr: string, target?: LooseDeep) => {
       captured = Array.isArray(target?.allowedConnectionIds) ? target.allowedConnectionIds : null;
       return okResponse(modelStr);
     },

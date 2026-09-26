@@ -1,8 +1,9 @@
-import { test, mock } from "node:test";
+import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { PolicyContext } from "../../../src/server/authz/context.ts";
 
 // Hermetic auth context (6A re-wire fix): the "rejects ..." assertions assume
 // login protection is ON — on a fresh DB (CI) isAuthRequired() is false and the
@@ -28,7 +29,7 @@ const { CLI_TOKEN_HEADER } = await import("../../../src/server/authz/headers.ts"
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   if (originalDataDir === undefined) delete process.env.DATA_DIR;
   else process.env.DATA_DIR = originalDataDir;
 });
@@ -58,7 +59,7 @@ test("management policy allows valid CLI token from localhost", async () => {
     { host: "localhost", [CLI_TOKEN_HEADER]: token },
     { socket: { remoteAddress: "127.0.0.1" } }
   );
-  const outcome = await managementPolicy.evaluate(ctx);
+  const outcome = await managementPolicy.evaluate(ctx as unknown as PolicyContext);
   assert.equal(outcome.allow, true);
   if (outcome.allow) {
     assert.equal(outcome.subject.id, "cli");
@@ -75,7 +76,7 @@ test("management policy accepts legacy 32-character CLI token from localhost", a
     },
     { socket: { remoteAddress: "127.0.0.1" } }
   );
-  const outcome = await managementPolicy.evaluate(ctx);
+  const outcome = await managementPolicy.evaluate(ctx as unknown as PolicyContext);
   assert.equal(outcome.allow, true);
   if (outcome.allow) {
     assert.equal(outcome.subject.id, "cli");
@@ -88,7 +89,7 @@ test("management policy rejects valid token from non-localhost", async () => {
     { host: "localhost", [CLI_TOKEN_HEADER]: token },
     { socket: { remoteAddress: "192.168.1.100" } }
   );
-  const outcome = await managementPolicy.evaluate(ctx);
+  const outcome = await managementPolicy.evaluate(ctx as unknown as PolicyContext);
   assert.equal(outcome.allow, false);
 });
 
@@ -100,7 +101,7 @@ test("management policy rejects wrong CLI token from localhost", async () => {
     },
     { socket: { remoteAddress: "127.0.0.1" } }
   );
-  const outcome = await managementPolicy.evaluate(ctx);
+  const outcome = await managementPolicy.evaluate(ctx as unknown as PolicyContext);
   assert.equal(outcome.allow, false);
 });
 
@@ -127,7 +128,7 @@ test("management policy rejects machine tokens when CLI-token auth is disabled",
       { host: "localhost", [CLI_TOKEN_HEADER]: getMachineTokenSync() },
       { socket: { remoteAddress: "127.0.0.1" } }
     );
-    const outcome = await managementPolicy.evaluate(ctx);
+    const outcome = await managementPolicy.evaluate(ctx as unknown as PolicyContext);
     assert.equal(outcome.allow, false);
   } finally {
     if (previous === undefined) delete process.env.OMNIROUTE_DISABLE_CLI_TOKEN;

@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const tokenRefresh = await import("../../open-sse/services/tokenRefresh.ts");
 const { PROVIDERS, OAUTH_ENDPOINTS } = await import("../../open-sse/config/constants.ts");
@@ -111,7 +113,7 @@ async function withPatchedProperties<TResult>(
   fn: () => Promise<TResult>
 ) {
   const previous = new Map<string, unknown>();
-  const targetRecord = target as Record<string, unknown>;
+  const targetRecord = target as LooseDeep;
   for (const [key, value] of Object.entries(patch)) {
     previous.set(
       key,
@@ -193,7 +195,7 @@ test("refreshAccessToken posts form data and returns rotated tokens", async () =
     },
     async () => {
       await withMockedFetch(
-        async (url, options = {}) => {
+        async (url, options: MockRequestInit = {}) => {
           calls.push({ url, options });
           return jsonResponse({
             access_token: "new-access",
@@ -252,7 +254,7 @@ test("refreshClineToken handles nested payloads and computes expiresIn", async (
 
   await withMockedNow(1_700_000_000_000, async () => {
     await withMockedFetch(
-      async (url, options = {}) => {
+      async (url, options: MockRequestInit = {}) => {
         calls.push({ url, options });
         return jsonResponse({
           data: {
@@ -284,7 +286,7 @@ test("refreshKimiCodingToken adds provider-specific headers and fields", async (
   const calls: any[] = [];
 
   await withMockedFetch(
-    async (url, options = {}) => {
+    async (url, options: MockRequestInit = {}) => {
       calls.push({ url, options });
       return jsonResponse({
         access_token: "kimi-access",
@@ -324,7 +326,7 @@ test("refreshClaudeOAuthToken posts the anthropic oauth refresh contract", async
   const calls: any[] = [];
 
   await withMockedFetch(
-    async (url, options = {}) => {
+    async (url, options: MockRequestInit = {}) => {
       calls.push({ url, options });
       return jsonResponse({
         access_token: "claude-access",
@@ -353,7 +355,7 @@ test("refreshGoogleToken exchanges refresh tokens against the shared google endp
   const calls: any[] = [];
 
   await withMockedFetch(
-    async (url, options = {}) => {
+    async (url, options: MockRequestInit = {}) => {
       calls.push({ url, options });
       return jsonResponse({
         access_token: "google-access",
@@ -429,7 +431,7 @@ test("refreshKiroToken uses the AWS OIDC flow when client credentials are presen
   const calls: any[] = [];
 
   await withMockedFetch(
-    async (url, options = {}) => {
+    async (url, options: MockRequestInit = {}) => {
       calls.push({ url, options });
       return jsonResponse({
         accessToken: "kiro-aws-access",
@@ -471,7 +473,7 @@ test("refreshKiroToken uses stored region for AWS OIDC refresh without authMetho
   const calls: any[] = [];
 
   await withMockedFetch(
-    async (url, options = {}) => {
+    async (url, options: MockRequestInit = {}) => {
       calls.push({ url, options });
       return jsonResponse({
         accessToken: "kiro-aws-access",
@@ -512,7 +514,7 @@ test("refreshKiroToken falls back to the social-auth refresh endpoint", async ()
   const calls: any[] = [];
 
   await withMockedFetch(
-    async (url, options = {}) => {
+    async (url, options: MockRequestInit = {}) => {
       calls.push({ url, options });
       return jsonResponse({
         accessToken: "kiro-social-access",
@@ -544,7 +546,7 @@ test("refreshKiroToken uses AWS OIDC path for social-auth token when clientId is
   const calls: any[] = [];
 
   await withMockedFetch(
-    async (url, options = {}) => {
+    async (url, options: MockRequestInit = {}) => {
       calls.push({ url, options });
       return jsonResponse({
         accessToken: "kiro-isolated-access",
@@ -599,7 +601,7 @@ test("refreshKiroToken uses social-auth path for imported token even with client
   const calls: any[] = [];
 
   await withMockedFetch(
-    async (url, options = {}) => {
+    async (url, options: MockRequestInit = {}) => {
       calls.push({ url, options });
       return jsonResponse({
         accessToken: "kiro-imported-access",
@@ -649,7 +651,7 @@ test("refreshQoderToken uses basic auth once qoder oauth settings are configured
         },
         async () => {
           await withMockedFetch(
-            async (url, options = {}) => {
+            async (url, options: MockRequestInit = {}) => {
               calls.push({ url, options });
               return jsonResponse({
                 access_token: "qoder-access",
@@ -686,7 +688,7 @@ test("refreshGitHubToken sends the real public github client_id and no client_se
   const calls: any[] = [];
 
   await withMockedFetch(
-    async (url, options = {}) => {
+    async (url, options: MockRequestInit = {}) => {
       calls.push({ url, options });
       return jsonResponse({
         access_token: "github-access",
@@ -719,7 +721,7 @@ test("refreshCopilotToken returns the short-lived copilot token", async () => {
   const calls: any[] = [];
 
   await withMockedFetch(
-    async (url, options = {}) => {
+    async (url, options: MockRequestInit = {}) => {
       calls.push({ url, options });
       return jsonResponse({
         token: "copilot-session-token",
@@ -826,70 +828,79 @@ test("supportsTokenRefresh, isUnrecoverableRefreshError and formatProviderCreden
 
 test("getAccessToken discovers projectId for antigravity when stored value is empty", async () => {
   const log = createLog();
-  const { clearAntigravityProjectCache } = await import("../../open-sse/services/antigravityProjectBootstrap.ts");
+  const { clearAntigravityProjectCache } =
+    await import("../../open-sse/services/antigravityProjectBootstrap.ts");
   clearAntigravityProjectCache();
 
   let fetchCalls: string[] = [];
-  await withMockedFetch(async (url, init) => {
-    const urlStr = String(url);
-    fetchCalls.push(urlStr);
-    if (urlStr.includes("oauth2.googleapis.com/token")) {
-      return jsonResponse({
-        access_token: "new-token-1",
-        refresh_token: "new-refresh",
-        expires_in: 3600,
+  await withMockedFetch(
+    async (url, init) => {
+      const urlStr = String(url);
+      fetchCalls.push(urlStr);
+      if (urlStr.includes("oauth2.googleapis.com/token")) {
+        return jsonResponse({
+          access_token: "new-token-1",
+          refresh_token: "new-refresh",
+          expires_in: 3600,
+        });
+      }
+      if (urlStr.includes("loadCodeAssist")) {
+        return jsonResponse({ cloudaicompanionProject: "discovered-project" });
+      }
+      return new Response("not found", { status: 404 });
+    },
+    async () => {
+      const result = await getAccessToken("antigravity", {
+        refreshToken: "refresh",
+        projectId: "",
+        connectionId: "conn-1",
+        providerSpecificData: {},
       });
+      assert.equal(result.projectId, "discovered-project");
+      assert.ok(
+        fetchCalls.some((u) => u.includes("loadCodeAssist")),
+        "should call loadCodeAssist"
+      );
     }
-    if (urlStr.includes("loadCodeAssist")) {
-      return jsonResponse({ cloudaicompanionProject: "discovered-project" });
-    }
-    return new Response("not found", { status: 404 });
-  }, async () => {
-    const result = await getAccessToken("antigravity", {
-      refreshToken: "refresh",
-      projectId: "",
-      connectionId: "conn-1",
-      providerSpecificData: {},
-    });
-    assert.equal(result.projectId, "discovered-project");
-    assert.ok(fetchCalls.some((u) => u.includes("loadCodeAssist")), "should call loadCodeAssist");
-  });
+  );
   clearAntigravityProjectCache();
 });
-
 
 test("getAccessToken handles projectId discovery failure gracefully for antigravity", async () => {
   const log = createLog();
-  const { clearAntigravityProjectCache } = await import("../../open-sse/services/antigravityProjectBootstrap.ts");
+  const { clearAntigravityProjectCache } =
+    await import("../../open-sse/services/antigravityProjectBootstrap.ts");
   clearAntigravityProjectCache();
   tokenRefresh._clearTokenRotationMap();
 
-  await withMockedFetch(async (url) => {
-    const urlStr = String(url);
-    if (urlStr.includes("oauth2.googleapis.com/token")) {
-      return jsonResponse({
-        access_token: "new-token-3",
-        refresh_token: "new-refresh",
-        expires_in: 3600,
+  await withMockedFetch(
+    async (url) => {
+      const urlStr = String(url);
+      if (urlStr.includes("oauth2.googleapis.com/token")) {
+        return jsonResponse({
+          access_token: "new-token-3",
+          refresh_token: "new-refresh",
+          expires_in: 3600,
+        });
+      }
+      if (urlStr.includes("loadCodeAssist")) {
+        return new Response("server error", { status: 500 });
+      }
+      return new Response("not found", { status: 404 });
+    },
+    async () => {
+      const result = await getAccessToken("antigravity", {
+        refreshToken: "refresh",
+        projectId: "",
+        connectionId: "conn-1",
+        providerSpecificData: {},
       });
+      assert.equal(result.accessToken, "new-token-3");
+      assert.ok(result, "should return a result without throwing");
     }
-    if (urlStr.includes("loadCodeAssist")) {
-      return new Response("server error", { status: 500 });
-    }
-    return new Response("not found", { status: 404 });
-  }, async () => {
-    const result = await getAccessToken("antigravity", {
-      refreshToken: "refresh",
-      projectId: "",
-      connectionId: "conn-1",
-      providerSpecificData: {},
-    });
-    assert.equal(result.accessToken, "new-token-3");
-    assert.ok(result, "should return a result without throwing");
-  });
+  );
   clearAntigravityProjectCache();
 });
-
 
 test("getAccessToken deduplicates concurrent refreshes for the same provider and token", async () => {
   const log = createLog();
@@ -936,7 +947,7 @@ test("getAccessToken cleans the in-flight cache after resolve and separates diff
     },
     async () => {
       await withMockedFetch(
-        async (_url, options: RequestInit = {}) => {
+        async (_url, options: MockRequestInit = {}) => {
           fetchCount += 1;
           const refreshToken = new URLSearchParams(bodyToString(options.body)).get("refresh_token");
           return jsonResponse({
@@ -989,7 +1000,7 @@ test("getAllAccessTokens refreshes only active connections with providers", asyn
     },
     async () => {
       await withMockedFetch(
-        async (_url, options: RequestInit = {}) => {
+        async (_url, options: MockRequestInit = {}) => {
           fetchCount += 1;
           const refreshToken = new URLSearchParams(bodyToString(options.body)).get("refresh_token");
           return jsonResponse({
@@ -1180,11 +1191,15 @@ test("getAccessToken per-connection mutex: logs concurrent refresh with waiter c
           );
           assert.ok(concurrentLogs.length >= 1, "logged at least one concurrent refresh event");
           assert.ok(
-            concurrentLogs.some((e) => e.meta?.connectionId === "conn-log-test"),
+            concurrentLogs.some((e) => (e.meta as LooseDeep)?.connectionId === "conn-log-test"),
             "log includes connectionId"
           );
           assert.ok(
-            concurrentLogs.some((e) => typeof e.meta?.waiters === "number" && e.meta.waiters >= 1),
+            concurrentLogs.some(
+              (e) =>
+                typeof (e.meta as LooseDeep)?.waiters === "number" &&
+                (e.meta as LooseDeep).waiters >= 1
+            ),
             "log includes waiter count"
           );
         }

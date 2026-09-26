@@ -27,27 +27,24 @@ delete process.env.PROXY_HEALTH_AUTO_DEACTIVATE;
 
 const core = await import("../../src/lib/db/core.ts");
 const proxiesDb = await import("../../src/lib/db/proxies.ts");
-const { resolveHealthCheckStatusWrite, isProxyHealthAutoDeactivateEnabled } = await import(
-  "../../src/lib/proxyHealth/statusPolicy.ts"
-);
-const { POST: autoTestPost } = await import(
-  "../../src/app/api/settings/proxies/auto-test/route.ts"
-);
-const { POST: batchActivatePost } = await import(
-  "../../src/app/api/settings/proxies/batch-activate/route.ts"
-);
+const { resolveHealthCheckStatusWrite, isProxyHealthAutoDeactivateEnabled } =
+  await import("../../src/lib/proxyHealth/statusPolicy.ts");
+const { POST: autoTestPost } =
+  await import("../../src/app/api/settings/proxies/auto-test/route.ts");
+const { POST: batchActivatePost } =
+  await import("../../src/app/api/settings/proxies/batch-activate/route.ts");
 
 function resetStorage() {
   delete process.env.INITIAL_PASSWORD;
   delete process.env.PROXY_HEALTH_AUTO_DEACTIVATE;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ── status-write policy ───────────────────────────────────────────────────────
@@ -58,7 +55,7 @@ test("policy: automated probes never write status by default", () => {
 });
 
 test("policy: PROXY_HEALTH_AUTO_DEACTIVATE=true restores legacy test-and-set", () => {
-  const env = { PROXY_HEALTH_AUTO_DEACTIVATE: "true" };
+  const env: NodeJS.ProcessEnv = { PROXY_HEALTH_AUTO_DEACTIVATE: "true" };
   assert.equal(resolveHealthCheckStatusWrite(false, env), "inactive");
   assert.equal(resolveHealthCheckStatusWrite(true, env), "active");
   assert.equal(isProxyHealthAutoDeactivateEnabled(env), true);
@@ -146,7 +143,10 @@ test("batch-activate can bulk-disable with status=inactive", async () => {
   });
   const res = await batchActivatePost(req);
   assert.equal(res.status, 200);
-  assert.equal((await proxiesDb.getProxyById(a!.id, { includeSecrets: false }))?.status, "inactive");
+  assert.equal(
+    (await proxiesDb.getProxyById(a!.id, { includeSecrets: false }))?.status,
+    "inactive"
+  );
 });
 
 test("batch-activate rejects an empty ids array with 400", async () => {

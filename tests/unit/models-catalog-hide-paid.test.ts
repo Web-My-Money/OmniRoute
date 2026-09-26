@@ -10,6 +10,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-hide-paid-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -31,7 +32,7 @@ async function fetchCatalog(): Promise<Array<{ id: string; type?: string }>> {
 test.after(() => {
   core.resetDbInstance();
   try {
-    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   } catch {
     /* best-effort */
   }
@@ -41,13 +42,13 @@ test("hidePaidModels default is false + toggles the catalog filter", async () =>
   const defaults = await settingsDb.getSettings();
   assert.equal(defaults.hidePaidModels, false);
 
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "openai-main",
     apiKey: "sk-test",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   // Chat-only assertion. Modality registries (embedding/image/audio/moderation)
   // are exempt from the paid filter by design (no pricing metadata).

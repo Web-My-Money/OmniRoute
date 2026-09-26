@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-opencode-models-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -13,7 +14,7 @@ const modelsRoute = await import("../../src/app/api/providers/[id]/models/route.
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // #3047 — OpenCode Free (no-auth) has no connection row, so the
@@ -89,7 +90,7 @@ test("models route fetches live models from modelsUrl for noAuth provider with m
 });
 
 test("metadata-only no-auth connection row still uses public model discovery", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "opencode",
     authType: "apikey",
     name: "opencode-metadata",
@@ -99,7 +100,7 @@ test("metadata-only no-auth connection row still uses public model discovery", a
       fingerprints: [{ id: "fingerprint-1" }],
       accountProxies: [],
     },
-  });
+  })) as JsonRecord & { id: string };
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async (url: string | URL) => {
     if (String(url) === "https://opencode.ai/zen/v1/models") {

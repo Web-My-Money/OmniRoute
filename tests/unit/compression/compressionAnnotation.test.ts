@@ -5,6 +5,7 @@ import {
   formatCompressionMeta,
 } from "../../../open-sse/services/compression/planResolution.ts";
 import type { CompressionStats } from "../../../open-sse/services/compression/types.ts";
+import type { DerivedPlan } from "../../../open-sse/services/compression/deriveDefaultPlan.ts";
 
 function makeStats(overrides: Partial<CompressionStats> = {}): CompressionStats {
   return {
@@ -131,7 +132,7 @@ describe("formatCompressionAnnotation", () => {
 
   it("prefix mode; source=X is never mutated by appending the annotation", () => {
     const plan = { mode: "standard" as const, stackedPipeline: [], source: "auto" as const };
-    const prefix = formatCompressionMeta(plan);
+    const prefix = formatCompressionMeta(plan as unknown as DerivedPlan);
     assert.equal(prefix, "standard; source=auto");
 
     const stats = makeStats({ rulesApplied: ["filler", "dedup"], techniquesUsed: [] });

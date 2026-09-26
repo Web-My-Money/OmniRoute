@@ -56,14 +56,14 @@ test("resolveAndroidCacheDir: falls back to <homedir>/.cache", () => {
 });
 
 test("ensureAndroidCacheDir: no-op on darwin (does not mkdir, does not set env)", () => {
-  const env = {};
+  const env: NodeJS.ProcessEnv = {};
   const calls = [];
   const result = ensureAndroidCacheDir({
     platform: "darwin",
     env,
-    mkdirSyncFn: (...args) => {
+    mkdirSyncFn: ((...args) => {
       calls.push(args);
-    },
+    }) as unknown as typeof mkdirSync,
     existsSyncFn: () => false,
   });
   assert.deepEqual(result, { prepared: false, cacheDir: null, created: false });
@@ -74,7 +74,7 @@ test("ensureAndroidCacheDir: no-op on darwin (does not mkdir, does not set env)"
 test("ensureAndroidCacheDir: creates ~/.cache when missing on android", () => {
   const home = mkdtempSync(join(tmpdir(), "omniroute-android-cache-home-"));
   const cacheDir = join(home, ".cache");
-  const env = {};
+  const env: NodeJS.ProcessEnv = {};
 
   try {
     assert.equal(existsSync(cacheDir), false);
@@ -89,7 +89,7 @@ test("ensureAndroidCacheDir: creates ~/.cache when missing on android", () => {
     assert.equal(existsSync(cacheDir), true);
     assert.equal(env.XDG_CACHE_HOME, cacheDir);
   } finally {
-    rmSync(home, { recursive: true, force: true });
+    rmSync(home, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
 
@@ -97,7 +97,7 @@ test("ensureAndroidCacheDir: does not recreate when ~/.cache already exists", ()
   const home = mkdtempSync(join(tmpdir(), "omniroute-android-cache-existing-"));
   const cacheDir = join(home, ".cache");
   mkdirSync(cacheDir);
-  const env = {};
+  const env: NodeJS.ProcessEnv = {};
   let mkdirCalls = 0;
 
   try {
@@ -105,16 +105,16 @@ test("ensureAndroidCacheDir: does not recreate when ~/.cache already exists", ()
       platform: "android",
       env,
       homedirFn: () => home,
-      mkdirSyncFn: () => {
+      mkdirSyncFn: (() => {
         mkdirCalls += 1;
-      },
+      }) as unknown as typeof mkdirSync,
     });
     assert.equal(result.prepared, true);
     assert.equal(result.created, false);
     assert.equal(mkdirCalls, 0);
     assert.equal(env.XDG_CACHE_HOME, cacheDir);
   } finally {
-    rmSync(home, { recursive: true, force: true });
+    rmSync(home, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
 
@@ -133,7 +133,7 @@ test("ensureAndroidCacheDir: respects an existing XDG_CACHE_HOME and creates tha
     assert.equal(existsSync(xdg), true);
     assert.equal(env.XDG_CACHE_HOME, xdg);
   } finally {
-    rmSync(root, { recursive: true, force: true });
+    rmSync(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
 
@@ -150,7 +150,7 @@ test("ensureAndroidCacheDir: Termux-on-linux still prepares ~/.cache", () => {
     assert.equal(result.prepared, true);
     assert.equal(existsSync(join(home, ".cache")), true);
   } finally {
-    rmSync(home, { recursive: true, force: true });
+    rmSync(home, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
 

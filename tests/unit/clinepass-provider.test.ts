@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const {
   APIKEY_PROVIDERS,
@@ -37,7 +38,7 @@ test("ClinePass is registered as an OAuth-primary provider with the canonical id
   // + Manual API key) is rendered by the dashboard's isOAuth branch (same as
   // cline/claude), not via FREE_APIKEY_PROVIDER_IDS (which would flip isOAuth off).
   assert.ok(
-    !APIKEY_PROVIDERS.clinepass,
+    !(APIKEY_PROVIDERS as LooseDeep).clinepass,
     "clinepass must NOT be in APIKEY_PROVIDERS (single provider)"
   );
 });
@@ -296,8 +297,8 @@ test("ClinePass OAuth connection test reuses Cline token-expiry validation", asy
 });
 
 test("ClinePass is a single OAuth-primary provider (no duplicate catalog entry)", () => {
-  assert.ok(OAUTH_PROVIDERS.clinepass, "OAuth catalog entry");
-  assert.ok(!APIKEY_PROVIDERS.clinepass, "no duplicate APIKEY_PROVIDERS entry");
+  assert.ok((OAUTH_PROVIDERS as LooseDeep).clinepass, "OAuth catalog entry");
+  assert.ok(!(APIKEY_PROVIDERS as LooseDeep).clinepass, "no duplicate APIKEY_PROVIDERS entry");
 });
 
 // ── Dual-auth API-key admission (POST /api/providers gate) ───────────────────

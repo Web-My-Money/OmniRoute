@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 // 9router#2482: MiniMax Text-to-Image returns "404 page not found".
 // MiniMax already has entries in musicRegistry.ts/audioRegistry.ts/videoRegistry.ts,
@@ -62,7 +63,7 @@ test("handleImageGeneration dispatches minimax-image format to the MiniMax handl
       } as unknown as Response;
     }) as typeof fetch;
 
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: { model: "minimax/image-01", prompt: "a red panda in the snow", n: 1 },
       credentials: { apiKey: "test-key" },
       log: null,
@@ -88,7 +89,7 @@ test("handleImageGeneration surfaces MiniMax upstream errors without a network 4
       } as unknown as Response;
     }) as typeof fetch;
 
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: { model: "minimax/image-01", prompt: "a red panda in the snow", n: 1 },
       credentials: { apiKey: "bad-key" },
       log: null,

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-siliconflow-sync-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -21,12 +22,12 @@ type JsonBody = Record<string, unknown>;
 async function resetStorage() {
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 async function seedSiliconFlowConnection() {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "siliconflow",
     authType: "apikey",
     name: `siliconflow-${Math.random().toString(16).slice(2, 8)}`,
@@ -34,7 +35,7 @@ async function seedSiliconFlowConnection() {
     isActive: true,
     testStatus: "active",
     providerSpecificData: { baseUrl: "https://api.siliconflow.cn/v1" },
-  });
+  })) as JsonRecord & { id: string };
 }
 
 async function callSyncRoute(connectionId: string) {
@@ -54,7 +55,7 @@ test.beforeEach(async () => {
 test.after(async () => {
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("sync-models rejects local catalog fallback and preserves existing SiliconFlow models", async () => {

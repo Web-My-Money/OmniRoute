@@ -15,6 +15,7 @@ import {
   OtlpHttpsEventSink,
 } from "../../open-sse/services/routing/otel.ts";
 import type { RoutingEvent } from "../../open-sse/services/routing/events.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 function event(partial: Partial<RoutingEvent> = {}): RoutingEvent {
   return {
@@ -24,6 +25,7 @@ function event(partial: Partial<RoutingEvent> = {}): RoutingEvent {
     strategy: "auto",
     latencyMs: 120,
     ttftMs: 40,
+    itlMs: null,
     inputTokens: 10,
     outputTokens: 20,
     cost: 0.01,
@@ -39,14 +41,22 @@ function event(partial: Partial<RoutingEvent> = {}): RoutingEvent {
 }
 
 test("isRoutingOtelEnabled is false without an endpoint", () => {
-  assert.equal(isRoutingOtelEnabled({}), false);
-  assert.equal(isRoutingOtelEnabled({ OMNIROUTE_OTEL_ENDPOINT: "   " }), false);
+  assert.equal(isRoutingOtelEnabled({} as NodeJS.ProcessEnv), false);
+  assert.equal(
+    isRoutingOtelEnabled({ OMNIROUTE_OTEL_ENDPOINT: "   " } as NodeJS.ProcessEnv),
+    false
+  );
 });
 
 test("isRoutingOtelEnabled honors OMNIROUTE_OTEL_ENDPOINT and OTLP env", () => {
-  assert.equal(isRoutingOtelEnabled({ OMNIROUTE_OTEL_ENDPOINT: "http://collector:4318" }), true);
   assert.equal(
-    isRoutingOtelEnabled({ OTEL_EXPORTER_OTLP_ENDPOINT: "https://collector:4318" }),
+    isRoutingOtelEnabled({ OMNIROUTE_OTEL_ENDPOINT: "http://collector:4318" } as NodeJS.ProcessEnv),
+    true
+  );
+  assert.equal(
+    isRoutingOtelEnabled({
+      OTEL_EXPORTER_OTLP_ENDPOINT: "https://collector:4318",
+    } as NodeJS.ProcessEnv),
     true
   );
 });
@@ -76,7 +86,7 @@ test("buildOtlpTracesPayload emits GenAI semantic-convention spans", () => {
   assert.equal(attrs["omniroute.routing.retries"], "1");
   assert.equal(attrs["omniroute.routing.fallback_used"], "1");
   assert.equal(attrs["omniroute.connection_id"], "conn-1");
-  assert.ok(BigInt(span.startTimeUnixNano) > 0n);
+  assert.ok(BigInt((span as LooseDeep).startTimeUnixNano) > 0n);
 });
 
 test("OtlpHttpsEventSink record() enqueues without I/O and flush sends via fetch", async () => {

@@ -16,6 +16,8 @@ import {
   resolveCodexOriginalIdentityHeaders,
   withCodexFingerprintCredentials,
 } from "../../open-sse/config/codexIdentity.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
+import { wrapLoose } from "../helpers/looseTypes.ts";
 
 const oauthCredentials = {
   accessToken: "oauth-token",
@@ -54,8 +56,11 @@ test("Codex off mode preserves original OAuth identity headers", () => {
     clientHeaders,
   });
   const wrapped = withCodexFingerprintCredentials(credentials, clientHeaders, {});
-  assert.deepEqual(wrapped.providerSpecificData.codexOriginalIdentityHeaders, original);
-  assert.equal(wrapped.providerSpecificData.codexClientIdentity, undefined);
+  assert.deepEqual(
+    (wrapped.providerSpecificData as LooseDeep).codexOriginalIdentityHeaders,
+    original
+  );
+  assert.equal((wrapped.providerSpecificData as LooseDeep).codexClientIdentity, undefined);
 
   const resolvedAgain = resolveCodexOriginalIdentityHeaders({
     credentials,
@@ -154,7 +159,7 @@ test("One Codex identity is shared by headers, body metadata, and nested turn me
   applyCodexClientMetadata(body, identity);
 
   const headerMetadata = JSON.parse(headers["x-codex-turn-metadata"]);
-  const clientMetadata = body.client_metadata as Record<string, unknown>;
+  const clientMetadata = body.client_metadata as LooseDeep;
   const bodyMetadata = JSON.parse(clientMetadata["x-codex-turn-metadata"] as string);
 
   assert.equal(headers["session-id"], clientMetadata.session_id);
@@ -197,7 +202,7 @@ test("Codex HTTP off mode preserves original identity headers and body metadata"
   };
 
   try {
-    await executor.execute({
+    await wrapLoose(executor).execute({
       model: "gpt-5.5",
       body: {
         model: "gpt-5.5",
@@ -229,7 +234,7 @@ test("Codex HTTP off mode preserves original identity headers and body metadata"
     globalThis.fetch = originalFetch;
   }
 
-  const metadata = upstreamBody.client_metadata as Record<string, unknown>;
+  const metadata = upstreamBody.client_metadata as LooseDeep;
   assert.equal(upstreamHeaders.get("session-id"), "client-session");
   assert.equal(upstreamHeaders.get("thread-id"), "client-thread");
   assert.equal(upstreamHeaders.get("x-client-request-id"), "client-request");
@@ -270,7 +275,7 @@ test("Codex websocket off mode preserves original identity headers and body meta
   });
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gpt-5.5",
       body: {
         model: "gpt-5.5",
@@ -305,8 +310,8 @@ test("Codex websocket off mode preserves original identity headers and body meta
   }
 
   assert.ok(sent);
-  const payload = JSON.parse(sent as string) as Record<string, unknown>;
-  const metadata = payload.client_metadata as Record<string, unknown>;
+  const payload = JSON.parse(sent as string) as LooseDeep;
+  const metadata = payload.client_metadata as LooseDeep;
   assert.equal(wsHeaders["session-id"], "client-session");
   assert.equal(wsHeaders["thread-id"], "client-thread");
   assert.equal(wsHeaders["x-client-request-id"], "client-request");
@@ -345,7 +350,7 @@ test("Codex websocket headers and payload share one fingerprint identity", async
   });
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gpt-5.5",
       body: {
         model: "gpt-5.5",
@@ -365,8 +370,8 @@ test("Codex websocket headers and payload share one fingerprint identity", async
   }
 
   assert.ok(sent);
-  const payload = JSON.parse(sent as string) as Record<string, unknown>;
-  const metadata = (payload.client_metadata as Record<string, unknown>) || {};
+  const payload = JSON.parse(sent as string) as LooseDeep;
+  const metadata = (payload.client_metadata as LooseDeep) || {};
   assert.equal(wsHeaders.session_id, metadata.session_id);
   assert.equal(wsHeaders["x-client-request-id"], metadata.thread_id);
   assert.equal(wsHeaders["x-codex-window-id"], metadata["x-codex-window-id"]);
@@ -444,7 +449,12 @@ test("ensureCodexFingerprintSeed creates once, preserves, and skips non-converge
   assert.notEqual(forgedOnCreate?.codexFingerprintSeed, "99999999-8888-4777-8666-555555555555");
 
   // Non-OAuth (API key) connections are never seeded.
-  assert.equal(ensureCodexFingerprintSeed(undefined, { apiKey: "sk-x" }), undefined);
+  assert.equal(
+    ensureCodexFingerprintSeed(undefined, { apiKey: "sk-x" } as unknown as Parameters<
+      typeof ensureCodexFingerprintSeed
+    >[1]),
+    undefined
+  );
   assert.equal(ensureCodexFingerprintSeed(undefined, undefined), undefined);
 
   // device/full modes require the seed as well.

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { renderStructuredTable } from "../../../open-sse/services/compression/engines/rtk/renderers/structuredTable.ts";
+import type { CommandDetectionResult } from "../../../open-sse/services/compression/engines/rtk/commandDetector.ts";
 
 const det = {
   type: "kubectl",
@@ -15,7 +16,7 @@ test("homogeneous JSON array ⇒ minimal table", () => {
     { name: "pod-a", status: "Running", restarts: 0 },
     { name: "pod-b", status: "Pending", restarts: 2 },
   ]);
-  const r = renderStructuredTable(input, det);
+  const r = renderStructuredTable(input, det as unknown as CommandDetectionResult);
   assert.equal(r.changed, true);
   assert.ok(r.text.includes("name"));
   assert.ok(r.text.includes("pod-a"));
@@ -24,9 +25,15 @@ test("homogeneous JSON array ⇒ minimal table", () => {
 });
 
 test("malformed JSON ⇒ no-op", () => {
-  assert.equal(renderStructuredTable("{not json", det).changed, false);
+  assert.equal(
+    renderStructuredTable("{not json", det as unknown as CommandDetectionResult).changed,
+    false
+  );
 });
 
 test("single object (not array) ⇒ no-op", () => {
-  assert.equal(renderStructuredTable('{"name":"x"}', det).changed, false);
+  assert.equal(
+    renderStructuredTable('{"name":"x"}', det as unknown as CommandDetectionResult).changed,
+    false
+  );
 });

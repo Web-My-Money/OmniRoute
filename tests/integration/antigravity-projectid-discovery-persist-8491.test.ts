@@ -17,6 +17,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-8491-antigravity-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -25,14 +27,13 @@ process.env.API_KEY_SECRET = process.env.API_KEY_SECRET || "test-8491-antigravit
 const core = await import("../../src/lib/db/core.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
 const { AntigravityExecutor } = await import("../../open-sse/executors/antigravity.ts");
-const { clearAntigravityProjectCache } = await import(
-  "../../open-sse/services/antigravityProjectBootstrap.ts"
-);
+const { clearAntigravityProjectCache } =
+  await import("../../open-sse/services/antigravityProjectBootstrap.ts");
 
 test.after(() => {
   core.resetDbInstance();
   if (fs.existsSync(TEST_DATA_DIR)) {
-    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
 
@@ -40,7 +41,7 @@ const BOOTSTRAP_URL = "https://cloudcode-pa.googleapis.com/v1internal:loadCodeAs
 const DISCOVERED_PROJECT_ID = "discovered-project-8491";
 
 async function seedConnection() {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "antigravity-8491",
@@ -51,7 +52,7 @@ async function seedConnection() {
     providerSpecificData: { clientProfile: "ide" },
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   assert(connection && typeof connection.id === "string");
   return connection;
 }
@@ -83,7 +84,7 @@ test("#8491 PART A: runtime-discovered projectId must be persisted to the connec
       {
         accessToken: connection.accessToken as string,
         connectionId: connection.id,
-        providerSpecificData: connection.providerSpecificData as Record<string, unknown>,
+        providerSpecificData: connection.providerSpecificData as LooseDeep,
       }
     );
 
@@ -91,7 +92,11 @@ test("#8491 PART A: runtime-discovered projectId must be persisted to the connec
       throw new Error(`Expected an envelope but got a ${result.status} Response`);
     }
     assert.equal(loadCodeAssistCalls, 1, "loadCodeAssist must be called to recover the project");
-    assert.equal(result.project, DISCOVERED_PROJECT_ID, "the in-flight request uses the discovered id");
+    assert.equal(
+      result.project,
+      DISCOVERED_PROJECT_ID,
+      "the in-flight request uses the discovered id"
+    );
 
     const persisted = await providersDb.getProviderConnectionById(connection.id);
     assert.equal(
@@ -100,15 +105,12 @@ test("#8491 PART A: runtime-discovered projectId must be persisted to the connec
       "discovered projectId must be persisted onto the connection"
     );
     assert.equal(
-      (persisted?.providerSpecificData as Record<string, unknown> | undefined)?.projectId,
+      (persisted?.providerSpecificData as LooseDeep | undefined)?.projectId,
       DISCOVERED_PROJECT_ID,
       "discovered projectId must also be persisted onto providerSpecificData.projectId"
     );
     // The pre-existing providerSpecificData field must survive the persistence write.
-    assert.equal(
-      (persisted?.providerSpecificData as Record<string, unknown> | undefined)?.clientProfile,
-      "ide"
-    );
+    assert.equal((persisted?.providerSpecificData as LooseDeep | undefined)?.clientProfile, "ide");
   } finally {
     globalThis.fetch = originalFetch;
     clearAntigravityProjectCache();
@@ -143,7 +145,7 @@ test("#8491 PART B: a second request re-reading credentials from the DB must not
       {
         accessToken: connection.accessToken as string,
         connectionId: connection.id,
-        providerSpecificData: connection.providerSpecificData as Record<string, unknown>,
+        providerSpecificData: connection.providerSpecificData as LooseDeep,
       }
     );
     assert.equal(loadCodeAssistCalls, 1, "first request must discover via loadCodeAssist");
@@ -164,9 +166,9 @@ test("#8491 PART B: a second request re-reading credentials from the DB must not
       true,
       {
         accessToken: refreshed.accessToken as string,
-        connectionId: refreshed.id,
+        connectionId: refreshed.id as string,
         projectId: refreshed.projectId as string | undefined,
-        providerSpecificData: refreshed.providerSpecificData as Record<string, unknown>,
+        providerSpecificData: refreshed.providerSpecificData as LooseDeep,
       }
     );
 

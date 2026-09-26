@@ -945,7 +945,7 @@ export function createResponsesApiTransformStream(
           state.keepaliveTimer = null;
         }
       },
-    },
+    } as unknown as Transformer,
     { highWaterMark: 16384 },
     { highWaterMark: 16384 }
   );

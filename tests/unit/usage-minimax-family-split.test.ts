@@ -5,6 +5,7 @@
 // usage-utils (which exercise them via usage.ts __testing).
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const M = await import("../../open-sse/services/usage/minimax.ts");
 const HOST = await import("../../open-sse/services/usage.ts");
@@ -24,12 +25,12 @@ test("leaf exposes the twelve MiniMax helpers the host re-exposes via __testing"
     "getMiniMaxErrorSummary",
     "getMiniMaxUsage",
   ]) {
-    assert.equal(typeof (M as Record<string, unknown>)[name], "function", `missing ${name}`);
+    assert.equal(typeof (M as LooseDeep)[name], "function", `missing ${name}`);
   }
 });
 
 test("host __testing re-exports the same MiniMax function identities", () => {
-  const t = (HOST as Record<string, Record<string, unknown>>).__testing;
+  const t = (HOST as unknown as Record<string, Record<string, unknown>>).__testing;
   assert.equal(t.getMiniMaxUsage, M.getMiniMaxUsage);
   assert.equal(t.getMiniMaxPlanLabel, M.getMiniMaxPlanLabel);
   assert.equal(t.getMiniMaxSessionTotal, M.getMiniMaxSessionTotal);

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-skills-executor-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -23,11 +24,11 @@ function resetSkillsRuntime() {
 async function resetStorage() {
   resetSkillsRuntime();
   coreDb.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
-async function registerEchoSkill(overrides = {}) {
+async function registerEchoSkill(overrides: JsonRecord = {}) {
   return skillRegistry.register({
     name: "echo",
     version: "1.0.0",
@@ -47,7 +48,7 @@ test.beforeEach(async () => {
 test.after(() => {
   resetSkillsRuntime();
   coreDb.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("skillExecutor executes a registered handler and persists execution history", async () => {

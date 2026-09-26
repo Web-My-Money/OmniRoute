@@ -78,7 +78,7 @@ function withNonTestEnvironment<T>(fn: () => T): T {
   const originalArgv = [...process.argv];
   const originalExecArgv = [...process.execArgv];
 
-  delete process.env.NODE_ENV;
+  delete (process.env as Record<string, string | undefined>).NODE_ENV;
   delete process.env.VITEST;
   delete process.env.DISABLE_SQLITE_AUTO_BACKUP;
   process.argv = process.argv.filter((arg) => !arg.includes("test"));
@@ -93,8 +93,9 @@ function withNonTestEnvironment<T>(fn: () => T): T {
   } finally {
     process.argv = originalArgv;
     process.execArgv = originalExecArgv;
-    if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
-    else process.env.NODE_ENV = originalNodeEnv;
+    if (originalNodeEnv === undefined)
+      delete (process.env as Record<string, string | undefined>).NODE_ENV;
+    else (process.env as Record<string, string | undefined>).NODE_ENV = originalNodeEnv;
     if (originalVitest === undefined) delete process.env.VITEST;
     else process.env.VITEST = originalVitest;
     if (originalDisableAutoBackup === undefined) delete process.env.DISABLE_SQLITE_AUTO_BACKUP;

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { MemoryType } from "../../src/lib/memory/types.ts";
 
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-memory-tools-"));
 const originalDataDir = process.env.DATA_DIR;
@@ -16,7 +17,7 @@ const { invalidateMemorySettingsCache } = await import("../../src/lib/memory/set
 
 function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(tmpDir, { recursive: true, force: true });
+  fs.rmSync(tmpDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(tmpDir, { recursive: true });
   core.getDbInstance();
 }
@@ -34,13 +35,13 @@ test.beforeEach(async () => {
 test.after(() => {
   core.resetDbInstance();
   process.env.DATA_DIR = originalDataDir;
-  fs.rmSync(tmpDir, { recursive: true, force: true });
+  fs.rmSync(tmpDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("memory add stores entries with default session and metadata", async () => {
   const result = await memoryTools.omniroute_memory_add.handler({
     apiKeyId: "key-add",
-    type: "factual",
+    type: MemoryType.FACTUAL,
     key: "pref:language",
     content: "TypeScript is preferred.",
   });
@@ -60,7 +61,7 @@ test("memory search filters by type, enforces limit, and reports token totals", 
   await memoryTools.omniroute_memory_add.handler({
     apiKeyId: "key-search",
     sessionId: "search",
-    type: "factual",
+    type: MemoryType.FACTUAL,
     key: "pref:stack",
     content: "TypeScript and Node.js are used for backend work.",
     metadata: { source: "user" },
@@ -68,7 +69,7 @@ test("memory search filters by type, enforces limit, and reports token totals", 
   await memoryTools.omniroute_memory_add.handler({
     apiKeyId: "key-search",
     sessionId: "search",
-    type: "semantic",
+    type: MemoryType.SEMANTIC,
     key: "pref:hobby",
     content: "Gardening is a weekend hobby.",
     metadata: { source: "user" },
@@ -76,7 +77,7 @@ test("memory search filters by type, enforces limit, and reports token totals", 
   await memoryTools.omniroute_memory_add.handler({
     apiKeyId: "key-search",
     sessionId: "search",
-    type: "factual",
+    type: MemoryType.FACTUAL,
     key: "pref:language",
     content: "TypeScript services are written every day.",
     metadata: { source: "user" },
@@ -85,7 +86,7 @@ test("memory search filters by type, enforces limit, and reports token totals", 
   const result = await memoryTools.omniroute_memory_search.handler({
     apiKeyId: "key-search",
     query: "typescript backend",
-    type: "factual",
+    type: MemoryType.FACTUAL,
     limit: 1,
   });
 
@@ -103,7 +104,7 @@ test("memory search respects a configured zero token budget", async () => {
 
   await memoryTools.omniroute_memory_add.handler({
     apiKeyId: "key-zero-budget",
-    type: "factual",
+    type: MemoryType.FACTUAL,
     key: "pref:stack",
     content: "TypeScript and Node.js are used for backend work.",
   });
@@ -125,7 +126,7 @@ test("memory search runs explicitly even when global memory injection is disable
 
   await memoryTools.omniroute_memory_add.handler({
     apiKeyId: "key-disabled-memory",
-    type: "factual",
+    type: MemoryType.FACTUAL,
     key: "pref:stack",
     content: "TypeScript and Node.js are used for backend work.",
   });
@@ -147,7 +148,7 @@ test("memory clear deletes only older filtered entries and reports the deleted c
   const older = await memoryStore.createMemory({
     apiKeyId: "key-clear",
     sessionId: "clear",
-    type: "factual",
+    type: MemoryType.FACTUAL,
     key: "old",
     content: "This memory should be removed.",
     metadata: {},
@@ -156,7 +157,7 @@ test("memory clear deletes only older filtered entries and reports the deleted c
   const newer = await memoryStore.createMemory({
     apiKeyId: "key-clear",
     sessionId: "clear",
-    type: "factual",
+    type: MemoryType.FACTUAL,
     key: "new",
     content: "This memory should remain.",
     metadata: {},
@@ -176,7 +177,7 @@ test("memory clear deletes only older filtered entries and reports the deleted c
 
   const result = await memoryTools.omniroute_memory_clear.handler({
     apiKeyId: "key-clear",
-    type: "factual",
+    type: MemoryType.FACTUAL,
     olderThan: cutoff.toISOString(),
   });
 

@@ -246,7 +246,15 @@ void test("resolveInstallPath: infers category from description", () => {
 });
 
 void test("resolveInstallPath: uses category for unknown target and throws", () => {
-  assert.throws(() => resolveInstallPath("unknown", "x", ""), Error);
+  assert.throws(
+    () =>
+      resolveInstallPath(
+        "unknown" as unknown as "claude" | "gemini" | "opencode" | "hermes",
+        "x",
+        ""
+      ),
+    Error
+  );
 });
 
 void test("resolveInstallPath: different targets produce different base paths", () => {

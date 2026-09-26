@@ -18,6 +18,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-9293-specialty-hidden-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -32,7 +33,7 @@ const v1ModelsCatalog = await import("../../src/app/api/v1/models/catalog.ts");
 async function resetStorage() {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   v1ModelsCatalog.__resetCatalogBuilderRunsForTest();
 }
@@ -44,12 +45,12 @@ test.beforeEach(async () => {
 test.after(async () => {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#9293 hidden OpenRouter specialty models are excluded from /v1/models catalog", async () => {
   // Create an active OpenRouter connection
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "openrouter-test",
@@ -57,7 +58,7 @@ test("#9293 hidden OpenRouter specialty models are excluded from /v1/models cata
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
   assert.ok(connection?.id, "OpenRouter connection created");
 
   // Confirm the hidden flag is not set yet

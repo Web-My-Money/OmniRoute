@@ -40,7 +40,7 @@ test.beforeEach(() => {
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("preview POST returns 200 with a ranked candidates array (not a 500)", async () => {

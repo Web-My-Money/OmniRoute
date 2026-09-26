@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { renderTerraformPlan } from "../../../open-sse/services/compression/engines/rtk/renderers/terraformPlan.ts";
+import type { CommandDetectionResult } from "../../../open-sse/services/compression/engines/rtk/commandDetector.ts";
 
 const det = {
   type: "terraform-plan",
@@ -17,7 +18,7 @@ test("summarizes plan into +N ~M -K plus resources", () => {
   # aws_s3_bucket.data will be updated in-place
   ~ resource "aws_s3_bucket" "data" { ... }
 Plan: 1 to add, 1 to change, 0 to destroy.`;
-  const r = renderTerraformPlan(input, det);
+  const r = renderTerraformPlan(input, det as unknown as CommandDetectionResult);
   assert.equal(r.changed, true);
   assert.ok(r.text.includes("Plan: +1 ~1 -0"));
   assert.ok(r.text.includes("aws_instance.web"));
@@ -31,7 +32,7 @@ Plan: 1 to add, 1 to change, 0 to destroy.`;
 test("no-changes ⇒ no-op", () => {
   const r = renderTerraformPlan(
     "No changes. Your infrastructure matches the configuration.",
-    det,
+    det as unknown as CommandDetectionResult
   );
   assert.equal(r.changed, false);
 });

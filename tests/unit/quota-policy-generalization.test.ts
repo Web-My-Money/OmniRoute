@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { ProviderConnectionView } from "../../src/lib/db/providers/lazyConnectionView.ts";
 
 const auth = await import("../../src/sse/services/auth.ts");
 const quotaCache = await import("../../src/domain/quotaCache.ts");
@@ -8,7 +9,7 @@ function buildConnection(id, providerSpecificData = {}) {
   return {
     id,
     providerSpecificData,
-  };
+  } as unknown as ProviderConnectionView;
 }
 
 test("resolveQuotaLimitPolicy keeps codex legacy defaults when generic policy is missing", () => {

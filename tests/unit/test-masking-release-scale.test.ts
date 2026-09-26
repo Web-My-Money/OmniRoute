@@ -26,7 +26,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-// @ts-expect-error — plain .mjs gate script, no type declarations by design
+//
 import { shouldSkipDiffSubchecks } from "../../scripts/check/check-test-masking.mjs";
 
 test("a normal PR is always analyzed", () => {

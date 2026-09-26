@@ -3,6 +3,7 @@
 // adapters. Streaming (WebSocket) mode is explicitly out of scope for v1.
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { handleAudioTranscription } = await import("../../open-sse/handlers/audioTranscription.ts");
 const { getTranscriptionProvider } = await import("../../open-sse/config/audioRegistry.ts");
@@ -11,7 +12,11 @@ function buildFile(contents: string, name: string, type: string) {
   return new File([Buffer.from(contents)], name, { type });
 }
 
-function immediateTimeout(callback: (...args: unknown[]) => void, _ms?: number, ...args: unknown[]) {
+function immediateTimeout(
+  callback: (...args: unknown[]) => void,
+  _ms?: number,
+  ...args: unknown[]
+) {
   if (typeof callback === "function") callback(...args);
   return 0;
 }
@@ -33,7 +38,7 @@ test("handleAudioTranscription routes Speechmatics: submit job → poll → fetc
 
   // @ts-expect-error test double swaps the timer signature intentionally
   globalThis.setTimeout = immediateTimeout;
-  globalThis.fetch = (async (url: string, options: RequestInit = {}) => {
+  globalThis.fetch = (async (url: string, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     calls.push({ url: stringUrl, method: (options?.method as string) || "GET" });
 
@@ -94,7 +99,7 @@ test("handleAudioTranscription returns an error when Speechmatics rejects the jo
 
   // @ts-expect-error test double swaps the timer signature intentionally
   globalThis.setTimeout = immediateTimeout;
-  globalThis.fetch = (async (url: string, options: RequestInit = {}) => {
+  globalThis.fetch = (async (url: string, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     if (stringUrl === "https://asr.api.speechmatics.com/v2/jobs") {
       return new Response(JSON.stringify({ id: "job-2" }), {

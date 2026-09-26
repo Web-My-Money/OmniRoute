@@ -522,7 +522,7 @@ test("executor returns a sanitized 400 for an oversized image", async (t) => {
     stream: false,
     credentials: { accessToken: "test-token" },
     signal: undefined,
-    log: () => {},
+    log: {},
     upstreamExtraHeaders: undefined,
   });
   assert.ok(
@@ -557,7 +557,7 @@ test("executor returns a sanitized 400 for an SSRF-blocked image URL", async (t)
     stream: false,
     credentials: { accessToken: "test-token" },
     signal: undefined,
-    log: () => {},
+    log: {},
     upstreamExtraHeaders: undefined,
   });
   assert.ok(

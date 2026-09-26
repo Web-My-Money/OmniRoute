@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { SyncedAvailableModelInput } from "../../src/lib/db/models/synced.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(
   path.join(os.tmpdir(), "omniroute-context-reconcile-runtime-")
@@ -16,20 +17,20 @@ const { runContextWindowReconcile } = await import("../../src/lib/contextWindowR
 
 test.beforeEach(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 });
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("runContextWindowReconcile retains an auto override across repeated synced discovery", async () => {
   // gpt-4o's static catalog window is 128K; discovery reports a real 372K.
   // This uses the live DB discovery and resolver seams, not injected pure deps.
   await models.replaceSyncedAvailableModelsForConnection("openai", "reconcile-test", [
-    { id: "gpt-4o", inputTokenLimit: 372000 },
+    { id: "gpt-4o", inputTokenLimit: 372000 } as unknown as SyncedAvailableModelInput,
   ]);
 
   const first = await runContextWindowReconcile();

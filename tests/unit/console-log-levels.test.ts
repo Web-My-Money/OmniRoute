@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 
 import { updateSettings } from "../../src/lib/db/settings";
+import type { NextRequest } from "next/server";
 
 const TEST_LOG_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-console-log-levels-"));
 const TEST_LOG_PATH = path.join(TEST_LOG_DIR, "app.log");
@@ -63,7 +64,7 @@ test("console log API normalizes numeric pino levels correctly", async () => {
   );
 
   const response = await route.GET(
-    new Request("http://localhost/api/logs/console?level=info&limit=10")
+    new Request("http://localhost/api/logs/console?level=info&limit=10") as unknown as NextRequest
   );
   const body = (await response.json()) as ConsoleLogApiEntry[];
 
@@ -108,7 +109,9 @@ test("console log API filters by component, time window, and result limit", asyn
   );
 
   const response = await route.GET(
-    new Request("http://localhost/api/logs/console?level=warn&component=router&limit=1")
+    new Request(
+      "http://localhost/api/logs/console?level=warn&component=router&limit=1"
+    ) as unknown as NextRequest
   );
   const body = (await response.json()) as ConsoleLogApiEntry[];
 
@@ -136,7 +139,9 @@ test("console log API serializes structured messages for the viewer", async () =
     "utf8"
   );
 
-  const response = await route.GET(new Request("http://localhost/api/logs/console?limit=10"));
+  const response = await route.GET(
+    new Request("http://localhost/api/logs/console?limit=10") as unknown as NextRequest
+  );
   const body = (await response.json()) as ConsoleLogApiEntry[];
 
   assert.equal(response.status, 200);
@@ -149,7 +154,9 @@ test("console log API serializes structured messages for the viewer", async () =
 test("console log API returns an empty list for a missing file and surfaces read errors", async () => {
   fs.rmSync(TEST_LOG_PATH, { force: true });
 
-  const missingResponse = await route.GET(new Request("http://localhost/api/logs/console"));
+  const missingResponse = await route.GET(
+    new Request("http://localhost/api/logs/console") as unknown as NextRequest
+  );
   assert.equal(missingResponse.status, 200);
   assert.deepEqual(await missingResponse.json(), []);
 
@@ -158,7 +165,9 @@ test("console log API returns an empty list for a missing file and surfaces read
   process.env.APP_LOG_FILE_PATH = brokenPath;
 
   try {
-    const brokenResponse = await route.GET(new Request("http://localhost/api/logs/console"));
+    const brokenResponse = await route.GET(
+      new Request("http://localhost/api/logs/console") as unknown as NextRequest
+    );
     assert.equal(brokenResponse.status, 500);
     const payload = (await brokenResponse.json()) as { error?: string };
     assert.equal(typeof payload.error, "string");

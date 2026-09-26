@@ -19,6 +19,7 @@ import {
   RATE_LIMIT_EXECUTION_TIMEOUT_CODE,
   RATE_LIMIT_QUEUE_WEDGED_CODE,
 } from "@omniroute/open-sse/services/rateLimitManager/errors.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 // ---------------------------------------------------------------------------
 // parseRetryAfterHeader — Retry-After is either delta-seconds or an HTTP-date.
@@ -256,7 +257,7 @@ test("runSingleModelTest preserves slow timeout after chatCore converts AbortErr
   let upstreamSignal: AbortSignal | null = null;
   let upstreamCalled = false;
 
-  globalThis.fetch = async (_input, init = {}) => {
+  globalThis.fetch = async (_input, init: MockRequestInit = {}) => {
     upstreamCalled = true;
     upstreamSignal = (init.signal as AbortSignal | null | undefined) ?? null;
     return new Promise<Response>((_resolve, reject) => {
@@ -419,7 +420,7 @@ test("runSingleModelTest preserves trusted local limiter HTTP statuses", async (
       const result = await runSingleModelTest({
         providerId: "openai",
         modelId: "gpt-4o",
-        connectionId: connection.id,
+        connectionId: String(connection.id),
         timeoutMs: 5_000,
       });
 

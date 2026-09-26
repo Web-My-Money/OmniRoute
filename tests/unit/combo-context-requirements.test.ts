@@ -118,7 +118,7 @@ describe("Combo Context Requirements", () => {
       ];
 
       const minContextWindow = 32000;
-      const contextFilterMode = "strict";
+      const contextFilterMode: string = "strict";
 
       const filtered = targets.filter((t) => {
         const limit = t.contextWindow ?? null;
@@ -165,7 +165,7 @@ describe("Combo Context Requirements", () => {
       ];
 
       const minContextWindow = 32000;
-      const contextFilterMode = "strict";
+      const contextFilterMode: string = "strict";
 
       const filtered = targets.filter((t) => {
         const limit = t.contextWindow ?? null;
@@ -248,7 +248,7 @@ describe("Combo Context Requirements", () => {
         const limit = t.contextWindow ?? null;
         if (config.contextRequirements.minContextWindow) {
           if (limit === null) {
-            return config.contextRequirements.contextFilterMode === "lenient";
+            return (config.contextRequirements.contextFilterMode as string) === "lenient";
           }
           return limit >= config.contextRequirements.minContextWindow;
         }

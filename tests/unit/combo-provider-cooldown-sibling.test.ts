@@ -13,9 +13,12 @@ import {
   getRemainingCooldownMs,
 } from "../../open-sse/services/providerCooldownTracker.ts";
 import { hasPerModelQuota } from "../../open-sse/services/accountFallback.ts";
+import { DEFAULT_RESILIENCE_SETTINGS } from "../../src/lib/resilience/settings.ts";
 
 const settings = {
+  ...DEFAULT_RESILIENCE_SETTINGS,
   providerCooldown: {
+    ...DEFAULT_RESILIENCE_SETTINGS.providerCooldown,
     enabled: true,
     minRetryCooldownMs: 1000,
     maxRetryCooldownMs: 60000,
@@ -74,7 +77,7 @@ test("fix: combo still records cooldown for per-model-quota provider on 503", ()
   clearCooldownState();
   const provider = "gemini";
   const rawModel = "gemma-4-31b-it";
-  const status = 503;
+  const status: number = 503;
 
   const shouldSkipCooldown = status === 500 && hasPerModelQuota(provider, rawModel);
   assert.equal(shouldSkipCooldown, false, "Gemini 503 should NOT skip cooldown");

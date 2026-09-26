@@ -23,6 +23,7 @@ const originalFetch = globalThis.fetch;
 function createLog() {
   const entries = [];
   return {
+    debug: (tag, msg) => entries.push({ level: "debug", tag, msg }),
     info: (tag, msg) => entries.push({ level: "info", tag, msg }),
     warn: (tag, msg) => entries.push({ level: "warn", tag, msg }),
     error: (tag, msg) => entries.push({ level: "error", tag, msg }),
@@ -78,7 +79,7 @@ function buildQuotaResponse(usedPercent, resetAfterSeconds = 3600) {
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -116,7 +117,7 @@ test.after(async () => {
   clearSessions();
   globalThis.fetch = originalFetch;
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("handleComboChat context-relay routes to the first available model", async () => {

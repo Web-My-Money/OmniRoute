@@ -10,6 +10,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-codex-import-token-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -39,7 +40,7 @@ test.before(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 async function postImportToken(body: unknown) {
@@ -77,7 +78,7 @@ test("import-token: decodes email + workspace claims from the access token and c
     chatgptPlanType: "plus",
     // Convergence is on by default (session mode), so the connection persists
     // its system-managed fingerprint seed at creation time (v178 parity).
-    codexFingerprintSeed: created?.providerSpecificData?.codexFingerprintSeed,
+    codexFingerprintSeed: (created?.providerSpecificData as LooseDeep)?.codexFingerprintSeed,
   });
   assert.match(
     String(created?.providerSpecificData?.codexFingerprintSeed),

@@ -20,13 +20,14 @@ test("registerRedis: attaches a `redis` command with up/down/status subcommands"
     command(name) {
       const cmd = {
         name,
+        options: new Set<string>(),
         description() {
           return cmd;
         },
         option(flag) {
           // Track every registered option so we can assert on them.
           const optName = flag.split(/[ ,]/)[0].replace(/^-+/, "");
-          cmd.options = cmd.options || new Set();
+          cmd.options = cmd.options || new Set<string>();
           cmd.options.add(optName);
           return cmd;
         },

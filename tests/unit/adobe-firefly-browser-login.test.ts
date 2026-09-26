@@ -21,6 +21,7 @@ import {
   resolveSystemBrowserExecutable,
   killProcessTree,
 } from "../../open-sse/services/adobeFireflyBrowserLogin.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 test("clampAdobeFireflyLoginTimeout defaults and clamps", () => {
   assert.equal(clampAdobeFireflyLoginTimeout(undefined), 300_000);
@@ -261,7 +262,11 @@ test("killProcessTree on Linux targets process group (-pid) with SIGTERM and sch
   assert.equal(killedSignals.length, 1, "expected immediate SIGTERM call to process group");
   assert.equal(killedSignals[0].pid, -54321, "Linux must target process group with negative PID");
   assert.equal(killedSignals[0].signal, "SIGTERM");
-  assert.equal(procKillCalled, false, "should not call direct child.kill when process group kill succeeds");
+  assert.equal(
+    procKillCalled,
+    false,
+    "should not call direct child.kill when process group kill succeeds"
+  );
 });
 
 test("killProcessTree falls back to child.kill on Linux when process group kill fails", () => {
@@ -311,9 +316,9 @@ test("killProcessTree ignores self PID and parent PID to prevent killing backend
 });
 
 test("killProcessTree on win32 uses taskkill /pid <pid> /T /F with detached and windowsHide", () => {
-  const spawnCalls: Array<{ cmd: string; args: readonly string[]; opts: unknown }> = [];
+  const spawnCalls: Array<{ cmd: string; args: readonly string[]; opts: MockRequestInit }> = [];
   let unrefCalled = false;
-  const mockSpawn = ((cmd: string, args: readonly string[], opts: unknown) => {
+  const mockSpawn = ((cmd: string, args: readonly string[], opts: MockRequestInit) => {
     spawnCalls.push({ cmd, args, opts });
     return {
       unref: () => {
@@ -347,5 +352,3 @@ test("killProcessTree handles null / undefined / pid-less gracefully without thr
   assert.doesNotThrow(() => killProcessTree({}));
   assert.doesNotThrow(() => killProcessTree({ pid: undefined }));
 });
-
-

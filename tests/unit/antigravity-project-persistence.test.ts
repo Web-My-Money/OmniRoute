@@ -11,6 +11,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-ag-project-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -28,7 +29,7 @@ const {
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -109,7 +110,7 @@ test("preferAntigravityConnectionsWithStoredProject skips confirmed-missing when
 });
 
 test("persistDiscoveredAntigravityProjectId writes projectId to SQLite", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "persist-project",
@@ -122,7 +123,7 @@ test("persistDiscoveredAntigravityProjectId writes projectId to SQLite", async (
     testStatus: "active",
     errorCode: "missing_project_id",
     lastError: "old error",
-  });
+  })) as JsonRecord & { id: string };
 
   persistDiscoveredAntigravityProjectId(
     connection.id,

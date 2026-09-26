@@ -14,9 +14,10 @@ import { Session } from "./session.ts";
 import type { PoolConfig } from "./types.ts";
 
 export class SessionFactory {
-  private rotator = new FingerprintRotator();
-
-  constructor(private config: PoolConfig) {}
+  constructor(
+    private config: PoolConfig,
+    private rotator = new FingerprintRotator()
+  ) {}
 
   /**
    * Create a new session with the next available fingerprint.

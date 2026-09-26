@@ -89,7 +89,7 @@ async function drainEvents(
 const { registerSupervisor, getSupervisor } = await import("../../../src/lib/services/registry.ts");
 const { ServiceSupervisor } = await import("../../../src/lib/services/ServiceSupervisor.ts");
 
-function makeTestSupervisor(tool: string): ServiceSupervisor {
+function makeTestSupervisor(tool: string): InstanceType<typeof ServiceSupervisor> {
   return new ServiceSupervisor({
     tool,
     port: 29999,
@@ -126,7 +126,9 @@ test("GET /logs returns 400 when filter exceeds max length", async () => {
   const sup = makeTestSupervisor("9router-filter-test");
   registerSupervisor(sup);
 
-  const { GET } = await import("../../../src/app/api/services/[name]/logs/route.ts?t=filter-len");
+  const { GET } = await import(
+    "../../../src/app/api/services/[name]/logs/route.ts" + "?t=filter-len"
+  );
 
   const longFilter = "a".repeat(201);
   const { req, abort } = makeRequest({ filter: longFilter });
@@ -151,7 +153,7 @@ test("GET /logs sends snapshot event with buffered lines", async () => {
   rb.push(makeLogLine("line two"));
   rb.push(makeLogLine("line three"));
 
-  const { GET } = await import("../../../src/app/api/services/[name]/logs/route.ts?t=snap");
+  const { GET } = await import("../../../src/app/api/services/[name]/logs/route.ts" + "?t=snap");
 
   const { req, abort } = makeRequest();
   const resp = await GET(req as any, {
@@ -178,7 +180,9 @@ test("GET /logs applies substring filter to snapshot", async () => {
   rb.push(makeLogLine("[INFO] all good"));
   rb.push(makeLogLine("[ERROR] another error"));
 
-  const { GET } = await import("../../../src/app/api/services/[name]/logs/route.ts?t=filt-snap");
+  const { GET } = await import(
+    "../../../src/app/api/services/[name]/logs/route.ts" + "?t=filt-snap"
+  );
 
   const { req, abort } = makeRequest({ filter: "ERROR" });
   const resp = await GET(req as any, {
@@ -198,7 +202,7 @@ test("GET /logs respects tail parameter", async () => {
   const rb = sup.getRingBuffer();
   for (let i = 0; i < 10; i++) rb.push(makeLogLine(`line ${i}`));
 
-  const { GET } = await import("../../../src/app/api/services/[name]/logs/route.ts?t=tail");
+  const { GET } = await import("../../../src/app/api/services/[name]/logs/route.ts" + "?t=tail");
 
   const { req, abort } = makeRequest({ tail: "3" });
   const resp = await GET(req as any, {
@@ -219,7 +223,7 @@ test("GET /logs delivers live log events after snapshot", async () => {
   const rb = sup.getRingBuffer();
   rb.push(makeLogLine("existing"));
 
-  const { GET } = await import("../../../src/app/api/services/[name]/logs/route.ts?t=live");
+  const { GET } = await import("../../../src/app/api/services/[name]/logs/route.ts" + "?t=live");
 
   const { req, abort } = makeRequest();
   const resp = await GET(req as any, {
@@ -241,7 +245,7 @@ test("GET /logs unsubscribes from buffer on abort", async () => {
 
   const rb = sup.getRingBuffer();
 
-  const { GET } = await import("../../../src/app/api/services/[name]/logs/route.ts?t=unsub");
+  const { GET } = await import("../../../src/app/api/services/[name]/logs/route.ts" + "?t=unsub");
 
   const { req, abort } = makeRequest();
   const resp = await GET(req as any, {

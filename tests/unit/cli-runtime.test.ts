@@ -17,7 +17,7 @@ test.after(() => {
   if (origDataDir === undefined) delete process.env.DATA_DIR;
   else process.env.DATA_DIR = origDataDir;
   try {
-    rmSync(tmpDir, { recursive: true, force: true });
+    rmSync(tmpDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   } catch {}
 });
 
@@ -61,13 +61,13 @@ test("buildEnvWithRuntime extende NODE_PATH com runtime node_modules", async () 
   const { buildEnvWithRuntime, getRuntimeNodeModules } =
     await import("../../bin/cli/runtime/nativeDeps.mjs");
   const nm = getRuntimeNodeModules();
-  const env = buildEnvWithRuntime({});
+  const env = buildEnvWithRuntime({} as NodeJS.ProcessEnv);
   assert.ok(env.NODE_PATH.includes(nm), "NODE_PATH deve conter runtime node_modules");
 });
 
 test("buildEnvWithRuntime preserva NODE_PATH existente", async () => {
   const { buildEnvWithRuntime } = await import("../../bin/cli/runtime/nativeDeps.mjs");
-  const env = buildEnvWithRuntime({ NODE_PATH: "/existing/path" });
+  const env = buildEnvWithRuntime({ NODE_PATH: "/existing/path" } as NodeJS.ProcessEnv);
   assert.ok(env.NODE_PATH.includes("/existing/path"), "NODE_PATH original deve ser preservado");
 });
 
@@ -99,7 +99,12 @@ test("isBetterSqliteBinaryValid rejeita binário com magic bytes válidos mas AB
     false,
     "binário com header válido mas ABI/conteúdo incompatível deve ser inválido"
   );
-  rmSync(join(nm, "better-sqlite3"), { recursive: true, force: true });
+  rmSync(join(nm, "better-sqlite3"), {
+    recursive: true,
+    force: true,
+    maxRetries: 5,
+    retryDelay: 100,
+  });
 });
 
 test("isBetterSqliteBinaryValid aceita um binário nativo real e carregável", async () => {
@@ -125,7 +130,12 @@ test("isBetterSqliteBinaryValid aceita um binário nativo real e carregável", a
   copyFileSync(realBinary, binary);
   const result = isBetterSqliteBinaryValid();
   assert.equal(result, true, "um binário real, compatível com o Node atual, deve ser válido");
-  rmSync(join(nm, "better-sqlite3"), { recursive: true, force: true });
+  rmSync(join(nm, "better-sqlite3"), {
+    recursive: true,
+    force: true,
+    maxRetries: 5,
+    retryDelay: 100,
+  });
 });
 
 test("commands/runtime.mjs pode ser importado sem erro", async () => {

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-probe-7740-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -16,7 +17,8 @@ async function resetStorage() {
   core.resetDbInstance();
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
-      if (fs.existsSync(TEST_DATA_DIR)) fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+      if (fs.existsSync(TEST_DATA_DIR))
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       break;
     } catch (error: unknown) {
       const code = (error as { code?: string } | undefined)?.code;
@@ -33,7 +35,7 @@ test.beforeEach(async () => {
 });
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#7740: orphaned provider connection (id removed from catalog) keeps surfacing apiKeyHealth and 404s on click, but deleting purges in-memory key-health", async () => {
@@ -43,7 +45,7 @@ test("#7740: orphaned provider connection (id removed from catalog) keeps surfac
     "sanity: phind must already be absent from the live catalog"
   );
 
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "phind",
     authType: "apikey",
     name: "Legacy Phind key",
@@ -60,7 +62,7 @@ test("#7740: orphaned provider connection (id removed from catalog) keeps surfac
         },
       },
     },
-  });
+  })) as JsonRecord & { id: string };
   assert.ok(created?.id, "connection must be created");
 
   const all = await providersDb.getProviderConnections({});

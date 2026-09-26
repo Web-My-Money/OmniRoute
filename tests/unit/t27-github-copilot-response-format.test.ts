@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { wrapLoose } from "../helpers/looseTypes.ts";
 const { GithubExecutor } = await import("../../open-sse/executors/github.ts");
 const { BaseExecutor } = await import("../../open-sse/executors/base.ts");
 
@@ -77,7 +79,7 @@ test("T27: GitHub executor preserves SSE frames and only materializes non-stream
   });
 
   try {
-    const streamingResult = await executor.execute({
+    const streamingResult = await wrapLoose(executor).execute({
       model: "claude-sonnet-4.5",
       body: { messages: [] },
       stream: true,
@@ -87,7 +89,7 @@ test("T27: GitHub executor preserves SSE frames and only materializes non-stream
     assert.equal(streamingText.includes("data: [DONE]"), true);
     assert.equal(streamingText.includes("data: tail"), true);
 
-    const nonStreamingResult = await executor.execute({
+    const nonStreamingResult = await wrapLoose(executor).execute({
       model: "claude-sonnet-4.5",
       body: { messages: [] },
       stream: false,
@@ -115,7 +117,7 @@ test("T27: streaming error responses keep their original body readable", async (
   });
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "claude-sonnet-4.5",
       body: { messages: [] },
       stream: true,
@@ -130,7 +132,7 @@ test("T27: streaming error responses keep their original body readable", async (
 });
 
 test("T27: requests use copilotToken from providerSpecificData when available", async () => {
-  globalThis.fetch = async (_url, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     assert.equal((init.headers as Record<string, string>).Authorization, "Bearer copilot_test");
     return new Response(
       JSON.stringify({
@@ -146,7 +148,7 @@ test("T27: requests use copilotToken from providerSpecificData when available", 
   };
 
   const executor = new GithubExecutor();
-  const result = await executor.execute({
+  const result = await wrapLoose(executor).execute({
     model: "gemini-3.1-pro-preview",
     body: { messages: [{ role: "user", content: "Ping" }], stream: false },
     stream: false,
@@ -196,14 +198,14 @@ test("T27: non-stream execute materializes provider responses before returning",
     response: new WeirdResponse(JSON.stringify({ ok: true }), {
       status: 200,
       headers: { "content-type": "application/json" },
-    }),
+    }) as unknown as Response,
     url: "https://api.githubcopilot.com/chat/completions",
     headers: {},
     transformedBody: {},
   });
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gemini-3.1-pro-preview",
       body: { messages: [{ role: "user", content: "Ping" }], stream: false },
       stream: false,

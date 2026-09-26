@@ -102,7 +102,7 @@ test("standalone asset helpers detect and rehydrate missing standalone static as
       log(message) {
         logs.push(message);
       },
-    },
+    } as unknown as Console,
   });
 
   assert.equal(changed, true);
@@ -124,5 +124,5 @@ test("standalone asset helpers detect and rehydrate missing standalone static as
   );
   assert.match(logs[0] || "", /Rehydrated standalone static\/public assets/);
 
-  fs.rmSync(tempRoot, { recursive: true, force: true });
+  fs.rmSync(tempRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });

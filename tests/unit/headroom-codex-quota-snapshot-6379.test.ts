@@ -32,6 +32,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-headroom-codex-6379-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -44,14 +45,12 @@ const providersDb = await import("../../src/lib/db/providers.ts");
 // the DB instead of short-circuiting to [].
 const codexFetcher = await import("../../open-sse/services/codexQuotaFetcher.ts");
 codexFetcher.registerCodexQuotaFetcher();
-const { orderTargetsByHeadroom } = await import(
-  "../../open-sse/services/combo/quotaStrategies.ts"
-);
+const { orderTargetsByHeadroom } = await import("../../open-sse/services/combo/quotaStrategies.ts");
 const { _clearSaturationCache } = await import("../../src/lib/quota/saturationSignals.ts");
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   _clearSaturationCache();
 }
@@ -62,7 +61,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 const silentLog = { warn: () => {} };
@@ -94,25 +93,24 @@ function usageResponse(primaryUsedPercent: number, secondaryUsedPercent: number)
 test("orderTargetsByHeadroom (codex): ranks the account with more free quota first, even when it is second in the combo", async () => {
   // "busy" is listed FIRST in the combo but is 90% saturated (5h).
   // "free" is listed SECOND but is only 5% saturated (5h).
-  const busyConn = await providersDb.createProviderConnection({
+  const busyConn = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "busy@example.com",
     accessToken: "tok-busy",
-  });
-  const freeConn = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const freeConn = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "free@example.com",
     accessToken: "tok-free",
-  });
+  })) as JsonRecord & { id: string };
 
   const originalFetch = globalThis.fetch;
   globalThis.fetch = (async (_url: string, init?: RequestInit) => {
     const headers = init?.headers as Record<string, string> | undefined;
     const auth = headers?.["Authorization"] ?? "";
-    const body =
-      auth === "Bearer tok-busy" ? usageResponse(90, 10) : usageResponse(5, 5);
+    const body = auth === "Bearer tok-busy" ? usageResponse(90, 10) : usageResponse(5, 5);
     return new Response(JSON.stringify(body), { status: 200 });
   }) as typeof fetch;
 

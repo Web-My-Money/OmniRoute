@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MergeProviderModelListingInput } from "../../src/lib/providers/mergeProviderModelListing.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-managed-model-import-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -16,7 +17,7 @@ const { mergeProviderModelListing } =
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -26,7 +27,7 @@ test.beforeEach(async () => {
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("sync mode builds aliases from provider-level synced available models", async () => {
@@ -139,7 +140,7 @@ test("sync keeps a same-id manual model as the user-configurable metadata overri
   const effectiveModel = mergeProviderModelListing({
     providerId: "openrouter",
     registryModels: [],
-    syncedModels,
+    syncedModels: syncedModels as unknown as MergeProviderModelListingInput["syncedModels"],
     customModels,
   }).find((model) => model.id === "shared-model");
   assert.equal(effectiveModel?.apiFormat, "responses");
@@ -152,7 +153,7 @@ test("sync keeps a same-id manual model as the user-configurable metadata overri
   const resetModel = mergeProviderModelListing({
     providerId: "openrouter",
     registryModels: [],
-    syncedModels,
+    syncedModels: syncedModels as unknown as MergeProviderModelListingInput["syncedModels"],
     customModels: await modelsDb.getCustomModels("openrouter"),
   }).find((model) => model.id === "shared-model");
   assert.equal(resetModel?.apiFormat, "chat-completions");

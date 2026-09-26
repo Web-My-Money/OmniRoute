@@ -19,7 +19,7 @@ const OPTIONS = { autoCreatePr: true };
 
 function mockFetch(handler: (url: string, init?: RequestInit) => Response | Promise<Response>) {
   const original = globalThis.fetch;
-  // @ts-expect-error test shim
+  //
   globalThis.fetch = async (url: string | URL | Request, init?: RequestInit) =>
     handler(String(url), init);
   return () => {
@@ -43,7 +43,10 @@ test("#4227 createTask posts the prompt+repo and maps CREATING → queued", asyn
     return Response.json({ id: "bc-abc123", status: "CREATING", name: "agent-1" });
   });
   try {
-    const task = await agent.createTask({ prompt: "fix the bug", source: SOURCE, options: OPTIONS }, CREDS);
+    const task = await agent.createTask(
+      { prompt: "fix the bug", source: SOURCE, options: OPTIONS },
+      CREDS
+    );
     assert.equal(task.providerId, "cursor-cloud");
     assert.equal(task.externalId, "bc-abc123");
     assert.equal(task.status, "queued");
@@ -81,7 +84,9 @@ test("#4227 getStatus maps FINISHED → completed and extracts the PR url + conv
       status: "FINISHED",
       target: { prUrl: "https://github.com/org/repo/pull/7", branchName: "cursor/fix" },
       summary: "Fixed it",
-      conversation: [{ type: "assistant_message", text: "done", createdAt: "2026-06-19T00:00:00Z" }],
+      conversation: [
+        { type: "assistant_message", text: "done", createdAt: "2026-06-19T00:00:00Z" },
+      ],
     })
   );
   try {

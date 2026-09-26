@@ -84,7 +84,9 @@ test("applyStackedCompression: a disabled engine skip surfaces a 'disabled' vali
   setEngineEnabled(DISABLED_ID, false);
 
   const body = { messages: [{ role: "user", content: "hello world" }] };
-  const result = applyStackedCompression(body, [{ engine: DISABLED_ID } as CompressionPipelineStep]);
+  const result = applyStackedCompression(body, [
+    { engine: DISABLED_ID } as unknown as CompressionPipelineStep,
+  ]);
 
   const warnings = result.stats?.validationWarnings ?? [];
   assert.ok(
@@ -106,11 +108,16 @@ test("applyStackedCompression: a no-op engine records its own identity in engine
   setEngineEnabled(NOOP_ID, true);
 
   const body = { messages: [{ role: "user", content: "hello world this is a message" }] };
-  const result = applyStackedCompression(body, [{ engine: NOOP_ID } as CompressionPipelineStep]);
+  const result = applyStackedCompression(body, [
+    { engine: NOOP_ID } as unknown as CompressionPipelineStep,
+  ]);
 
   const breakdown = result.stats?.engineBreakdown ?? [];
   const entry = breakdown.find((e) => e.engine === NOOP_ID);
-  assert.ok(entry, `expected a breakdown entry keyed on "${NOOP_ID}", got: ${JSON.stringify(breakdown)}`);
+  assert.ok(
+    entry,
+    `expected a breakdown entry keyed on "${NOOP_ID}", got: ${JSON.stringify(breakdown)}`
+  );
   assert.equal(entry?.savingsPercent, 0);
   // The requested engine's identity must be preserved — never collapsed into a generic "stacked".
   assert.notEqual(entry?.engine, "stacked");

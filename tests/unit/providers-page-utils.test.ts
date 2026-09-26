@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { ProviderEntry } from "../../src/app/(dashboard)/dashboard/providers/providerPageUtils.ts";
 
 const providerPageUtils =
   await import("../../src/app/(dashboard)/dashboard/providers/providerPageUtils.ts");
@@ -47,7 +48,7 @@ test("merged OAuth providers keep free-tier providers in the OAuth section", () 
 });
 
 test("configured-only filter keeps only providers with saved connections", () => {
-  const entries = [
+  const entries: ProviderEntry[] = [
     {
       providerId: "claude",
       provider: { id: "claude" },
@@ -81,7 +82,7 @@ test("configured-only filter keeps only providers with saved connections", () =>
 });
 
 test("configured-only filter keeps no-auth providers even without a saved connection (#3290)", () => {
-  const entries = [
+  const entries: ProviderEntry[] = [
     {
       providerId: "claude",
       provider: { id: "claude" },
@@ -115,28 +116,28 @@ test("configured-only filter keeps no-auth providers even without a saved connec
 });
 
 test("compact provider entries dedupe providers and move no-auth entries to the end", () => {
-  const openRouterFromFree = {
+  const openRouterFromFree: ProviderEntry = {
     providerId: "openrouter",
     provider: { id: "openrouter", name: "OpenRouter" },
     stats: { total: 1 },
     displayAuthType: "apikey",
     toggleAuthType: "apikey",
   };
-  const openRouterFromAggregator = {
+  const openRouterFromAggregator: ProviderEntry = {
     providerId: "openrouter",
     provider: { id: "openrouter", name: "OpenRouter" },
     stats: { total: 1 },
     displayAuthType: "apikey",
     toggleAuthType: "apikey",
   };
-  const claude = {
+  const claude: ProviderEntry = {
     providerId: "claude",
     provider: { id: "claude", name: "Claude" },
     stats: { total: 1 },
     displayAuthType: "oauth",
     toggleAuthType: "oauth",
   };
-  const opencode = {
+  const opencode: ProviderEntry = {
     providerId: "opencode",
     provider: { id: "opencode", name: "OpenCode" },
     stats: { total: 0 },
@@ -157,14 +158,14 @@ test("compact provider entries dedupe providers and move no-auth entries to the 
 });
 
 test("compact provider entries prefer non-no-auth duplicates over deferred no-auth entries", () => {
-  const noAuthEntry = {
+  const noAuthEntry: ProviderEntry = {
     providerId: "opencode",
     provider: { id: "opencode", name: "OpenCode" },
     stats: { total: 0 },
     displayAuthType: "no-auth",
     toggleAuthType: "no-auth",
   };
-  const configuredEntry = {
+  const configuredEntry: ProviderEntry = {
     providerId: "opencode",
     provider: { id: "opencode", name: "OpenCode" },
     stats: { total: 1 },
@@ -183,7 +184,7 @@ test("compact provider entries prefer non-no-auth duplicates over deferred no-au
 });
 
 test("search filter matches provider name and id case-insensitively", () => {
-  const entries = [
+  const entries: ProviderEntry[] = [
     {
       providerId: "claude",
       provider: { id: "claude", name: "Claude" },
@@ -246,7 +247,7 @@ test("search filter matches provider name and id case-insensitively", () => {
 });
 
 test("search and configured-only filters work together", () => {
-  const entries = [
+  const entries: ProviderEntry[] = [
     {
       providerId: "claude",
       provider: { id: "claude", name: "Claude" },
@@ -763,7 +764,7 @@ test("compatible catalog entries keep dynamic compatible metadata", () => {
 test("model search filter matches providers by model id", async () => {
   const { getModelsByProviderId } = await import("../../src/shared/constants/models.ts");
 
-  const entries = [
+  const entries: ProviderEntry[] = [
     {
       providerId: "trae",
       provider: { name: "Trae" },
@@ -856,7 +857,7 @@ test("model search filter matches providers by model id", async () => {
 });
 
 test("model search filter matches by model name", () => {
-  const entries = [
+  const entries: ProviderEntry[] = [
     {
       providerId: "minimax",
       provider: { name: "MiniMax" },
@@ -892,7 +893,7 @@ test("model search filter matches by model name", () => {
 });
 
 test("model search filter combines with configured-only and text search", () => {
-  const entries = [
+  const entries: ProviderEntry[] = [
     {
       providerId: "trae",
       provider: { name: "Trae" },
@@ -967,7 +968,7 @@ test("model search filter combines with configured-only and text search", () => 
 });
 
 test("model search filter is case-insensitive and partial-match", () => {
-  const entries = [
+  const entries: ProviderEntry[] = [
     {
       providerId: "trae",
       provider: { name: "Trae" },
@@ -1130,7 +1131,10 @@ test("unified xAI OAuth card includes canonical and legacy connection provider I
   );
   assert.equal(resolveProviderOAuthBackendId("xai", providers.APIKEY_PROVIDERS.xai), "xai-oauth");
   assert.equal(
-    resolveProviderOAuthBackendId("openai", providers.APIKEY_PROVIDERS.openai),
+    resolveProviderOAuthBackendId(
+      "openai",
+      providers.APIKEY_PROVIDERS.openai as { oauthProviderId?: unknown }
+    ),
     "openai"
   );
   assert.equal(providers.OAUTH_PROVIDERS["xai-oauth"].hiddenFromDashboard, true);

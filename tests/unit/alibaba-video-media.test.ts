@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-alibaba-video-media-"));
 
@@ -39,8 +41,8 @@ async function captureAlibabaRequest(body, region = "global-sg") {
   const originalSetTimeout = globalThis.setTimeout;
   let captured;
 
-  globalThis.setTimeout = immediateTimeout;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     if (stringUrl.endsWith("/services/aigc/video-generation/video-synthesis")) {
       captured = {
@@ -62,7 +64,7 @@ async function captureAlibabaRequest(body, region = "global-sg") {
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body,
       credentials: {
         apiKey: "alibaba-video-key",
@@ -227,7 +229,7 @@ test("Alibaba media-specific video models reject missing input locally", async (
     ["wan2.7-r2v-2026-06-12", /reference image or video input is required/i],
     ["wan2.7-videoedit", /video input is required/i],
   ]) {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: {
         model: `alibaba/${model}`,
         prompt: "missing media",
@@ -238,12 +240,12 @@ test("Alibaba media-specific video models reject missing input locally", async (
 
     assert.equal(result.success, false);
     assert.equal(result.status, 400);
-    assert.match(result.error, errorPattern);
+    assert.match(result.error, errorPattern as unknown as RegExp);
   }
 });
 
 test("Alibaba rejects video models outside its own allowlist", async () => {
-  const result = await handleVideoGeneration({
+  const result = await looseAsync(handleVideoGeneration)({
     body: {
       model: "alibaba/wan2.7-t2v",
       prompt: "not part of the Alibaba allowlist",

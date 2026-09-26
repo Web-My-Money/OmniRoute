@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { validateProviderApiKey, validateClaudeCodeCompatibleProvider } =
   await import("../../src/lib/providers/validation.ts");
@@ -111,7 +112,7 @@ test("gemini validation distinguishes non-auth 400 responses from auth failures 
 });
 
 test("Claude Code compatible validation surfaces bridge connection failures", async () => {
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     if (init.method === "GET") {
       throw new Error("models endpoint offline");
     }

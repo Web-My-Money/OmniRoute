@@ -71,9 +71,9 @@ test("spawnWithForwardedSignals forwards process signals and exit status", async
     signalHandlers.set(signal, handler);
     return process;
   };
-  process.exit = (code) => {
+  process.exit = ((code?: string | number) => {
     processExits.push(code);
-  };
+  }) as unknown as typeof process.exit;
   process.kill = (pid, signal) => {
     processKills.push({ pid, signal });
     return true;

@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-auth-disable-cooling-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -13,13 +15,13 @@ const auth = await import("../../src/sse/services/auth.ts");
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // #2997 — Test 1: a recoverable error on a connection flagged disableCooling
@@ -28,14 +30,14 @@ test.after(() => {
 test("markAccountUnavailable skips transient cooldown when disableCooling is set", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "apikey",
     apiKey: "sk-disable-cooling",
     isActive: true,
     testStatus: "active",
     providerSpecificData: { disableCooling: true },
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await auth.markAccountUnavailable(
     (conn as any).id,
@@ -65,14 +67,14 @@ test("markAccountUnavailable skips transient cooldown when disableCooling is set
 test("markAccountUnavailable still applies terminal 'expired' despite disableCooling", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-disable-cooling-expired",
     isActive: true,
     testStatus: "active",
     providerSpecificData: { disableCooling: true },
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await auth.markAccountUnavailable(
     (conn as any).id,
@@ -90,14 +92,14 @@ test("markAccountUnavailable still applies terminal 'expired' despite disableCoo
 test("markAccountUnavailable still applies terminal 'credits_exhausted' despite disableCooling", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-disable-cooling-credits",
     isActive: true,
     testStatus: "active",
     providerSpecificData: { disableCooling: true },
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await auth.markAccountUnavailable(
     (conn as any).id,
@@ -117,13 +119,13 @@ test("markAccountUnavailable still applies terminal 'credits_exhausted' despite 
 test("markAccountUnavailable still applies transient cooldown without disableCooling", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "apikey",
     apiKey: "sk-default-cooling",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await auth.markAccountUnavailable(
     (conn as any).id,
@@ -146,22 +148,22 @@ test("markAccountUnavailable still applies transient cooldown without disableCoo
 test("getProviderCredentials keeps a disableCooling connection eligible after a recoverable error", async () => {
   await resetStorage();
 
-  const flagged = await providersDb.createProviderConnection({
+  const flagged = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "apikey",
     apiKey: "sk-flagged-eligible",
     isActive: true,
     testStatus: "active",
     providerSpecificData: { disableCooling: true },
-  });
+  })) as JsonRecord & { id: string };
 
-  const unflagged = await providersDb.createProviderConnection({
+  const unflagged = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "apikey",
     apiKey: "sk-unflagged-cooled",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   await auth.markAccountUnavailable(
     (flagged as any).id,
@@ -183,7 +185,7 @@ test("getProviderCredentials keeps a disableCooling connection eligible after a 
     const selected = await auth.getProviderCredentials("glm");
     assert.ok(selected, "expected a selectable connection");
     assert.equal(
-      selected.connectionId,
+      (selected as LooseDeep).connectionId,
       (flagged as any).id,
       "disableCooling connection must stay eligible while the unflagged sibling is cooled"
     );

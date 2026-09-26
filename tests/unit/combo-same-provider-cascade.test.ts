@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import { normalizeHeaders } from "../../open-sse/utils/headers.ts";
 import { createChatPipelineHarness } from "../integration/_chatPipelineHarness.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 /**
  * Guard for the same-provider cascade (issue #3200): when a combo has SEVERAL
@@ -64,7 +65,7 @@ test("combo hits a failing provider only once before falling back across same-pr
   let openaiCalls = 0;
   let claudeCalls = 0;
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     const headers = normalizeHeaders(init.headers);
     const authHeader = headers.authorization ?? headers.Authorization;
     const apiKeyHeader = headers["x-api-key"] ?? headers["X-Api-Key"];
@@ -81,10 +82,7 @@ test("combo hits a failing provider only once before falling back across same-pr
       });
     }
 
-    if (
-      apiKeyHeader === "sk-claude-cascade" ||
-      authHeader === "Bearer sk-claude-cascade"
-    ) {
+    if (apiKeyHeader === "sk-claude-cascade" || authHeader === "Bearer sk-claude-cascade") {
       claudeCalls += 1;
       return buildClaudeResponse("claude handled the fallback");
     }

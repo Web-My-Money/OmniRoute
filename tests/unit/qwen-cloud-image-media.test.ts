@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-qwen-cloud-image-"));
 
@@ -53,7 +55,7 @@ test("Qwen Cloud images use only the selected Qwen Cloud endpoint and key", asyn
   const originalFetch = globalThis.fetch;
   const captures = [];
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captures.push({
       url: String(url),
       headers: options.headers,
@@ -74,7 +76,7 @@ test("Qwen Cloud images use only the selected Qwen Cloud endpoint and key", asyn
 
   try {
     for (const model of IMAGE_PROVIDERS["qwen-cloud"].models.map((entry) => entry.id)) {
-      const result = await handleImageGeneration({
+      const result = await looseAsync(handleImageGeneration)({
         body: {
           model: `qwen-cloud/${model}`,
           prompt: "A horse above the clouds",
@@ -106,7 +108,7 @@ test("Qwen Cloud images use only the selected Qwen Cloud endpoint and key", asyn
 });
 
 test("Qwen Cloud rejects image models outside its own allowlist", async () => {
-  const result = await handleImageGeneration({
+  const result = await looseAsync(handleImageGeneration)({
     body: {
       model: "qwen-cloud/qwen-image-2.0",
       prompt: "wrong catalog",

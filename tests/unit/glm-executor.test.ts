@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import { getExecutor } from "../../open-sse/executors/index.ts";
 import { GlmExecutor } from "../../open-sse/executors/glm.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 function makeSseResponse(lines: string[]): Response {
   return new Response(lines.join("\n\n") + "\n\n", {
@@ -270,7 +271,7 @@ test("GlmExecutor count_tokens is best-effort and timeout bounded", async () => 
 
   const originalFetch = globalThis.fetch;
   let captured: { url: string; body: any; headers: any } | null = null;
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       body: JSON.parse(String(init.body || "{}")),
@@ -341,7 +342,7 @@ test("GlmExecutor sends OpenAI coding payload first and enables streaming tool c
   const originalFetch = globalThis.fetch;
   let captured: { url: string; body: any; headers: any } | null = null;
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       body: JSON.parse(String(init.body || "{}")),
@@ -393,7 +394,7 @@ test("GlmExecutor falls back internally to Anthropic transport and returns OpenA
   const originalFetch = globalThis.fetch;
   const calls: Array<{ url: string; body: any; headers: any }> = [];
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({
       url: String(url),
       body: JSON.parse(String(init.body || "{}")),
@@ -591,7 +592,7 @@ test("GlmExecutor Anthropic fallback keeps tool names unprefixed", async () => {
   const originalFetch = globalThis.fetch;
   const calls: Array<{ url: string; body: any; headers: any }> = [];
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({
       url: String(url),
       body: JSON.parse(String(init.body || "{}")),

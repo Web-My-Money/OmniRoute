@@ -8,6 +8,7 @@ import proxyFetch, {
 } from "../../open-sse/utils/proxyFetch.ts";
 import { clearDispatcherCache } from "../../open-sse/utils/proxyDispatcher.ts";
 import { invalidateProxyHealth, isProxyReachable } from "../../src/lib/proxyHealth.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 // #9100 — proxy concurrency regression.
 //
@@ -150,7 +151,7 @@ test("#9100: 5 concurrent requests through a mocked HTTP proxy all resolve over 
 
 test("#9100: 5 concurrent requests through a mocked Vercel-relay proxy all resolve via ONE shared pooled dispatcher", async () => {
   const relayCalls: Array<{ input: unknown; init: RequestInit & { dispatcher?: unknown } }> = [];
-  const relaySink = (async (input: unknown, init: RequestInit = {}) => {
+  const relaySink = (async (input: unknown, init: MockRequestInit = {}) => {
     relayCalls.push({ input, init });
     // Short SSE upstream, mirroring what the edge relay would return.
     return new Response('data: {"ok":true}\n\n', {

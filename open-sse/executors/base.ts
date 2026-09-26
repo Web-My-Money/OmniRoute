@@ -172,6 +172,12 @@ export type ProviderCredentials = {
   projectId?: string | null;
   expiresAt?: string;
   connectionId?: string; // T07: used for API key rotation index
+  cookie?: string; // web-session providers store the cookie header here
+  orgId?: string; // browser-backed orgs (claude-web) carry the org id alongside the cookie
+  conversationId?: string;
+  deviceId?: string;
+  copilotToken?: string;
+  copilotTokenExpiresAt?: string | number;
   maxConcurrent?: number | null;
   providerSpecificData?: JsonRecord;
   requestEndpointPath?: string;

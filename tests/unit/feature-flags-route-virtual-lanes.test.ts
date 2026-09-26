@@ -13,6 +13,7 @@ import os from "node:os";
 import path from "node:path";
 import test, { after, before } from "node:test";
 import { SignJWT } from "jose";
+import type { NextRequest } from "next/server";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-ff-vl-route-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -62,7 +63,7 @@ async function buildPutRequest(value: string): Promise<Request> {
 }
 
 async function getFlag(): Promise<FlagPayload> {
-  const res = await GET(await buildGetRequest());
+  const res = await GET((await buildGetRequest()) as unknown as NextRequest);
   assert.equal(res.status, 200);
   const json = (await res.json()) as { flags: FlagPayload[] };
   const flag = json.flags.find((f) => f.key === ADAPTIVE_VIRTUAL_LANES_FLAG_KEY);
@@ -119,7 +120,7 @@ test("DB override enables when env is absent (source db)", async () => {
 
 test("PUT response reports env-wins truth when env is set (operator toggle cannot lie)", async () => {
   process.env[ADAPTIVE_VIRTUAL_LANES_FLAG_KEY] = "0";
-  const res = await PUT(await buildPutRequest("true"));
+  const res = await PUT((await buildPutRequest("true")) as unknown as NextRequest);
   assert.equal(res.status, 200);
   const json = (await res.json()) as { effectiveValue: string; source: string };
   assert.equal(json.effectiveValue, "false", 'env "0" must still win over a dashboard PUT "true"');

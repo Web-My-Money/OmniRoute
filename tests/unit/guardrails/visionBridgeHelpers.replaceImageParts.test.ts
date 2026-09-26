@@ -5,9 +5,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { replaceImageParts } from "@/lib/guardrails/visionBridgeHelpers";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 test("replaceImageParts replaces single image with description", () => {
-  const body = {
+  const body: LooseDeep = {
     model: "minimax/minimax-01",
     messages: [
       {
@@ -35,7 +36,7 @@ test("replaceImageParts replaces single image with description", () => {
 });
 
 test("replaceImageParts replaces multiple images with descriptions", () => {
-  const body = {
+  const body: LooseDeep = {
     model: "minimax/minimax-01",
     messages: [
       {
@@ -66,7 +67,7 @@ test("replaceImageParts replaces multiple images with descriptions", () => {
 });
 
 test("replaceImageParts handles empty descriptions array", () => {
-  const body = {
+  const body: LooseDeep = {
     model: "minimax/minimax-01",
     messages: [
       {
@@ -87,7 +88,7 @@ test("replaceImageParts handles empty descriptions array", () => {
 });
 
 test("replaceImageParts preserves non-image content", () => {
-  const body = {
+  const body: LooseDeep = {
     model: "minimax/minimax-01",
     messages: [
       {
@@ -118,7 +119,7 @@ test("replaceImageParts preserves non-image content", () => {
 });
 
 test("replaceImageParts handles base64 images", () => {
-  const body = {
+  const body: LooseDeep = {
     model: "minimax/minimax-01",
     messages: [
       {
@@ -147,7 +148,7 @@ test("replaceImageParts handles base64 images", () => {
 });
 
 test("replaceImageParts handles undefined descriptions", () => {
-  const body = {
+  const body: LooseDeep = {
     model: "test",
     messages: [
       {
@@ -168,7 +169,7 @@ test("replaceImageParts handles undefined descriptions", () => {
 });
 
 test("replaceImageParts handles empty messages array", () => {
-  const body = {
+  const body: LooseDeep = {
     model: "test",
     messages: [],
   };
@@ -180,7 +181,7 @@ test("replaceImageParts handles empty messages array", () => {
 });
 
 test("replaceImageParts handles messages without content array", () => {
-  const body = {
+  const body: LooseDeep = {
     model: "test",
     messages: [
       { role: "user", content: "Just a text message" },
@@ -204,7 +205,7 @@ test("replaceImageParts handles messages without content array", () => {
 });
 
 test("replaceImageParts does not modify original body", () => {
-  const body = {
+  const body: LooseDeep = {
     model: "minimax/minimax-01",
     messages: [
       {
@@ -226,7 +227,7 @@ test("replaceImageParts does not modify original body", () => {
 });
 
 test("replaceImageParts handles mixed images and text", () => {
-  const body = {
+  const body: LooseDeep = {
     model: "test",
     messages: [
       {

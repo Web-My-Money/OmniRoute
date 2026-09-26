@@ -43,20 +43,17 @@ test("isCompressionExcluded: provider/* wildcard matches every model of that pro
   );
 
   const everything = normalizeCompressionExclusions(["*"]);
-  assert.equal(isCompressionExcluded({ provider: "anthropic", model: "claude-opus" }, everything), true);
+  assert.equal(
+    isCompressionExcluded({ provider: "anthropic", model: "claude-opus" }, everything),
+    true
+  );
   assert.equal(isCompressionExcluded({ model: "anything" }, everything), true);
 });
 
 test("isCompressionExcluded: case-insensitive match", () => {
   const exclusions = normalizeCompressionExclusions(["OpenAI/GPT-5-6"]);
-  assert.equal(
-    isCompressionExcluded({ provider: "openai", model: "gpt-5-6" }, exclusions),
-    true
-  );
-  assert.equal(
-    isCompressionExcluded({ provider: "OPENAI", model: "GPT-5-6" }, exclusions),
-    true
-  );
+  assert.equal(isCompressionExcluded({ provider: "openai", model: "gpt-5-6" }, exclusions), true);
+  assert.equal(isCompressionExcluded({ provider: "OPENAI", model: "GPT-5-6" }, exclusions), true);
 });
 
 test("isCompressionExcluded: empty / absent / malformed exclusions => false (default unchanged)", () => {
@@ -118,9 +115,7 @@ test("behavior: excluded target passes through byte-identical; non-excluded stil
   // Non-excluded target: the pipeline is not gated and still compresses (savings observed).
   const nonExcludedTarget = { provider: "openai", model: "gpt-5-6" };
   assert.equal(isCompressionExcluded(nonExcludedTarget, exclusions), false);
-  const result = applyStackedCompression(JSON.parse(JSON.stringify(body)), pipeline, {
-    preserveSystemPrompt: false,
-  });
+  const result = applyStackedCompression(JSON.parse(JSON.stringify(body)), pipeline);
   assert.equal(result.compressed, true);
   assert.notEqual(JSON.stringify(result.body), JSON.stringify(body));
 });

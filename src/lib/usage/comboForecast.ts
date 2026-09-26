@@ -13,8 +13,8 @@ import type {
   ComboForecastResponse,
   ComboForecastRiskLevel,
   ComboForecastTarget,
-  QuotaSnapshotRow,
   UtilizationTimeRange,
+  QuotaSnapshot,
 } from "@/shared/types/utilization";
 import { type JsonRecord } from "@/shared/types/json";
 
@@ -114,17 +114,17 @@ async function attachCosts(rows: ComboForecastUsageRow[]): Promise<CostedUsageRo
   return costed;
 }
 
-function latestRemaining(snapshot: QuotaSnapshotRow): number | null {
+function latestRemaining(snapshot: QuotaSnapshot): number | null {
   const view = snapshot as unknown as QuotaSnapshotView;
   return typeof view.remainingPercentage === "number" ? view.remainingPercentage : null;
 }
 
-function snapshotTime(snapshot: QuotaSnapshotRow): string {
+function snapshotTime(snapshot: QuotaSnapshot): string {
   return String((snapshot as unknown as QuotaSnapshotView).createdAt ?? "");
 }
 
 function buildQuotaForecast(
-  snapshots: QuotaSnapshotRow[],
+  snapshots: QuotaSnapshot[],
   rangeDays: number,
   horizonDays: number
 ): ComboForecastTarget["quota"] {
@@ -295,7 +295,7 @@ async function buildComboForecast(
     const targetCost = targetRows.reduce((sum, row) => sum + row.costUsd, 0);
     const targetTokens = targetRows.reduce((sum, row) => sum + row.totalTokens, 0);
 
-    let quotaSnapshots: QuotaSnapshotRow[] = [];
+    let quotaSnapshots: QuotaSnapshot[] = [];
     let scope: ComboForecastTarget["quota"]["scope"] = "none";
     if (target.connectionId) {
       quotaSnapshots = getQuotaSnapshots({

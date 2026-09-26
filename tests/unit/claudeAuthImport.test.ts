@@ -1,9 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // Pure-function copies of helpers from claudeAuthImport.ts — no DB deps pulled in.
-
-type JsonRecord = Record<string, unknown>;
 
 function toRecord(value: unknown): JsonRecord {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : {};

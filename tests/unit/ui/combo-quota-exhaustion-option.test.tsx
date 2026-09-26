@@ -9,9 +9,11 @@ import {
   setQuotaOnlyFallback,
 } from "@/app/(dashboard)/dashboard/combos/comboQuotaOnlyFallback";
 import type { ComboStep } from "@/lib/combos/steps";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
-const model = (name: string): ComboStep => ({ kind: "model", model: name });
-const comboRef = (): ComboStep => ({ kind: "combo-ref", comboName: "child" });
+const model = (name: string): ComboStep => ({ kind: "model", model: name }) as unknown as ComboStep;
+const comboRef = (): ComboStep =>
+  ({ kind: "combo-ref", comboName: "child" }) as unknown as ComboStep;
 const containers: Array<{ root: ReturnType<typeof createRoot>; element: HTMLDivElement }> = [];
 const label = "Only advance on quota exhaustion";
 const shortLabel = "quota-only fallback";
@@ -55,9 +57,9 @@ describe("combo quota-only fallback state", () => {
     const modelEnabled = setQuotaOnlyFallback(entries, 0, true);
     const refEnabled = setQuotaOnlyFallback(modelEnabled, 1, true);
 
-    expect(entries[0].fallbackOnlyOnQuotaExhaustion).toBeUndefined();
-    expect(refEnabled[0].fallbackOnlyOnQuotaExhaustion).toBe(true);
-    expect(refEnabled[1].fallbackOnlyOnQuotaExhaustion).toBe(true);
+    expect((entries[0] as LooseDeep).fallbackOnlyOnQuotaExhaustion).toBeUndefined();
+    expect((refEnabled[0] as LooseDeep).fallbackOnlyOnQuotaExhaustion).toBe(true);
+    expect((refEnabled[1] as LooseDeep).fallbackOnlyOnQuotaExhaustion).toBe(true);
     expect(refEnabled[2]).toBe(entries[2]);
     expect(setQuotaOnlyFallback(refEnabled, 1, false)[1]).not.toHaveProperty(
       "fallbackOnlyOnQuotaExhaustion"

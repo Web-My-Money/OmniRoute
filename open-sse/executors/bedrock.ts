@@ -6,7 +6,7 @@ import {
 } from "@aws-sdk/client-bedrock-runtime";
 import { randomUUID } from "node:crypto";
 
-import { BaseExecutor } from "./base.ts";
+import { BaseExecutor, type ExecuteInput } from "./base.ts";
 import { PROVIDERS } from "../config/constants.ts";
 import { buildBedrockNativeConverseUrl, resolveBedrockRegion } from "../config/bedrock.ts";
 import * as prl from "../utils/providerRequestLogging.ts";
@@ -638,7 +638,7 @@ export class BedrockExecutor extends BaseExecutor {
     });
   }
 
-  async execute({ model, body, stream, credentials, signal, log }) {
+  async execute({ model, body, stream, credentials, signal, log }: ExecuteInput) {
     const url = this.buildUrl(model, stream, 0, credentials);
     const headers = this.buildHeaders(credentials);
 

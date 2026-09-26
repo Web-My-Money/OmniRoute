@@ -16,6 +16,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { validateProxyUrl } from "../../src/lib/db/upstreamProxy.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 function isValid(url: string): boolean {
   return validateProxyUrl(url).valid;
@@ -107,9 +108,9 @@ test("the non-host validations are unchanged", () => {
     url: "https://proxy.example.com",
   });
   assert.equal(validateProxyUrl("ftp://proxy.example.com").valid, false);
-  assert.match(String(validateProxyUrl("not-a-url").error), /Invalid URL/);
+  assert.match(String((validateProxyUrl("not-a-url") as LooseDeep).error), /Invalid URL/);
   assert.match(
-    String(validateProxyUrl("http://169.254.169.254").error),
+    String((validateProxyUrl("http://169.254.169.254") as LooseDeep).error),
     /private\/internal address/
   );
 });

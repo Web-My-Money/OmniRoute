@@ -47,8 +47,8 @@ test("cache signature must be identical before and after body mutations", async 
   const writeSignatureMutated = await generateSignature(
     mutatedBody.model,
     mutatedBody.messages,
-    mutatedBody.temperature,
-    mutatedBody.top_p
+    mutatedBody.temperature as unknown as number,
+    mutatedBody.top_p as unknown as number
   );
 
   // Compute signature at write-time using the preserved snapshot (the fix).

@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-model-lifecycle-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -22,13 +24,13 @@ async function resetStorage() {
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   v1ModelsCatalog.__resetCatalogBuilderRunsForTest();
 }
 
 async function seedOpenAiConnection() {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: `openai-${Math.random().toString(16).slice(2, 8)}`,
@@ -36,7 +38,7 @@ async function seedOpenAiConnection() {
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {
@@ -47,7 +49,7 @@ test.after(() => {
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("chatCore rejects a shutdown OpenAI model before an upstream request", async () => {
@@ -63,7 +65,7 @@ test("chatCore rejects a shutdown OpenAI model before an upstream request", asyn
       model: "gpt-5.2-codex",
       messages: [{ role: "user", content: "hello" }],
     };
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body: structuredClone(body),
       modelInfo: {
         provider: "openai",

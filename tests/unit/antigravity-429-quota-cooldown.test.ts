@@ -30,7 +30,7 @@ import { markConnectionQuotaExhausted } from "../../open-sse/executors/antigravi
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ── Engine contract (regression guard) ───────────────────────────────────────
@@ -83,11 +83,11 @@ test("classify429: exhausted capacity with reset after 0s is rate_limited", () =
 // ── DB persistence (the missing wire — Bug #2) ───────────────────────────────
 
 test("markConnectionQuotaExhausted persists 24h cooldown; isConnectionRateLimited returns true", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "AG Test Quota",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as any).id;
 
   assert.equal(
@@ -106,11 +106,11 @@ test("markConnectionQuotaExhausted persists 24h cooldown; isConnectionRateLimite
 });
 
 test("markConnectionQuotaExhausted: expired cooldown does not block the connection", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "AG Test Expired",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as any).id;
 
   // Set cooldown in the past — simulates expired cooldown
@@ -121,3 +121,5 @@ test("markConnectionQuotaExhausted: expired cooldown does not block the connecti
     "expired cooldown should not block"
   );
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

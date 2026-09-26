@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { Buffer } from "node:buffer";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { AUDIO_SPEECH_PROVIDERS, parseSpeechModel } =
   await import("../../open-sse/config/audioRegistry.ts");
@@ -23,7 +24,7 @@ test("geminiGenerateSpeech sends the exact AI Studio generateContent contract an
   const originalFetch = globalThis.fetch;
   const pcm = Buffer.from([1, 2, 3, 4]);
   let captured: { url: string; init: RequestInit } | undefined;
-  globalThis.fetch = async (input, init = {}) => {
+  globalThis.fetch = async (input, init: MockRequestInit = {}) => {
     captured = { url: String(input), init };
     return Response.json({
       candidates: [
@@ -84,7 +85,7 @@ test("handleAudioSpeech returns WAV and defaults the AI Studio voice to Kore", a
       speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: string } } };
     };
   };
-  globalThis.fetch = async (_input, init = {}) => {
+  globalThis.fetch = async (_input, init: MockRequestInit = {}) => {
     payload = JSON.parse(String(init.body));
     return Response.json({
       candidates: [

@@ -19,6 +19,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-gpt55-5887-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -31,18 +32,18 @@ let openaiConnectionId: number | string | undefined;
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // (a) Codex active, OpenAI NOT active → bare gpt-5.5 must infer codex.
 //     FAILS before the fix (OpenAI static-catalog short-circuit wins).
 test("#5887(a) codex-only setup infers codex for unprefixed gpt-5.5", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "codex@example.com",
     providerSpecificData: { workspaceId: "ws-1" },
-  });
+  })) as JsonRecord & { id: string };
 
   const info = await getModelInfoCore("gpt-5.5", null);
   assert.equal(info.provider, "codex", "gpt-5.5 must infer codex when only codex is active");
@@ -57,11 +58,11 @@ test("#5887(a) codex-only setup infers codex for unprefixed gpt-5.5", async () =
 //     from "OpenAI wins the overlap" to "an explicit prefix wins the overlap" —
 //     asserted in (b2) below so the override is not silently lost.
 test("#5887(b) active Codex and OpenAI connections route bare gpt-5.5 to Codex", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-test",
-  });
+  })) as JsonRecord & { id: string };
   openaiConnectionId = (conn as { id?: number | string })?.id;
 
   const info = await getModelInfoCore("gpt-5.5", null);

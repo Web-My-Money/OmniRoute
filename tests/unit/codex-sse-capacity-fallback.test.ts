@@ -9,7 +9,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { CodexExecutor, __setCodexWebSocketTransportForTesting } from "../../open-sse/executors/codex.ts";
+import {
+  CodexExecutor,
+  __setCodexWebSocketTransportForTesting,
+} from "../../open-sse/executors/codex.ts";
+import { wrapLoose } from "../helpers/looseTypes.ts";
 
 test.afterEach(() => {
   __setCodexWebSocketTransportForTesting(undefined);
@@ -46,7 +50,7 @@ test("CodexExecutor.execute converts a 200-OK SSE stream carrying a model-at-cap
     );
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gpt-5.5",
       body: { model: "gpt-5.5", input: [{ role: "user", content: "hello" }] },
       stream: true,
@@ -80,7 +84,7 @@ test("CodexExecutor.execute converts server_is_overloaded / service_unavailable_
     );
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gpt-5.5",
       body: { model: "gpt-5.5", input: [{ role: "user", content: "hello" }] },
       stream: true,
@@ -108,7 +112,7 @@ test("CodexExecutor.execute reassembles a normal 200-OK SSE stream byte-intact a
     });
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gpt-5.5",
       body: { model: "gpt-5.5", input: [{ role: "user", content: "hello" }] },
       stream: true,
@@ -141,7 +145,7 @@ test("CodexExecutor.execute reassembles a normal SSE stream split across multipl
     });
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gpt-5.5",
       body: { model: "gpt-5.5", input: [{ role: "user", content: "hello" }] },
       stream: true,

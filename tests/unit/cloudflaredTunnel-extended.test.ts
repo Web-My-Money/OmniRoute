@@ -78,7 +78,13 @@ async function readJsonFileWithRetry(filePath, attempts = 100) {
 }
 
 function createFakeChild(pid) {
-  const child = new EventEmitter();
+  const child = new EventEmitter() as EventEmitter & {
+    stdout: PassThrough;
+    stderr: PassThrough;
+    pid: number;
+    killed: boolean;
+    kill(signal?: string): boolean;
+  };
   child.stdout = new PassThrough();
   child.stderr = new PassThrough();
   child.pid = pid;
@@ -101,7 +107,7 @@ test.afterEach(async () => {
   restoreEnv();
 
   for (const dir of tempDirs) {
-    await fs.rm(dir as any, { recursive: true, force: true });
+    await fs.rm(dir as any, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
   tempDirs.clear();
 });

@@ -4,8 +4,8 @@ import assert from "node:assert/strict";
 import type {
   ComboForecastResponse,
   ComboHealthResponse,
-  ProviderAutopilotReport,
 } from "../../src/shared/types/utilization.ts";
+import type { ProviderAutopilotReport } from "../../src/lib/monitoring/providerHealthAutopilot.ts";
 import { buildComboHealthAutopilotReport } from "../../src/lib/monitoring/comboHealthAutopilot.ts";
 
 function healthResponse(): ComboHealthResponse {

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // Permanent regression guard for #8200: a single recoverable 401 on a
 // cookie-auth provider (perplexity-web) must NOT terminal-expire the only
@@ -20,25 +21,25 @@ const auth = await import("../../src/sse/services/auth.ts");
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("BUG #8200: single perplexity-web 401 (cookie expiry) does not terminal-expire the only connection", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "perplexity-web",
     authType: "apikey",
     apiKey: "__Secure-next-auth.session-token=stale-cookie",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   const connId = String(conn.id);
 
   await auth.markAccountUnavailable(
@@ -68,13 +69,13 @@ test("BUG #8200: single perplexity-web 401 (cookie expiry) does not terminal-exp
 test("markAccountUnavailable keeps the existing 401->expired terminal mapping for plain apikey providers", async () => {
   await resetStorage();
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-expired",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   const connId = String(conn.id);
 
   await auth.markAccountUnavailable(connId, 401, "unauthorized", "openai", "gpt-4.1");

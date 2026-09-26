@@ -7,6 +7,7 @@ import { join } from "node:path";
 
 import { loadPlugin, type LoadedPlugin } from "../../src/lib/plugins/loader.ts";
 import type { Plugin, PluginContext, PluginResult } from "../../src/lib/plugins/index.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ── Type checks ──
 
@@ -22,7 +23,15 @@ test("LoadedPlugin interface has required fields", () => {
       source: "local",
       tags: [],
       requires: { permissions: [] },
-      hooks: { onRequest: false, onResponse: false, onError: false },
+      hooks: {
+        onRequest: false,
+        onResponse: false,
+        onError: false,
+        onInstall: false,
+        onActivate: false,
+        onDeactivate: false,
+        onUninstall: false,
+      },
       skills: [],
       enabledByDefault: false,
       configSchema: {},
@@ -74,7 +83,7 @@ test("PluginResult supports body modification", () => {
     body: { model: "gpt-4-turbo" },
     metadata: { plugin: "model-switcher" },
   };
-  assert.equal(modified.body.model, "gpt-4-turbo");
+  assert.equal((modified.body as LooseDeep).model, "gpt-4-turbo");
   assert.equal(modified.metadata?.plugin, "model-switcher");
 });
 
@@ -88,7 +97,7 @@ test(
 
     t.after(async () => {
       loaded?.cleanup();
-      await rm(pluginDir, { recursive: true, force: true });
+      await rm(pluginDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     });
 
     await writeFile(
@@ -112,7 +121,15 @@ export async function onRequest(ctx) {
       source: "local",
       tags: [],
       requires: { permissions: [] },
-      hooks: { onRequest: true, onResponse: false, onError: false },
+      hooks: {
+        onRequest: true,
+        onResponse: false,
+        onError: false,
+        onInstall: false,
+        onActivate: false,
+        onDeactivate: false,
+        onUninstall: false,
+      },
       skills: [],
       enabledByDefault: false,
       configSchema: {},
@@ -122,6 +139,7 @@ export async function onRequest(ctx) {
       requestId: "test-request",
       body: { model: "gpt-4" },
       model: "gpt-4",
+      provider: "test-provider",
       metadata: {},
     });
 
@@ -148,7 +166,7 @@ test(
 
     t.after(async () => {
       loaded?.cleanup();
-      await rm(pluginDir, { recursive: true, force: true });
+      await rm(pluginDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     });
 
     await writeFile(
@@ -224,8 +242,8 @@ test(
         if (value === undefined) delete process.env[key];
         else process.env[key] = value;
       }
-      await rm(pluginDir, { recursive: true, force: true });
-      await rm(hostScriptDir, { recursive: true, force: true });
+      await rm(pluginDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+      await rm(hostScriptDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     });
 
     await writeFile(entryPoint, "export async function onRequest() { return {}; }\n", "utf-8");
@@ -239,7 +257,15 @@ test(
       source: "local",
       tags: [],
       requires: { permissions: [] },
-      hooks: { onRequest: true, onResponse: false, onError: false },
+      hooks: {
+        onRequest: true,
+        onResponse: false,
+        onError: false,
+        onInstall: false,
+        onActivate: false,
+        onDeactivate: false,
+        onUninstall: false,
+      },
       skills: [],
       enabledByDefault: false,
       configSchema: {},

@@ -1,7 +1,8 @@
 import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
+import { wrapLoose } from "../helpers/looseTypes.ts";
 
-const mod = await import("../../open-sse/services/thinkingBudget.ts");
+const mod = wrapLoose(await import("../../open-sse/services/thinkingBudget.ts"));
 
 describe("thinkingBudget", () => {
   afterEach(() => {
@@ -110,7 +111,10 @@ describe("thinkingBudget", () => {
     });
 
     it("does not override existing thinking config", () => {
-      const body = { model: "claude-3-opus-thinking", thinking: { type: "enabled", budget_tokens: 999 } };
+      const body = {
+        model: "claude-3-opus-thinking",
+        thinking: { type: "enabled", budget_tokens: 999 },
+      };
       const result = mod.ensureThinkingConfig(body);
       assert.equal(result.thinking.budget_tokens, 999);
     });

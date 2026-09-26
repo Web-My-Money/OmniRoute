@@ -14,6 +14,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-poe-api-8969-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -34,7 +35,7 @@ test.after(() => {
   } catch {
     // ignore
   }
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 const CHAT_URL = "https://api.poe.com/v1/chat/completions";
@@ -81,7 +82,7 @@ test("#8969: registry declares API-key executor + all three Poe protocol URLs", 
 });
 
 test("#8969: buildUrl routes chat / responses / messages correctly", () => {
-  const executor = getExecutor("poe") as DefaultExecutor;
+  const executor = getExecutor("poe") as InstanceType<typeof DefaultExecutor>;
   const creds = { apiKey: "poe-test-key", providerSpecificData: {} };
 
   assert.equal(executor.buildUrl("gemma-4-31b", false, 0, creds), CHAT_URL);
@@ -176,7 +177,7 @@ test("#8969: resolvePoeUpstreamUrl normalizes registry-default / bare-host /v1/ 
 });
 
 test("#8969: buildHeaders uses Bearer auth and never sends Cookie", () => {
-  const executor = getExecutor("poe") as DefaultExecutor;
+  const executor = getExecutor("poe") as InstanceType<typeof DefaultExecutor>;
   for (const stream of [false, true]) {
     const headers = headerRecord(
       executor.buildHeaders({ apiKey: "poe-test-key", providerSpecificData: {} }, stream)
@@ -200,7 +201,7 @@ test("#8969: resolveExecutionCredentials forces responses upstream for poe", () 
 });
 
 test("#8969: mocked execute posts Chat Completions with Bearer, no Cookie, stripped model", async () => {
-  const executor = getExecutor("poe") as DefaultExecutor;
+  const executor = getExecutor("poe") as InstanceType<typeof DefaultExecutor>;
   const originalFetch = globalThis.fetch;
   const seen: Array<{
     url: string;
@@ -218,7 +219,7 @@ test("#8969: mocked execute posts Chat Completions with Bearer, no Cookie, strip
       method: (init?.method || "GET").toUpperCase(),
       authorization: headers.get("authorization"),
       cookie: headers.get("cookie"),
-      body: JSON.parse(rawBody) as Record<string, unknown>,
+      body: JSON.parse(rawBody) as LooseDeep,
     });
     return Response.json({
       id: "chatcmpl-test",
@@ -259,7 +260,7 @@ test("#8969: mocked execute posts Chat Completions with Bearer, no Cookie, strip
 });
 
 test("#8969: mocked execute routes Responses + Messages fixtures to the right URLs", async () => {
-  const executor = getExecutor("poe") as DefaultExecutor;
+  const executor = getExecutor("poe") as InstanceType<typeof DefaultExecutor>;
   const originalFetch = globalThis.fetch;
   let lastUrl = "";
 
@@ -326,7 +327,7 @@ test("#8969: mocked execute routes Responses + Messages fixtures to the right UR
 });
 
 test("#8969: mocked upstream 405 is preserved (not swallowed)", async () => {
-  const executor = getExecutor("poe") as DefaultExecutor;
+  const executor = getExecutor("poe") as InstanceType<typeof DefaultExecutor>;
   const originalFetch = globalThis.fetch;
 
   globalThis.fetch = (async () => {

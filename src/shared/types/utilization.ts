@@ -11,6 +11,19 @@ export interface QuotaSnapshotRow {
   created_at: string;
 }
 
+export interface QuotaSnapshot {
+  id: number;
+  provider: string;
+  connectionId: string;
+  windowKey: string;
+  remainingPercentage: number | null;
+  isExhausted: number;
+  nextResetAt: string | null;
+  windowDurationMs: number | null;
+  rawData: string | null;
+  createdAt: string;
+}
+
 export interface ProviderUtilizationPoint {
   timestamp: string;
   provider: string;

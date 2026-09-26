@@ -18,7 +18,7 @@ const stripChunkTs = (chunk: string): string => chunk.replace(/^\[\d{2}:\d{2}:\d
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ─── Helper: Simulates /api/logs/[id] API route logic ──────────────────────
@@ -100,7 +100,7 @@ function computeStreamChunksText(
     try {
       chunks = JSON.parse(chunks);
     } catch {
-      return chunks;
+      return chunks as string;
     }
   }
 
@@ -242,8 +242,6 @@ test("streamChunks survive the full lifecycle: in-flight → completed → persi
   // ── Phase 3: Simulate request completion ──
   usageHistory.finalizeMostRecentPendingRequest(model, provider, connectionId, {
     status: 200,
-    model,
-    provider,
     clientResponse: { choices: [{ message: { content: "Hello" } }] },
   });
 
@@ -630,8 +628,6 @@ test("streamChunks in completedDetails survives beyond the logs polling window",
 
   usageHistory.finalizeMostRecentPendingRequest(model, provider, connectionId, {
     status: 200,
-    model,
-    provider,
   });
 
   // Should be in completedDetails

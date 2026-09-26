@@ -12,6 +12,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-cross-idp-dedup-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -24,7 +25,7 @@ async function resetStorage() {
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       if (fs.existsSync(TEST_DATA_DIR)) {
-        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       }
       break;
     } catch (error: unknown) {
@@ -45,24 +46,24 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#2244 cross-IdP dedup: same email + same username updates the existing connection", async () => {
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "oauth",
     email: "shared@example.com",
     providerSpecificData: { username: "alice-google" },
     isActive: true,
-  });
-  const second = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const second = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "oauth",
     email: "shared@example.com",
     providerSpecificData: { username: "alice-google" },
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const conns = await providersDb.getProviderConnections({ provider: "glm" });
   assert.equal(conns.length, 1, "same email + same username must dedupe to a single connection");
@@ -70,20 +71,20 @@ test("#2244 cross-IdP dedup: same email + same username updates the existing con
 });
 
 test("#2244 cross-IdP dedup: same email + DIFFERENT username creates a separate connection", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "oauth",
     email: "shared@example.com",
     providerSpecificData: { username: "alice-google" },
     isActive: true,
-  });
-  await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "oauth",
     email: "shared@example.com",
     providerSpecificData: { username: "alice-huggingface" },
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const conns = await providersDb.getProviderConnections({ provider: "glm" });
   assert.equal(
@@ -92,26 +93,28 @@ test("#2244 cross-IdP dedup: same email + DIFFERENT username creates a separate 
     "two different IdP identities sharing an email must NOT be collapsed into one connection"
   );
   const usernames = conns
-    .map((c) => (c as { providerSpecificData?: { username?: string } }).providerSpecificData?.username)
+    .map(
+      (c) => (c as { providerSpecificData?: { username?: string } }).providerSpecificData?.username
+    )
     .sort();
   assert.deepEqual(usernames, ["alice-google", "alice-huggingface"]);
 });
 
 test("#2244 cross-IdP dedup: legacy rows without username still dedupe against incoming without username", async () => {
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "oauth",
     email: "legacy@example.com",
     providerSpecificData: {},
     isActive: true,
-  });
-  const second = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const second = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "oauth",
     email: "legacy@example.com",
     providerSpecificData: {},
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const conns = await providersDb.getProviderConnections({ provider: "glm" });
   assert.equal(
@@ -123,27 +126,27 @@ test("#2244 cross-IdP dedup: legacy rows without username still dedupe against i
 });
 
 test("#2244 cross-IdP dedup: Codex workspaceId matching path is unaffected", async () => {
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "team@example.com",
     providerSpecificData: { workspaceId: "ws-1", username: "team-user" },
     isActive: true,
-  });
-  const second = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const second = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "team@example.com",
     providerSpecificData: { workspaceId: "ws-1", username: "team-user-renamed" },
     isActive: true,
-  });
-  const third = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const third = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "team@example.com",
     providerSpecificData: { workspaceId: "ws-2", username: "team-user" },
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const conns = await providersDb.getProviderConnections({ provider: "codex" });
   assert.equal(

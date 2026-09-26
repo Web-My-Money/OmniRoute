@@ -12,7 +12,11 @@ test("detectTool reports an existing opencode.jsonc as the real config path (#10
   const configPath = path.join(configDir, "opencode.jsonc");
   const previousXdg = process.env.XDG_CONFIG_HOME;
 
-  toolDetector.__setExecFileImpl(async () => ({ stdout: "v1.0.0\n", stderr: "" }));
+  // execFile's promisified type carries a `child` handle the test never uses.
+  toolDetector.__setExecFileImpl((async () => ({
+    stdout: "v1.0.0\n",
+    stderr: "",
+  })) as unknown as Parameters<typeof toolDetector.__setExecFileImpl>[0]);
 
   try {
     fs.mkdirSync(configDir, { recursive: true });
@@ -36,6 +40,6 @@ test("detectTool reports an existing opencode.jsonc as the real config path (#10
   } finally {
     if (previousXdg === undefined) delete process.env.XDG_CONFIG_HOME;
     else process.env.XDG_CONFIG_HOME = previousXdg;
-    fs.rmSync(xdgRoot, { recursive: true, force: true });
+    fs.rmSync(xdgRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });

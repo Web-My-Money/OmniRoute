@@ -10,9 +10,10 @@ import {
 import {
   DEFAULT_COMPRESSION_CONFIG,
   type CompressionConfig,
+  type CompressionPipelineStep,
 } from "../../../open-sse/services/compression/types.ts";
 
-const combos = {
+const combos: Record<string, CompressionPipelineStep[]> = {
   c1: [
     { engine: "rtk", intensity: "standard" },
     { engine: "caveman", intensity: "full" },
@@ -163,7 +164,7 @@ describe("formatCompressionMeta", () => {
 });
 
 describe("buildNamedComboLookup", () => {
-  const pipe = [{ engine: "lite" }];
+  const pipe = [{ engine: "lite" }] as CompressionPipelineStep[];
 
   it("keys each combo by both id and lowercased name", () => {
     const map = buildNamedComboLookup([{ id: "abc-123", name: "My Fast Combo", pipeline: pipe }]);

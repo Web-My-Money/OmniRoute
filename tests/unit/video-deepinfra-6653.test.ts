@@ -3,17 +3,15 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-video-deepinfra-"));
 
 const { handleVideoGeneration } = await import("../../open-sse/handlers/videoGeneration.ts");
-const { VIDEO_PROVIDERS, parseVideoModel } = await import(
-  "../../open-sse/config/videoRegistry.ts"
-);
-const {
-  buildDeepinfraVideoRequestBody,
-  extractDeepinfraErrorMessage,
-} = await import("../../open-sse/handlers/videoGeneration/deepinfraHandler.ts");
+const { VIDEO_PROVIDERS, parseVideoModel } = await import("../../open-sse/config/videoRegistry.ts");
+const { buildDeepinfraVideoRequestBody, extractDeepinfraErrorMessage } =
+  await import("../../open-sse/handlers/videoGeneration/deepinfraHandler.ts");
 
 const INFERENCE_URL = "https://api.deepinfra.com/v1/inference/Wan-AI/Wan2.2-T2V-A14B";
 
@@ -65,10 +63,7 @@ test("buildDeepinfraVideoRequestBody omits optional fields when absent", () => {
 test("extractDeepinfraErrorMessage reads string error/detail/message and inference_status.error", () => {
   assert.equal(extractDeepinfraErrorMessage({ error: "bad request" }), "bad request");
   assert.equal(extractDeepinfraErrorMessage({ detail: "invalid model" }), "invalid model");
-  assert.equal(
-    extractDeepinfraErrorMessage({ error: { message: "nested" } }),
-    "nested"
-  );
+  assert.equal(extractDeepinfraErrorMessage({ error: { message: "nested" } }), "nested");
   assert.equal(
     extractDeepinfraErrorMessage({ inference_status: { error: "queue timeout" } }),
     "queue timeout"
@@ -81,7 +76,7 @@ test("handleVideoGeneration builds a synchronous DeepInfra request and returns t
   const originalFetch = globalThis.fetch;
   let capturedRequest;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     capturedRequest = {
       url: String(url),
       headers: options.headers,
@@ -96,7 +91,7 @@ test("handleVideoGeneration builds a synchronous DeepInfra request and returns t
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: {
         model: "deepinfra/Wan-AI/Wan2.2-T2V-A14B",
         prompt: "a neon city in the rain",
@@ -120,7 +115,7 @@ test("handleVideoGeneration builds a synchronous DeepInfra request and returns t
 });
 
 test("handleVideoGeneration rejects DeepInfra video requests without credentials", async () => {
-  const result = await handleVideoGeneration({
+  const result = await looseAsync(handleVideoGeneration)({
     body: { model: "deepinfra/Wan-AI/Wan2.2-T2V-A14B", prompt: "x" },
     credentials: null,
     log: null,
@@ -133,11 +128,10 @@ test("handleVideoGeneration rejects DeepInfra video requests without credentials
 
 test("handleVideoGeneration surfaces upstream HTTP errors without leaking a stack trace", async () => {
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = async () =>
-    jsonResponse({ error: "Invalid API key" }, 401);
+  globalThis.fetch = async () => jsonResponse({ error: "Invalid API key" }, 401);
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: { model: "deepinfra/Wan-AI/Wan2.2-T2V-A14B", prompt: "x" },
       credentials: { apiKey: "bad-key" },
       log: null,
@@ -157,7 +151,7 @@ test("handleVideoGeneration returns 502 when DeepInfra succeeds without a video_
   globalThis.fetch = async () => jsonResponse({ seed: 1, request_id: "req-2" });
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: { model: "deepinfra/Wan-AI/Wan2.2-T2V-A14B", prompt: "x" },
       credentials: { apiKey: "deepinfra-key" },
       log: null,
@@ -180,7 +174,7 @@ test("handleVideoGeneration sanitizes network-level failures via sanitizeErrorMe
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: { model: "deepinfra/Wan-AI/Wan2.2-T2V-A14B", prompt: "x" },
       credentials: { apiKey: "deepinfra-key" },
       log: null,

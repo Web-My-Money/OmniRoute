@@ -36,14 +36,15 @@ const originalGetCookieStore = loginRoute.authRouteInternals.getCookieStore;
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   process.env.INITIAL_PASSWORD = "correct-secret-8336";
 }
 
 test.beforeEach(async () => {
   await resetStorage();
-  loginRoute.authRouteInternals.getCookieStore = async () => ({ set() {} });
+  loginRoute.authRouteInternals.getCookieStore = async () =>
+    ({ set() {} }) as unknown as ReturnType<typeof loginRoute.authRouteInternals.getCookieStore>;
 });
 
 test.afterEach(() => {
@@ -52,7 +53,7 @@ test.afterEach(() => {
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   if (ORIGINAL_INITIAL_PASSWORD === undefined) {
     delete process.env.INITIAL_PASSWORD;
   } else {
@@ -89,7 +90,7 @@ async function postWrongPassword(forwardedFor: string) {
         "x-forwarded-for": forwardedFor,
       },
       body: JSON.stringify({ password: "wrong-password" }),
-    })
+    }) as unknown as Parameters<typeof loginRoute.POST>[0]
   );
 }
 

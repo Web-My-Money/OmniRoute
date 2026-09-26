@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-gemini-embed2-"));
 
@@ -12,9 +13,13 @@ import {
   isGeminiCredentialProvider,
   readGeminiEnvApiKey,
 } from "../../src/lib/providers/gemini.ts";
-import { parseEmbeddingModel, getEmbeddingDimension } from "../../open-sse/config/embeddingRegistry.ts";
+import {
+  parseEmbeddingModel,
+  getEmbeddingDimension,
+} from "../../open-sse/config/embeddingRegistry.ts";
 import { v1EmbeddingsSchema } from "../../src/shared/validation/schemas/apiV1.ts";
 import { handleEmbedding } from "../../open-sse/handlers/embeddings.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const ENV_KEYS = ["GEMINI_API_KEY", "GOOGLE_API_KEY"] as const;
 const savedEnv = Object.fromEntries(ENV_KEYS.map((key) => [key, process.env[key]]));
@@ -103,10 +108,7 @@ test("schema accepts Gemini native text + inline_data mixed batches", () => {
   const parsed = v1EmbeddingsSchema.safeParse({
     model: "gemini/gemini-embedding-2",
     task: "retrieval.query",
-    input: [
-      { text: "a red bicycle" },
-      { inline_data: { mime_type: "image/png", data: PNG_B64 } },
-    ],
+    input: [{ text: "a red bicycle" }, { inline_data: { mime_type: "image/png", data: PNG_B64 } }],
   });
   assert.equal(parsed.success, true);
   if (parsed.success) {
@@ -143,14 +145,17 @@ test("schema accepts fused Gemini Content and rejects unsafe file URIs", () => {
 
 test("handleEmbedding sends N Gemini Embedding 2 inputs as N batch requests", async () => {
   const originalFetch = globalThis.fetch;
-  const seen: Array<{ url: string; headers: Record<string, string>; body: Record<string, unknown> }> =
-    [];
-  globalThis.fetch = async (url, init = {}) => {
+  const seen: Array<{
+    url: string;
+    headers: Record<string, string>;
+    body: Record<string, unknown>;
+  }> = [];
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const headers = (init.headers || {}) as Record<string, string>;
     seen.push({
       url: String(url),
       headers,
-      body: JSON.parse(String(init.body || "{}")) as Record<string, unknown>,
+      body: JSON.parse(String(init.body || "{}")) as LooseDeep,
     });
     return batchEmbeddingResponse(3);
   };
@@ -162,7 +167,8 @@ test("handleEmbedding sends N Gemini Embedding 2 inputs as N batch requests", as
         input: ["alpha", "beta", "gamma"],
         dimensions: 768,
       },
-      credentials: { apiKey: "test-gemini-token", connectionId: "conn-gemini-embed" },
+      credentials: { apiKey: "test-gemini-token" },
+      connectionId: "conn-gemini-embed",
       log: null,
     });
     assert.equal(result.success, true, result.error);
@@ -193,14 +199,14 @@ test("handleEmbedding sends N Gemini Embedding 2 inputs as N batch requests", as
 test("handleEmbedding forwards Gemini native text+image parts and does not strip to string[]", async () => {
   const originalFetch = globalThis.fetch;
   const seen: Array<{ url: string; body: Record<string, unknown> }> = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const target = String(url);
     if (target === IMAGE_URL || target.includes("bike.png")) {
       throw new Error("Gemini-native inline_data must not trigger a media fetch");
     }
     seen.push({
       url: target,
-      body: JSON.parse(String(init.body || "{}")) as Record<string, unknown>,
+      body: JSON.parse(String(init.body || "{}")) as LooseDeep,
     });
     return batchEmbeddingResponse(2);
   };
@@ -241,9 +247,9 @@ test("handleEmbedding fuses one Gemini Content with multiple parts into one vect
   const originalFetch = globalThis.fetch;
   let seenBody: Record<string, unknown> | null = null;
   let seenUrl = "";
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     seenUrl = String(url);
-    seenBody = JSON.parse(String(init.body || "{}")) as Record<string, unknown>;
+    seenBody = JSON.parse(String(init.body || "{}")) as LooseDeep;
     return singleEmbeddingResponse();
   };
 
@@ -277,9 +283,9 @@ test("handleEmbedding keeps gemini-embedding-001 text batches on the OpenAI shim
   const originalFetch = globalThis.fetch;
   let seenUrl = "";
   let seenBody: Record<string, unknown> | null = null;
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     seenUrl = String(url);
-    seenBody = JSON.parse(String(init.body || "{}")) as Record<string, unknown>;
+    seenBody = JSON.parse(String(init.body || "{}")) as LooseDeep;
     return new Response(
       JSON.stringify({
         data: [

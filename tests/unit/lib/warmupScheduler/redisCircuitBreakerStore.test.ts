@@ -28,7 +28,8 @@ function makeMockRedis() {
         if (args.length === 1 && typeof args[0] === "object") {
           for (const [k, v] of Object.entries(args[0])) entry.set(k, String(v));
         } else {
-          for (let i = 0; i < args.length; i += 2) entry.set(args[i], String(args[i + 1]));
+          for (let i = 0; i < args.length; i += 2)
+            entry.set(args[i] as unknown as string, String(args[i + 1]));
         }
         return "OK";
       },
@@ -125,7 +126,7 @@ test("get: returns empty-state for unknown connection", async () => {
 test("recordResult(success) clears forbidden flag in SQLite backup", async () => {
   // Use isolated temp DB (same pattern as connectionRuntimeState.test.ts)
   const providersDb = await import("../../../../src/lib/db/providers.ts");
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "oauth",
     name: "forbid-test",
@@ -133,7 +134,7 @@ test("recordResult(success) clears forbidden flag in SQLite backup", async () =>
     accessToken: "tok",
     refreshToken: "rt",
     isActive: false,
-  });
+  })) as JsonRecord & { id: string };
   const connId = conn!.id;
   // Seed: simulate forbidden state in SQLite backup
   await upsertWarmupState(connId, {
@@ -168,7 +169,7 @@ test.beforeEach(async () => {
   const path = await import("node:path");
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-redis-cb-"));
   process.env.DATA_DIR = tmp;
-  process.env.NODE_ENV = "test";
+  (process.env as Record<string, string | undefined>).NODE_ENV = "test";
   process.env.DISABLE_SQLITE_AUTO_BACKUP = "true";
   resetDbInstance();
 });
@@ -176,3 +177,5 @@ test.beforeEach(async () => {
 test.after(() => {
   resetDbInstance();
 });
+
+import type { JsonRecord } from "../../../../src/shared/types/json.ts";

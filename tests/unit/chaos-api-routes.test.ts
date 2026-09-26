@@ -14,6 +14,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-chaos-routes-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -40,12 +41,17 @@ async function resetStorage() {
   // config cache too, or getChaosConfig() keeps serving a stale value (e.g. a
   // prior test's `enabled: true`) after resetDbInstance() below.
   chaosConfig.invalidateChaosConfigCache();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   delete process.env.INITIAL_PASSWORD;
 }
 
-function makeRequest(method: string, url: string, body?: unknown, headers: Record<string, string> = {}) {
+function makeRequest(
+  method: string,
+  url: string,
+  body?: unknown,
+  headers: Record<string, string> = {}
+) {
   return new Request(url, {
     method,
     headers: {
@@ -74,7 +80,7 @@ test.afterEach(() => {
 test.after(() => {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 
   if (ORIGINAL_DATA_DIR === undefined) {
     delete process.env.DATA_DIR;
@@ -114,10 +120,7 @@ test("GET /api/chaos/config — returns defaults, PUT updates, DELETE resets", a
   const getBody = (await getRes.json()) as { config: typeof chaosConfig.DEFAULT_CHAOS_CONFIG };
   // JSON.stringify drops keys whose value is `undefined` (systemPrompt), so compare
   // against the JSON round-tripped shape rather than the raw in-memory default.
-  assert.deepEqual(
-    getBody.config,
-    JSON.parse(JSON.stringify(chaosConfig.DEFAULT_CHAOS_CONFIG))
-  );
+  assert.deepEqual(getBody.config, JSON.parse(JSON.stringify(chaosConfig.DEFAULT_CHAOS_CONFIG)));
 
   const putRes = await configRoute.PUT(
     makeRequest("PUT", "http://localhost/api/chaos/config", {
@@ -137,12 +140,11 @@ test("GET /api/chaos/config — returns defaults, PUT updates, DELETE resets", a
     makeRequest("DELETE", "http://localhost/api/chaos/config")
   );
   assert.equal(deleteRes.status, 200);
-  const deleteBody = (await deleteRes.json()) as { config: typeof chaosConfig.DEFAULT_CHAOS_CONFIG };
+  const deleteBody = (await deleteRes.json()) as {
+    config: typeof chaosConfig.DEFAULT_CHAOS_CONFIG;
+  };
   // Same JSON.stringify undefined-key drop as the GET assertion above.
-  assert.deepEqual(
-    deleteBody.config,
-    JSON.parse(JSON.stringify(chaosConfig.DEFAULT_CHAOS_CONFIG))
-  );
+  assert.deepEqual(deleteBody.config, JSON.parse(JSON.stringify(chaosConfig.DEFAULT_CHAOS_CONFIG)));
 });
 
 test("PUT /api/chaos/config — 400 on schema validation failure", async () => {
@@ -198,13 +200,13 @@ test("POST /api/chaos/run — 200 happy path dispatches without an Authorization
     timeoutMs: 120_000,
     maxTokens: 4096,
   });
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Run Route Provider",
     apiKey: "sk-run-route",
     defaultModel: "gpt-4o-mini",
-  });
+  })) as JsonRecord & { id: string };
 
   let capturedAuth: string | null | undefined;
   mock.method(chaosExecutor.chatDispatch, "postChatCompletion", async (req: Request) => {
@@ -285,13 +287,13 @@ test("POST /api/skills/collect/chaos — 200 happy path forwards the caller's ke
     timeoutMs: 120_000,
     maxTokens: 4096,
   });
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Skills Route Provider",
     apiKey: "sk-skills-route",
     defaultModel: "gpt-4o-mini",
-  });
+  })) as JsonRecord & { id: string };
 
   const created = await apiKeysDb.createApiKey("Chaos Key External", "machine-chaos-03");
   await apiKeysDb.updateApiKeyPermissions(created.id, { chaosModeEnabled: true });

@@ -1,9 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // Pure-function copy of helpers from codexAuthImport.ts so we don't drag DB deps.
-
-type JsonRecord = Record<string, unknown>;
 
 function buildJwt(payload: JsonRecord): string {
   const header = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT" })).toString("base64url");

@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { KimiBillingStatus } from "../../src/shared/utils/kimiBilling.ts";
 
 const { buildKimiBillingCardRows, KIMI_CODE_ADDITIONAL_CREDITS_URL, sanitizeKimiBillingStatus } =
   await import("../../src/shared/utils/kimiBilling.ts");
@@ -16,7 +17,7 @@ const baseBilling = {
 };
 
 test("Kimi billing rows show the real Extra Usage status when the wallet is unavailable", () => {
-  const rows = buildKimiBillingCardRows(baseBilling, "en-US");
+  const rows = buildKimiBillingCardRows(baseBilling as unknown as KimiBillingStatus, "en-US");
   assert.deepEqual(rows, [
     { kind: "status", label: "Extra Usage", value: "Unavailable" },
     {
@@ -38,7 +39,7 @@ test("Kimi billing rows show balance, wallet status, monthly spend, cap and buy 
       monthlyLimitEnabled: true,
       monthlyLimitMinorUnits: 5000,
       extraUsageStatus: "enabled",
-    },
+    } as KimiBillingStatus,
     "en-US"
   );
 
@@ -67,7 +68,7 @@ test("Kimi monthly cap displays Unlimited when disabled or zero", () => {
       monthlyLimitMinorUnits: 0,
     },
   ]) {
-    const row = buildKimiBillingCardRows(billing, "en-US").find(
+    const row = buildKimiBillingCardRows(billing as unknown as KimiBillingStatus, "en-US").find(
       (candidate) => candidate.kind === "status" && candidate.label === "Monthly limit"
     );
     assert.deepEqual(row, { kind: "status", label: "Monthly limit", value: "Unlimited" });
@@ -96,7 +97,7 @@ test("Kimi billing labels support localized translation fallbacks", () => {
         extraCreditsMinorUnits: 0,
         monthlyLimitEnabled: false,
         extraUsageStatus: "disabled",
-      },
+      } as KimiBillingStatus,
       "zh-CN",
       translate
     ),
@@ -137,7 +138,10 @@ test("Kimi billing sanitizer strips private fields and rejects forged public con
     extraUsageStatus: "disabled",
     additionalCreditsUrl: KIMI_CODE_ADDITIONAL_CREDITS_URL,
   });
-  assert.equal(buildKimiBillingCardRows(billing!, "zh-CN")[0]?.value, "¥0.00");
+  assert.equal(
+    (buildKimiBillingCardRows(billing!, "zh-CN")[0] as { value?: string })?.value,
+    "¥0.00"
+  );
   assert.equal(isKimiBillingStatus(billing!), true);
   assert.deepEqual(sanitizeProviderBillingStatus(billing), billing);
 

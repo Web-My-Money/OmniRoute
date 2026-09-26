@@ -137,7 +137,7 @@ export const codex = {
     return { authInfo };
   },
 
-  mapTokens: (tokens, extra) => {
+  mapTokens: (tokens, extra = undefined) => {
     // Parse id_token for email and auth info
     let email = null;
     let authInfo = extra?.authInfo || null;

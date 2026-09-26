@@ -4,6 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { makeManagementSessionRequest } from "../helpers/managementSession.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-api-keys-route-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -25,7 +26,7 @@ async function resetStorage() {
   delete process.env.INITIAL_PASSWORD;
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -63,7 +64,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("API keys routes require management auth when login protection is enabled", async () => {
@@ -267,7 +268,7 @@ test("POST /api/keys triggers cloud sync when cloud mode is enabled", async () =
   await createManagementKey();
   const originalFetch = globalThis.fetch;
   const calls = [];
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     calls.push({ url, options });
     return Response.json({ changes: { apiKeys: 1 } });
   };

@@ -6,6 +6,8 @@ import {
   recordLearnedReasoningEffort,
   __test_resetLearnedReasoningEffortCaps,
 } from "../../open-sse/services/learnedReasoningEffortCaps.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { wrapLoose } from "../helpers/looseTypes.ts";
 
 const OVH_422_BODY = JSON.stringify({
   error: {
@@ -41,7 +43,7 @@ test("422 'unknown variant xhigh, expected one of ...' clamps reasoning_effort a
   const originalFetch = globalThis.fetch;
   const capturedBodies: Record<string, unknown>[] = [];
 
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     const body = JSON.parse(String(init.body));
     capturedBodies.push(body);
     if (capturedBodies.length === 1) {
@@ -57,7 +59,7 @@ test("422 'unknown variant xhigh, expected one of ...' clamps reasoning_effort a
   };
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "qwen3-coder-30b-a3b-instruct",
       body: { reasoning_effort: "xhigh" },
       stream: false,
@@ -67,7 +69,12 @@ test("422 'unknown variant xhigh, expected one of ...' clamps reasoning_effort a
     assert.equal(capturedBodies[0].reasoning_effort, "xhigh");
     assert.equal(capturedBodies[1].reasoning_effort, "high");
     assert.ok(
-      (getLearnedReasoningEffort("openai-compatible-chat-eaff6869", "qwen3-coder-30b-a3b-instruct") as unknown as Set<string>).has("high")
+      (
+        getLearnedReasoningEffort(
+          "openai-compatible-chat-eaff6869",
+          "qwen3-coder-30b-a3b-instruct"
+        ) as unknown as Set<string>
+      ).has("high")
     );
     assert.equal(result.response.status, 200);
   } finally {
@@ -80,7 +87,7 @@ test("a second request for the same provider+model sends the learned value on th
   const originalFetch = globalThis.fetch;
   const capturedBodies: Record<string, unknown>[] = [];
 
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     const body = JSON.parse(String(init.body));
     capturedBodies.push(body);
     return new Response(JSON.stringify({ ok: true }), {
@@ -95,7 +102,7 @@ test("a second request for the same provider+model sends the learned value on th
       "qwen3-coder-30b-a3b-instruct",
       ["none", "high", "medium", "low", "minimal"]
     );
-    await executor.execute({
+    await wrapLoose(executor).execute({
       model: "qwen3-coder-30b-a3b-instruct",
       body: { reasoning_effort: "xhigh" },
       stream: false,
@@ -113,10 +120,13 @@ test("400 please use low, high, or max clamps and retries once (nearest-tier: me
   const originalFetch = globalThis.fetch;
   const capturedBodies: Record<string, unknown>[] = [];
   const BODY_400_PLEASE_USE = JSON.stringify({
-    error: { message: "This model always engages in thinking and cannot be disabled; please use low, high, or max" },
+    error: {
+      message:
+        "This model always engages in thinking and cannot be disabled; please use low, high, or max",
+    },
   });
 
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     const body = JSON.parse(String(init.body));
     capturedBodies.push(body);
     if (capturedBodies.length === 1) {
@@ -132,7 +142,7 @@ test("400 please use low, high, or max clamps and retries once (nearest-tier: me
   };
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "x-preview-f-free",
       body: { reasoning_effort: "medium" },
       stream: false,
@@ -144,7 +154,10 @@ test("400 please use low, high, or max clamps and retries once (nearest-tier: me
     // high(4), the smallest accepted rank at or above it (was "low" under the
     // old downgrade-only direction).
     assert.equal(capturedBodies[1].reasoning_effort, "high");
-    const learned = getLearnedReasoningEffort("openai-compatible-chat-eaff6869", "x-preview-f-free") as unknown as Set<string>;
+    const learned = getLearnedReasoningEffort(
+      "openai-compatible-chat-eaff6869",
+      "x-preview-f-free"
+    ) as unknown as Set<string>;
     assert.ok(learned instanceof Set);
     assert.ok(learned.has("low"));
     assert.ok(learned.has("high"));
@@ -162,7 +175,7 @@ test("400 please use low, medium with ultra retries to medium", async () => {
     error: { message: "please use low, medium" },
   });
 
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     const body = JSON.parse(String(init.body));
     capturedBodies.push(body);
     if (capturedBodies.length === 1) {
@@ -178,7 +191,7 @@ test("400 please use low, medium with ultra retries to medium", async () => {
   };
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "x-preview-f-free-2",
       body: { reasoning_effort: "ultra" },
       stream: false,
@@ -201,7 +214,7 @@ test("sub-floor clamp now retries: learned {high,max} with low request clamps up
     error: { message: "please use high, or max" },
   });
 
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     const body = JSON.parse(String(init.body));
     capturedBodies.push(body);
     if (capturedBodies.length === 1) {
@@ -221,7 +234,7 @@ test("sub-floor clamp now retries: learned {high,max} with low request clamps up
     // a downgrade-only passthrough (no clamp, no retry, upstream stayed 400
     // forever). Nearest-tier now clamps up to the accepted floor (high) and
     // retries once, succeeding.
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "x-preview-f-free-3",
       body: { reasoning_effort: "low" },
       stream: false,

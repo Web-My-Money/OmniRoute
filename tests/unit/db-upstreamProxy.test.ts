@@ -14,6 +14,7 @@ import path from "node:path";
 import fs from "node:fs";
 import os from "node:os";
 import Database from "better-sqlite3";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const fileTmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "omni-dbupc-test-"));
 const moduleDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "omni-dbupc-module-"));
@@ -53,12 +54,13 @@ afterEach(() => {
 });
 
 after(() => {
-  if (fs.existsSync(fileTmpDir)) fs.rmSync(fileTmpDir, { recursive: true, force: true });
+  if (fs.existsSync(fileTmpDir))
+    fs.rmSync(fileTmpDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 async function resetModuleStorage() {
   coreDb.resetDbInstance();
-  fs.rmSync(moduleDataDir, { recursive: true, force: true });
+  fs.rmSync(moduleDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(moduleDataDir, { recursive: true });
 }
 
@@ -367,7 +369,7 @@ describe("db/upstreamProxy (module coverage)", () => {
 
   after(async () => {
     coreDb.resetDbInstance();
-    fs.rmSync(moduleDataDir, { recursive: true, force: true });
+    fs.rmSync(moduleDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   });
 
   it("validates proxy URLs and blocks unsupported or private destinations", async () => {
@@ -377,10 +379,10 @@ describe("db/upstreamProxy (module coverage)", () => {
     });
     assert.equal(upstreamProxyDb.validateProxyUrl("ftp://proxy.example.com").valid, false);
     assert.match(
-      upstreamProxyDb.validateProxyUrl("http://169.254.169.254").error,
+      (upstreamProxyDb.validateProxyUrl("http://169.254.169.254") as LooseDeep).error,
       /private\/internal address/
     );
-    assert.match(upstreamProxyDb.validateProxyUrl("not-a-url").error, /Invalid URL/);
+    assert.match((upstreamProxyDb.validateProxyUrl("not-a-url") as LooseDeep).error, /Invalid URL/);
   });
 
   it("round-trips configs through upsert, update, mode filters and fallback ordering", async () => {

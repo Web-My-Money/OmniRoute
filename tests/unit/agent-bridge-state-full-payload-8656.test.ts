@@ -17,6 +17,7 @@ import assert from "node:assert/strict";
 import fs from "fs";
 import os from "os";
 import path from "path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-8656-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -30,7 +31,7 @@ const { replaceUserBypassPatterns } = await import("../../src/lib/db/agentBridge
 
 function resetDb() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -40,7 +41,7 @@ test.beforeEach(() => {
 
 test.after(() => {
   try {
-    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   } catch {
     /* noop */
   }
@@ -60,7 +61,7 @@ test("GET /state: returns agentStates array with dns_enabled from DB (#8656)", a
 
   // Act: the UI polls /state after the DNS toggle
   const res = await GET();
-  const body = (await res.json()) as Record<string, unknown>;
+  const body = (await res.json()) as LooseDeep;
 
   // Assert: agentStates must be populated (not empty) so the UI can read dns_enabled
   assert.ok(Array.isArray(body.agentStates), "body.agentStates missing or not array");
@@ -90,7 +91,7 @@ test("GET /state: returns mappings object keyed by agentId (#8656)", async () =>
 
   // Act
   const res = await GET();
-  const body = (await res.json()) as Record<string, unknown>;
+  const body = (await res.json()) as LooseDeep;
 
   // Assert: mappings must be present so the UI can render the model mapping table
   assert.ok(typeof body.mappings === "object", "body.mappings missing");
@@ -110,7 +111,7 @@ test("GET /state: returns bypassPatterns array (#8656)", async () => {
 
   // Act
   const res = await GET();
-  const body = (await res.json()) as Record<string, unknown>;
+  const body = (await res.json()) as LooseDeep;
 
   // Assert: bypassPatterns must be present so the UI can display/edit them
   assert.ok(Array.isArray(body.bypassPatterns), "body.bypassPatterns missing");
@@ -129,10 +130,10 @@ test("GET /state: serverState.certTrusted distinct from certExists (#8656)", asy
   );
 
   const res = await GET();
-  const body = (await res.json()) as Record<string, unknown>;
+  const body = (await res.json()) as LooseDeep;
 
   // Assert: certExists and certTrusted should be distinct fields
-  const server = body.server as Record<string, unknown>;
+  const server = body.server as LooseDeep;
   assert.ok("certExists" in server, "server.certExists missing");
   assert.ok("certTrusted" in server, "server.certTrusted missing");
 
@@ -153,7 +154,7 @@ test("GET /state: maintains backward compat (server + agents keys) (#8656)", asy
   );
 
   const res = await GET();
-  const body = (await res.json()) as Record<string, unknown>;
+  const body = (await res.json()) as LooseDeep;
 
   // Assert: legacy keys still present
   assert.ok("server" in body, "body.server missing — breaks backward compat");
@@ -183,7 +184,7 @@ test("GET /state: agentStates entries have expected shape (#8656)", async () => 
   );
 
   const res = await GET();
-  const body = (await res.json()) as Record<string, unknown>;
+  const body = (await res.json()) as LooseDeep;
 
   const antigravityState = body.agentStates.find(
     (s: { agent_id: string }) => s.agent_id === "antigravity"

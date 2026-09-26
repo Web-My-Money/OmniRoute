@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { GrokCliExecutor } from "../../open-sse/executors/grok-cli.ts";
 import type { ExecuteInput, ProviderCredentials } from "../../open-sse/executors/base.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 test("GrokCliExecutor.execute() proactively refreshes an expired access token (#7610)", async () => {
   const executor = new GrokCliExecutor();
@@ -25,7 +26,7 @@ test("GrokCliExecutor.execute() proactively refreshes an expired access token (#
 
   let capturedHeaders: Record<string, string> | null = null;
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = (async (_url: string, init: RequestInit = {}) => {
+  globalThis.fetch = (async (_url: string, init: MockRequestInit = {}) => {
     capturedHeaders = Object.fromEntries(
       new Headers(init.headers as HeadersInit).entries()
     ) as Record<string, string>;

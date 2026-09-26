@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // #5521 — An opencode connection with multiple fingerprints in
 // provider_specific_data.fingerprints was treated as a single combo target,
@@ -16,7 +17,6 @@ const {
 } = await import("../../open-sse/services/combo/fingerprintExpansion.ts");
 
 // ── isFingerprintProvider ────────────────────────────────────────────────────
-
 
 test("isFingerprintProvider: opencode returns true", () => {
   assert.equal(isFingerprintProvider("opencode"), true);
@@ -188,9 +188,7 @@ test("expandTargetsByFingerprints: 10 fingerprints expands to 10 targets", () =>
 test("expandTargetsByFingerprints: preserves all target properties across copies", () => {
   const fps = ["fp-aaa", "fp-bbb", "fp-ccc"];
   const conn = makeConnection(fps);
-  const targets = [
-    makeTarget({ connectionId: "conn-1", modelStr: "opencode/kimi-k2", weight: 5 }),
-  ];
+  const targets = [makeTarget({ connectionId: "conn-1", modelStr: "opencode/kimi-k2", weight: 5 })];
   const connById = new Map([["conn-1", conn]]);
   const result = expandTargetsByFingerprints(targets, connById, (t) => t.provider);
   assert.equal(result.length, 3);
@@ -218,7 +216,7 @@ test("expandTargetsByFingerprints: mixed providers expand only fingerprint ones"
     makeTarget({ provider: "openai", modelStr: "openai/gpt-4o", connectionId: "conn-oai" }),
     makeTarget({ connectionId: "conn-1" }),
   ];
-  const connById = new Map([
+  const connById = new Map<string, LooseDeep>([
     ["conn-1", conn],
     ["conn-oai", { id: "conn-oai", provider: "openai", providerSpecificData: {} }],
   ]);
@@ -234,7 +232,6 @@ test("expandTargetsByFingerprints: empty input returns empty array", () => {
   const result = expandTargetsByFingerprints([], connById, (t) => t.provider);
   assert.equal(result.length, 0);
 });
-
 
 test("expandTargetsByFingerprints: multiple targets each expand independently", () => {
   const conn1 = makeConnection(["fp-a1", "fp-a2"]);

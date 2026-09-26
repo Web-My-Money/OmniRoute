@@ -1,10 +1,11 @@
 import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert/strict";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const mod = await import("../../src/lib/db/plugins.ts");
 const { getDbInstance } = await import("../../src/lib/db/core.ts");
 
-const makeInput = (overrides = {}) => ({
+const makeInput = (overrides: JsonRecord = {}) => ({
   id: `plugin-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
   name: `test-plugin-${Date.now()}`,
   version: "1.0.0",

@@ -9,6 +9,7 @@ import {
   buildTransientRefreshRetryUpdate,
   stopTokenHealthCheck,
 } from "../../src/lib/tokenHealthCheck.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Stop the auto-started timer so tests do not leak intervals.
 stopTokenHealthCheck();
@@ -132,7 +133,7 @@ describe("transient vs permanent: integration", () => {
     }
 
     // Streak should still be 0 -- transient errors do not accumulate
-    assert.equal(conn.providerSpecificData.refreshCircuit.streak, 0);
+    assert.equal((conn.providerSpecificData.refreshCircuit as LooseDeep).streak, 0);
   });
 });
 

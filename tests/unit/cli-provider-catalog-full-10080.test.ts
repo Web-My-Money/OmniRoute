@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // #10080 — `loadAvailableProviders()` always returned the 6-entry
 // COMMON_PROVIDERS fallback, so `omniroute keys add <provider>` rejected ~290 of
@@ -107,7 +108,7 @@ test("loadAvailableProviders reads the decomposed catalog, not the 6-entry fallb
   // Lower bound rather than an exact count so adding providers does not break this.
   assert.ok(providers.length > 200, `expected 200+ providers, got ${providers.length}`);
 
-  const byId = new Map(providers.map((p) => [p.id, p]));
+  const byId = new Map<string, LooseDeep>((providers as LooseDeep[]).map((p) => [p.id, p]));
   for (const id of ["cerebras", "groq", "gemini", "siliconflow", "opencode", "kiro"]) {
     assert.ok(byId.has(id), `${id} missing from the catalog`);
   }
@@ -128,7 +129,7 @@ test("falls back to COMMON_PROVIDERS when no catalog is present", () => {
     assert.equal(providers.length, COMMON_PROVIDERS.length);
     assert.equal(providers[0].id, "openai");
   } finally {
-    fs.rmSync(emptyRoot, { recursive: true, force: true });
+    fs.rmSync(emptyRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
 
@@ -147,6 +148,6 @@ test("an explicit catalogPath still overrides the directory walk", () => {
       ["only"]
     );
   } finally {
-    fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });

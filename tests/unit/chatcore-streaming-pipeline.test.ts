@@ -48,7 +48,7 @@ function makeDeps(over: Record<string, unknown> = {}) {
     shapeForClientFormat: (f: unknown) => f,
     createModelEchoTransform: () => ({ __tag: "echo" }),
     ...over,
-  } as Parameters<typeof assembleStreamingPipeline>[1];
+  } as unknown as Parameters<typeof assembleStreamingPipeline>[1];
   return { deps, log };
 }
 
@@ -63,7 +63,7 @@ function baseArgs(over: Record<string, unknown> = {}) {
     echoModel: null,
     responseHeaders: {} as Record<string, string>,
     ...over,
-  } as Parameters<typeof assembleStreamingPipeline>[0];
+  } as unknown as Parameters<typeof assembleStreamingPipeline>[0];
 }
 
 test("pipeline arguments preserve the dependency parameter contracts", () => {

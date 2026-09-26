@@ -28,6 +28,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-chat-shape-gate-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -45,7 +46,7 @@ async function flushBackgroundWork() {
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -63,7 +64,7 @@ test.after(async () => {
   await flushBackgroundWork();
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 function makeCountingRequest(body: string) {
@@ -172,14 +173,14 @@ test("model: null is NOT rejected by the route-level gate (passes through to dee
 });
 
 test("a developer-role message is NOT rejected by the route-level gate (full round trip to 200)", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "openai-shape-gate-dev-role",
     apiKey: "sk-shape-gate-dev-role",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   globalThis.fetch = async () =>
     Response.json({
@@ -210,14 +211,14 @@ test("a developer-role message is NOT rejected by the route-level gate (full rou
 // ═════════════════════════════════════════════════════════════════════════════
 
 test("a large realistic payload is still accepted and the body is read exactly once", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "openai-shape-gate-large-body",
     apiKey: "sk-shape-gate-large-body",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   globalThis.fetch = async () =>
     Response.json({

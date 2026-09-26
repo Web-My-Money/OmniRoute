@@ -46,7 +46,7 @@ function baseArgs(overrides: Record<string, unknown> = {}) {
 function assertNumericSignatureInputs(
   deps: Parameters<typeof storeStreamingSemanticCacheResponse>[1]
 ): void {
-  if (process.env.NODE_ENV === "__semantic_cache_type_contract__") {
+  if ((process.env.NODE_ENV as string) === "__semantic_cache_type_contract__") {
     storeStreamingSemanticCacheResponse(
       {
         enabled: true,

@@ -76,7 +76,7 @@ function resolveWorkspacePath(inputPath: string, context: { apiKeyId: string }) 
 
   const root = path.resolve(getWorkspaceRoot(context));
   const resolved = path.resolve(root, inputPath);
-  const relative = path.relative(root, resolved);
+  const relative = path.relative(root, resolved).split(path.sep).join("/");
   if (!relative || relative.startsWith("..") || path.isAbsolute(relative)) {
     throw new Error("Skill file path escapes the skill workspace");
   }

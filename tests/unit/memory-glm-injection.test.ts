@@ -12,6 +12,7 @@ import { injectMemory, providerSupportsSystemMessage } from "../../src/lib/memor
 import type { ChatRequest } from "../../src/lib/memory/injection.ts";
 import type { Memory } from "../../src/lib/memory/types.ts";
 import { normalizeSystemRole } from "../../open-sse/services/roleNormalizer.ts";
+import { MemoryType } from "../../src/lib/memory/types.ts";
 
 // ── Fixtures ───────────────────────────────────────────────────────────────────
 
@@ -24,11 +25,16 @@ const testMemories: Memory[] = [
   {
     id: "mem-1",
     content: "User prefers dark mode",
-    type: "factual" as any,
+    type: MemoryType.FACTUAL,
     apiKeyId: "test-key",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    importance: 0.5,
+    sessionId: "s",
+    key: "k",
+    metadata: {},
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+    expiresAt: null,
+    accessCount: 0,
+    lastAccessedAt: null,
   },
 ];
 

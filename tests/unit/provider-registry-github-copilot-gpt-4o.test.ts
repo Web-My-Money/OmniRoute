@@ -14,7 +14,7 @@ const { getModelsByProviderId } = await import("../../open-sse/config/providerMo
 type ModelEntry = { id: string; name?: string; targetFormat?: string; [k: string]: unknown };
 
 function githubModel(id: string): ModelEntry | undefined {
-  const provider = (REGISTRY as Record<string, { models?: ModelEntry[] }>)["github"];
+  const provider = (REGISTRY as unknown as Record<string, { models?: ModelEntry[] }>)["github"];
   return provider?.models?.find((m) => m.id === id);
 }
 

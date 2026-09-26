@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 
 import { CodexExecutor } from "../../open-sse/executors/codex.ts";
 import { openaiToOpenAIResponsesRequest } from "../../open-sse/translator/request/openai-responses/toResponses.ts";
+import { wrapLoose } from "../helpers/looseTypes.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("Chat-to-Codex translation preserves max only for GPT-5.6", () => {
   const executor = new CodexExecutor();
@@ -29,7 +31,7 @@ test("Chat-to-Codex translation preserves max only for GPT-5.6", () => {
     });
 
     assert.equal(result.model, model);
-    assert.equal(result.reasoning.effort, expectedEffort, model);
+    assert.equal((result.reasoning as LooseDeep).effort, expectedEffort, model);
     assert.equal(result.reasoning_effort, undefined);
   }
 });
@@ -48,7 +50,7 @@ test("CodexExecutor.transformRequest preserves max effort for GPT-5.6", () => {
   );
 
   assert.equal(result.model, "gpt-5.6-sol");
-  assert.equal(result.reasoning.effort, "max");
+  assert.equal((result.reasoning as LooseDeep).effort, "max");
   assert.equal(result.reasoning_effort, undefined);
 });
 
@@ -61,7 +63,7 @@ test("CodexExecutor.transformRequest maps GPT-5.6 ultra aliases to max wire effo
     });
 
     assert.equal(result.model, model.replace(/-ultra$/, ""));
-    assert.equal(result.reasoning.effort, "max");
+    assert.equal((result.reasoning as LooseDeep).effort, "max");
   }
 });
 
@@ -79,7 +81,7 @@ test("CodexExecutor.transformRequest clamps Luna ultra requests to its max effor
   );
 
   assert.equal(result.model, "gpt-5.6-luna");
-  assert.equal(result.reasoning.effort, "max");
+  assert.equal((result.reasoning as LooseDeep).effort, "max");
 });
 
 test("CodexExecutor.transformRequest accepts parenthesized GPT-5.6 effort overrides", () => {
@@ -103,8 +105,8 @@ test("CodexExecutor.transformRequest accepts parenthesized GPT-5.6 effort overri
     );
 
     assert.equal(result.model, expectedModel);
-    assert.equal(result.reasoning.effort, expectedEffort);
-    assert.equal(result.reasoning.summary, "detailed");
+    assert.equal((result.reasoning as LooseDeep).effort, expectedEffort);
+    assert.equal((result.reasoning as LooseDeep).summary, "detailed");
   }
 });
 
@@ -151,7 +153,7 @@ test("CodexExecutor.execute disables parallel tool calls for Responses Lite mark
       { body: metadataBody },
       { body: standardBody },
     ]) {
-      const result = await executor.execute({
+      const result = await wrapLoose(executor).execute({
         model: "gpt-5.6-sol",
         body: request.body,
         stream: true,
@@ -164,7 +166,7 @@ test("CodexExecutor.execute disables parallel tool calls for Responses Lite mark
     assert.equal(capturedBodies[0].parallel_tool_calls, false);
     assert.equal(headerBody.parallel_tool_calls, true);
     assert.equal(capturedBodies[1].parallel_tool_calls, false);
-    assert.equal(metadataBody.parallel_tool_calls, undefined);
+    assert.equal((metadataBody as LooseDeep).parallel_tool_calls, undefined);
     assert.equal(capturedBodies[2].parallel_tool_calls, true);
     assert.equal(standardBody.parallel_tool_calls, true);
   } finally {

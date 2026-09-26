@@ -180,7 +180,7 @@ export function calculatePercentage(used, total) {
  * Resolve the best available plan label using live usage first, then persisted
  * provider-specific connection metadata.
  */
-export function resolvePlanValue(plan, providerSpecificData, providerId) {
+export function resolvePlanValue(plan, providerSpecificData, providerId = undefined) {
   const livePlan = normalizePlanCandidate(plan);
   if (String(providerId || "").toLowerCase() === "grok-cli") return livePlan || null;
 

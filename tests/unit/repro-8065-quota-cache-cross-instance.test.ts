@@ -11,23 +11,26 @@ const core = await import("../../src/lib/db/core.ts");
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#8065 a renewed quota written by one module instance is invisible to another module instance's routing read", async () => {
   const connectionId = "conn-codex-8065";
 
   // Instance R: simulates auth.ts's routing/credential-selection chunk.
-  const quotaCacheR = await import("../../src/domain/quotaCache.ts?instance=R");
+  const quotaCacheR = await import("../../src/domain/quotaCache.ts" + "?instance=R");
   quotaCacheR.setQuotaCache(connectionId, "codex", {
     session: { remainingPercentage: 0, resetAt: new Date(Date.now() + 5 * 86400000).toISOString() },
   });
   assert.equal(quotaCacheR.isQuotaExhaustedForRequest(connectionId, "codex"), true);
 
   // Instance W: simulates providerLimitsSyncScheduler's instrumentation-node.ts chunk.
-  const quotaCacheW = await import("../../src/domain/quotaCache.ts?instance=W");
+  const quotaCacheW = await import("../../src/domain/quotaCache.ts" + "?instance=W");
   quotaCacheW.setQuotaCache(connectionId, "codex", {
-    session: { remainingPercentage: 100, resetAt: new Date(Date.now() + 7 * 86400000).toISOString() },
+    session: {
+      remainingPercentage: 100,
+      resetAt: new Date(Date.now() + 7 * 86400000).toISOString(),
+    },
   });
   assert.equal(quotaCacheW.isQuotaExhaustedForRequest(connectionId, "codex"), false);
 

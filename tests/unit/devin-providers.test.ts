@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 import { REGISTRY } from "../../open-sse/config/providers/index.ts";
 import { getExecutor, hasSpecializedExecutor } from "../../open-sse/executors/index.ts";
 import { OAUTH_PROVIDERS } from "../../src/shared/constants/providers/oauth.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("Devin Desktop exposes the supported BYOK-free catalog", () => {
   const desktop = REGISTRY["devin-desktop"];
@@ -114,7 +115,7 @@ test("provider card exposes version-honest Devin Desktop key import guidance", (
   assert.match(desktop.authHint, /vary by Devin version and account/);
   assert.doesNotMatch(desktop.authHint, /Devin: Copy API Key to Clipboard/);
   assert.equal(cli.name, "Devin CLI");
-  assert.equal(OAUTH_PROVIDERS.windsurf, undefined);
+  assert.equal((OAUTH_PROVIDERS as LooseDeep).windsurf, undefined);
 });
 
 test("OAuth modal Desktop branch gives honest import guidance without public Windsurf", async () => {

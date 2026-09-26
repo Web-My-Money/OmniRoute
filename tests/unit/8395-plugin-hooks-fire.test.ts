@@ -26,7 +26,7 @@ test(
 
     t.after(async () => {
       loaded?.cleanup();
-      await rm(pluginDir, { recursive: true, force: true });
+      await rm(pluginDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     });
 
     await writeFile(
@@ -50,7 +50,15 @@ export async function onRequest(ctx) {
       source: "local",
       tags: [],
       requires: { permissions: [] },
-      hooks: { onRequest: true, onResponse: false, onError: false },
+      hooks: {
+        onRequest: true,
+        onResponse: false,
+        onError: false,
+        onInstall: false,
+        onActivate: false,
+        onDeactivate: false,
+        onUninstall: false,
+      },
       skills: [],
       enabledByDefault: false,
       configSchema: {},
@@ -71,6 +79,7 @@ export async function onRequest(ctx) {
         requestId: "req-8395-marker",
         body: { model: "gpt-4" },
         model: "gpt-4",
+        provider: "openai",
         metadata: {},
       });
 
@@ -98,23 +107,20 @@ export async function onRequest(ctx) {
   }
 );
 
-test(
-  "loadPlugin no longer spawns the plugin host with stdout/stderr fully ignored",
-  async () => {
-    const source = await readFile(
-      join(import.meta.dirname, "../../src/lib/plugins/loader.ts"),
-      "utf-8"
-    );
-    // The original bug: stdio: ["ignore", "ignore", "ignore", "ipc"] discards
-    // stdout (fd 1) and stderr (fd 2) at the OS level unconditionally.
-    assert.doesNotMatch(
-      source,
-      /stdio:\s*\[\s*["']ignore["']\s*,\s*["']ignore["']\s*,\s*["']ignore["']\s*,\s*["']ipc["']\s*\]/,
-      "loader.ts must not spawn the plugin host with stdout+stderr both set to " +
-        "'ignore' — that silently discards all plugin console.log/console.error output"
-    );
-  }
-);
+test("loadPlugin no longer spawns the plugin host with stdout/stderr fully ignored", async () => {
+  const source = await readFile(
+    join(import.meta.dirname, "../../src/lib/plugins/loader.ts"),
+    "utf-8"
+  );
+  // The original bug: stdio: ["ignore", "ignore", "ignore", "ipc"] discards
+  // stdout (fd 1) and stderr (fd 2) at the OS level unconditionally.
+  assert.doesNotMatch(
+    source,
+    /stdio:\s*\[\s*["']ignore["']\s*,\s*["']ignore["']\s*,\s*["']ignore["']\s*,\s*["']ipc["']\s*\]/,
+    "loader.ts must not spawn the plugin host with stdout+stderr both set to " +
+      "'ignore' — that silently discards all plugin console.log/console.error output"
+  );
+});
 
 // Secondary #8395 finding: runPluginOnResponseHook was only wired into chatCore.ts's
 // STREAMING success path — the non-streaming (stream:false) JSON-return branch
@@ -131,7 +137,9 @@ test("chatCore.ts calls runPluginOnResponseHook from both the non-streaming and 
     "utf-8"
   );
 
-  const nonStreamingReturnIndex = source.indexOf("buildNonStreamingJsonResponse(translatedResponse");
+  const nonStreamingReturnIndex = source.indexOf(
+    "buildNonStreamingJsonResponse(translatedResponse"
+  );
   const hookCallNeedle = "await runPluginOnResponseHook({";
   const hookCallIndex = source.indexOf(hookCallNeedle);
   const secondHookCallIndex = source.indexOf(hookCallNeedle, hookCallIndex + 1);

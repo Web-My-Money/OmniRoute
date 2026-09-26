@@ -21,6 +21,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-image-chat-6457-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -33,7 +34,7 @@ const v1ModelsCatalog = await import("../../src/app/api/v1/models/catalog.ts");
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -44,18 +45,18 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 async function seedProviderConnection(provider: string) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name: `${provider}-${Math.random().toString(16).slice(2, 8)}`,
     apiKey: `${provider}-key`,
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test("#6457 image/diffusion model discovered via live sync is NOT listed as a chat model", async () => {

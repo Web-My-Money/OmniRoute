@@ -21,9 +21,8 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-const RequestLoggerDetail = (
-  await import("../../../src/shared/components/RequestLoggerDetail.tsx")
-).default;
+const RequestLoggerDetail = (await import("../../../src/shared/components/RequestLoggerDetail.tsx"))
+  .default;
 
 let container: HTMLElement;
 let root: Root;
@@ -80,6 +79,9 @@ describe("RequestLoggerDetail structured error rendering (#7845)", () => {
             debugEnabled={false}
             onClose={noop}
             onCopy={async () => true}
+            onPrevious={noop}
+            onNext={noop}
+            onSelectRelated={noop}
           />
         );
       } catch (err) {
@@ -107,6 +109,9 @@ describe("RequestLoggerDetail structured error rendering (#7845)", () => {
           debugEnabled={false}
           onClose={noop}
           onCopy={async () => true}
+          onPrevious={noop}
+          onNext={noop}
+          onSelectRelated={noop}
         />
       );
     });

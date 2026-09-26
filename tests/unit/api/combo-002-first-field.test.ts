@@ -11,6 +11,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { buildComboErrorBody } from "@/lib/api/comboErrorResponse";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 /**
  * Simulate what the PUT /api/combos/[id] route passes as `details`
@@ -28,8 +29,8 @@ describe("COMBO_002 response — firstField / firstMessage surfacing (#5083 Bug 
     };
     const body = buildComboErrorBody("COMBO_002", details);
     assert.equal(body.error.code, "COMBO_002");
-    assert.equal(body.error.details.firstField, "name");
-    assert.equal(body.error.details.firstMessage, "Required");
+    assert.equal((body.error.details as LooseDeep).firstField, "name");
+    assert.equal((body.error.details as LooseDeep).firstMessage, "Required");
   });
 
   it("details payload exposes firstField for nested path (e.g. models.0.id)", () => {
@@ -42,8 +43,11 @@ describe("COMBO_002 response — firstField / firstMessage surfacing (#5083 Bug 
       firstMessage: "String must contain at least 1 character(s)",
     };
     const body = buildComboErrorBody("COMBO_002", details);
-    assert.equal(body.error.details.firstField, "models.0.id");
-    assert.equal(body.error.details.firstMessage, "String must contain at least 1 character(s)");
+    assert.equal((body.error.details as LooseDeep).firstField, "models.0.id");
+    assert.equal(
+      (body.error.details as LooseDeep).firstMessage,
+      "String must contain at least 1 character(s)"
+    );
   });
 
   it("details payload has firstField=null when no issues are present", () => {
@@ -54,13 +58,16 @@ describe("COMBO_002 response — firstField / firstMessage surfacing (#5083 Bug 
       firstMessage: null,
     };
     const body = buildComboErrorBody("COMBO_002", details);
-    assert.equal(body.error.details.firstField, null);
-    assert.equal(body.error.details.firstMessage, null);
+    assert.equal((body.error.details as LooseDeep).firstField, null);
+    assert.equal((body.error.details as LooseDeep).firstMessage, null);
   });
 
   it("the generic message key is still present (backward compat)", () => {
     const details = {
-      issues: { message: "Invalid request", details: [{ field: "strategy", message: "Invalid enum value" }] },
+      issues: {
+        message: "Invalid request",
+        details: [{ field: "strategy", message: "Invalid enum value" }],
+      },
       firstField: "strategy",
       firstMessage: "Invalid enum value",
     };

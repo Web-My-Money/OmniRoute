@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-chatcore-codex-pool-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -62,7 +63,7 @@ function buildResponsesResponse(text = "ok") {
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -91,7 +92,7 @@ async function invokeChatCore({
   isCombo?: boolean;
 }) {
   const calls: unknown[] = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const headers = toPlainHeaders(init.headers);
     const captured = {
       url: String(url),
@@ -104,7 +105,7 @@ async function invokeChatCore({
   };
 
   try {
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body: structuredClone(body),
       modelInfo: { provider, model, extendedContext: false },
       credentials,
@@ -135,26 +136,26 @@ test.after(async () => {
   globalThis.fetch = originalFetch;
   await waitForAsyncSideEffects();
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("chatCore persists child cooldown for each rotated Codex attempt", async () => {
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "codex-rotation-first@example.com",
     accessToken: "codex-rotation-first",
     isActive: true,
     providerSpecificData: {},
-  });
-  const second = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const second = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "codex-rotation-second@example.com",
     accessToken: "codex-rotation-second",
     isActive: true,
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
   const liveCredentials = {
     accessToken: "codex-rotation-first",
     connectionId: first.id,
@@ -196,22 +197,22 @@ test("chatCore persists child cooldown for each rotated Codex attempt", async ()
 });
 
 test("chatCore retains exact quota resets from intermediate rotated Codex 429s", async () => {
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "codex-exact-reset-first@example.com",
     accessToken: "codex-exact-reset-first",
     isActive: true,
     providerSpecificData: {},
-  });
-  await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "codex-exact-reset-second@example.com",
     accessToken: "codex-exact-reset-second",
     isActive: true,
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
   const exactReset = new Date(Date.now() + 300_000).toISOString();
   const weeklyReset = new Date(Date.now() + 3_600_000).toISOString();
   const { result } = await invokeChatCore({
@@ -259,14 +260,14 @@ test("chatCore retains exact quota resets from intermediate rotated Codex 429s",
 });
 
 test("chatCore keeps a Codex Spark 429 scoped so Sol remains selectable", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "codex-scope@example.com",
     accessToken: "codex-scope-token",
     isActive: true,
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 
   const { result } = await invokeChatCore({
     provider: "codex",
@@ -313,3 +314,6 @@ test("chatCore keeps a Codex Spark 429 scoped so Sol remains selectable", async 
   assert.equal(sparkSelected.allRateLimited, true);
   assert.equal(solSelected.connectionId, connection.id);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";

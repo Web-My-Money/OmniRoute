@@ -16,6 +16,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createComboRoutingHarness } from "../_comboRoutingHarness.ts";
+import type { QuotaInfo } from "../../../open-sse/services/quotaPreflight.ts";
 
 const h = await createComboRoutingHarness("combo-quota-aware");
 const { BaseExecutor, combosDb, handleChat, buildRequest, seedConnection, resetStorage } = h;
@@ -23,9 +24,8 @@ const { BaseExecutor, combosDb, handleChat, buildRequest, seedConnection, resetS
 // Import quota / headroom seam hooks — must occur after the harness initialises
 // the DB so the module-level singletons inside quotaStrategies.ts are already live.
 const { registerQuotaFetcher } = await import("../../../open-sse/services/quotaPreflight.ts");
-const { __setHeadroomSaturationFetcherForTests } = await import(
-  "../../../open-sse/services/combo/quotaStrategies.ts"
-);
+const { __setHeadroomSaturationFetcherForTests } =
+  await import("../../../open-sse/services/combo/quotaStrategies.ts");
 
 function body(model: string) {
   return { model, stream: false, messages: [{ role: "user", content: "quota-aware route" }] };
@@ -65,7 +65,10 @@ test("reset-aware: exhausted connection (limitReached) demoted — second target
   // Register AFTER seedConnection so connection objects are available.
   // The fetcher is keyed on provider name; connectionId is passed but we return
   // the same bad quota regardless so any openai connection is deprioritised.
-  registerQuotaFetcher("openai", async (_connId) => ({ limitReached: true }));
+  registerQuotaFetcher(
+    "openai",
+    async (_connId) => ({ limitReached: true }) as unknown as Promise<QuotaInfo>
+  );
 
   await combosDb.createCombo({
     name: "m-reset-aware",
@@ -126,10 +129,14 @@ test("reset-window: target with nearest quota-reset dispatched first despite bei
 
   // Quota that resets in 1 hour → much sooner than openai (Infinity / limitReached).
   const soonResetAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-  registerQuotaFetcher("gemini", async (_connId) => ({
-    percentUsed: 0.5,
-    window7d: { percentUsed: 0.5, resetAt: soonResetAt },
-  }));
+  registerQuotaFetcher(
+    "gemini",
+    async (_connId) =>
+      ({
+        percentUsed: 0.5,
+        window7d: { percentUsed: 0.5, resetAt: soonResetAt },
+      }) as unknown as QuotaInfo
+  );
 
   await combosDb.createCombo({
     name: "m-reset-window",

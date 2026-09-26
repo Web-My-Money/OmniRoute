@@ -142,7 +142,7 @@ test("fetchQwenTokenPlanQuota parses the captured weekly-only usage response", a
   // Tier totals resolved via subscription.specCode → quota-config.pro
   assert.equal(quota.total, 40000);
   assert.equal(quota.used, Math.round(0.55 * 40000));
-  assert.equal((quota as { specCode: string | null }).specCode, "pro");
+  assert.equal((quota as unknown as { specCode: string | null }).specCode, "pro");
 
   // Request contract (captured shape)
   const usageCall = calls.find((c) => c.url.includes("%2Fusage"));

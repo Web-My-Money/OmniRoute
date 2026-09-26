@@ -4,7 +4,7 @@
 // or helper-importing files) is locked down as a regression guard.
 import test from "node:test";
 import assert from "node:assert/strict";
-// @ts-expect-error — .mjs gate module has no type declarations; runtime shape is known.
+//
 import {
   findErrorHelperViolations,
   KNOWN_MISSING_ERROR_HELPER,
@@ -247,7 +247,7 @@ test("6A.8: does NOT flag api route.ts that imports utils/error", () => {
 
 // --- 6A.8: stale-allowlist enforcement ---
 
-// @ts-expect-error — reportStaleEntries exported from the gate module
+//
 import { reportStaleEntries } from "../../scripts/check/lib/allowlist.mjs";
 type ReportStaleFn = (allowlist: Set<string> | string[], live: string[], gate: string) => string[];
 const reportStale = reportStaleEntries as ReportStaleFn;

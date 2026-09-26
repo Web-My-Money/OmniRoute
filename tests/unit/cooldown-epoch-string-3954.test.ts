@@ -18,19 +18,19 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-3954-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
 
 const core = await import("../../src/lib/db/core.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
-const { isAccountUnavailable, getEarliestRateLimitedUntil, filterAvailableAccounts } = await import(
-  "../../open-sse/services/accountFallback.ts"
-);
+const { isAccountUnavailable, getEarliestRateLimitedUntil, filterAvailableAccounts } =
+  await import("../../open-sse/services/accountFallback.ts");
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 const HOUR = 3_600_000;
@@ -86,11 +86,11 @@ test("#3954 filterAvailableAccounts: excludes a numeric-epoch-string future cool
 // ── End-to-end: the write coercion that triggers the real bug ───────────────
 
 test("#3954 setConnectionRateLimitUntil stores a numeric string that selection still honors", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "AG 3954",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as { id: string }).id;
   providersDb.setConnectionRateLimitUntil(connId, Date.now() + HOUR);
 

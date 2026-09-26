@@ -9,6 +9,7 @@ import {
   replaceImageUrls,
 } from "../../../open-sse/services/compression/lite.ts";
 import { applyCompression } from "../../../open-sse/services/compression/strategySelector.ts";
+import type { CompressionConfig } from "../../../open-sse/services/compression/types.ts";
 
 describe("collapseWhitespace", () => {
   it("collapses 3+ newlines to 2", () => {
@@ -196,8 +197,8 @@ describe("replaceImageUrls", () => {
 
 describe("stacked Lite precedence (global config vs explicit step)", () => {
   const toolContent = `${"word ".repeat(500)}TAIL`;
-  const liteStep = { engine: "lite" };
-  const baseConfig = {
+  const liteStep = { engine: "lite" } as const;
+  const baseConfig: CompressionConfig = {
     enabled: true,
     defaultMode: "lite",
     autoTriggerTokens: 0,
@@ -363,6 +364,8 @@ describe("applyLiteCompression", () => {
         cacheMinutes: 5,
         preserveSystemPrompt: true,
         comboOverrides: {},
+        engines: {},
+        activeComboId: null,
       },
     });
     const messages = result.body.messages as typeof body.messages;

@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 
 // Import the patch module to test it in isolation
 import { applyBottleneckDoExpirePatch } from "../../open-sse/services/bottleneckPatch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Bottleneck's internal Job / States classes are not part of the public
 // exports, so load them directly to build a deterministic RUNNING-state job.
@@ -70,14 +71,18 @@ test("patched doExpire advances a RUNNING job to EXECUTING instead of crashing",
     // _run calls doRun (QUEUED -> RUNNING), then parks the job in RUNNING for
     // `wait` ms before dispatching to EXECUTING. A large wait holds it in the
     // exact state the expiry timer can reach — the branch the patch guards.
-    limiter._run("parked", job, 10000);
+    (limiter as LooseDeep)._run("parked", job, 10000);
     assert.equal(states.jobStatus(job.options.id), "RUNNING", "job must be RUNNING before expiry");
 
     // Fire doExpire while the job is RUNNING. Unpatched Bottleneck compares
     // `options.id === "RUNNING"` (always false), so _assertStatus("EXECUTING")
     // throws and the job is stuck forever. The patched doExpire must advance
     // RUNNING -> EXECUTING first, then run the original doExpire cleanly.
-    job.doExpire(() => true, () => {}, () => {});
+    job.doExpire(
+      () => true,
+      () => {},
+      () => {}
+    );
     assert.equal(
       states.jobStatus(job.options.id),
       "EXECUTING",
@@ -98,7 +103,13 @@ test("unpatched Bottleneck doExpire throws on a RUNNING job (the leak the patch 
   states.next(job.options.id); // -> RUNNING
   assert.equal(states.jobStatus(job.options.id), "RUNNING");
   assert.throws(
-    () => BottleneckJob.prototype.doExpire.call(job, () => true, () => {}, () => {}),
+    () =>
+      BottleneckJob.prototype.doExpire.call(
+        job,
+        () => true,
+        () => {},
+        () => {}
+      ),
     /expected EXECUTING/,
     "the unpatched doExpire must throw when the job is RUNNING, or the bug is already fixed upstream and the patch is dead"
   );

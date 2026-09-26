@@ -20,6 +20,7 @@ import {
   genUserMessage,
   type Message,
 } from "./liveGeminiShared.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 export { API_KEY, BASE_URL };
 
@@ -30,7 +31,7 @@ export interface ComboModelTarget {
   providerId: string | null;
 }
 
-async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
+async function apiFetch(path: string, options: MockRequestInit = {}): Promise<Response> {
   return fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {

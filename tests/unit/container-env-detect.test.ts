@@ -41,7 +41,7 @@ test("isRunningInContainer detects /.dockerenv", () => {
     isRunningInContainer({
       ...throwingFs,
       existsSync: (p: string) => p === "/.dockerenv",
-      env: {},
+      env: {} as NodeJS.ProcessEnv,
     }),
     true
   );
@@ -52,7 +52,7 @@ test("isRunningInContainer detects Podman via /run/.containerenv", () => {
     isRunningInContainer({
       ...throwingFs,
       existsSync: (p: string) => p === "/run/.containerenv",
-      env: {},
+      env: {} as NodeJS.ProcessEnv,
     }),
     true
   );
@@ -63,7 +63,7 @@ test("isRunningInContainer detects Kubernetes via KUBERNETES_SERVICE_HOST", () =
     isRunningInContainer({
       ...throwingFs,
       existsSync: (_p: string) => false,
-      env: { KUBERNETES_SERVICE_HOST: "10.96.0.1" },
+      env: { KUBERNETES_SERVICE_HOST: "10.96.0.1" } as NodeJS.ProcessEnv,
     }),
     true
   );
@@ -75,7 +75,7 @@ for (const marker of ["docker", "containerd", "kubepods", "podman", "lxc"]) {
       isRunningInContainer({
         existsSync: (_p: string) => false,
         readFileSync: (_p: string, _enc: string) => `12:cpuset:/${marker}/abc123\n`,
-        env: {},
+        env: {} as NodeJS.ProcessEnv,
       }),
       true
     );
@@ -87,12 +87,21 @@ test("isRunningInContainer returns false on a plain host", () => {
 });
 
 test("isRunningInContainer returns false when every probe throws", () => {
-  assert.equal(isRunningInContainer({ ...throwingFs, env: {} }), false);
+  assert.equal(isRunningInContainer({ ...throwingFs, env: {} as NodeJS.ProcessEnv }), false);
 });
 
 test("OMNIROUTE_CONTAINER=1 forces detection on even without container markers", () => {
-  assert.equal(isRunningInContainer({ ...hostDeps, env: { OMNIROUTE_CONTAINER: "1" } }), true);
-  assert.equal(isRunningInContainer({ ...hostDeps, env: { OMNIROUTE_CONTAINER: "true" } }), true);
+  assert.equal(
+    isRunningInContainer({ ...hostDeps, env: { OMNIROUTE_CONTAINER: "1" } as NodeJS.ProcessEnv }),
+    true
+  );
+  assert.equal(
+    isRunningInContainer({
+      ...hostDeps,
+      env: { OMNIROUTE_CONTAINER: "true" } as NodeJS.ProcessEnv,
+    }),
+    true
+  );
 });
 
 test("OMNIROUTE_CONTAINER=0 forces detection off even inside a container", () => {
@@ -103,7 +112,10 @@ test("OMNIROUTE_CONTAINER=0 forces detection off even inside a container", () =>
   };
   assert.equal(isRunningInContainer(inContainer), false);
   assert.equal(
-    isRunningInContainer({ ...inContainer, env: { OMNIROUTE_CONTAINER: "false" } }),
+    isRunningInContainer({
+      ...inContainer,
+      env: { OMNIROUTE_CONTAINER: "false" } as NodeJS.ProcessEnv,
+    }),
     false
   );
 });
@@ -190,7 +202,10 @@ test("hasBindMountAt decodes octal escapes in mount points", () => {
 });
 
 test("hasBindMountAt returns false when /proc/self/mountinfo is unreadable", () => {
-  assert.equal(hasBindMountAt("/host-home", { ...throwingFs, env: {} }), false);
+  assert.equal(
+    hasBindMountAt("/host-home", { ...throwingFs, env: {} as NodeJS.ProcessEnv }),
+    false
+  );
 });
 
 test("hasBindMountAt tolerates malformed mountinfo lines", () => {

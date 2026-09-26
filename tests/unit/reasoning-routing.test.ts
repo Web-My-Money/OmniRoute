@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
+import type { ReasoningRoutingRuleInput } from "../../src/lib/db/reasoningRoutingRules.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-reasoning-routing-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -19,14 +22,12 @@ const schemas = await import("../../src/shared/validation/schemas/reasoningRouti
 async function resetStorage() {
   apiKeysDb.resetApiKeyState();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   rulesDb.invalidateReasoningRoutingRuleCache();
 }
 
-function ruleInput(
-  patch: Partial<rulesDb.ReasoningRoutingRuleInput> = {}
-): rulesDb.ReasoningRoutingRuleInput {
+function ruleInput(patch: Partial<ReasoningRoutingRuleInput> = {}): ReasoningRoutingRuleInput {
   return {
     name: "Test rule",
     description: "",
@@ -55,7 +56,7 @@ test.beforeEach(resetStorage);
 
 test.after(async () => {
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("reasoning intent distinguishes missing, discrete effort, toggle, and budget-only signals", () => {
@@ -90,7 +91,7 @@ test("reasoning intent distinguishes missing, discrete effort, toggle, and budge
 
 test("glob and tag matching use deterministic scope, priority, and exact-model precedence", async () => {
   const key = await apiKeysDb.createApiKey("Scoped key", "reasoning-test-machine");
-  const keyId = String((key as Record<string, unknown>).id);
+  const keyId = String((key as LooseDeep).id);
 
   const global = await rulesDb.createReasoningRoutingRule(
     ruleInput({ name: "global", priority: 999, targetKind: "model", targetModel: "openai/global" })
@@ -162,7 +163,7 @@ test("default does not override a budget-only signal and force replaces discrete
       budgetAction: "preserve",
       budgetTokens: null,
     },
-  }) as Record<string, unknown>;
+  }) as LooseDeep;
   assert.equal(forced.reasoning_effort, "high");
   assert.equal(forced.effort, undefined);
   assert.deepEqual(forced.reasoning, { summary: "auto", effort: "high" });
@@ -180,12 +181,12 @@ test("CRUD validates references, invalidates cache, and cascades deleted owners"
     models: ["openai/gpt-4o-mini"],
     strategy: "priority",
   });
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Reasoning connection",
     apiKey: "sk-reasoning-test",
-  });
+  })) as JsonRecord & { id: string };
 
   await assert.rejects(
     rulesDb.createReasoningRoutingRule(ruleInput({ scope: "apiKey", apiKeyId: "missing-key" })),
@@ -193,15 +194,15 @@ test("CRUD validates references, invalidates cache, and cascades deleted owners"
   );
 
   const apiRule = await rulesDb.createReasoningRoutingRule(
-    ruleInput({ scope: "apiKey", apiKeyId: String((key as Record<string, unknown>).id) })
+    ruleInput({ scope: "apiKey", apiKeyId: String((key as LooseDeep).id) })
   );
   const comboRule = await rulesDb.createReasoningRoutingRule(
-    ruleInput({ scope: "combo", comboId: String((combo as Record<string, unknown>).id) })
+    ruleInput({ scope: "combo", comboId: String((combo as LooseDeep).id) })
   );
   const connectionRule = await rulesDb.createReasoningRoutingRule(
     ruleInput({
       scope: "connection",
-      connectionId: String((connection as Record<string, unknown>).id),
+      connectionId: String((connection as LooseDeep).id),
     })
   );
   assert.equal((await rulesDb.getReasoningRoutingRules()).length, 3);
@@ -209,9 +210,9 @@ test("CRUD validates references, invalidates cache, and cascades deleted owners"
   await rulesDb.updateReasoningRoutingRule(apiRule.id, { priority: 42 });
   assert.equal((await rulesDb.getReasoningRoutingRuleById(apiRule.id))?.priority, 42);
 
-  await apiKeysDb.deleteApiKey(String((key as Record<string, unknown>).id));
-  await combosDb.deleteCombo(String((combo as Record<string, unknown>).id));
-  await providersDb.deleteProviderConnection(String((connection as Record<string, unknown>).id));
+  await apiKeysDb.deleteApiKey(String((key as LooseDeep).id));
+  await combosDb.deleteCombo(String((combo as LooseDeep).id));
+  await providersDb.deleteProviderConnection(String((connection as LooseDeep).id));
   assert.equal(await rulesDb.getReasoningRoutingRuleById(apiRule.id), null);
   assert.equal(await rulesDb.getReasoningRoutingRuleById(comboRule.id), null);
   assert.equal(await rulesDb.getReasoningRoutingRuleById(connectionRule.id), null);

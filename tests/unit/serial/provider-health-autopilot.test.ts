@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { NextRequest } from "next/server";
 import { makeManagementSessionRequest } from "../../helpers/managementSession.ts";
+import type { ProviderAutopilotReport } from "../../../src/lib/monitoring/providerHealthAutopilot.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-health-autopilot-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -28,7 +29,7 @@ const PROVIDER = "autopilot-test-provider";
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -52,7 +53,7 @@ async function createCooldownConnection(provider = PROVIDER) {
   }) as Promise<Record<string, unknown>>;
 }
 
-function findAction(report: autopilot.ProviderAutopilotReport, type: string) {
+function findAction(report: ProviderAutopilotReport, type: string) {
   for (const provider of report.providers) {
     for (const issue of provider.issues) {
       const action = issue.actions.find((candidate) => candidate.type === type);
@@ -70,7 +71,7 @@ test.beforeEach(async () => {
 test.after(async () => {
   accountFallback.clearProviderFailure(PROVIDER);
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 
   if (ORIGINAL_DATA_DIR === undefined) delete process.env.DATA_DIR;
   else process.env.DATA_DIR = ORIGINAL_DATA_DIR;

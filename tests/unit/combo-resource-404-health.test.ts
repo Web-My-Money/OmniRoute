@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { ResilienceSettings } from "../../src/lib/resilience/settings/types.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omr-combo-resource-404-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -47,7 +48,7 @@ test.after(() => {
   clearAllModelLockouts();
   clearCooldownState();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("combo resource 404 never records model lockout or provider cooldown", async () => {
@@ -87,5 +88,8 @@ test("combo resource 404 never records model lockout or provider cooldown", asyn
       `${model} must remain available after a request-resource 404`
     );
   }
-  assert.equal(isProviderInCooldown(provider, undefined, settings), false);
+  assert.equal(
+    isProviderInCooldown(provider, undefined, settings as unknown as ResilienceSettings),
+    false
+  );
 });

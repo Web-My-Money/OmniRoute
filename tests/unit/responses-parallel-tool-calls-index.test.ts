@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { openaiResponsesToOpenAIResponse } =
   await import("../../open-sse/translator/response/openai-responses.ts");
@@ -192,7 +193,7 @@ test("Responses -> OpenAI: a deferred (nameless) call that never resolves a name
   );
 
   assert.equal(done, null);
-  assert.equal(state.toolCallIndex, 0);
+  assert.equal((state as LooseDeep).toolCallIndex, 0);
 });
 
 test("Responses -> OpenAI: argument deltas interleaved across 2 parallel calls resolve by output_index when the upstream omits item_id", () => {

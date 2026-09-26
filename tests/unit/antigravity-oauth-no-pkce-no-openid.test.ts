@@ -63,7 +63,9 @@ test("antigravity.exchangeToken never forwards code_verifier (no PKCE → no inv
     // Pass a codeVerifier (as the modal does — generateAuthData always mints one).
     // It MUST be ignored: the authorize URL had no code_challenge, so forwarding a
     // code_verifier makes Google reject the exchange (invalid_grant → 500).
-    await PROVIDERS.antigravity.exchangeToken(
+    await (
+      PROVIDERS.antigravity.exchangeToken as unknown as (...args: unknown[]) => Promise<unknown>
+    )(
       {
         clientId: "cid",
         clientSecret: "sec",

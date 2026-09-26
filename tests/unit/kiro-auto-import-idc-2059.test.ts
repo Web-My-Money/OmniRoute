@@ -35,6 +35,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ── Hermetic DATA_DIR so DB setup / requireLogin does not hit real disk ──────
 
@@ -50,6 +51,7 @@ const { GET } = await import("../../src/app/api/oauth/kiro/auto-import/route.ts"
 
 const ORIGINAL_HOME = process.env.HOME;
 const ORIGINAL_APPDATA = process.env.APPDATA;
+const ORIGINAL_USERPROFILE = process.env.USERPROFILE;
 const ORIGINAL_FETCH = globalThis.fetch;
 
 let tmpHome: string;
@@ -57,9 +59,10 @@ let tmpHome: string;
 test.beforeEach(() => {
   tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-kiro-idc-2059-"));
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   process.env.HOME = tmpHome;
+  process.env.USERPROFILE = tmpHome;
   delete process.env.APPDATA;
   // Reset fetch so tests with mocks don't bleed into each other.
   globalThis.fetch = ORIGINAL_FETCH;
@@ -67,18 +70,23 @@ test.beforeEach(() => {
 
 test.afterEach(() => {
   process.env.HOME = ORIGINAL_HOME;
+  if (ORIGINAL_USERPROFILE !== undefined) {
+    process.env.USERPROFILE = ORIGINAL_USERPROFILE;
+  } else {
+    delete process.env.USERPROFILE;
+  }
   if (ORIGINAL_APPDATA !== undefined) {
     process.env.APPDATA = ORIGINAL_APPDATA;
   } else {
     delete process.env.APPDATA;
   }
   globalThis.fetch = ORIGINAL_FETCH;
-  if (tmpHome) fs.rmSync(tmpHome, { recursive: true, force: true });
+  if (tmpHome) fs.rmSync(tmpHome, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -152,7 +160,7 @@ function stubFetchForRefresh() {
 async function callGet(): Promise<{ status: number; body: Record<string, unknown> }> {
   const request = new Request("http://localhost/api/oauth/kiro/auto-import");
   const response = await GET(request);
-  const body = (await response.json()) as Record<string, unknown>;
+  const body = (await response.json()) as LooseDeep;
   return { status: response.status, body };
 }
 
@@ -389,7 +397,7 @@ test("kiroImportSchema: accepts optional IDC fields (clientId, clientSecret, aut
   assert.equal(
     result.success,
     true,
-    `schema must accept IDC fields, errors: ${JSON.stringify(result.error?.errors)}`
+    `schema must accept IDC fields, errors: ${JSON.stringify(result.error?.issues)}`
   );
   if (result.success) {
     assert.equal(result.data.clientId, "idc-client-id");
@@ -412,7 +420,7 @@ test("kiroImportSchema: still valid without IDC fields (backward compat)", async
   assert.equal(
     result.success,
     true,
-    `schema must be valid without IDC fields, errors: ${JSON.stringify(result.error?.errors)}`
+    `schema must be valid without IDC fields, errors: ${JSON.stringify(result.error?.issues)}`
   );
 });
 

@@ -20,11 +20,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { initSystrayUnix } from "../../bin/cli/tray/traySystray.mjs";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 class FakeSysTray {
   static lastOpts: unknown = null;
   onClickFn: unknown = null;
-  constructor(opts: unknown) {
+  constructor(opts: MockRequestInit) {
     FakeSysTray.lastOpts = opts;
   }
   onClick(fn: unknown) {
@@ -48,7 +49,10 @@ test("initSystrayUnix loads the injected SysTray ctor and builds the menu (#4605
   FakeSysTray.lastOpts = null;
   // Async loader seam — proves initSystrayUnix awaits the runtime loader instead
   // of the old broken inline `require("module")` path.
-  const tray = await initSystrayUnix(opts, async () => FakeSysTray as unknown as new () => unknown);
+  const tray = await initSystrayUnix(
+    opts,
+    (async () => FakeSysTray) as unknown as Parameters<typeof initSystrayUnix>[1]
+  );
 
   assert.ok(tray, "a tray instance must be created when a SysTray ctor is available");
 

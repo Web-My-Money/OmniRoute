@@ -61,7 +61,7 @@ describe("cavemanRules", () => {
   it("polite_framing removes 'please'", () => {
     const rule = getRuleByName("polite_framing");
     assert.ok(rule);
-    const result = "Please analyze this code".replace(rule.pattern, rule.replacement);
+    const result = "Please analyze this code".replace(rule.pattern, rule.replacement as string);
     assert.ok(
       !result.toLowerCase().includes("please"),
       `Expected 'please' removed, got: ${result}`
@@ -71,7 +71,7 @@ describe("cavemanRules", () => {
   it("hedging removes 'it seems like'", () => {
     const rule = getRuleByName("hedging");
     assert.ok(rule);
-    const result = "It seems like this works".replace(rule.pattern, rule.replacement);
+    const result = "It seems like this works".replace(rule.pattern, rule.replacement as string);
     assert.ok(
       !result.toLowerCase().includes("it seems like"),
       `Expected hedging removed, got: ${result}`
@@ -81,12 +81,11 @@ describe("cavemanRules", () => {
   it("verbose_instructions compresses", () => {
     const rule = getRuleByName("verbose_instructions");
     assert.ok(rule);
-    const result = "provide a detailed explanation".replace(
-      rule.pattern,
-      typeof rule.replacement === "function"
-        ? (...args: string[]) => rule.replacement(args[0], ...args.slice(1))
-        : rule.replacement
-    );
+    const rep1 = rule.replacement;
+    const result =
+      typeof rep1 === "function"
+        ? "provide a detailed explanation".replace(rule.pattern as RegExp, (m: string) => rep1(m))
+        : "provide a detailed explanation".replace(rule.pattern as RegExp, rep1);
     assert.ok(result.includes("provide"), `Expected 'provide', got: ${result}`);
     assert.ok(!result.includes("detailed"), `Expected 'detailed' removed, got: ${result}`);
   });
@@ -94,7 +93,7 @@ describe("cavemanRules", () => {
   it("filler_adverbs removes 'basically'", () => {
     const rule = getRuleByName("filler_adverbs");
     assert.ok(rule);
-    const result = "This is basically a test".replace(rule.pattern, rule.replacement);
+    const result = "This is basically a test".replace(rule.pattern, rule.replacement as string);
     assert.ok(
       !result.toLowerCase().includes("basically"),
       `Expected 'basically' removed, got: ${result}`
@@ -104,7 +103,10 @@ describe("cavemanRules", () => {
   it("excessive_gratitude removes 'Thank you so much'", () => {
     const rule = getRuleByName("excessive_gratitude");
     assert.ok(rule);
-    const result = "Thank you so much for your help!".replace(rule.pattern, rule.replacement);
+    const result = "Thank you so much for your help!".replace(
+      rule.pattern,
+      rule.replacement as string
+    );
     assert.ok(
       !result.toLowerCase().includes("thank you so much"),
       `Expected gratitude removed, got: ${result}`
@@ -114,21 +116,24 @@ describe("cavemanRules", () => {
   it("context_setup converts 'Here is my code' to 'Code:'", () => {
     const rule = getRuleByName("context_setup");
     assert.ok(rule);
-    const result = "Here is my code for review:".replace(rule.pattern, rule.replacement);
+    const result = "Here is my code for review:".replace(rule.pattern, rule.replacement as string);
     assert.ok(result.includes("Code:"), `Expected 'Code:', got: ${result}`);
   });
 
   it("intent_clarification converts intent to 'Goal:'", () => {
     const rule = getRuleByName("intent_clarification");
     assert.ok(rule);
-    const result = "What I'm trying to do is fix the bug".replace(rule.pattern, rule.replacement);
+    const result = "What I'm trying to do is fix the bug".replace(
+      rule.pattern,
+      rule.replacement as string
+    );
     assert.ok(result.startsWith("Goal:"), `Expected 'Goal:', got: ${result}`);
   });
 
   it("purpose_phrases converts 'in order to' to 'to'", () => {
     const rule = getRuleByName("purpose_phrases");
     assert.ok(rule);
-    const result = "in order to fix this".replace(rule.pattern, rule.replacement);
+    const result = "in order to fix this".replace(rule.pattern, rule.replacement as string);
     assert.ok(result.startsWith("to "), `Expected 'to ', got: ${result}`);
     assert.ok(!result.includes("in order"), `Expected 'in order' removed, got: ${result}`);
   });
@@ -136,12 +141,11 @@ describe("cavemanRules", () => {
   it("passive_voice converts 'is being used' to 'uses'", () => {
     const rule = getRuleByName("passive_voice");
     assert.ok(rule);
-    const result = "The function is being used".replace(
-      rule.pattern,
-      typeof rule.replacement === "function"
-        ? (...args: string[]) => rule.replacement(args[0])
-        : rule.replacement
-    );
+    const rep2 = rule.replacement;
+    const result =
+      typeof rep2 === "function"
+        ? "The function is being used".replace(rule.pattern as RegExp, (m: string) => rep2(m))
+        : "The function is being used".replace(rule.pattern as RegExp, rep2);
     assert.ok(result.includes("uses"), `Expected 'uses', got: ${result}`);
   });
 
@@ -150,7 +154,7 @@ describe("cavemanRules", () => {
     assert.ok(rule);
     const result = "As we discussed earlier, this needs fixing".replace(
       rule.pattern,
-      rule.replacement
+      rule.replacement as string
     );
     assert.ok(result.includes("See above"), `Expected 'See above', got: ${result}`);
   });
@@ -158,7 +162,7 @@ describe("cavemanRules", () => {
   it("emphasis_removal removes 'very' before adjectives", () => {
     const rule = getRuleByName("emphasis_removal");
     assert.ok(rule);
-    const result = "This is very important".replace(rule.pattern, rule.replacement);
+    const result = "This is very important".replace(rule.pattern, rule.replacement as string);
     assert.ok(!result.includes("very"), `Expected 'very' removed, got: ${result}`);
     assert.ok(result.includes("important"), `Expected 'important' kept, got: ${result}`);
   });

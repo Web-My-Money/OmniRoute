@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 export async function createChatPipelineHarness(prefix) {
   const testDataDir = fs.mkdtempSync(path.join(os.tmpdir(), `omniroute-${prefix}-`));
@@ -57,10 +58,14 @@ export async function createChatPipelineHarness(prefix) {
   type SeedConnectionOverrides = {
     name?: string;
     apiKey?: string;
+    accessToken?: string;
     isActive?: boolean;
     testStatus?: string;
     priority?: number;
     rateLimitedUntil?: string | number | null;
+    errorCode?: string | number | null;
+    lastError?: string | null;
+    lastErrorType?: string | null;
     providerSpecificData?: Record<string, unknown>;
   };
 
@@ -175,7 +180,7 @@ export async function createChatPipelineHarness(prefix) {
     model = "gpt-4o-mini",
     toolName = "lookupWeather@1.0.0",
     toolCallId = "call_weather",
-    argumentsObject = { location: "Sao Paulo" },
+    argumentsObject = { location: "Sao Paulo" } as Record<string, unknown>,
   } = {}) {
     return new Response(
       JSON.stringify({
@@ -286,7 +291,7 @@ export async function createChatPipelineHarness(prefix) {
     clearSkillState();
     await new Promise((resolve) => setTimeout(resolve, 20));
     core.resetDbInstance();
-    fs.rmSync(testDataDir, { recursive: true, force: true });
+    fs.rmSync(testDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     fs.mkdirSync(testDataDir, { recursive: true });
     initTranslators();
   }
@@ -300,21 +305,29 @@ export async function createChatPipelineHarness(prefix) {
     clearSkillState();
     resetAllCircuitBreakers();
     core.resetDbInstance();
-    fs.rmSync(testDataDir, { recursive: true, force: true });
+    fs.rmSync(testDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 
-  async function seedConnection(provider: string, overrides: SeedConnectionOverrides = {}) {
-    return providersDb.createProviderConnection({
+  async function seedConnection(
+    provider: string,
+    overrides: SeedConnectionOverrides = {}
+  ): Promise<JsonRecord & { id: string }> {
+    const conn = (await providersDb.createProviderConnection({
       provider,
       authType: "apikey",
       name: overrides.name || `${provider}-primary`,
       apiKey: overrides.apiKey || `sk-${provider}-${crypto.randomUUID().slice(0, 8)}`,
+      accessToken: overrides.accessToken,
       isActive: overrides.isActive ?? true,
       testStatus: overrides.testStatus || "active",
       priority: overrides.priority,
       rateLimitedUntil: overrides.rateLimitedUntil,
+      errorCode: overrides.errorCode,
+      lastError: overrides.lastError,
+      lastErrorType: overrides.lastErrorType,
       providerSpecificData: overrides.providerSpecificData || {},
-    });
+    })) as JsonRecord & { id: string };
+    return conn;
   }
 
   async function seedApiKey({

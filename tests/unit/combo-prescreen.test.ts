@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { ComboLike } from "../../open-sse/services/combo/types.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-prescreen-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -14,7 +15,7 @@ const combosDb = await import("../../src/lib/db/combos.ts");
 
 after(() => {
   dbCore.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   if (ORIGINAL_DATA_DIR === undefined) {
     delete process.env.DATA_DIR;
   } else {
@@ -52,8 +53,8 @@ test("pre-screen: all targets checked in parallel", async () => {
 
   const response = await handleComboChat({
     body: { ...reqBody, model: combo.name },
-    combo,
-    allCombos: [combo],
+    combo: combo as unknown as ComboLike,
+    allCombos: [combo as unknown as ComboLike],
     isModelAvailable: async (modelStr: string) => {
       checkOrder.push(modelStr);
       return true;
@@ -87,8 +88,8 @@ test("pre-screen: unavailable targets are skipped", async () => {
 
   const response = await handleComboChat({
     body: { ...reqBody, model: combo.name },
-    combo,
-    allCombos: [combo],
+    combo: combo as unknown as ComboLike,
+    allCombos: [combo as unknown as ComboLike],
     isModelAvailable: async (modelStr: string) => {
       return availability.get(modelStr) ?? true;
     },
@@ -119,8 +120,8 @@ test("pre-screen: failure treated as unknown availability", async () => {
 
   const response = await handleComboChat({
     body: { ...reqBody, model: combo.name },
-    combo,
-    allCombos: [combo],
+    combo: combo as unknown as ComboLike,
+    allCombos: [combo as unknown as ComboLike],
     isModelAvailable: async (modelStr: string) => {
       checkCount++;
       if (checkCount === 1) {
@@ -156,8 +157,8 @@ test("pre-screen: only runs for priority strategy", async () => {
 
   const response = await handleComboChat({
     body: { ...reqBody, model: combo.name },
-    combo,
-    allCombos: [combo],
+    combo: combo as unknown as ComboLike,
+    allCombos: [combo as unknown as ComboLike],
     isModelAvailable: async (modelStr: string) => {
       checkOrder.push(modelStr);
       return true;
@@ -186,8 +187,8 @@ test("pre-screen: backward compatible with all targets available", async () => {
 
   const response = await handleComboChat({
     body: { ...reqBody, model: combo.name },
-    combo,
-    allCombos: [combo],
+    combo: combo as unknown as ComboLike,
+    allCombos: [combo as unknown as ComboLike],
     isModelAvailable: async () => true,
     relayOptions: undefined,
     signal: undefined,
@@ -215,8 +216,8 @@ test("priority combo: quota 429 on passthrough provider does not skip another mo
 
   const response = await handleComboChat({
     body: { ...reqBody, model: combo.name },
-    combo,
-    allCombos: [combo],
+    combo: combo as unknown as ComboLike,
+    allCombos: [combo as unknown as ComboLike],
     isModelAvailable: async () => true,
     relayOptions: undefined,
     signal: undefined,

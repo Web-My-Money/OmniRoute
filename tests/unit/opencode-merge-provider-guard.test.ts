@@ -11,6 +11,7 @@
 // malformed config means.
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { mergeOpenCodeConfig, mergeOpenCodeConfigText } =
   await import("../../src/shared/services/opencodeConfig.ts");
@@ -47,7 +48,7 @@ test("mergeOpenCodeConfig still preserves sibling providers", () => {
   );
 
   assert.deepEqual(Object.keys(merged.provider).sort(), ["custom", "omniroute", "other"]);
-  assert.equal(merged.provider.custom.name, "Custom Provider");
+  assert.equal((merged.provider as LooseDeep).custom.name, "Custom Provider");
 });
 
 test("mergeOpenCodeConfig still guards the root itself", () => {

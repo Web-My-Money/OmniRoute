@@ -28,8 +28,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-sweep-reentrancy-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -43,7 +44,7 @@ async function resetStorage() {
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       if (fs.existsSync(TEST_DATA_DIR)) {
-        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       }
       break;
     } catch (error) {
@@ -60,7 +61,7 @@ async function resetStorage() {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   delete process.env.HEALTHCHECK_STAGGER_MS;
   delete process.env.HEALTHCHECK_JITTER_MIN_MS;
   delete process.env.HEALTHCHECK_JITTER_MAX_MS;
@@ -76,13 +77,13 @@ function isSweeping(): boolean {
 /** Create `count` distinct OAuth connections whose checkConnection() is a fast no-op. */
 async function createNoOpOauthConnections(count: number, namePrefix: string) {
   for (let i = 0; i < count; i++) {
-    await providersDb.createProviderConnection({
+    (await providersDb.createProviderConnection({
       provider: "anthropic",
       name: `${namePrefix}-${i}`,
       authType: "oauth",
       isActive: true,
       healthCheckInterval: 0, // disabled — checkConnection() returns immediately (no network/db-write)
-    });
+    })) as JsonRecord & { id: string };
   }
 }
 

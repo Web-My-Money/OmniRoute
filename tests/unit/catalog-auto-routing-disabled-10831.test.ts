@@ -14,6 +14,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-auto-routing-10831-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -40,20 +41,20 @@ const isAutoId = (m: { id: string }) => m.id.startsWith("auto/");
 test.after(() => {
   core.resetDbInstance();
   try {
-    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   } catch {
     /* best-effort */
   }
 });
 
 test("autoRoutingEnabled=false removes auto/* ids from /v1/models", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "openai-main",
     apiKey: "sk-test",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   // Baseline: routing on, ids advertised.
   await settingsDb.updateSettings({ autoRoutingEnabled: true, hideAutoCombos: false });

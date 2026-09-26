@@ -56,7 +56,7 @@ test("handleImageGeneration uses the connection's providerSpecificData.baseUrl o
   const originalFetch = globalThis.fetch;
   const originalSetTimeout = globalThis.setTimeout;
   const seenUrls: string[] = [];
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = mockComfyFetch("img-override", seenUrls);
 
   try {
@@ -81,7 +81,7 @@ test("handleImageGeneration falls back to localhost:8188 for ComfyUI when creden
   const originalFetch = globalThis.fetch;
   const originalSetTimeout = globalThis.setTimeout;
   const seenUrls: string[] = [];
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = mockComfyFetch("img-default", seenUrls);
 
   try {
@@ -103,7 +103,7 @@ test("handleVideoGeneration uses the connection's providerSpecificData.baseUrl o
   const originalFetch = globalThis.fetch;
   const originalSetTimeout = globalThis.setTimeout;
   const seenUrls: string[] = [];
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = mockComfyFetch("vid-override", seenUrls);
 
   try {
@@ -125,7 +125,7 @@ test("handleMusicGeneration uses the connection's providerSpecificData.baseUrl o
   const originalFetch = globalThis.fetch;
   const originalSetTimeout = globalThis.setTimeout;
   const seenUrls: string[] = [];
-  globalThis.setTimeout = immediateTimeout;
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
   globalThis.fetch = mockComfyFetch("music-override", seenUrls);
 
   try {
@@ -156,17 +156,11 @@ test("resolveComfyUiBaseUrl returns the fallback when providerSpecificData is ab
 });
 
 test("resolveComfyUiBaseUrl returns the fallback when providerSpecificData is null", () => {
-  assert.equal(
-    resolveComfyUiBaseUrl({ providerSpecificData: null }, FALLBACK),
-    FALLBACK
-  );
+  assert.equal(resolveComfyUiBaseUrl({ providerSpecificData: null }, FALLBACK), FALLBACK);
 });
 
 test("resolveComfyUiBaseUrl returns the fallback when baseUrl is absent", () => {
-  assert.equal(
-    resolveComfyUiBaseUrl({ providerSpecificData: {} }, FALLBACK),
-    FALLBACK
-  );
+  assert.equal(resolveComfyUiBaseUrl({ providerSpecificData: {} }, FALLBACK), FALLBACK);
 });
 
 test("resolveComfyUiBaseUrl returns the fallback when baseUrl is not a string", () => {

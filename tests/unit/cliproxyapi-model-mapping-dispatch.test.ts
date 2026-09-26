@@ -16,6 +16,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const testDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "omni-6876-model-mapping-"));
 process.env.DATA_DIR = testDataDir;
@@ -37,7 +38,8 @@ afterEach(() => {
 
 after(() => {
   coreDb.resetDbInstance();
-  if (fs.existsSync(testDataDir)) fs.rmSync(testDataDir, { recursive: true, force: true });
+  if (fs.existsSync(testDataDir))
+    fs.rmSync(testDataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 type ExecuteInput = {
@@ -52,7 +54,7 @@ type ExecutorLike = { execute: (input: ExecuteInput) => Promise<unknown> };
 async function captureFetchBody(fn: () => Promise<unknown>): Promise<Record<string, unknown>> {
   let capturedBody: Record<string, unknown> | null = null;
   const originalFetch = globalThis.fetch;
-  // @ts-expect-error test stub
+  //
   globalThis.fetch = async (_url: string, init: RequestInit) => {
     capturedBody = JSON.parse(init.body as string);
     return new Response(JSON.stringify({ ok: true }), {
@@ -66,7 +68,7 @@ async function captureFetchBody(fn: () => Promise<unknown>): Promise<Record<stri
     globalThis.fetch = originalFetch;
   }
   assert.ok(capturedBody, "executor should have issued a fetch call");
-  return capturedBody as Record<string, unknown>;
+  return capturedBody as LooseDeep;
 }
 
 describe("#6876 — cliproxyapiModelMapping applied at dispatch", () => {

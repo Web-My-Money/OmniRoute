@@ -19,6 +19,9 @@ import {
   CONTEXT_1M_BETA_HEADER,
 } from "../../open-sse/services/claudeCodeCompatible.ts";
 import { runWithCapture } from "../../open-sse/utils/providerRequestLogging.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { wrapLoose } from "../helpers/looseTypes.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 class TestExecutor extends BaseExecutor {
   constructor(config = {}) {
@@ -581,7 +584,7 @@ test("DefaultExecutor.execute uses CC-compatible connection defaults to append 1
           ])
         );
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     calls.push({ headers: toPlainHeaders(init.headers) });
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
@@ -591,7 +594,7 @@ test("DefaultExecutor.execute uses CC-compatible connection defaults to append 1
 
   try {
     const cc = new DefaultExecutor("anthropic-compatible-cc-test");
-    await cc.execute({
+    await wrapLoose(cc).execute({
       model: "claude-sonnet-4-6",
       body: {
         model: "claude-sonnet-4-6",
@@ -611,7 +614,7 @@ test("DefaultExecutor.execute uses CC-compatible connection defaults to append 1
       },
       extendedContext: false,
     });
-    await cc.execute({
+    await wrapLoose(cc).execute({
       model: "claude-sonnet-4-6",
       body: {
         model: "claude-sonnet-4-6",
@@ -630,7 +633,7 @@ test("DefaultExecutor.execute uses CC-compatible connection defaults to append 1
     });
 
     const anthropicCompat = new DefaultExecutor("anthropic-compatible-test");
-    await anthropicCompat.execute({
+    await wrapLoose(anthropicCompat).execute({
       model: "claude-sonnet-4-6",
       body: {
         model: "claude-sonnet-4-6",
@@ -646,7 +649,7 @@ test("DefaultExecutor.execute uses CC-compatible connection defaults to append 1
       },
       extendedContext: true,
     });
-    await cc.execute({
+    await wrapLoose(cc).execute({
       model: "claude-opus-5",
       body: {
         model: "claude-opus-5",
@@ -693,7 +696,7 @@ test("DefaultExecutor.execute reports the exact serialized provider request befo
   let prepared: any = null;
   let preparedBeforeFetch = false;
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     fetchStarted = true;
     fetchBody = JSON.parse(String(init.body || "{}"));
     return new Response(JSON.stringify({ ok: true }), {
@@ -757,7 +760,7 @@ test("DefaultExecutor.execute only injects adaptive thinking defaults for Claude
   const originalFetch = globalThis.fetch;
   const requestBodies = [];
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     requestBodies.push(JSON.parse(String(init.body)));
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
@@ -767,7 +770,7 @@ test("DefaultExecutor.execute only injects adaptive thinking defaults for Claude
 
   try {
     const claude = new DefaultExecutor("claude");
-    await claude.execute({
+    await wrapLoose(claude).execute({
       model: "claude-opus-4-7",
       body: {
         model: "claude-opus-4-7",
@@ -788,7 +791,7 @@ test("DefaultExecutor.execute only injects adaptive thinking defaults for Claude
       extendedContext: false,
     });
 
-    await claude.execute({
+    await wrapLoose(claude).execute({
       model: "claude-haiku-4-5-20251001",
       body: {
         model: "claude-haiku-4-5-20251001",
@@ -809,7 +812,7 @@ test("DefaultExecutor.execute only injects adaptive thinking defaults for Claude
       extendedContext: false,
     });
 
-    await claude.execute({
+    await wrapLoose(claude).execute({
       model: "claude-sonnet-4-6",
       body: {
         model: "claude-sonnet-4-6",
@@ -854,7 +857,7 @@ test("DefaultExecutor.transformRequest injects OpenAI stream usage and preserves
   const result = executor.transformRequest("zai-org/GLM-5-FP8", body, true, {});
 
   assert.notEqual(result, body);
-  assert.equal(result.model, "zai-org/GLM-5-FP8");
+  assert.equal((result as LooseDeep).model, "zai-org/GLM-5-FP8");
   assert.deepEqual((result as any).stream_options, { include_usage: true });
   assert.equal((body as any).stream_options, undefined);
 });
@@ -881,7 +884,7 @@ test("DefaultExecutor.execute routes Responses-shaped MCP requests to /responses
   const originalFetch = globalThis.fetch;
   const calls: Array<{ url: string; body: any }> = [];
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({
       url: String(url),
       body: JSON.parse(String(init.body)),
@@ -894,7 +897,7 @@ test("DefaultExecutor.execute routes Responses-shaped MCP requests to /responses
 
   try {
     const executor = new DefaultExecutor("openai-compatible-test");
-    await executor.execute({
+    await wrapLoose(executor).execute({
       model: "gpt-4.1",
       body: {
         model: "gpt-4.1",
@@ -1336,7 +1339,7 @@ test("BaseExecutor.execute returns response metadata and merges headers", async 
   };
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gpt-4.1",
       body: { messages: [{ role: "user", content: "hi" }] },
       stream: true,
@@ -1396,7 +1399,7 @@ test("BaseExecutor.execute refreshes credentials before the request when needed"
   };
 
   try {
-    await executor.execute({
+    await wrapLoose(executor).execute({
       model: "gpt-4.1",
       body: {},
       stream: false,
@@ -1422,7 +1425,7 @@ test("BaseExecutor.execute falls back to the next base URL after a transport err
   };
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gpt-4.1",
       body: { hello: "world" },
       stream: false,
@@ -1506,7 +1509,7 @@ test("BaseExecutor.execute clears the startup timeout after headers arrive", asy
   };
 
   try {
-    await executor.execute({
+    await wrapLoose(executor).execute({
       model: "gpt-4.1",
       body: {},
       stream: true,
@@ -1534,7 +1537,7 @@ test("DefaultExecutor.execute does not produce duplicate anthropic-version heade
   let capturedHeaders: Record<string, string> = {};
   let capturedBody = "";
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     // Capture raw headers without normalisation so case-variant duplicate keys are visible.
     capturedHeaders = (init.headers as Record<string, string>) || {};
     capturedBody = String(init.body ?? "");
@@ -1545,7 +1548,7 @@ test("DefaultExecutor.execute does not produce duplicate anthropic-version heade
   };
 
   try {
-    await executor.execute({
+    await wrapLoose(executor).execute({
       model: "claude-sonnet-4-6",
       body: {
         model: "claude-sonnet-4-6",

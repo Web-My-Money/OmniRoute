@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { CLI_TOOLS } = await import("../../src/shared/constants/cliTools.ts");
 const { resolveOpencodeConfigPath } = await import("../../src/shared/services/cliRuntime.ts");
@@ -33,19 +34,19 @@ test("T40: OpenCode card documents config paths and --variant usage", () => {
 test("T40: OpenCode config path resolves per-platform", () => {
   const linuxWithXdg = resolveOpencodeConfigPath(
     "linux",
-    { XDG_CONFIG_HOME: "/tmp/xdg-config-home" },
+    { XDG_CONFIG_HOME: "/tmp/xdg-config-home" } as NodeJS.ProcessEnv,
     "/home/dev"
   );
   assert.equal(linuxWithXdg, path.join("/tmp/xdg-config-home", "opencode", "opencode.json"));
 
-  const linuxDefault = resolveOpencodeConfigPath("linux", {}, "/home/dev");
+  const linuxDefault = resolveOpencodeConfigPath("linux", {} as NodeJS.ProcessEnv, "/home/dev");
   assert.equal(linuxDefault, path.join("/home/dev", ".config", "opencode", "opencode.json"));
 
   // #3330: OpenCode uses XDG `~/.config/opencode/` on ALL platforms including
   // Windows (NOT %APPDATA%) — OmniRoute must write where OpenCode reads.
   const windowsPath = resolveOpencodeConfigPath(
     "win32",
-    { APPDATA: "C:\\Users\\dev\\AppData\\Roaming" },
+    { APPDATA: "C:\\Users\\dev\\AppData\\Roaming" } as NodeJS.ProcessEnv,
     "C:\\Users\\dev"
   );
   assert.equal(windowsPath, path.join("C:\\Users\\dev", ".config", "opencode", "opencode.json"));
@@ -53,7 +54,7 @@ test("T40: OpenCode config path resolves per-platform", () => {
   // Windows still honors XDG_CONFIG_HOME when set.
   const windowsXdg = resolveOpencodeConfigPath(
     "win32",
-    { XDG_CONFIG_HOME: "D:\\xdg" },
+    { XDG_CONFIG_HOME: "D:\\xdg" } as NodeJS.ProcessEnv,
     "C:\\Users\\dev"
   );
   assert.equal(windowsXdg, path.join("D:\\xdg", "opencode", "opencode.json"));
@@ -77,7 +78,7 @@ test("T40: OpenCode config generator includes endpoint and selected API key", ()
       model: "claude-sonnet-4-5-thinking",
     }
   );
-  assert.ok(mergedConfig.provider.custom);
+  assert.ok((mergedConfig.provider as LooseDeep).custom);
   assert.equal(mergedConfig.provider.omniroute.options.baseURL, "http://localhost:20128/v1");
   assert.equal(mergedConfig.provider.omniroute.options.apiKey, "sk_test_opencode");
 });
@@ -157,8 +158,8 @@ test("T40: OpenCode merge preserves unrelated config and updates only provider.o
     }
   );
 
-  assert.deepEqual(mergedConfig.provider.custom, { name: "Custom Provider" });
-  assert.deepEqual(mergedConfig.mcpServers, {
+  assert.deepEqual((mergedConfig.provider as LooseDeep).custom, { name: "Custom Provider" });
+  assert.deepEqual((mergedConfig as LooseDeep).mcpServers, {
     github: { command: "npx", args: ["-y", "@modelcontextprotocol/server-github"] },
   });
   assert.deepEqual(mergedConfig.provider.omniroute.models, {
@@ -201,7 +202,7 @@ test("T40: Windsurf was removed from CLI_TOOLS in plan 14 D17 (MITM backlog plan
   // The old guide/limitations notes are no longer needed in the UI catalog.
   // Cross-reference: _tasks/features-v3.8.6/refactorpages/_orchestration/_plan11-mitm-backlog.md
   assert.equal(
-    (CLI_TOOLS as Record<string, unknown>)["windsurf"],
+    (CLI_TOOLS as LooseDeep)["windsurf"],
     undefined,
     "windsurf must be removed from CLI_TOOLS per plan 14 D17"
   );

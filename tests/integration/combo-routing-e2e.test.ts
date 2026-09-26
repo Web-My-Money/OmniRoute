@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { createChatPipelineHarness } from "./_chatPipelineHarness.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const harness = await createChatPipelineHarness("combo-routing");
 const callLogs = await import("../../src/lib/usage/callLogs.ts");
@@ -51,7 +53,7 @@ test("combo routes requests by exact combo name", async () => {
   });
 
   const fetchCalls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),
@@ -223,11 +225,11 @@ test("priority combo can repeat the same provider/model with different fixed acc
 
   const authHeaders = [];
   let firstAttemptHeader = null;
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     const headers = toPlainHeaders(init.headers);
-    authHeaders.push(headers.authorization);
+    authHeaders.push((headers as LooseDeep).authorization);
     if (!firstAttemptHeader) {
-      firstAttemptHeader = headers.authorization;
+      firstAttemptHeader = (headers as LooseDeep).authorization;
       return new Response(JSON.stringify({ error: { message: "first account down" } }), {
         status: 503,
         headers: { "Content-Type": "application/json" },
@@ -294,12 +296,12 @@ test("model combo mappings route explicit model ids through the configured combo
   });
   await modelComboMappingsDb.createModelComboMapping({
     pattern: "tenant/mapped-model",
-    comboId: combo.id,
+    comboId: combo.id as string,
     priority: 100,
   });
 
   const fetchCalls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),
@@ -329,12 +331,12 @@ test("wildcard model combo mappings resolve arbitrary matching models", async ()
   });
   await modelComboMappingsDb.createModelComboMapping({
     pattern: "tenant/*",
-    comboId: combo.id,
+    comboId: combo.id as string,
     priority: 10,
   });
 
   const fetchCalls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),

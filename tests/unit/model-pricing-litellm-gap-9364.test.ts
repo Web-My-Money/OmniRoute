@@ -11,6 +11,7 @@ import {
   clearSyncedPricing,
   type PricingByProvider as SyncedPricingByProvider,
 } from "../../src/lib/pricingSync.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 type CatalogPricing = {
   input?: number;
@@ -63,9 +64,12 @@ describe("catalog pricing LiteLLM gap (#9364)", () => {
       owned_by: "openai",
       root: "babbage-002",
     });
-    assert.ok(entry.pricing, "pricing should resolve from pricing_synced (LiteLLM) layer");
-    assert.equal((entry.pricing as CatalogPricing).input, 0.4);
-    assert.equal((entry.pricing as CatalogPricing).output, 0.4);
+    assert.ok(
+      (entry as LooseDeep).pricing,
+      "pricing should resolve from pricing_synced (LiteLLM) layer"
+    );
+    assert.equal(((entry as LooseDeep).pricing as CatalogPricing).input, 0.4);
+    assert.equal(((entry as LooseDeep).pricing as CatalogPricing).output, 0.4);
   });
 
   it("still resolves models.dev pricing when present (precedence preserved)", () => {
@@ -74,8 +78,8 @@ describe("catalog pricing LiteLLM gap (#9364)", () => {
       owned_by: "openai",
       root: "gpt-4o",
     });
-    assert.ok(entry.pricing);
-    assert.equal((entry.pricing as CatalogPricing).input, 2.5);
-    assert.equal((entry.pricing as CatalogPricing).output, 10);
+    assert.ok((entry as LooseDeep).pricing);
+    assert.equal(((entry as LooseDeep).pricing as CatalogPricing).input, 2.5);
+    assert.equal(((entry as LooseDeep).pricing as CatalogPricing).output, 10);
   });
 });

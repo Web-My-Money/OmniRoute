@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // Regression coverage for the #3322 auto-combo candidate expansion: an auto-combo
 // without an explicit candidatePool broadens its eligible targets to every model
@@ -19,7 +20,7 @@ const providerModels = await import("../../open-sse/config/providerModels.ts");
 
 function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -27,19 +28,19 @@ test.beforeEach(() => resetStorage());
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   if (ORIGINAL_DATA_DIR === undefined) delete process.env.DATA_DIR;
   else process.env.DATA_DIR = ORIGINAL_DATA_DIR;
 });
 
 test("expandAutoComboCandidatePool adds every model of an active provider when no candidatePool is set", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "OpenAI",
     apiKey: "sk-test-openai",
     defaultModel: "gpt-4o-mini",
-  });
+  })) as JsonRecord & { id: string };
 
   const expanded = await combo.expandAutoComboCandidatePool([], { config: {} });
 
@@ -64,13 +65,13 @@ test("expandAutoComboCandidatePool adds every model of an active provider when n
 });
 
 test("expandAutoComboCandidatePool is a no-op when an explicit candidatePool exists", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "OpenAI",
     apiKey: "sk-test-openai",
     defaultModel: "gpt-4o-mini",
-  });
+  })) as JsonRecord & { id: string };
 
   const seed = [
     {
@@ -93,13 +94,13 @@ test("expandAutoComboCandidatePool is a no-op when an explicit candidatePool exi
 });
 
 test("expandAutoComboCandidatePool falls through to active connections when candidatePool is an empty array", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "OpenAI",
     apiKey: "sk-test-openai",
     defaultModel: "gpt-4o-mini",
-  });
+  })) as JsonRecord & { id: string };
 
   const expanded = await combo.expandAutoComboCandidatePool([], {
     config: { auto: { candidatePool: [] } },
@@ -116,13 +117,13 @@ test("expandAutoComboCandidatePool falls through to active connections when cand
 });
 
 test('expandAutoComboCandidatePool is a no-op when the combo references other combos via kind:"combo-ref" entries', async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "OpenAI",
     apiKey: "sk-test-openai",
     defaultModel: "gpt-4o-mini",
-  });
+  })) as JsonRecord & { id: string };
 
   const seed = [
     {
@@ -156,13 +157,13 @@ test('expandAutoComboCandidatePool is a no-op when the combo references other co
 });
 
 test("expandAutoComboCandidatePool is a no-op when the operator has populated models[] (no candidatePool)", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "OpenAI",
     apiKey: "sk-test-openai",
     defaultModel: "gpt-4o-mini",
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await combo.expandAutoComboCandidatePool([], {
     config: {},
@@ -177,13 +178,13 @@ test("expandAutoComboCandidatePool is a no-op when the operator has populated mo
 });
 
 test("expandAutoComboCandidatePool does not duplicate an already-present modelStr", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "OpenAI",
     apiKey: "sk-test-openai",
     defaultModel: "gpt-4o-mini",
-  });
+  })) as JsonRecord & { id: string };
 
   const firstCatalogId = providerModels.getProviderModels("openai")[0]?.id;
   assert.ok(firstCatalogId, "expected at least one openai catalog model");

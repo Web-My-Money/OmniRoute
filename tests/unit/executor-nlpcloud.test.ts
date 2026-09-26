@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import { getExecutor, hasSpecializedExecutor } from "../../open-sse/executors/index.ts";
 import { NlpCloudExecutor } from "../../open-sse/executors/nlpcloud.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const encoder = new TextEncoder();
 
@@ -44,7 +45,7 @@ test.skip("NlpCloudExecutor converts OpenAI messages into chatbot input/context/
     headers: Record<string, string>;
   }> = [];
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({
       url: String(url),
       body: JSON.parse(String(init.body || "{}")),

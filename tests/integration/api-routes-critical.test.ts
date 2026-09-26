@@ -24,7 +24,7 @@ async function resetStorage() {
   delete process.env.ENABLE_SOCKS5_PROXY;
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -37,7 +37,10 @@ async function createManagementKey() {
   return apiKeysDb.createApiKey("management", MACHINE_ID);
 }
 
-function makeRequest(url, { method = "GET", token, body } = {}) {
+function makeRequest(
+  url,
+  { method = "GET", token, body }: { method?: string; token?: string; body?: unknown } = {}
+) {
   const headers = new Headers();
   if (token) {
     headers.set("authorization", `Bearer ${token}`);
@@ -59,7 +62,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("critical routes: v1 management proxies covers auth, lookup, where-used, patch, and delete branches", async () => {

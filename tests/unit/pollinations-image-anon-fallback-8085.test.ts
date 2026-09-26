@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 // Isolated DATA_DIR so this test never touches the real ~/.omniroute DB
 // (handleImageGeneration's call-log path opens the shared DB singleton).
@@ -22,7 +23,7 @@ test("#8085 keyless Pollinations image request includes anonymous fingerprint he
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers || {},

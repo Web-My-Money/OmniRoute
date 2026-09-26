@@ -12,7 +12,12 @@ describe("resolved proxy config → URL family encoding", () => {
     assert.ok(url!.endsWith("?family=ipv6"), url!);
   });
   it("omits family marker when auto", () => {
-    const url = proxyConfigToUrl({ type: "http", host: "p.example.com", port: 8080, family: "auto" });
+    const url = proxyConfigToUrl({
+      type: "http",
+      host: "p.example.com",
+      port: 8080,
+      family: "auto",
+    });
     assert.ok(!url!.includes("family="), url!);
   });
 });
@@ -32,23 +37,23 @@ async function resetStorage() {
   delete process.env.INITIAL_PASSWORD;
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("account-level registry proxy carries family=ipv6 through resolveProxyForConnection", async () => {
   await resetStorage();
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "acct-ipv6",
     apiKey: "sk-acct-ipv6",
-  });
+  })) as JsonRecord & { id: string };
   const proxy = await proxiesDb.createProxy({
     name: "IPv6 Account Proxy",
     type: "socks5",
@@ -65,12 +70,12 @@ test("account-level registry proxy carries family=ipv6 through resolveProxyForCo
 
 test("provider-level registry proxy carries family=ipv6", async () => {
   await resetStorage();
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "prov-ipv6",
     apiKey: "sk-prov-ipv6",
-  });
+  })) as JsonRecord & { id: string };
   const proxy = await proxiesDb.createProxy({
     name: "IPv6 Provider Proxy",
     type: "http",
@@ -87,12 +92,12 @@ test("provider-level registry proxy carries family=ipv6", async () => {
 
 test("global registry proxy carries family=ipv6", async () => {
   await resetStorage();
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "glob-ipv6",
     apiKey: "sk-glob-ipv6",
-  });
+  })) as JsonRecord & { id: string };
   const proxy = await proxiesDb.createProxy({
     name: "IPv6 Global Proxy",
     type: "http",
@@ -109,12 +114,12 @@ test("global registry proxy carries family=ipv6", async () => {
 
 test("api-key-level proxy carries family=ipv6 (Step 2 object literal)", async () => {
   await resetStorage();
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "key-ipv6",
     apiKey: "sk-key-ipv6",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as any).id;
   core
     .getDbInstance()
@@ -140,3 +145,5 @@ test("api-key-level proxy carries family=ipv6 (Step 2 object literal)", async ()
   assert.equal((resolved as any).level, "apiKey");
   assert.equal((resolved as any).proxy.family, "ipv6");
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

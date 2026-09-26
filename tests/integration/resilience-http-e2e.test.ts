@@ -301,7 +301,7 @@ async function seedCompatibleProvider(prefix: string, apiKey: string, baseUrl: s
     apiType: "chat",
     baseUrl,
   });
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: providerId,
     authType: "apikey",
     name: `conn-${prefix}`,
@@ -312,7 +312,7 @@ async function seedCompatibleProvider(prefix: string, apiKey: string, baseUrl: s
       baseUrl,
       apiType: "chat",
     },
-  });
+  })) as JsonRecord & { id: string };
   return { providerId, model: `${prefix}/test-model`, apiKey };
 }
 
@@ -547,7 +547,7 @@ test.after(async () => {
   }
   await relay.stop();
   core.closeDbInstance();
-  await fsp.rm(TEST_DATA_DIR, { recursive: true, force: true });
+  await fsp.rm(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("resilience API only exposes configuration, not runtime breaker state", async () => {
@@ -784,3 +784,5 @@ test("round-robin combo still alternates healthy providers after combo breaker r
   assert.equal(relay.getState(TOKENS.p6).hits, 1);
   assert.equal(relay.getState(TOKENS.p7).hits, 1);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

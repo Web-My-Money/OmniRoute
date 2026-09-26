@@ -14,15 +14,15 @@ const { GLOBAL_SKILL_OWNER_ID, skillRegistry } = await import("../../src/lib/ski
 const installRoute = await import("../../src/app/api/skills/marketplace/install/route.ts");
 
 function clearSkillRegistry() {
-  skillRegistry.registeredSkills?.clear?.();
-  skillRegistry.versionCache?.clear?.();
-  skillRegistry.loadedApiKeyIds?.clear?.();
+  skillRegistry["registeredSkills"]?.clear?.();
+  skillRegistry["versionCache"]?.clear?.();
+  skillRegistry["loadedApiKeyIds"]?.clear?.();
   skillRegistry.invalidateCache();
 }
 
 function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(tmpDir, { recursive: true, force: true });
+  fs.rmSync(tmpDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(tmpDir, { recursive: true });
   clearSkillRegistry();
   core.getDbInstance();
@@ -40,7 +40,7 @@ test.after(() => {
   core.resetDbInstance();
   clearSkillRegistry();
   process.env.DATA_DIR = originalDataDir;
-  fs.rmSync(tmpDir, { recursive: true, force: true });
+  fs.rmSync(tmpDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("SkillsMP installs are available to API-key-scoped requests", async () => {

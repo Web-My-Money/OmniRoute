@@ -16,6 +16,7 @@
  *    distribution is preserved — only intra-conversation rotation is removed).
  */
 import test from "node:test";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -28,25 +29,47 @@ process.env.DATA_DIR = TEST_DATA_DIR;
 const { handleComboChat } = await import("../../open-sse/services/combo.ts");
 const stick = await import("../../open-sse/services/combo/sessionStickiness.ts");
 const dbCore = await import("../../src/lib/db/core.ts");
+import type { ComboLike } from "../../open-sse/services/combo/types.ts";
 
 function makeLog() {
   return { info() {}, warn() {}, debug() {}, error() {} };
 }
 
-function rrCombo(name: string) {
+function rrCombo(name: string): ComboLike {
   return {
     name,
     strategy: "round-robin",
     config: { maxRetries: 0 },
     models: [
-      { kind: "model", provider: "codex", providerId: "codex", model: "m-a", connectionId: "conn-A", id: `${name}-0` },
-      { kind: "model", provider: "codex", providerId: "codex", model: "m-b", connectionId: "conn-B", id: `${name}-1` },
-      { kind: "model", provider: "glm-cn", providerId: "glm-cn", model: "m-c", connectionId: "conn-C", id: `${name}-2` },
+      {
+        kind: "model",
+        provider: "codex",
+        providerId: "codex",
+        model: "m-a",
+        connectionId: "conn-A",
+        id: `${name}-0`,
+      },
+      {
+        kind: "model",
+        provider: "codex",
+        providerId: "codex",
+        model: "m-b",
+        connectionId: "conn-B",
+        id: `${name}-1`,
+      },
+      {
+        kind: "model",
+        provider: "glm-cn",
+        providerId: "glm-cn",
+        model: "m-c",
+        connectionId: "conn-C",
+        id: `${name}-2`,
+      },
     ],
   };
 }
 
-async function dispatchConnection(combo: Record<string, unknown>, firstMessage: string): Promise<string> {
+async function dispatchConnection(combo: ComboLike, firstMessage: string): Promise<string> {
   let conn = "?";
   await handleComboChat({
     body: { model: combo.name, messages: [{ role: "user", content: firstMessage }], stream: false },
@@ -57,11 +80,7 @@ async function dispatchConnection(combo: Record<string, unknown>, firstMessage: 
     signal: undefined,
     settings: {},
     log: makeLog(),
-    handleSingleModel: async (
-      _b: unknown,
-      modelStr: string,
-      target?: { connectionId?: string | null }
-    ) => {
+    handleSingleModel: async (_b: unknown, modelStr: string, target?: LooseDeep) => {
       conn = target?.connectionId ?? "?";
       return Response.json({ choices: [{ message: { role: "assistant", content: modelStr } }] });
     },
@@ -79,7 +98,7 @@ test.beforeEach(() => {
 test.after(() => {
   stick.__setStickinessHeadroomFetcherForTests(null);
   dbCore.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   if (ORIGINAL_DATA_DIR === undefined) delete process.env.DATA_DIR;
   else process.env.DATA_DIR = ORIGINAL_DATA_DIR;
 });
@@ -104,7 +123,10 @@ test("round-robin: DISTINCT conversations still spread across connections on tur
   const combo = rrCombo("rr-spread");
   const hist: Record<string, number> = {};
   for (let i = 0; i < 6; i++) {
-    const conn = await dispatchConnection(combo, `conversation number ${i} — distinct first message`);
+    const conn = await dispatchConnection(
+      combo,
+      `conversation number ${i} — distinct first message`
+    );
     hist[conn] = (hist[conn] || 0) + 1;
   }
   // Round-robin distribution must be preserved across conversations: more than one

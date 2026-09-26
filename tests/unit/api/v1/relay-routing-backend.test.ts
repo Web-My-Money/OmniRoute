@@ -11,14 +11,14 @@ import {
 } from "../../../../src/app/api/v1/relay/chat/completions/routingBackend.ts";
 
 test("relay routing backend defaults to TypeScript without bifrost", () => {
-  const env = {};
+  const env: NodeJS.ProcessEnv = {};
 
   assert.equal(resolveRelayRoutingBackend(env), "ts");
   assert.equal(getBifrostRoutingConfig(env), null);
 });
 
 test("relay routing backend auto-enables bifrost when base URL is configured", () => {
-  const env = {
+  const env: NodeJS.ProcessEnv = {
     BIFROST_BASE_URL: "http://127.0.0.1:8080/",
     OMNIROUTE_BIFROST_KEY: "sidecar-key",
     BIFROST_TIMEOUT_MS: "250",
@@ -36,7 +36,7 @@ test("relay routing backend auto-enables bifrost when base URL is configured", (
 });
 
 test("relay routing backend honors explicit TS and strict bifrost modes", () => {
-  const env = {
+  const env: NodeJS.ProcessEnv = {
     BIFROST_BASE_URL: "http://127.0.0.1:8080",
     OMNIROUTE_RELAY_BACKEND: "ts",
   };
@@ -51,7 +51,7 @@ test("relay routing backend honors explicit TS and strict bifrost modes", () => 
 });
 
 test("relay routing backend respects bifrost killswitch", () => {
-  const env = {
+  const env: NodeJS.ProcessEnv = {
     BIFROST_BASE_URL: "http://127.0.0.1:8080",
     BIFROST_ENABLED: "0",
   };
@@ -63,7 +63,7 @@ test("relay routing backend respects bifrost killswitch", () => {
 });
 
 test("relay routing backend falls back on invalid timeout values", () => {
-  const env = {
+  const env: NodeJS.ProcessEnv = {
     BIFROST_BASE_URL: "http://127.0.0.1:8080",
     BIFROST_TIMEOUT_MS: "not-a-number",
   };

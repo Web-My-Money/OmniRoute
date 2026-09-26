@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-kiro-10815-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -12,11 +13,11 @@ const providersDb = await import("../../src/lib/db/providers.ts");
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("createProviderConnection keeps two Kiro oauth connections with the same email but different profileArn separate (#10815)", async () => {
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "kiro",
     authType: "oauth",
     email: "user@example.com",
@@ -27,9 +28,9 @@ test("createProviderConnection keeps two Kiro oauth connections with the same em
       provider: "Google",
       profileArn: "arn:aws:codewhisperer:us-east-1:111111111111:profile/AAAA",
     },
-  });
+  })) as JsonRecord & { id: string };
 
-  const second = await providersDb.createProviderConnection({
+  const second = (await providersDb.createProviderConnection({
     provider: "kiro",
     authType: "oauth",
     email: "user@example.com",
@@ -40,7 +41,7 @@ test("createProviderConnection keeps two Kiro oauth connections with the same em
       provider: "Google",
       profileArn: "arn:aws:codewhisperer:us-east-1:222222222222:profile/BBBB",
     },
-  });
+  })) as JsonRecord & { id: string };
 
   const kiroConnections = await providersDb.getProviderConnections({ provider: "kiro" });
 
@@ -57,7 +58,7 @@ test("createProviderConnection keeps two Kiro oauth connections with the same em
 });
 
 test("createProviderConnection re-auth of the SAME Kiro profileArn still updates in place (#10815)", async () => {
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "kiro",
     authType: "oauth",
     email: "same-profile@example.com",
@@ -68,9 +69,9 @@ test("createProviderConnection re-auth of the SAME Kiro profileArn still updates
       provider: "Google",
       profileArn: "arn:aws:codewhisperer:us-east-1:333333333333:profile/CCCC",
     },
-  });
+  })) as JsonRecord & { id: string };
 
-  const reauth = await providersDb.createProviderConnection({
+  const reauth = (await providersDb.createProviderConnection({
     provider: "kiro",
     authType: "oauth",
     email: "same-profile@example.com",
@@ -81,7 +82,7 @@ test("createProviderConnection re-auth of the SAME Kiro profileArn still updates
       provider: "Google",
       profileArn: "arn:aws:codewhisperer:us-east-1:333333333333:profile/CCCC",
     },
-  });
+  })) as JsonRecord & { id: string };
 
   assert.equal(
     reauth.id,
@@ -91,21 +92,21 @@ test("createProviderConnection re-auth of the SAME Kiro profileArn still updates
 });
 
 test("createProviderConnection keeps legacy email-only OAuth dedup for rows without profileArn/username (#10815)", async () => {
-  const first = await providersDb.createProviderConnection({
+  const first = (await providersDb.createProviderConnection({
     provider: "google",
     authType: "oauth",
     email: "legacy@example.com",
     accessToken: "legacy-token-1",
     refreshToken: "legacy-refresh-1",
-  });
+  })) as JsonRecord & { id: string };
 
-  const second = await providersDb.createProviderConnection({
+  const second = (await providersDb.createProviderConnection({
     provider: "google",
     authType: "oauth",
     email: "legacy@example.com",
     accessToken: "legacy-token-2",
     refreshToken: "legacy-refresh-2",
-  });
+  })) as JsonRecord & { id: string };
 
   assert.equal(
     second.id,

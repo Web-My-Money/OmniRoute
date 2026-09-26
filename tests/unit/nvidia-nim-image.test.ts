@@ -13,6 +13,7 @@ import {
   buildNvidiaNimRequestBody,
   normalizeNvidiaNimImages,
 } from "../../open-sse/handlers/imageGeneration/providers/nvidiaNim.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 test("nvidia is registered as an nvidia-nim image provider with the 4 FLUX models", () => {
   const cfg = getImageProvider("nvidia");
@@ -46,7 +47,7 @@ test("handleImageGeneration(nvidia/flux.1-schnell): URL construction + minimal b
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: {
         model: "nvidia/black-forest-labs/flux.1-schnell",
         prompt: "A neon city",
@@ -60,7 +61,10 @@ test("handleImageGeneration(nvidia/flux.1-schnell): URL construction + minimal b
     });
 
     assert.equal(result.success, true);
-    assert.equal(capturedUrl, "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell");
+    assert.equal(
+      capturedUrl,
+      "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell"
+    );
     assert.equal(capturedOptions.method, "POST");
     assert.equal(capturedOptions.headers.Authorization, "Bearer nv-token");
     assert.equal(capturedOptions.headers.Accept, "application/json");
@@ -91,7 +95,7 @@ test("handleImageGeneration(nvidia/flux.2-klein-4b): sends edit input image as a
     });
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: {
         model: "nvidia/black-forest-labs/flux.2-klein-4b",
         prompt: "Make the frog wear tiny glasses",
@@ -226,7 +230,7 @@ test("handleImageGeneration(nvidia/flux.1-kontext-dev): requires an input image,
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: {
         model: "nvidia/black-forest-labs/flux.1-kontext-dev",
         prompt: "Now the mouse is holding pizza instead",
@@ -273,7 +277,7 @@ test("handleImageGeneration(nvidia): upstream error body never leaks a stack tra
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: {
         model: "nvidia/black-forest-labs/flux.1-schnell",
         prompt: "test",
@@ -297,7 +301,7 @@ test("handleImageGeneration(nvidia): upstream non-2xx response is surfaced with 
     new Response("rate limited", { status: 429, headers: { "content-type": "text/plain" } });
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: {
         model: "nvidia/black-forest-labs/flux.1-schnell",
         prompt: "test",

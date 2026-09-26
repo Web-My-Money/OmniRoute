@@ -13,6 +13,7 @@ import {
   _clearOAuthSessionOccupancyForTest,
   reserveOAuthSession,
 } from "../../open-sse/services/oauthSessionOccupancy.ts";
+import type { ApplyStrategyOrderingDeps } from "../../open-sse/services/combo/applyStrategyOrdering.ts";
 
 function target(
   executionKey: string,
@@ -132,8 +133,16 @@ test("cache-optimized strategy routes a stable prompt key to the same account", 
     log: { info() {}, warn() {} },
     apiKeyAllowedConnections: null,
   };
-  const first = await applyStrategyOrdering("cache-optimized", targets, deps);
-  const second = await applyStrategyOrdering("cache-optimized", [...targets].reverse(), deps);
+  const first = await applyStrategyOrdering(
+    "cache-optimized",
+    targets,
+    deps as unknown as ApplyStrategyOrderingDeps
+  );
+  const second = await applyStrategyOrdering(
+    "cache-optimized",
+    [...targets].reverse(),
+    deps as unknown as ApplyStrategyOrderingDeps
+  );
   assert.equal(first[0].connectionId, second[0].connectionId);
 });
 
@@ -145,11 +154,18 @@ test("foreign OAuth session softly redirects cache affinity while the same sessi
   ];
   const fixture = Array.from({ length: 10_000 }, (_, index) => {
     const body = { prompt_cache_key: `occupied-cache-key-${index}` };
-    const baseline = applyPromptCacheAffinity(oauthTargets, body, true, "global", "session-a").targets;
+    const baseline = applyPromptCacheAffinity(
+      oauthTargets,
+      body,
+      true,
+      "global",
+      "session-a"
+    ).targets;
     const occupied = baseline[0];
     const alternative = baseline[1];
     const release = reserveOAuthSession(occupied.connectionId!, "session-a");
-    const foreignFirst = applyPromptCacheAffinity(oauthTargets, body, true, "global", "session-b").targets[0];
+    const foreignFirst = applyPromptCacheAffinity(oauthTargets, body, true, "global", "session-b")
+      .targets[0];
     release();
     return foreignFirst.connectionId === alternative.connectionId
       ? { body, occupied, alternative }
@@ -160,12 +176,14 @@ test("foreign OAuth session softly redirects cache affinity while the same sessi
   const release = reserveOAuthSession(occupied.connectionId!, "session-a");
 
   assert.equal(
-    applyPromptCacheAffinity(oauthTargets, body, true, "global", "session-a").targets[0].connectionId,
+    applyPromptCacheAffinity(oauthTargets, body, true, "global", "session-a").targets[0]
+      .connectionId,
     occupied.connectionId,
     "the owning session keeps its cache-local account"
   );
   assert.equal(
-    applyPromptCacheAffinity(oauthTargets, body, true, "global", "session-b").targets[0].connectionId,
+    applyPromptCacheAffinity(oauthTargets, body, true, "global", "session-b").targets[0]
+      .connectionId,
     alternative.connectionId,
     "a foreign session prefers the free OAuth account"
   );
