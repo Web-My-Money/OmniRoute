@@ -34,9 +34,23 @@ const evaluateZizmor = evaluateZizmorRatchet as (
 ) => RatchetVerdict;
 const readZizmorBaseline = readBaselineZizmorValue as (p?: string) => number | null;
 const qualityWorkflowPath = new URL("../../../.github/workflows/quality.yml", import.meta.url);
+const buildWorkflowPath = new URL("../../../.github/workflows/build.yml", import.meta.url);
+const ciWorkflowPath = new URL("../../../.github/workflows/ci.yml", import.meta.url);
+
+function readWorkflow(workflowPath: URL): string {
+  return fs.readFileSync(workflowPath, "utf8").replace(/\r\n/g, "\n");
+}
 
 function readQualityWorkflow(): string {
-  return fs.readFileSync(qualityWorkflowPath, "utf8");
+  return readWorkflow(qualityWorkflowPath);
+}
+
+function readBuildWorkflow(): string {
+  return readWorkflow(buildWorkflowPath);
+}
+
+function readCiWorkflow(): string {
+  return readWorkflow(ciWorkflowPath);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -317,6 +331,46 @@ test("readBaselineZizmorValue: invalid JSON returns null (does not throw)", () =
 // ─────────────────────────────────────────────────────────────────────────────
 // quality.yml — release PR build gate regression coverage (#7307)
 // ─────────────────────────────────────────────────────────────────────────────
+
+test("build.yml skips artifact-neutral pushes and cancels superseded builds", () => {
+  const source = readBuildWorkflow();
+  const pushTrigger = source.match(/  push:\n[\s\S]*?\n\npermissions:/);
+
+  assert.ok(pushTrigger, "build.yml must define a push trigger before permissions");
+  assert.match(pushTrigger[0], /branches: \["\*\*"\]/);
+  for (const ignoredPath of ["tests/**", "config/quality/**"]) {
+    assert.match(pushTrigger[0], new RegExp(`      - "${ignoredPath.replace(/\*/g, "\\*")}"`));
+  }
+  for (const unsafePath of ["docs/**", "scripts/check/**", "**/*.md"]) {
+    assert.doesNotMatch(
+      pushTrigger[0],
+      new RegExp(`      - "${unsafePath.replace(/\*/g, "\\*")}"`)
+    );
+  }
+  for (const artifactPath of [
+    "package.json",
+    "src/**",
+    "scripts/build/**",
+    ".github/workflows/**",
+  ]) {
+    assert.doesNotMatch(pushTrigger[0], new RegExp(artifactPath.replace(/\*/g, "\\*")));
+  }
+  assert.match(
+    source,
+    /concurrency:\n  group: \$\{\{ github\.workflow \}\}-\$\{\{ github\.ref \}\}/
+  );
+  assert.match(source, /cancel-in-progress: true/);
+});
+
+test("ci.yml + quality.yml classify renames as delete+add (--no-renames)", () => {
+  // git diff --name-only reports only the destination of a rename, so
+  // src/x.ts → docs/x.md would classify as docs-only while production code
+  // was deleted. --no-renames lists both paths so the code classification
+  // is preserved.
+  for (const source of [readCiWorkflow(), readQualityWorkflow()]) {
+    assert.match(source, /git diff --name-only --no-renames/);
+  }
+});
 
 test("#7307 quality.yml adds an advisory production build for release PR code changes", () => {
   const source = readQualityWorkflow();

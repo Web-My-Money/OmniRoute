@@ -54,7 +54,9 @@ jobs:
             } >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          git diff --name-only "$BASE_SHA" "$HEAD_SHA" > changed-files.txt
+          # --no-renames: keep both rename endpoints so a code→docs rename still
+          # classifies as code (same contract as ci.yml).
+          git diff --name-only --no-renames "$BASE_SHA" "$HEAD_SHA" > changed-files.txt
           node scripts/quality/classify-pr-changes.mjs changed-files.txt >> "$GITHUB_OUTPUT"
 
   build:
