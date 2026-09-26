@@ -1641,11 +1641,6 @@
       "count": 1
     }
   },
-  "src/app/api/settings/__tests__/settings.test.ts": {
-    "no-restricted-imports": {
-      "count": 1
-    }
-  },
   "src/app/api/settings/authz-inventory/route.ts": {
     "no-restricted-imports": {
       "count": 1
@@ -3113,11 +3108,6 @@
       "count": 1
     }
   },
-  "tests/benchmarks/pipeline-accuracy.test.ts": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 2
-    }
-  },
   "tests/boundary/gemma4-multiturn.live.test.ts": {
     "@typescript-eslint/no-unused-vars": {
       "count": 2
@@ -3471,14 +3461,6 @@
   "tests/live/deepseek-web-live.test.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 2
-    }
-  },
-  "tests/theoldllm-stress.test.ts": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 10
-    },
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
     }
   },
   "tests/translator/testFromFile.ts": {
@@ -6536,6 +6518,19 @@
   "tests/unit/xiaomi-providers-registry.test.ts": {
     "@typescript-eslint/no-unused-vars": {
       "count": 2
+    }
+  },
+  "tests/benchmarks/pipeline-accuracy.bench.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "tests/unit/theoldllm-stress.test.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 10
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
     }
   }
 }

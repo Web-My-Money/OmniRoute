@@ -161,14 +161,50 @@ describe("LOCAL_ONLY_API_PREFIXES constant integrity", () => {
     );
   });
 
-  it("has exactly 5 entries (no silent regressions adding or removing prefixes)", () => {
-    // 4 baseline entries (/api/mcp/, /api/cli-tools/runtime/, /api/services/,
-    // /dashboard/providers/services/) + /api/copilot/ added in the v3.8.4
-    // semgrep MCP hardening pass (commit 21f8dc4b3).
-    assert.equal(
-      LOCAL_ONLY_API_PREFIXES.length,
-      5,
-      `Expected 5 LOCAL_ONLY_API_PREFIXES, got ${LOCAL_ONLY_API_PREFIXES.length}: ${JSON.stringify(LOCAL_ONLY_API_PREFIXES)}`
+  it("matches the pinned prefix set (no silent regressions adding or removing prefixes)", () => {
+    const expected = [
+      "/api/acp/agents",
+      "/api/cli-tools/antigravity-mitm",
+      "/api/cli-tools/forge-settings",
+      "/api/cli-tools/grok-build-settings",
+      "/api/cli-tools/jcode-settings",
+      "/api/cli-tools/letta-settings",
+      "/api/cli-tools/omp-settings",
+      "/api/cli-tools/qwen-settings",
+      "/api/cli-tools/runtime/",
+      "/api/copilot/",
+      "/api/db-backups/exportAll",
+      "/api/discovery/",
+      "/api/headroom/start",
+      "/api/headroom/stop",
+      "/api/issue-agent/",
+      "/api/jobs",
+      "/api/jobs/",
+      "/api/local/",
+      "/api/mcp/",
+      "/api/middleware/",
+      "/api/modality-bridge/video/",
+      "/api/oauth/cursor/auto-import",
+      "/api/oauth/kiro/auto-import",
+      "/api/oauth/raycast/auto-import",
+      "/api/plugins",
+      "/api/plugins/",
+      "/api/providers/cursor/agent-availability",
+      "/api/resilience/connections",
+      "/api/services/",
+      "/api/settings/mitm",
+      "/api/skills/collect/",
+      "/api/system/version",
+      "/api/tools/agent-bridge/",
+      "/api/tools/traffic-inspector/",
+      "/api/vnc-session",
+      "/dashboard/providers/services/",
+      "/dashboard/resilience/connections",
+    ];
+    assert.deepEqual(
+      [...LOCAL_ONLY_API_PREFIXES].sort(),
+      expected,
+      `LOCAL_ONLY_API_PREFIXES drifted from the pinned set: ${JSON.stringify(LOCAL_ONLY_API_PREFIXES)}`
     );
   });
 });
@@ -188,11 +224,27 @@ describe("SPAWN_CAPABLE_PREFIXES constant integrity", () => {
     );
   });
 
-  it("has exactly 2 entries (no silent regressions)", () => {
-    assert.equal(
-      SPAWN_CAPABLE_PREFIXES.length,
-      2,
-      `Expected 2 SPAWN_CAPABLE_PREFIXES, got ${SPAWN_CAPABLE_PREFIXES.length}: ${JSON.stringify(SPAWN_CAPABLE_PREFIXES)}`
+  it("matches the pinned prefix set (no silent regressions)", () => {
+    const expected = [
+      "/api/cli-tools/antigravity-mitm",
+      "/api/cli-tools/qwen-settings",
+      "/api/cli-tools/runtime/",
+      "/api/headroom/start",
+      "/api/headroom/stop",
+      "/api/local/",
+      "/api/modality-bridge/video/",
+      "/api/plugins/",
+      "/api/services/",
+      "/api/settings/mitm",
+      "/api/skills/collect/",
+      "/api/tools/agent-bridge/",
+      "/api/tools/traffic-inspector/",
+      "/api/vnc-session",
+    ];
+    assert.deepEqual(
+      [...SPAWN_CAPABLE_PREFIXES].sort(),
+      expected,
+      `SPAWN_CAPABLE_PREFIXES drifted from the pinned set: ${JSON.stringify(SPAWN_CAPABLE_PREFIXES)}`
     );
   });
 

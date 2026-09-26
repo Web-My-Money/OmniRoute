@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { PATCH } from "../route";
 
-// Mock the localDb functions used in the route
-vi.mock("../../../../lib/localDb", () => {
-  const original = vi.importActual("../../../../lib/localDb");
+// Mock the settings store used in the route
+vi.mock("@/lib/db/settings", async () => {
+  const original = await vi.importActual("@/lib/db/settings");
   return {
     ...original,
     getSettings: vi.fn(),
@@ -11,7 +11,7 @@ vi.mock("../../../../lib/localDb", () => {
   };
 });
 
-import { getSettings, updateSettings } from "../../../../lib/localDb";
+import { getSettings, updateSettings } from "@/lib/db/settings";
 
 // Helper to create a Request with JSON body
 function createPatchRequest(body: unknown) {

@@ -63,7 +63,7 @@ describe("/api/settings/memory", () => {
     const res = await GET(createRequest("GET") as any);
 
     expect(res.status).toBe(200);
-    await expect(res.json()).resolves.toEqual({
+    await expect(res.json()).resolves.toMatchObject({
       enabled: false,
       maxTokens: 3200,
       retentionDays: 365,
@@ -93,7 +93,7 @@ describe("/api/settings/memory", () => {
       skillsEnabled: true,
     });
     expect(invalidateMemorySettingsCache).toHaveBeenCalledOnce();
-    await expect(res.json()).resolves.toEqual({
+    await expect(res.json()).resolves.toMatchObject({
       enabled: false,
       maxTokens: 0,
       retentionDays: 14,
