@@ -64,15 +64,17 @@ const QUIET = process.argv.includes("--quiet");
  * @returns {boolean}
  */
 export function isBinaryAvailable(name) {
-  // Use `command -v` on Unix; `where` on Windows (via cmd).
-  // We shell through `sh -c` because execFileSync needs the actual path
-  // and we want cross-platform behaviour.
-  const result = spawnSync("sh", ["-c", `command -v ${name}`], {
-    encoding: "utf8",
-    timeout: 5_000,
-    windowsHide: true,
-  });
-  return result.status === 0 && result.stdout.trim().length > 0;
+  // `command -v` on Unix; `where` on Windows — `sh` does not exist on a plain
+  // Windows PATH, so shelling to it always reported every binary missing.
+  const result =
+    process.platform === "win32"
+      ? spawnSync("where", [name], { encoding: "utf8", timeout: 5_000, windowsHide: true })
+      : spawnSync("sh", ["-c", `command -v ${name}`], {
+          encoding: "utf8",
+          timeout: 5_000,
+          windowsHide: true,
+        });
+  return result.status === 0 && (result.stdout ?? "").trim().length > 0;
 }
 
 // ---------------------------------------------------------------------------
