@@ -155,7 +155,7 @@
       "_note_8266": "2026-07-23: +1 own-growth from #8266 (@backryun) Alibaba media provider dispatch wiring"
     },
     "typeCoveragePct": {
-      "value": 92.17,
+      "value": 94.95,
       "direction": "up",
       "eps": 0.05,
       "dedicatedGate": true
