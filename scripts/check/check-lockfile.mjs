@@ -16,6 +16,7 @@
 // Tool: lockfile-lint v5 (node_modules/.bin/lockfile-lint).
 
 import { execFileSync } from "node:child_process";
+import { resolveLocalBinEntry } from "../build/buildToolRunner.mjs";
 import path from "node:path";
 import fs from "node:fs";
 import { pathToFileURL } from "node:url";
@@ -77,8 +78,8 @@ function main() {
     process.exit(1);
   }
 
-  const bin = path.join(ROOT, "node_modules", "lockfile-lint", "bin", "lockfile-lint.js");
-  if (!fs.existsSync(bin)) {
+  const bin = resolveLocalBinEntry("lockfile-lint", "lockfile-lint", ROOT);
+  if (!bin) {
     console.error(
       `[check-lockfile] FAIL — lockfile-lint binary not found at:\n  ${bin}\n` +
         "  → Run `npm install` to install dev dependencies"

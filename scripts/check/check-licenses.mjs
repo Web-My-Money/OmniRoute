@@ -17,18 +17,17 @@
 // Sair com código 1 = violação de política em dep de produção.
 
 import { execFileSync } from "node:child_process";
+import { resolveLocalBinEntry } from "../build/buildToolRunner.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 const ROOT = process.cwd();
 const ALLOWLIST_PATH = path.join(ROOT, "config/quality/.license-allowlist.json");
-const CHECKER_BIN = path.join(
-  ROOT,
-  "node_modules",
+const CHECKER_BIN = resolveLocalBinEntry(
   "license-checker-rseidelsohn",
-  "bin",
-  "license-checker-rseidelsohn.js"
+  "license-checker-rseidelsohn",
+  ROOT
 );
 
 const VERBOSE = process.argv.includes("--verbose");
@@ -128,7 +127,7 @@ export function stripVersion(pkgKey) {
  * @returns {Record<string, { licenses: string, path: string }>}
  */
 function runLicenseChecker() {
-  if (!fs.existsSync(CHECKER_BIN)) {
+  if (!CHECKER_BIN) {
     throw new Error(
       `license-checker-rseidelsohn not found at ${CHECKER_BIN}.\n` +
         `Install it: npm install --save-dev license-checker-rseidelsohn`

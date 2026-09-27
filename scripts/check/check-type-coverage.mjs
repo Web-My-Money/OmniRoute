@@ -26,6 +26,7 @@
 //   node scripts/check/check-type-coverage.mjs --update   # ratchet baseline up
 
 import { execFileSync } from "node:child_process";
+import { resolveLocalBinEntry } from "../build/buildToolRunner.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -85,9 +86,9 @@ export function evaluateTypeCoverage(current, baseline, eps = 0) {
 }
 
 function runTypeCoverage() {
-  const typeCoverageBin = path.join(ROOT, "node_modules", "type-coverage", "bin", "type-coverage");
+  const typeCoverageBin = resolveLocalBinEntry("type-coverage", "type-coverage", ROOT);
 
-  if (!fs.existsSync(typeCoverageBin)) {
+  if (!typeCoverageBin) {
     throw new Error(`[type-coverage] Binary not found at ${typeCoverageBin}`);
   }
   if (!fs.existsSync(TSCONFIG)) {

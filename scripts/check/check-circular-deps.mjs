@@ -26,6 +26,7 @@ import { existsSync } from "node:fs";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { resolveLocalBinEntry } from "../build/buildToolRunner.mjs";
 import os from "node:os";
 import path from "node:path";
 import fs from "node:fs";
@@ -42,7 +43,9 @@ const ENTRYPOINTS = [
   "src/lib/db/core.ts",
 ];
 
-const DPDM_BIN = resolve(projectRoot, "node_modules/dpdm/lib/bin/dpdm.js");
+// Resolve via the package's own bin entry — the .bin/dpdm shim is a POSIX
+// script that cannot be spawned on Windows (ENOENT).
+const DPDM_BIN = resolveLocalBinEntry("dpdm", "dpdm", projectRoot);
 const TSCONFIG = resolve(projectRoot, "tsconfig.json");
 
 /**
@@ -69,8 +72,8 @@ export function parseDpdmOutput(jsonStr) {
  * @returns {string} conteúdo JSON do arquivo temporário.
  */
 function runDpdm() {
-  if (!existsSync(DPDM_BIN)) {
-    throw new Error(`dpdm binary not found at ${DPDM_BIN}. Run: npm install`);
+  if (!DPDM_BIN) {
+    throw new Error("dpdm binary not found in node_modules. Run: npm install");
   }
 
   const tmpFile = path.join(os.tmpdir(), `dpdm-output-${process.pid}.json`);
