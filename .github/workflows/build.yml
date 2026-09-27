@@ -4,14 +4,16 @@ on:
   workflow_dispatch:
   push:
     branches: ["**"]
+    paths-ignore:
+      - "tests/**"
+      - "config/quality/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
-
-# A superseded push's ~17min production build is pure waste — cancel it.
-concurrency:
-  group: build-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   build:
