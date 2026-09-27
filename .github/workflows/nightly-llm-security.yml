@@ -7,6 +7,9 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 jobs:
   promptfoo-guard:
     name: promptfoo — injection guard (block mode, no secret)

@@ -7,6 +7,9 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 jobs:
   heap:
     name: Heap-growth gate
