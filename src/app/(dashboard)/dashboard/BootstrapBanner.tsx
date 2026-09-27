@@ -42,7 +42,7 @@ export default function BootstrapBanner() {
       </div>
       <button
         onClick={() => setDismissed(true)}
-        className="shrink-0 text-amber-600/60 hover:text-amber-700 dark:text-amber-400/60 dark:hover:text-amber-300 transition-colors ml-1"
+        className="shrink-0 text-amber-600/60 hover:text-amber-700 dark:text-amber-400/60 dark:hover:text-amber-300 transition-colors ms-1"
         aria-label={t("bootstrapBannerDismiss")}
       >
         ✕

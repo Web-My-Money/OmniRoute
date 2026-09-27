@@ -244,7 +244,7 @@ export default function ModelsDevSyncTab() {
           </div>
           {feedback && (
             <span
-              className={`ml-auto text-xs font-medium flex items-center gap-1 ${
+              className={`ms-auto text-xs font-medium flex items-center gap-1 ${
                 feedback.type === "success" ? "text-emerald-500" : "text-red-500"
               }`}
             >
@@ -272,7 +272,7 @@ export default function ModelsDevSyncTab() {
             aria-checked={enabled}
           >
             <span
-              className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+              className={`absolute top-1 start-1 w-4 h-4 bg-white rounded-full transition-transform ${
                 enabled ? "translate-x-5" : "translate-x-0"
               }`}
             />

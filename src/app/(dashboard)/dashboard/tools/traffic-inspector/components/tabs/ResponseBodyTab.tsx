@@ -106,7 +106,7 @@ export function ResponseBodyTab({ request }: ResponseBodyTabProps) {
             {showRaw ? t("mergedView") : t("rawEvents")}
           </button>
         )}
-        <span className="ml-auto text-xs text-text-muted">{request.responseSize} B</span>
+        <span className="ms-auto text-xs text-text-muted">{request.responseSize} B</span>
         {request.status === "in-flight" && (
           <span className="text-xs text-amber-400 animate-pulse">{t("streaming")}</span>
         )}

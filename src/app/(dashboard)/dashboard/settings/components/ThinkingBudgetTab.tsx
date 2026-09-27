@@ -101,7 +101,7 @@ export default function ThinkingBudgetTab() {
           </p>
         </div>
         {status === "saved" && (
-          <span className="ml-auto text-xs font-medium text-emerald-500 flex items-center gap-1">
+          <span className="ms-auto text-xs font-medium text-emerald-500 flex items-center gap-1">
             <span className="material-symbols-outlined text-[14px]">check_circle</span> {t("saved")}
           </span>
         )}
@@ -114,7 +114,7 @@ export default function ThinkingBudgetTab() {
             key={m.value}
             onClick={() => save({ mode: m.value })}
             disabled={loading || saving}
-            className={`flex items-start gap-3 p-3 rounded-lg border text-left transition-all ${
+            className={`flex items-start gap-3 p-3 rounded-lg border text-start transition-all ${
               config.mode === m.value
                 ? "border-violet-500/50 bg-violet-500/5 ring-1 ring-violet-500/20"
                 : "border-border/50 hover:border-border hover:bg-surface/30"

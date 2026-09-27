@@ -382,7 +382,7 @@ export function FreeBudgetView({
             · updated {freshness}
           </span>
         )}
-        <span className="ml-auto text-[11px] text-text-muted tabular-nums">
+        <span className="ms-auto text-[11px] text-text-muted tabular-nums">
           {labels.remaining(fmt(remaining), pct, fmt(steadyRecurringTokens))}
         </span>
       </div>
@@ -429,9 +429,7 @@ export function FreeBudgetView({
             <span className="material-symbols-outlined text-[14px] text-emerald-500">
               lock_open
             </span>
-            <span className="text-[11px] font-semibold text-emerald-500">
-              {labels.noApiKey}
-            </span>
+            <span className="text-[11px] font-semibold text-emerald-500">{labels.noApiKey}</span>
             <span className="text-[10.5px] text-text-muted">
               ({keylessModels.length}个模型 · {keylessProviders.length}个提供者)
             </span>
@@ -491,12 +489,12 @@ export function FreeBudgetView({
         <div className="overflow-x-auto">
           <table className="w-full text-[11px]" data-testid="budget-table">
             <thead>
-              <tr className="text-text-muted text-left border-b border-border">
-                <th className="font-medium py-1 pr-2">{labels.provider}</th>
-                <th className="font-medium py-1 pr-2">{labels.model}</th>
-                <th className="font-medium py-1 pr-2">{labels.type}</th>
-                <th className="font-medium py-1 pr-2 text-right">{labels.tokensMonth}</th>
-                <th className="font-medium py-1 pr-1 text-center">ToS</th>
+              <tr className="text-text-muted text-start border-b border-border">
+                <th className="font-medium py-1 pe-2">{labels.provider}</th>
+                <th className="font-medium py-1 pe-2">{labels.model}</th>
+                <th className="font-medium py-1 pe-2">{labels.type}</th>
+                <th className="font-medium py-1 pe-2 text-end">{labels.tokensMonth}</th>
+                <th className="font-medium py-1 pe-1 text-center">ToS</th>
               </tr>
             </thead>
             <tbody>
@@ -520,7 +518,7 @@ export function FreeBudgetView({
                     key={`${m.provider}:${m.modelId}`}
                     className="border-b border-border/40 hover:bg-black/[0.02] dark:hover:bg-white/[0.02]"
                   >
-                    <td className="py-1 pr-2">
+                    <td className="py-1 pe-2">
                       <span className="inline-flex items-center gap-1.5">
                         <span
                           className="inline-block w-2 h-2 rounded-sm flex-shrink-0"
@@ -530,19 +528,19 @@ export function FreeBudgetView({
                       </span>
                     </td>
                     <td
-                      className="py-1 pr-2 text-text-main truncate max-w-[180px]"
+                      className="py-1 pe-2 text-text-main truncate max-w-[180px]"
                       title={m.modelId}
                     >
                       {m.displayName}
                     </td>
-                    <td className="py-1 pr-2">
+                    <td className="py-1 pe-2">
                       <FreeTypeBadge
                         freeType={m.freeType}
                         label={labels.freeTypes[m.freeType] ?? m.freeType}
                       />
                     </td>
-                    <td className="py-1 pr-2 text-right text-text-main tabular-nums">{amount}</td>
-                    <td className="py-1 pr-1 text-center">
+                    <td className="py-1 pe-2 text-end text-text-main tabular-nums">{amount}</td>
+                    <td className="py-1 pe-1 text-center">
                       {badge && (
                         <span
                           className={`material-symbols-outlined text-[13px] ${badge.cls}`}
@@ -640,7 +638,7 @@ export default function FreeBudgetCard() {
           />
           {t("hideTosRestricted")}
         </label>
-        <span className="ml-auto inline-flex items-center gap-1.5">
+        <span className="ms-auto inline-flex items-center gap-1.5">
           {t("sort")}
           <select
             value={sort}

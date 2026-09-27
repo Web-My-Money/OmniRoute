@@ -88,7 +88,7 @@ function VerifyControls({
       <label className="text-[10px]">
         {t("provider")}
         <input
-          className="ml-1 w-24 rounded border px-1 text-xs"
+          className="ms-1 w-24 rounded border px-1 text-xs"
           value={provider}
           onChange={(e) => onProvider(e.target.value)}
         />
@@ -97,7 +97,7 @@ function VerifyControls({
         {t("judgeModel")}
         <input
           data-testid="verify-model"
-          className="ml-1 w-32 rounded border px-1 text-xs"
+          className="ms-1 w-32 rounded border px-1 text-xs"
           value={judgeModel}
           onChange={(e) => onJudgeModel(e.target.value)}
           placeholder={t("judgeModelPlaceholder")}
@@ -109,7 +109,7 @@ function VerifyControls({
           type="number"
           step="0.01"
           min="0"
-          className="ml-1 w-16 rounded border px-1 text-xs"
+          className="ms-1 w-16 rounded border px-1 text-xs"
           value={capUsd}
           onChange={(e) => onCapUsd(Number(e.target.value))}
         />
@@ -144,7 +144,7 @@ function ComparisonTable({
   return (
     <table className="w-full text-xs">
       <thead>
-        <tr className="text-left opacity-60">
+        <tr className="text-start opacity-60">
           <th>{t("engine")}</th>
           <th>{t("savings")}</th>
           <th>{t("retention")}</th>

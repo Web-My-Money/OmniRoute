@@ -62,7 +62,7 @@ export default function EmbeddingSourceSelector({ settings, providers, onSave, s
             data-testid={`embedding-source-${opt.value}`}
             onClick={() => handleSourceChange(opt.value)}
             disabled={saving}
-            className={`flex flex-col items-start p-3 rounded-lg border text-left transition-all ${
+            className={`flex flex-col items-start p-3 rounded-lg border text-start transition-all ${
               currentSource === opt.value
                 ? "border-violet-500/50 bg-violet-500/5 ring-1 ring-violet-500/20"
                 : "border-border/50 hover:border-border hover:bg-surface/30"
@@ -137,7 +137,7 @@ export default function EmbeddingSourceSelector({ settings, providers, onSave, s
             }`}
           >
             <span
-              className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+              className={`absolute top-1 start-1 w-4 h-4 bg-white rounded-full transition-transform ${
                 settings.staticEnabled ? "translate-x-5" : "translate-x-0"
               }`}
             />
@@ -165,7 +165,7 @@ export default function EmbeddingSourceSelector({ settings, providers, onSave, s
             }`}
           >
             <span
-              className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+              className={`absolute top-1 start-1 w-4 h-4 bg-white rounded-full transition-transform ${
                 settings.transformersEnabled ? "translate-x-5" : "translate-x-0"
               }`}
             />

@@ -93,7 +93,7 @@ export function ModelTable({ byModel, summary }: ModelTableProps) {
               {COLUMNS.map((col) => (
                 <th
                   key={col.field}
-                  className={`px-4 py-2.5 ${col.align === "right" ? "text-right" : "text-left"}`}
+                  className={`px-4 py-2.5 ${col.align === "right" ? "text-end" : "text-start"}`}
                 >
                   <button
                     type="button"
@@ -107,7 +107,7 @@ export function ModelTable({ byModel, summary }: ModelTableProps) {
                   </button>
                 </th>
               ))}
-              <th className="px-4 py-2.5 text-right w-36">{t("chartShare")}</th>
+              <th className="px-4 py-2.5 text-end w-36">{t("chartShare")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -125,22 +125,20 @@ export function ModelTable({ byModel, summary }: ModelTableProps) {
                     <span className="font-medium">{m.model}</span>
                   </div>
                 </td>
-                <td className="px-4 py-2.5 text-right font-mono text-text-muted">
+                <td className="px-4 py-2.5 text-end font-mono text-text-muted">
                   {fmtFull(m.requests)}
                 </td>
-                <td className="px-4 py-2.5 text-right font-mono text-primary">
+                <td className="px-4 py-2.5 text-end font-mono text-primary">
                   {fmt(m.promptTokens)}
                 </td>
-                <td className="px-4 py-2.5 text-right font-mono text-emerald-500">
+                <td className="px-4 py-2.5 text-end font-mono text-emerald-500">
                   {fmt(m.completionTokens)}
                 </td>
-                <td className="px-4 py-2.5 text-right font-mono font-semibold">
+                <td className="px-4 py-2.5 text-end font-mono font-semibold">
                   {fmt(m.totalTokens)}
                 </td>
-                <td className="px-4 py-2.5 text-right font-mono text-amber-500">
-                  {fmtCost(m.cost)}
-                </td>
-                <td className="px-4 py-2.5 text-right">
+                <td className="px-4 py-2.5 text-end font-mono text-amber-500">{fmtCost(m.cost)}</td>
+                <td className="px-4 py-2.5 text-end">
                   <div className="flex items-center gap-2 justify-end">
                     <div className="w-16 h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
                       <div
@@ -151,7 +149,7 @@ export function ModelTable({ byModel, summary }: ModelTableProps) {
                         }}
                       />
                     </div>
-                    <span className="text-xs font-mono text-text-muted w-10 text-right">
+                    <span className="text-xs font-mono text-text-muted w-10 text-end">
                       {m.pct ?? 0}%
                     </span>
                   </div>

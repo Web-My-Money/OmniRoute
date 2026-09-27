@@ -356,7 +356,7 @@ function OpEditor({
   const wrap = (body: React.ReactNode) => (
     <div className="flex flex-col gap-3">
       {opDescription && (
-        <p className="text-[11px] leading-relaxed text-text-muted border-l-2 border-purple-500/30 pl-2 italic">
+        <p className="text-[11px] leading-relaxed text-text-muted border-s-2 border-purple-500/30 ps-2 italic">
           {opDescription}
         </p>
       )}
@@ -960,7 +960,7 @@ export default function RoutingTab() {
                 key={option.value}
                 onClick={() => updateSetting({ autoRoutingDefaultVariant: option.value })}
                 disabled={loading}
-                className={`p-2 rounded-lg border text-left transition-all ${
+                className={`p-2 rounded-lg border text-start transition-all ${
                   settings.autoRoutingDefaultVariant === option.value
                     ? "border-indigo-500/50 bg-indigo-500/5 ring-1 ring-indigo-500/20"
                     : "border-border/50 hover:border-border hover:bg-surface/30"
@@ -1303,7 +1303,7 @@ export default function RoutingTab() {
                   disabled={loading}
                   aria-pressed={checked}
                   title={titleText}
-                  className={`flex items-start gap-3 rounded-lg border p-3 text-left transition-all ${
+                  className={`flex items-start gap-3 rounded-lg border p-3 text-start transition-all ${
                     checked
                       ? "border-indigo-500/50 bg-indigo-500/5 ring-1 ring-indigo-500/20"
                       : "border-border/50 hover:border-border hover:bg-surface/30"
@@ -1365,7 +1365,7 @@ export default function RoutingTab() {
               key={option.value}
               onClick={() => updateSetting({ alwaysPreserveClientCache: option.value })}
               disabled={loading}
-              className={`w-full flex flex-col items-start gap-1 p-3 rounded-lg border text-left transition-all ${
+              className={`w-full flex flex-col items-start gap-1 p-3 rounded-lg border text-start transition-all ${
                 settings.alwaysPreserveClientCache === option.value
                   ? "border-green-500/50 bg-green-500/5 ring-1 ring-green-500/20"
                   : "border-border/50 hover:border-border hover:bg-surface/30"
@@ -1389,7 +1389,7 @@ export default function RoutingTab() {
                   {option.label}
                 </span>
               </div>
-              <p className="text-xs text-text-muted ml-7">{option.desc}</p>
+              <p className="text-xs text-text-muted ms-7">{option.desc}</p>
             </button>
           ))}
         </div>
@@ -1430,7 +1430,7 @@ export default function RoutingTab() {
               key={option.value}
               onClick={() => updateSetting({ antigravitySignatureCacheMode: option.value })}
               disabled={loading}
-              className={`w-full flex flex-col items-start gap-1 p-3 rounded-lg border text-left transition-all ${
+              className={`w-full flex flex-col items-start gap-1 p-3 rounded-lg border text-start transition-all ${
                 settings.antigravitySignatureCacheMode === option.value
                   ? "border-sky-500/50 bg-sky-500/5 ring-1 ring-sky-500/20"
                   : "border-border/50 hover:border-border hover:bg-surface/30"
@@ -1454,7 +1454,7 @@ export default function RoutingTab() {
                   {option.label}
                 </span>
               </div>
-              <p className="text-xs text-text-muted ml-7">{option.desc}</p>
+              <p className="text-xs text-text-muted ms-7">{option.desc}</p>
             </button>
           ))}
         </div>
@@ -1562,7 +1562,7 @@ export default function RoutingTab() {
               }
             }}
           >
-            <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+            <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
               delete_sweep
             </span>
             {t("clearLkgpCache")}

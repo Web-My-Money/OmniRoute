@@ -87,9 +87,7 @@ export default function FreeProviderRankingsPage() {
         if (opts?.configuredOnly) params.set("configuredOnly", "1");
         if (opts?.availableOnly) params.set("availableOnly", "1");
         const qs = params.toString();
-        const url = qs
-          ? `/api/free-provider-rankings?${qs}`
-          : "/api/free-provider-rankings";
+        const url = qs ? `/api/free-provider-rankings?${qs}` : "/api/free-provider-rankings";
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
@@ -259,14 +257,14 @@ export default function FreeProviderRankingsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="text-left text-sm text-text-muted border-b border-border">
+                    <tr className="text-start text-sm text-text-muted border-b border-border">
                       <th className="pb-3 font-medium w-16">{t("colRank")}</th>
                       <th className="pb-3 font-medium">{t("colProvider")}</th>
                       <th className="pb-3 font-medium">{t("colTopModel")}</th>
-                      <th className="pb-3 font-medium text-right">{t("colScore")}</th>
-                      <th className="pb-3 font-medium text-right">{t("colAvgScore")}</th>
-                      <th className="pb-3 font-medium text-right">{t("colModels")}</th>
-                      <th className="pb-3 font-medium text-right" title={t("typeLegend")}>
+                      <th className="pb-3 font-medium text-end">{t("colScore")}</th>
+                      <th className="pb-3 font-medium text-end">{t("colAvgScore")}</th>
+                      <th className="pb-3 font-medium text-end">{t("colModels")}</th>
+                      <th className="pb-3 font-medium text-end" title={t("typeLegend")}>
                         {t("colType")}
                       </th>
                     </tr>
@@ -289,7 +287,7 @@ export default function FreeProviderRankingsPage() {
                         <td className="py-3 text-text-muted truncate max-w-[200px]">
                           {provider.topModel?.modelName || "—"}
                         </td>
-                        <td className="py-3 text-right">
+                        <td className="py-3 text-end">
                           {provider.topModel ? (
                             <span
                               className={`font-mono font-medium ${scoreColor(provider.topModel.score)}`}
@@ -300,11 +298,11 @@ export default function FreeProviderRankingsPage() {
                             "—"
                           )}
                         </td>
-                        <td className="py-3 text-right font-mono text-text-muted">
+                        <td className="py-3 text-end font-mono text-text-muted">
                           {scoreLabel(provider.averageScore)}
                         </td>
-                        <td className="py-3 text-right text-text-muted">{provider.modelCount}</td>
-                        <td className="py-3 text-right">
+                        <td className="py-3 text-end text-text-muted">{provider.modelCount}</td>
+                        <td className="py-3 text-end">
                           <span
                             className={`text-xs px-2 py-1 rounded ${
                               provider.category === "noauth"

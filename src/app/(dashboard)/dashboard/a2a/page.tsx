@@ -103,7 +103,7 @@ function DisabledPanel() {
             style={{ borderColor: "var(--color-text-muted)" }}
           >
             <span
-              className="absolute left-1/2 top-[-3px] h-3 w-0.5 -translate-x-1/2 rounded-full"
+              className="absolute start-1/2 top-[-3px] h-3 w-0.5 -translate-x-1/2 rounded-full"
               style={{ background: "var(--color-text-muted)" }}
             />
           </span>

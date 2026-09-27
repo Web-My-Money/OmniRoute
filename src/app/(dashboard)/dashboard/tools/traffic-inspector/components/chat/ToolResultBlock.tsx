@@ -16,13 +16,13 @@ export function ToolResultBlock({ toolUseId, content }: ToolResultBlockProps) {
       <button
         type="button"
         onClick={() => setExpanded((e) => !e)}
-        className="flex w-full items-center gap-2 text-left focus-ring rounded"
+        className="flex w-full items-center gap-2 text-start focus-ring rounded"
       >
         <span className="material-symbols-outlined text-[14px] text-green-400" aria-hidden="true">
           {expanded ? "expand_less" : "expand_more"}
         </span>
         <span className="text-green-300 font-mono font-medium text-xs">tool_result</span>
-        <span className="text-text-muted text-xs font-mono ml-auto">{toolUseId.slice(0, 8)}</span>
+        <span className="text-text-muted text-xs font-mono ms-auto">{toolUseId.slice(0, 8)}</span>
       </button>
       {expanded && (
         <div className="mt-2 border-t border-green-500/20 pt-2">

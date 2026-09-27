@@ -185,7 +185,7 @@ export default function FaroChat() {
         <div ref={logRef} className="max-h-72 overflow-y-auto space-y-2 text-sm">
           {messages.length === 0 && <p className="text-text-muted text-xs">{t("faroEmpty")}</p>}
           {messages.map((m, i) => (
-            <div key={i} className={m.role === "user" ? "text-right" : "text-left"}>
+            <div key={i} className={m.role === "user" ? "text-end" : "text-start"}>
               <span
                 className={
                   m.role === "user"
@@ -202,7 +202,9 @@ export default function FaroChat() {
         {err && <Badge variant="error">{err}</Badge>}
         {pending && (
           <div className="flex items-center gap-2">
-            <Badge variant="warning" dot>{t("faroPending")}</Badge>
+            <Badge variant="warning" dot>
+              {t("faroPending")}
+            </Badge>
             <button type="button" className="text-sm underline" onClick={() => void send("sim")}>
               {t("yes")}
             </button>
@@ -223,7 +225,12 @@ export default function FaroChat() {
             }}
             disabled={busy}
           />
-          <button type="button" className="text-sm underline" onClick={() => void send(input)} disabled={busy}>
+          <button
+            type="button"
+            className="text-sm underline"
+            onClick={() => void send(input)}
+            disabled={busy}
+          >
             {t("faroSend")}
           </button>
           <button

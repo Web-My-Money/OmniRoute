@@ -436,7 +436,7 @@ export default function QuotaSharePageClient() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="primary" size="sm" onClick={() => setCreateOpen(true)}>
-            <span className="material-symbols-outlined text-[14px] mr-1">add</span>
+            <span className="material-symbols-outlined text-[14px] me-1">add</span>
             {t("newPool")}
           </Button>
         </div>
@@ -530,7 +530,7 @@ export default function QuotaSharePageClient() {
             type="button"
             onClick={() => void handleRenameGroup()}
             disabled={renaming}
-            className="flex items-center gap-1 text-xs text-text-muted hover:text-text-main transition-colors ml-1 disabled:opacity-40"
+            className="flex items-center gap-1 text-xs text-text-muted hover:text-text-main transition-colors ms-1 disabled:opacity-40"
           >
             <span className="material-symbols-outlined text-[14px]">edit</span>
             {t("renameGroup")}
@@ -586,7 +586,7 @@ export default function QuotaSharePageClient() {
           <h3 className="mt-3 text-base font-semibold text-text-main">{t("emptyTitle")}</h3>
           <p className="mt-1 text-sm text-text-muted max-w-md mx-auto">{t("emptyDescription")}</p>
           <Button variant="primary" size="sm" className="mt-4" onClick={() => setCreateOpen(true)}>
-            <span className="material-symbols-outlined text-[14px] mr-1">add</span>
+            <span className="material-symbols-outlined text-[14px] me-1">add</span>
             {t("newPool")}
           </Button>
         </div>
@@ -601,7 +601,7 @@ export default function QuotaSharePageClient() {
                 className="mt-3"
                 onClick={() => setCreateOpen(true)}
               >
-                <span className="material-symbols-outlined text-[14px] mr-1">add</span>
+                <span className="material-symbols-outlined text-[14px] me-1">add</span>
                 {t("newPool")}
               </Button>
             </div>
@@ -629,7 +629,7 @@ export default function QuotaSharePageClient() {
                         className="mt-3"
                         onClick={() => setCreateOpen(true)}
                       >
-                        <span className="material-symbols-outlined text-[14px] mr-1">add</span>
+                        <span className="material-symbols-outlined text-[14px] me-1">add</span>
                         {t("newPool")}
                       </Button>
                     </div>

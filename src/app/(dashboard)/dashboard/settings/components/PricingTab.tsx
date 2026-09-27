@@ -588,7 +588,7 @@ export default function PricingTab() {
       <div className="flex flex-col gap-2">
         <div className="flex gap-2 items-center flex-wrap">
           <div className="relative flex-1 min-w-[260px]">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-lg">
+            <span className="material-symbols-outlined absolute start-3 top-1/2 -translate-y-1/2 text-text-muted text-lg">
               search
             </span>
             <input
@@ -596,7 +596,7 @@ export default function PricingTab() {
               placeholder={t("searchProvidersModels")}
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              className="w-full pl-10 pr-3 py-2 bg-bg-base border border-border rounded-lg focus:outline-none focus:border-primary text-sm"
+              className="w-full ps-10 pe-3 py-2 bg-bg-base border border-border rounded-lg focus:outline-none focus:border-primary text-sm"
             />
           </div>
 
@@ -674,7 +674,7 @@ export default function PricingTab() {
               {t("pricingClearFilters")}
             </button>
           )}
-          <span className="text-text-muted ml-auto">
+          <span className="text-text-muted ms-auto">
             {t("pricingShowingProviders", {
               visible: displayProviders.length,
               total: totalFiltered,
@@ -778,7 +778,7 @@ function ProviderSection({
     >
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-bg-hover/50 transition-colors text-left"
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-bg-hover/50 transition-colors text-start"
       >
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <span
@@ -846,7 +846,7 @@ function ProviderSection({
                   />
                 </div>
                 <span
-                  className={`text-[11px] font-bold tabular-nums w-10 text-right ${textColor}`}
+                  className={`text-[11px] font-bold tabular-nums w-10 text-end ${textColor}`}
                   title={`${pricedCount}/${provider.modelCount} ${t("withPricing")}`}
                 >
                   {pct}% {icon}
@@ -890,9 +890,9 @@ function ProviderSection({
             <table className="w-full text-sm">
               <thead className="text-[11px] text-text-muted uppercase bg-bg-subtle/30">
                 <tr>
-                  <th className="px-4 py-2 text-left font-semibold">{t("model")}</th>
+                  <th className="px-4 py-2 text-start font-semibold">{t("model")}</th>
                   {PRICING_FIELDS.map((field) => (
-                    <th key={field} className="px-2 py-2 text-right font-semibold w-24">
+                    <th key={field} className="px-2 py-2 text-end font-semibold w-24">
                       {t(FIELD_LABEL_KEYS[field])}
                     </th>
                   ))}
@@ -963,7 +963,7 @@ function ModelRow({
             min="0"
             value={pricing?.[field] || 0}
             onChange={(event) => onPricingChange(field, event.target.value)}
-            className="w-full px-2 py-1 text-right text-xs bg-transparent border border-transparent hover:border-border focus:border-primary focus:bg-bg-base rounded transition-colors outline-none tabular-nums"
+            className="w-full px-2 py-1 text-end text-xs bg-transparent border border-transparent hover:border-border focus:border-primary focus:bg-bg-base rounded transition-colors outline-none tabular-nums"
           />
         </td>
       ))}

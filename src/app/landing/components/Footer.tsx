@@ -102,7 +102,7 @@ export default function Footer() {
 
         {/* Bottom */}
         <div className="border-t border-[#2D333B] pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-gray-600 text-sm break-words text-center md:text-left">
+          <p className="text-gray-600 text-sm break-words text-center md:text-start">
             {t("copyright", { year })}
           </p>
           <div className="flex gap-6">

@@ -82,13 +82,13 @@ export default function ProviderComparison({
             <span className="material-symbols-outlined text-[20px] text-accent animate-spin">
               progress_activity
             </span>
-            <span className="text-xs text-text-muted ml-2">{t("compareProviders")}...</span>
+            <span className="text-xs text-text-muted ms-2">{t("compareProviders")}...</span>
           </div>
         ) : (
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left p-2 text-text-muted font-semibold" />
+                <th className="text-start p-2 text-text-muted font-semibold" />
                 {allResults.map((r) => (
                   <th
                     key={r.provider}

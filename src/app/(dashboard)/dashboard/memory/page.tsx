@@ -66,7 +66,7 @@ function MemoryPageContent() {
             }`}
           >
             <span
-              className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+              className={`absolute top-1 start-1 w-4 h-4 bg-white rounded-full transition-transform ${
                 memoryEnabled ? "translate-x-5" : "translate-x-0"
               }`}
             />

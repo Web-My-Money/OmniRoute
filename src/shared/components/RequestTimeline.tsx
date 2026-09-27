@@ -872,16 +872,16 @@ export default function RequestTimeline({
           <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: "#6B7280" }} />
           <span className="text-text-muted">{t("other")}</span>
         </div>
-        <div className="ml-4 flex items-center gap-1.5 text-text-muted">
+        <div className="ms-4 flex items-center gap-1.5 text-text-muted">
           <div className="w-3 border-t border-dashed border-slate-400/40" />
           <span>{t("tenMinutes")}</span>
-          <div className="w-3 border-t border-slate-400/60 ml-2" />
+          <div className="w-3 border-t border-slate-400/60 ms-2" />
           <span>{t("hour")}</span>
-          <div className="w-3 border-t-2 border-accent/40 ml-2" />
+          <div className="w-3 border-t-2 border-accent/40 ms-2" />
           <span>{t("day")}</span>
         </div>
         <div
-          className="ml-auto text-text-muted italic"
+          className="ms-auto text-text-muted italic"
           title={t(`modes.${MODE_META[mode].descriptionKey}`)}
         >
           {t(`modes.${MODE_META[mode].descriptionKey}`)}

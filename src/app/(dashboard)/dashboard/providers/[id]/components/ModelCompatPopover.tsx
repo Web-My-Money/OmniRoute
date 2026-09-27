@@ -593,7 +593,7 @@ export default function ModelCompatPopover({
                     {paramSaveFailed && !paramSaving && (
                       <span
                         role="alert"
-                        className="ml-1 font-medium text-red-600 dark:text-red-400"
+                        className="ms-1 font-medium text-red-600 dark:text-red-400"
                         title={t("failedSaveConnectionRetry")}
                       >
                         ● {t("failed")}

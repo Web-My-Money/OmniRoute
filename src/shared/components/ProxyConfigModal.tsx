@@ -727,7 +727,7 @@ export default function ProxyConfigModal({
                 {testResult.success ? (
                   <div>
                     <span className="text-sm font-medium text-emerald-400">{t("connected")}</span>
-                    <span className="text-text-muted text-xs ml-2">
+                    <span className="text-text-muted text-xs ms-2">
                       {t("ip")}{" "}
                       <span className="font-mono text-emerald-300">{testResult.publicIp}</span>
                       {testResult.latencyMs && ` · ${testResult.latencyMs}ms`}
@@ -737,7 +737,7 @@ export default function ProxyConfigModal({
                   <div className="text-sm text-red-400">
                     {testResult.error || t("connectionFailed")}
                     {testResult.latencyMs && (
-                      <span className="text-text-muted text-xs ml-2">
+                      <span className="text-text-muted text-xs ms-2">
                         ({testResult.latencyMs}ms)
                       </span>
                     )}

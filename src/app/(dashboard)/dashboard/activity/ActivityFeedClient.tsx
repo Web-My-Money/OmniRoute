@@ -106,7 +106,7 @@ export default function ActivityFeedClient() {
         {loading ? (
           <div className="flex items-center justify-center py-20 text-[var(--color-text-muted)]">
             <span
-              className="material-symbols-outlined text-[32px] animate-spin mr-3"
+              className="material-symbols-outlined text-[32px] animate-spin me-3"
               aria-hidden="true"
             >
               progress_activity

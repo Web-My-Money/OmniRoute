@@ -164,7 +164,7 @@ function ProviderOptionCard({
       type="button"
       onClick={onSelect}
       aria-pressed={selected}
-      className={`flex h-full flex-col gap-3 rounded-xl border p-4 text-left transition-colors ${
+      className={`flex h-full flex-col gap-3 rounded-xl border p-4 text-start transition-colors ${
         selected
           ? "border-primary/60 bg-primary/10"
           : "border-border bg-bg-card hover:border-primary/40 hover:bg-bg-subtle"
@@ -627,7 +627,7 @@ export default function ProviderOnboardingWizard() {
                 key={item.id}
                 type="button"
                 onClick={() => resetProviderSelection(item.id)}
-                className="rounded-xl border border-border bg-bg-card p-5 text-left transition-colors hover:border-primary/50 hover:bg-bg-subtle"
+                className="rounded-xl border border-border bg-bg-card p-5 text-start transition-colors hover:border-primary/50 hover:bg-bg-subtle"
               >
                 <span className="material-symbols-outlined text-[32px] text-primary">
                   {item.icon}

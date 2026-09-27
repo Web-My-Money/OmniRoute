@@ -114,7 +114,7 @@ export function CompactStatGrid({ sections }: { sections: CompactStatSection[] }
                     </span>
                   </div>
                   <span
-                    className={`text-sm font-bold text-right ${section.wideValues ? "truncate min-w-0" : "shrink-0"} ${stat.color || "text-text-main"}`}
+                    className={`text-sm font-bold text-end ${section.wideValues ? "truncate min-w-0" : "shrink-0"} ${stat.color || "text-text-main"}`}
                     title={String(stat.value)}
                   >
                     {stat.value}
@@ -234,7 +234,7 @@ export function ActivityHeatmap({ activityMap }: { activityMap?: Record<string, 
 
       <div ref={scrollRef} className="overflow-x-auto">
         <div className="w-max">
-          <div className="flex gap-[3px] mb-1 ml-6" style={{ fontSize: "10px" }}>
+          <div className="flex gap-[3px] mb-1 ms-6" style={{ fontSize: "10px" }}>
             {monthLabels.map((m, i) => (
               <span
                 key={i}
@@ -251,7 +251,7 @@ export function ActivityHeatmap({ activityMap }: { activityMap?: Record<string, 
           </div>
 
           <div className="flex gap-[3px]">
-            <div className="flex flex-col gap-[3px] shrink-0 text-[10px] text-text-muted pr-1 sticky left-0 z-10 bg-surface">
+            <div className="flex flex-col gap-[3px] shrink-0 text-[10px] text-text-muted pe-1 sticky start-0 z-10 bg-surface">
               <span className="h-[10px]"></span>
               <span className="h-[10px] leading-[10px]">{weekdayLabels[0]}</span>
               <span className="h-[10px]"></span>
@@ -280,7 +280,7 @@ export function ActivityHeatmap({ activityMap }: { activityMap?: Record<string, 
         </div>
       </div>
 
-      <div className="flex items-center gap-1 mt-2 ml-6 text-[10px] text-text-muted">
+      <div className="flex items-center gap-1 mt-2 ms-6 text-[10px] text-text-muted">
         <span>{t("activityLess")}</span>
         <div className="w-[10px] h-[10px] rounded-[2px] bg-white/[0.04]" />
         <div className="w-[10px] h-[10px] rounded-[2px] bg-primary/20" />
@@ -368,42 +368,42 @@ export function ApiKeyTable({ byApiKey }) {
           <thead className="text-xs text-text-muted uppercase bg-black/[0.02] dark:bg-white/[0.02]">
             <tr>
               <th
-                className="px-4 py-2.5 text-left cursor-pointer group"
+                className="px-4 py-2.5 text-start cursor-pointer group"
                 onClick={() => toggleSort("apiKeyName")}
               >
                 {t("chartApiKey")}{" "}
                 <SortIndicator active={sortBy === "apiKeyName"} sortOrder={sortOrder} />
               </th>
               <th
-                className="px-4 py-2.5 text-right cursor-pointer group"
+                className="px-4 py-2.5 text-end cursor-pointer group"
                 onClick={() => toggleSort("requests")}
               >
                 {t("chartRequests")}{" "}
                 <SortIndicator active={sortBy === "requests"} sortOrder={sortOrder} />
               </th>
               <th
-                className="px-4 py-2.5 text-right cursor-pointer group"
+                className="px-4 py-2.5 text-end cursor-pointer group"
                 onClick={() => toggleSort("promptTokens")}
               >
                 {t("chartInput")}{" "}
                 <SortIndicator active={sortBy === "promptTokens"} sortOrder={sortOrder} />
               </th>
               <th
-                className="px-4 py-2.5 text-right cursor-pointer group"
+                className="px-4 py-2.5 text-end cursor-pointer group"
                 onClick={() => toggleSort("completionTokens")}
               >
                 {t("chartOutput")}{" "}
                 <SortIndicator active={sortBy === "completionTokens"} sortOrder={sortOrder} />
               </th>
               <th
-                className="px-4 py-2.5 text-right cursor-pointer group"
+                className="px-4 py-2.5 text-end cursor-pointer group"
                 onClick={() => toggleSort("totalTokens")}
               >
                 {t("chartTotal")}{" "}
                 <SortIndicator active={sortBy === "totalTokens"} sortOrder={sortOrder} />
               </th>
               <th
-                className="px-4 py-2.5 text-right cursor-pointer group"
+                className="px-4 py-2.5 text-end cursor-pointer group"
                 onClick={() => toggleSort("cost")}
               >
                 {t("chartCost")} <SortIndicator active={sortBy === "cost"} sortOrder={sortOrder} />
@@ -421,19 +421,19 @@ export function ApiKeyTable({ byApiKey }) {
                     {maskApiKeyLabel(row.apiKeyName, row.apiKeyId)}
                   </span>
                 </td>
-                <td className="px-4 py-2.5 text-right font-mono text-text-muted">
+                <td className="px-4 py-2.5 text-end font-mono text-text-muted">
                   {fmtFull(row.requests)}
                 </td>
-                <td className="px-4 py-2.5 text-right font-mono text-primary">
+                <td className="px-4 py-2.5 text-end font-mono text-primary">
                   {fmt(row.promptTokens)}
                 </td>
-                <td className="px-4 py-2.5 text-right font-mono text-emerald-500">
+                <td className="px-4 py-2.5 text-end font-mono text-emerald-500">
                   {fmt(row.completionTokens)}
                 </td>
-                <td className="px-4 py-2.5 text-right font-mono font-semibold">
+                <td className="px-4 py-2.5 text-end font-mono font-semibold">
                   {fmt(row.totalTokens)}
                 </td>
-                <td className="px-4 py-2.5 text-right font-mono text-amber-500">
+                <td className="px-4 py-2.5 text-end font-mono text-amber-500">
                   {fmtCost(row.cost)}
                 </td>
               </tr>
@@ -692,7 +692,7 @@ export function ServiceTierBreakdown({ byServiceTier, summary }) {
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-end">
                   <div
                     className={`font-mono text-sm font-semibold ${getServiceTierCostClass(
                       tier.serviceTier
@@ -801,47 +801,47 @@ export function ProviderTable({ byProvider }) {
           <thead className="text-xs text-text-muted uppercase bg-black/[0.02] dark:bg-white/[0.02]">
             <tr>
               <th
-                className="px-4 py-2.5 text-left cursor-pointer group"
+                className="px-4 py-2.5 text-start cursor-pointer group"
                 onClick={() => toggleSort("provider")}
               >
                 {t("chartProvider")}{" "}
                 <SortIndicator active={sortBy === "provider"} sortOrder={sortOrder} />
               </th>
               <th
-                className="px-4 py-2.5 text-right cursor-pointer group"
+                className="px-4 py-2.5 text-end cursor-pointer group"
                 onClick={() => toggleSort("requests")}
               >
                 {t("chartRequests")}{" "}
                 <SortIndicator active={sortBy === "requests"} sortOrder={sortOrder} />
               </th>
               <th
-                className="px-4 py-2.5 text-right cursor-pointer group"
+                className="px-4 py-2.5 text-end cursor-pointer group"
                 onClick={() => toggleSort("promptTokens")}
               >
                 {t("chartInput")}{" "}
                 <SortIndicator active={sortBy === "promptTokens"} sortOrder={sortOrder} />
               </th>
               <th
-                className="px-4 py-2.5 text-right cursor-pointer group"
+                className="px-4 py-2.5 text-end cursor-pointer group"
                 onClick={() => toggleSort("completionTokens")}
               >
                 {t("chartOutput")}{" "}
                 <SortIndicator active={sortBy === "completionTokens"} sortOrder={sortOrder} />
               </th>
               <th
-                className="px-4 py-2.5 text-right cursor-pointer group"
+                className="px-4 py-2.5 text-end cursor-pointer group"
                 onClick={() => toggleSort("totalTokens")}
               >
                 {t("chartTotal")}{" "}
                 <SortIndicator active={sortBy === "totalTokens"} sortOrder={sortOrder} />
               </th>
               <th
-                className="px-4 py-2.5 text-right cursor-pointer group"
+                className="px-4 py-2.5 text-end cursor-pointer group"
                 onClick={() => toggleSort("cost")}
               >
                 {t("chartCost")} <SortIndicator active={sortBy === "cost"} sortOrder={sortOrder} />
               </th>
-              <th className="px-4 py-2.5 text-right w-36">{t("chartShare")}</th>
+              <th className="px-4 py-2.5 text-end w-36">{t("chartShare")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -861,22 +861,22 @@ export function ProviderTable({ byProvider }) {
                       <span className="font-medium capitalize">{p.provider}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-2.5 text-right font-mono text-text-muted">
+                  <td className="px-4 py-2.5 text-end font-mono text-text-muted">
                     {fmtFull(p.requests)}
                   </td>
-                  <td className="px-4 py-2.5 text-right font-mono text-primary">
+                  <td className="px-4 py-2.5 text-end font-mono text-primary">
                     {fmt(p.promptTokens)}
                   </td>
-                  <td className="px-4 py-2.5 text-right font-mono text-emerald-500">
+                  <td className="px-4 py-2.5 text-end font-mono text-emerald-500">
                     {fmt(p.completionTokens)}
                   </td>
-                  <td className="px-4 py-2.5 text-right font-mono font-semibold">
+                  <td className="px-4 py-2.5 text-end font-mono font-semibold">
                     {fmt(p.totalTokens)}
                   </td>
-                  <td className="px-4 py-2.5 text-right font-mono text-amber-500">
+                  <td className="px-4 py-2.5 text-end font-mono text-amber-500">
                     {fmtCost(p.cost)}
                   </td>
-                  <td className="px-4 py-2.5 text-right">
+                  <td className="px-4 py-2.5 text-end">
                     <div className="flex items-center gap-2 justify-end">
                       <div className="w-16 h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
                         <div
@@ -887,7 +887,7 @@ export function ProviderTable({ byProvider }) {
                           }}
                         />
                       </div>
-                      <span className="text-xs font-mono text-text-muted w-10 text-right">
+                      <span className="text-xs font-mono text-text-muted w-10 text-end">
                         {pct}%
                       </span>
                     </div>

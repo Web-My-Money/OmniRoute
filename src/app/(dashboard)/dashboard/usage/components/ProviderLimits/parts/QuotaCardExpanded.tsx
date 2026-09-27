@@ -67,7 +67,7 @@ function ProviderBillingDetails({ billing }: { billing: ProviderBillingStatus })
           >
             <span>{row.label}</span>
             <span
-              className={`font-semibold ${row.kind === "status" ? "text-right" : "tabular-nums"}`}
+              className={`font-semibold ${row.kind === "status" ? "text-end" : "tabular-nums"}`}
             >
               {row.value}
             </span>
@@ -433,7 +433,7 @@ export default function QuotaCardExpanded({
             {tr("updatedShort", "Updated")} {refreshedLabel}
           </span>
         )}
-        <div className="flex items-center gap-1.5 ml-auto">
+        <div className="flex items-center gap-1.5 ms-auto">
           {canRedeemResetCredit && (
             <button
               type="button"

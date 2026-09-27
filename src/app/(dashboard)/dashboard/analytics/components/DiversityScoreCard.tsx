@@ -143,7 +143,7 @@ export default function DiversityScoreCard() {
         </div>
 
         {/* Risk label */}
-        <div className="shrink-0 text-center sm:text-left">
+        <div className="shrink-0 text-center sm:text-start">
           <div className={`text-sm font-medium ${riskColor}`}>{riskLabel}</div>
           <div className="text-xs text-text-muted mt-0.5 max-w-[200px]">
             {t("diversityHigherExplanation")}

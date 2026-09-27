@@ -156,7 +156,7 @@ export default function ImportGrokCliAuthModal({
               type="file"
               accept=".json"
               onChange={handleFileChange}
-              className="text-sm text-text-muted file:mr-3 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+              className="text-sm text-text-muted file:me-3 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
             />
           </div>
         )}

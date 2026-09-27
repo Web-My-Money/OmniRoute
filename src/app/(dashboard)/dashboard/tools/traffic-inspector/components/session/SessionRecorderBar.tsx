@@ -48,7 +48,7 @@ export function SessionRecorderBar({
             type="button"
             onClick={onStop}
             aria-label={t("stopSession")}
-            className="ml-auto rounded border border-red-500/50 px-2 py-0.5 text-xs hover:bg-red-800/30 focus-ring"
+            className="ms-auto rounded border border-red-500/50 px-2 py-0.5 text-xs hover:bg-red-800/30 focus-ring"
           >
             {t("stopSession")}
           </button>
@@ -61,7 +61,7 @@ export function SessionRecorderBar({
             type="button"
             onClick={() => onStart()}
             aria-label={t("recordSession")}
-            className="ml-auto rounded border border-border px-2 py-0.5 text-xs hover:bg-surface focus-ring"
+            className="ms-auto rounded border border-border px-2 py-0.5 text-xs hover:bg-surface focus-ring"
           >
             {t("recordSession")}
           </button>

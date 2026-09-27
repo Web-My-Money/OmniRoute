@@ -271,13 +271,11 @@ export default function HealthPage() {
       {/* Verdict Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">
-          {
-            data.status === "healthy"
-              ? t("healthVerdictReady")
-              : data.status === "cooling"
-                ? t("healthVerdictCoolingDown")
-                : t("healthVerdictActionRequired")
-          }
+          {data.status === "healthy"
+            ? t("healthVerdictReady")
+            : data.status === "cooling"
+              ? t("healthVerdictCoolingDown")
+              : t("healthVerdictActionRequired")}
         </h1>
         <p className="text-text-muted text-lg">{t("healthSubtitle")}</p>
       </div>
@@ -300,9 +298,7 @@ export default function HealthPage() {
           {data.status === "healthy" ? "check_circle" : "error"}
         </span>
         <span className={data.status === "healthy" ? "text-green-400" : "text-red-400"}>
-          {data.status === "healthy"
-            ? t("allOperational")
-            : t("issuesDetected")}
+          {data.status === "healthy" ? t("allOperational") : t("issuesDetected")}
         </span>
       </div>
 
@@ -526,7 +522,7 @@ export default function HealthPage() {
                       {session.connectionId ? ` • ${session.connectionId.slice(0, 8)}…` : ""}
                     </div>
                   </div>
-                  <div className="text-right text-xs text-text-muted shrink-0">
+                  <div className="text-end text-xs text-text-muted shrink-0">
                     <div>
                       {t("idleSeconds", { count: Math.round((session.idleMs || 0) / 1000) })}
                     </div>
@@ -591,7 +587,7 @@ export default function HealthPage() {
                       {monitor.sessionId} • {monitor.status}
                     </div>
                   </div>
-                  <div className="text-right text-xs shrink-0">
+                  <div className="text-end text-xs shrink-0">
                     <div
                       className={
                         monitor.status === "exhausted"
@@ -686,7 +682,7 @@ export default function HealthPage() {
                       {feat.reason.length > 80 ? feat.reason.substring(0, 80) + "..." : feat.reason}
                     </div>
                   )}
-                  <div className="text-[10px] text-(--text-muted,#666) text-right mt-1">
+                  <div className="text-[10px] text-(--text-muted,#666) text-end mt-1">
                     {t("sinceTime", {
                       time: new Date(feat.since).toLocaleTimeString(locale),
                     })}
@@ -877,12 +873,12 @@ export default function HealthPage() {
                                 ? t("failures", { count: cb.failures })
                                 : t("failuresPlural", { count: cb.failures })}
                               {Number(cb.retryAfterMs) > 0 && (
-                                <span className="ml-2">
+                                <span className="ms-2">
                                   · {t("retryIn", { duration: fmtMs(cb.retryAfterMs) })}
                                 </span>
                               )}
                               {cb.lastFailure && (
-                                <span className="ml-2">
+                                <span className="ms-2">
                                   · {t("lastFailure")}:{" "}
                                   {new Date(cb.lastFailure).toLocaleTimeString(locale)}
                                 </span>
@@ -1043,7 +1039,7 @@ export default function HealthPage() {
                                   ? connectionId.slice(0, 8) + "…"
                                   : connectionId}
                                 {model && (
-                                  <span className="ml-1 text-text-muted/60">· {model}</span>
+                                  <span className="ms-1 text-text-muted/60">· {model}</span>
                                 )}
                               </p>
                             )}
@@ -1164,10 +1160,10 @@ export default function HealthPage() {
                       {lockProvider}/{lockModel}
                     </span>
                     {lockout.reason && (
-                      <span className="text-xs text-text-muted ml-2">({lockout.reason})</span>
+                      <span className="text-xs text-text-muted ms-2">({lockout.reason})</span>
                     )}
                     {lockout.until && (
-                      <span className="text-xs text-red-400 ml-2">
+                      <span className="text-xs text-red-400 ms-2">
                         until {new Date(lockout.until).toLocaleTimeString()}
                       </span>
                     )}

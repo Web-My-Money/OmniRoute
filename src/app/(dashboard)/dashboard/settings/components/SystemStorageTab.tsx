@@ -734,7 +734,7 @@ export default function SystemStorageTab() {
             onClick={refreshDatabaseStats}
             loading={dbStatsRefreshing}
           >
-            <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+            <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
               refresh
             </span>
             {t("refresh")}
@@ -833,7 +833,7 @@ export default function SystemStorageTab() {
             <p className="text-sm font-semibold">
               {lastRun ? lastRun.totalDeleted.toLocaleString() : "—"}
               {lastRun && lastRun.totalErrors > 0 && (
-                <span className="ml-2 text-red-500 text-xs">
+                <span className="ms-2 text-red-500 text-xs">
                   {t("storageCleanupErrors", { count: lastRun.totalErrors })}
                 </span>
               )}
@@ -868,7 +868,7 @@ export default function SystemStorageTab() {
               <p className="text-xs text-text-muted mb-1">{t("storageFtsIndex")}</p>
               <p className="text-sm font-semibold">
                 {formatBytes(fts.ftsBytes)}
-                <span className="ml-1 text-xs text-text-muted font-normal">
+                <span className="ms-1 text-xs text-text-muted font-normal">
                   / {formatBytes(fts.memoriesBytes)}
                 </span>
               </p>
@@ -885,7 +885,7 @@ export default function SystemStorageTab() {
                   key={table.name}
                   className="flex items-center justify-between px-2.5 py-1.5 rounded bg-black/[0.02] dark:bg-white/[0.02] text-xs"
                 >
-                  <span className="font-mono truncate mr-2">{table.name}</span>
+                  <span className="font-mono truncate me-2">{table.name}</span>
                   <span className="text-text-muted whitespace-nowrap">
                     {formatBytes(table.bytes)}
                   </span>
@@ -906,7 +906,7 @@ export default function SystemStorageTab() {
         {backupsLoading ? (
           <div className="flex items-center justify-center py-6 text-text-muted">
             <span
-              className="material-symbols-outlined animate-spin text-[20px] mr-2"
+              className="material-symbols-outlined animate-spin text-[20px] me-2"
               aria-hidden="true"
             >
               progress_activity
@@ -968,13 +968,13 @@ export default function SystemStorageTab() {
                       {formatBackupReason(backup.reason)}
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-text-muted ml-6">
+                  <div className="flex items-center gap-3 text-xs text-text-muted ms-6">
                     <span>{t("connectionsCount", { count: backup.connectionCount })}</span>
                     <span>•</span>
                     <span>{formatBytes(backup.size)}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 ml-3">
+                <div className="flex items-center gap-2 ms-3">
                   {confirmRestoreId === backup.id ? (
                     <>
                       <span className="text-xs text-amber-500 font-medium">{t("confirm")}</span>
@@ -998,7 +998,7 @@ export default function SystemStorageTab() {
                       onClick={() => setConfirmRestoreId(backup.id)}
                     >
                       <span
-                        className="material-symbols-outlined text-[14px] mr-1"
+                        className="material-symbols-outlined text-[14px] me-1"
                         aria-hidden="true"
                       >
                         restore
@@ -1394,7 +1394,7 @@ export default function SystemStorageTab() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleExport} loading={exportLoading}>
-            <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+            <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
               download
             </span>
             {t("exportDatabase")}
@@ -1421,13 +1421,13 @@ export default function SystemStorageTab() {
             }}
             loading={exportLoading}
           >
-            <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+            <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
               folder_zip
             </span>
             {t("exportAll")}
           </Button>
           <Button variant="outline" size="sm" onClick={handleImportClick} loading={importLoading}>
-            <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+            <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
               upload
             </span>
             {t("importDatabase")}
@@ -1440,7 +1440,7 @@ export default function SystemStorageTab() {
             onChange={handleFileSelected}
           />
           <Button variant="outline" size="sm" onClick={handleExportJson} loading={exportLoading}>
-            <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+            <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
               data_object
             </span>
             {t("exportJson")}
@@ -1451,7 +1451,7 @@ export default function SystemStorageTab() {
             onClick={handleImportJsonClick}
             loading={importLoading}
           >
-            <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+            <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
               data_object
             </span>
             {t("importJson")}
@@ -1514,7 +1514,7 @@ export default function SystemStorageTab() {
             loading={clearCacheLoading}
             onClick={handleClearCache}
           >
-            <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+            <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
               delete_sweep
             </span>
             {t("clearCache")}
@@ -1525,7 +1525,7 @@ export default function SystemStorageTab() {
             loading={purgeLogsLoading}
             onClick={handlePurgeExpiredLogs}
           >
-            <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+            <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
               auto_delete
             </span>
             {t("purgeExpiredLogs")}
@@ -1536,7 +1536,7 @@ export default function SystemStorageTab() {
             loading={manualVacuumLoading}
             onClick={handleManualVacuum}
           >
-            <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+            <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
               cleaning_services
             </span>
             {t("manualVacuum")}
@@ -1547,7 +1547,7 @@ export default function SystemStorageTab() {
             loading={purgeQuotaSnapshotsLoading}
             onClick={handlePurgeQuotaSnapshots}
           >
-            <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+            <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
               delete_forever
             </span>
             {t("purgeQuotaSnapshots")}
@@ -1558,7 +1558,7 @@ export default function SystemStorageTab() {
             loading={purgeCallLogsLoading}
             onClick={handlePurgeCallLogs}
           >
-            <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+            <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
               delete_forever
             </span>
             {t("purgeCallLogs")}
@@ -1569,7 +1569,7 @@ export default function SystemStorageTab() {
             loading={purgeDetailedLogsLoading}
             onClick={handlePurgeDetailedLogs}
           >
-            <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+            <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
               delete_forever
             </span>
             {t("purgeDetailedLogs")}
@@ -1580,7 +1580,7 @@ export default function SystemStorageTab() {
             loading={resetUsageLoading}
             onClick={openResetUsageModal}
           >
-            <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+            <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
               restart_alt
             </span>
             {t("resetUsageData")}
@@ -1625,7 +1625,7 @@ export default function SystemStorageTab() {
             onClick={handleManualBackup}
             loading={manualBackupLoading}
           >
-            <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+            <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
               backup
             </span>
             {t("backupNow")}

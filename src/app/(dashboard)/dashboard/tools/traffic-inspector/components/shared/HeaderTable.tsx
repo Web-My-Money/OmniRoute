@@ -27,8 +27,8 @@ export function HeaderTable({ headers }: HeaderTableProps) {
       <table className="w-full text-xs font-mono border-collapse bg-surface">
         <thead>
           <tr className="border-b border-border">
-            <th className="text-left px-2 py-1 text-text-muted font-medium">{t("name")}</th>
-            <th className="text-left px-2 py-1 text-text-muted font-medium">{t("value")}</th>
+            <th className="text-start px-2 py-1 text-text-muted font-medium">{t("name")}</th>
+            <th className="text-start px-2 py-1 text-text-muted font-medium">{t("value")}</th>
           </tr>
         </thead>
         <tbody>

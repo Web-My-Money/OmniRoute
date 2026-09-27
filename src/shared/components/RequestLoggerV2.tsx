@@ -921,7 +921,7 @@ const RequestLoggerV2 = forwardRef<RequestLoggerV2Handle, { initialSelectedId?: 
 
           {/* Search */}
           <div className="flex-1 min-w-[200px] relative">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-[18px]">
+            <span className="material-symbols-outlined absolute start-3 top-1/2 -translate-y-1/2 text-text-muted text-[18px]">
               search
             </span>
             <input
@@ -929,13 +929,13 @@ const RequestLoggerV2 = forwardRef<RequestLoggerV2Handle, { initialSelectedId?: 
               placeholder={t("searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg bg-bg-subtle border border-border text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary"
+              className="w-full ps-10 pe-4 py-2 rounded-lg bg-bg-subtle border border-border text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary"
             />
           </div>
 
           {/* Correlation ID Filter */}
           <div className="min-w-[180px] relative">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-[16px]">
+            <span className="material-symbols-outlined absolute start-3 top-1/2 -translate-y-1/2 text-text-muted text-[16px]">
               tag
             </span>
             <input
@@ -943,7 +943,7 @@ const RequestLoggerV2 = forwardRef<RequestLoggerV2Handle, { initialSelectedId?: 
               placeholder={t("correlationId")}
               value={correlationIdFilter}
               onChange={(e) => setCorrelationIdFilter(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 rounded-lg bg-bg-subtle border border-border text-sm text-text-primary font-mono placeholder:text-text-muted focus:outline-none focus:border-primary"
+              className="w-full ps-9 pe-3 py-2 rounded-lg bg-bg-subtle border border-border text-sm text-text-primary font-mono placeholder:text-text-muted focus:outline-none focus:border-primary"
             />
           </div>
 
@@ -1179,7 +1179,7 @@ const RequestLoggerV2 = forwardRef<RequestLoggerV2Handle, { initialSelectedId?: 
 
         {/* Column Visibility Toggles */}
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[10px] text-text-muted uppercase tracking-wider mr-1">
+          <span className="text-[10px] text-text-muted uppercase tracking-wider me-1">
             {t("columnsLabel")}
           </span>
           {columns.map((col) => (
@@ -1326,7 +1326,7 @@ const RequestLoggerV2 = forwardRef<RequestLoggerV2Handle, { initialSelectedId?: 
                               ? "bg-red-500/5 hover:bg-red-500/15 dark:hover:bg-red-400/15"
                               : "hover:bg-sky-500/10 dark:hover:bg-sky-400/10"
                           } ` +
-                          `${log.isRetry ? "border-l-2 border-l-amber-500/50" : ""} ` +
+                          `${log.isRetry ? "border-s-2 border-s-amber-500/50" : ""} ` +
                           `${hoveredCid && log.correlationId === hoveredCid ? "bg-violet-500/10 dark:bg-violet-400/10 ring-1 ring-violet-500/20" : ""}`
                         }
                         style={
@@ -1372,7 +1372,7 @@ const RequestLoggerV2 = forwardRef<RequestLoggerV2Handle, { initialSelectedId?: 
                                   )}
                                 {log.isRetry && (
                                   <button
-                                    className="inline-flex items-center text-amber-500 hover:text-amber-400 text-[11px] ml-0.5"
+                                    className="inline-flex items-center text-amber-500 hover:text-amber-400 text-[11px] ms-0.5"
                                     title={t("status.goToParent")}
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -1550,7 +1550,7 @@ const RequestLoggerV2 = forwardRef<RequestLoggerV2Handle, { initialSelectedId?: 
                           </td>
                         )}
                         {visibleColumns.tokens && (
-                          <td className="px-3 py-2 text-right whitespace-nowrap">
+                          <td className="px-3 py-2 text-end whitespace-nowrap">
                             {isActive ? (
                               <span className="text-text-muted text-[10px]">—</span>
                             ) : (
@@ -1604,7 +1604,7 @@ const RequestLoggerV2 = forwardRef<RequestLoggerV2Handle, { initialSelectedId?: 
                           </td>
                         )}
                         {visibleColumns.tps && (
-                          <td className="px-3 py-2 text-right whitespace-nowrap font-mono">
+                          <td className="px-3 py-2 text-end whitespace-nowrap font-mono">
                             {isActive ? (
                               <span className="text-text-muted text-[10px]">—</span>
                             ) : (
@@ -1628,12 +1628,12 @@ const RequestLoggerV2 = forwardRef<RequestLoggerV2Handle, { initialSelectedId?: 
                           </td>
                         )}
                         {visibleColumns.duration && (
-                          <td className="px-3 py-2 text-right text-text-muted font-mono">
+                          <td className="px-3 py-2 text-end text-text-muted font-mono">
                             {formatDuration(log.duration)}
                           </td>
                         )}
                         {visibleColumns.time && (
-                          <td className="px-3 py-2 text-right text-text-muted">
+                          <td className="px-3 py-2 text-end text-text-muted">
                             {formatTime(log.timestamp)}
                           </td>
                         )}

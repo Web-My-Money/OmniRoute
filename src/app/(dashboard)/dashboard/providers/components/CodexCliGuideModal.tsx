@@ -38,8 +38,8 @@ const markdownComponents: Components = {
   },
   li({ children }) {
     return (
-      <li className="ml-2 flex items-start text-sm leading-relaxed text-text-muted">
-        <span className="mr-2 mt-2 size-1 shrink-0 rounded-full bg-text-muted/40" />
+      <li className="ms-2 flex items-start text-sm leading-relaxed text-text-muted">
+        <span className="me-2 mt-2 size-1 shrink-0 rounded-full bg-text-muted/40" />
         <span>{children}</span>
       </li>
     );
@@ -71,7 +71,7 @@ const markdownComponents: Components = {
   },
   blockquote({ children }) {
     return (
-      <blockquote className="my-2 border-l-2 border-primary/40 pl-3 text-sm text-text-muted/80 italic">
+      <blockquote className="my-2 border-s-2 border-primary/40 ps-3 text-sm text-text-muted/80 italic">
         {children}
       </blockquote>
     );
@@ -90,7 +90,7 @@ const markdownComponents: Components = {
     return <tr className="border-b border-border last:border-0">{children}</tr>;
   },
   th({ children }) {
-    return <th className="px-3 py-2 text-left font-semibold">{children}</th>;
+    return <th className="px-3 py-2 text-start font-semibold">{children}</th>;
   },
   td({ children }) {
     return <td className="px-3 py-2 text-text-muted">{children}</td>;
@@ -154,7 +154,7 @@ export default function CodexCliGuideModal({ isOpen, onClose }: CodexCliGuideMod
 
   return (
     <Modal isOpen={isOpen} title={text("codexCliGuideTitle", "Codex CLI Guide")} onClose={onClose}>
-      <div className="max-h-[70vh] overflow-y-auto pr-1">
+      <div className="max-h-[70vh] overflow-y-auto pe-1">
         {loading && (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
             <span className="material-symbols-outlined animate-spin text-[28px] text-text-muted/50">

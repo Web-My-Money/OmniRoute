@@ -169,7 +169,7 @@ export default function ResultsPanel({
           {response.results.map((r, i) => (
             <div
               key={i}
-              className="border-l-[3px] border-l-primary p-3 bg-surface rounded-r-lg border border-border"
+              className="border-s-[3px] border-s-primary p-3 bg-surface rounded-e-lg border border-border"
             >
               <div className="flex justify-between items-start">
                 <span className="text-sm font-medium text-text-main">
@@ -177,7 +177,7 @@ export default function ResultsPanel({
                 </span>
                 {r.score != null && (
                   <span
-                    className={`text-[10px] px-2 py-0.5 rounded-md ml-2 whitespace-nowrap ${getScoreBg(r.score)} ${getScoreColor(r.score)}`}
+                    className={`text-[10px] px-2 py-0.5 rounded-md ms-2 whitespace-nowrap ${getScoreBg(r.score)} ${getScoreColor(r.score)}`}
                   >
                     {r.score.toFixed(2)}
                   </span>

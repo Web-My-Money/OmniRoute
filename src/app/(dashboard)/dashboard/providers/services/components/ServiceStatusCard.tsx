@@ -72,7 +72,7 @@ export function ServiceStatusCard({ name }: ServiceStatusCardProps) {
         </div>
 
         {data.installedVersion && (
-          <div className="text-right shrink-0">
+          <div className="text-end shrink-0">
             <p className="text-xs font-mono text-text-muted">v{data.installedVersion}</p>
             {data.updateAvailable && data.latestVersion && (
               <p className="text-xs text-yellow-600 dark:text-yellow-400">

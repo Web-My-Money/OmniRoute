@@ -35,7 +35,7 @@ function LaneList({ lanes, onSelect }: { lanes: Lane[]; onSelect: (e: string) =>
           key={l.engine}
           data-testid="play-lane"
           onClick={() => onSelect(l.engine)}
-          className="flex w-full items-center justify-between border-b py-1 text-left font-mono text-xs"
+          className="flex w-full items-center justify-between border-b py-1 text-start font-mono text-xs"
         >
           <span>{l.engine}</span>
           <span>{laneStatus(l, t)}</span>

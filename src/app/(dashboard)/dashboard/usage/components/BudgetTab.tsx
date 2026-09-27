@@ -499,7 +499,7 @@ export default function BudgetTab() {
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap gap-2 items-center">
           <div className="relative flex-1 min-w-[260px]">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-lg">
+            <span className="material-symbols-outlined absolute start-3 top-1/2 -translate-y-1/2 text-text-muted text-lg">
               search
             </span>
             <input
@@ -507,7 +507,7 @@ export default function BudgetTab() {
               placeholder={t("budgetSearchKeysPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-3 py-2 bg-bg-base border border-border rounded-lg focus:outline-none focus:border-primary text-sm"
+              className="w-full ps-10 pe-3 py-2 bg-bg-base border border-border rounded-lg focus:outline-none focus:border-primary text-sm"
             />
           </div>
           <select
@@ -553,7 +553,7 @@ export default function BudgetTab() {
 
         {templates.length > 0 && (
           <div className="flex items-center gap-1.5 flex-wrap text-[11px]">
-            <span className="text-text-muted font-semibold uppercase tracking-wide mr-1">
+            <span className="text-text-muted font-semibold uppercase tracking-wide me-1">
               {t("budgetTemplates")}:
             </span>
             {templates.map((tpl) => (
@@ -579,7 +579,7 @@ export default function BudgetTab() {
               </button>
             ))}
             {selectedIds.size > 0 && (
-              <span className="text-text-muted ml-2">
+              <span className="text-text-muted ms-2">
                 {t("budgetSelectedTemplateHint", { count: selectedIds.size })}
               </span>
             )}
@@ -612,11 +612,11 @@ export default function BudgetTab() {
           </div>
           <div></div>
           <div>{t("budgetColumnKey")}</div>
-          <div className="text-right">{t("budgetColumnToday")}</div>
-          <div className="text-right">{t("budgetColumnMonth")}</div>
-          <div className="text-right">{t("budgetColDailyLim")}</div>
-          <div className="text-right">{t("budgetColMonthlyLim")}</div>
-          <div className="text-right">{t("budgetColUsedPct")}</div>
+          <div className="text-end">{t("budgetColumnToday")}</div>
+          <div className="text-end">{t("budgetColumnMonth")}</div>
+          <div className="text-end">{t("budgetColDailyLim")}</div>
+          <div className="text-end">{t("budgetColMonthlyLim")}</div>
+          <div className="text-end">{t("budgetColUsedPct")}</div>
           <div className="text-center">{t("budgetColumnStatus")}</div>
         </div>
 
@@ -759,7 +759,7 @@ function BudgetRow({
         <button
           type="button"
           onClick={onToggleExpand}
-          className="text-left border-none bg-transparent p-0 cursor-pointer min-w-0"
+          className="text-start border-none bg-transparent p-0 cursor-pointer min-w-0"
         >
           <div className="text-[13px] font-semibold text-text-main truncate">
             {row.name || row.id}
@@ -770,15 +770,15 @@ function BudgetRow({
           </div>
         </button>
 
-        <div className="text-right text-[12px] tabular-nums">{formatCurrency(today)}</div>
-        <div className="text-right text-[12px] tabular-nums">{formatCurrency(month)}</div>
-        <div className="text-right text-[11px] text-text-muted tabular-nums">
+        <div className="text-end text-[12px] tabular-nums">{formatCurrency(today)}</div>
+        <div className="text-end text-[12px] tabular-nums">{formatCurrency(month)}</div>
+        <div className="text-end text-[11px] text-text-muted tabular-nums">
           {daily > 0 ? `$${daily}/d` : "—"}
         </div>
-        <div className="text-right text-[11px] text-text-muted tabular-nums">
+        <div className="text-end text-[11px] text-text-muted tabular-nums">
           {monthly > 0 ? `$${monthly}/m` : "—"}
         </div>
-        <div className="text-right flex flex-col items-end gap-0.5">
+        <div className="text-end flex flex-col items-end gap-0.5">
           <span className={`text-[11px] font-semibold tabular-nums ${meta.tone}`}>
             {daily > 0 || monthly > 0 ? `${Math.round(usedPct)}%` : "—"}
           </span>
@@ -888,7 +888,7 @@ function BudgetRowExpanded({
               >
                 {formatCurrency(projection)}
                 {projectionOver && (
-                  <span className="text-[11px] ml-1.5">
+                  <span className="text-[11px] ms-1.5">
                     {t("budgetAboveMonthlyLimit", { limit: formatCurrency(monthly) })}
                   </span>
                 )}
@@ -921,10 +921,10 @@ function BudgetRowExpanded({
                       style={{ width: `${Math.min(b.pct, 100)}%` }}
                     />
                   </div>
-                  <span className="text-text-muted tabular-nums w-16 text-right">
+                  <span className="text-text-muted tabular-nums w-16 text-end">
                     {formatCurrency(b.cost)}
                   </span>
-                  <span className="text-text-muted tabular-nums w-10 text-right">
+                  <span className="text-text-muted tabular-nums w-10 text-end">
                     {Math.round(b.pct)}%
                   </span>
                 </div>

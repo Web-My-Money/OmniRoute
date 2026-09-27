@@ -1023,12 +1023,12 @@ export default function ApiManagerPageClient() {
               <h3 className="font-semibold">
                 {t("registeredKeys")}
                 {isFiltered && (
-                  <span className="ml-1.5 text-sm font-normal text-text-muted">
+                  <span className="ms-1.5 text-sm font-normal text-text-muted">
                     ({t("shownOf", { shown: filteredKeys.length, total: keys.length })})
                   </span>
                 )}
                 {!isFiltered && (
-                  <span className="ml-1.5 text-sm font-normal text-text-muted">
+                  <span className="ms-1.5 text-sm font-normal text-text-muted">
                     ({keys.length})
                   </span>
                 )}
@@ -1387,7 +1387,7 @@ export default function ApiManagerPageClient() {
                 <div className="col-span-2">{t("permissions")}</div>
                 <div className="col-span-2">{t("usage")}</div>
                 <div className="col-span-1">{t("created")}</div>
-                <div className="col-span-2 text-right">{t("actions")}</div>
+                <div className="col-span-2 text-end">{t("actions")}</div>
               </div>
             );
 
@@ -2749,14 +2749,14 @@ const PermissionsModal = memo(function PermissionsModal({
                           </span>
 
                           {claudeCodeFamiliesExpanded && (
-                            <div className="relative ml-2 flex flex-wrap gap-1 pl-5 animate-in fade-in slide-in-from-top-1 duration-150">
+                            <div className="relative ms-2 flex flex-wrap gap-1 ps-5 animate-in fade-in slide-in-from-top-1 duration-150">
                               <span
                                 aria-hidden="true"
-                                className="pointer-events-none absolute left-1.5 top-0 bottom-1 w-px bg-primary/25"
+                                className="pointer-events-none absolute start-1.5 top-0 bottom-1 w-px bg-primary/25"
                               />
                               <span
                                 aria-hidden="true"
-                                className="pointer-events-none absolute left-1.5 top-3 h-px w-3 bg-primary/25"
+                                className="pointer-events-none absolute start-1.5 top-3 h-px w-3 bg-primary/25"
                               />
                               {visibleClaudeCodeFamilies.map((family) => {
                                 const canBlock = family.id !== "other";
@@ -2924,7 +2924,7 @@ const PermissionsModal = memo(function PermissionsModal({
                           <button
                             key={conn.id}
                             onClick={() => handleToggleConnection(conn.id)}
-                            className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-xs transition-all ${
+                            className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-start text-xs transition-all ${
                               isSelected
                                 ? "bg-primary/10 text-primary"
                                 : "text-text-muted hover:bg-surface/50 hover:text-text-main"
@@ -3006,7 +3006,7 @@ const PermissionsModal = memo(function PermissionsModal({
                       <button
                         key={combo.id || combo.name}
                         onClick={() => handleToggleCombo(combo.name)}
-                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-xs transition-all ${
+                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-start text-xs transition-all ${
                           isSelected
                             ? "bg-primary/10 text-primary"
                             : "text-text-muted hover:bg-surface/50 hover:text-text-main"
@@ -3084,7 +3084,7 @@ const PermissionsModal = memo(function PermissionsModal({
                   <button
                     key={cat.id}
                     onClick={() => handleToggleEndpoint(cat.id)}
-                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-xs transition-all ${
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-start text-xs transition-all ${
                       isSelected
                         ? "bg-primary/10 text-primary"
                         : "text-text-muted hover:bg-surface/50 hover:text-text-main"

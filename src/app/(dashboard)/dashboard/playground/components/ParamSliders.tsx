@@ -61,7 +61,7 @@ function SliderRow({ label, value, min, max, step, onChange }: SliderRowProps) {
             const v = parseFloat(e.target.value);
             if (!isNaN(v)) onChange(Math.min(max, Math.max(min, v)));
           }}
-          className="w-16 text-xs text-right bg-surface border border-border rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-16 text-xs text-end bg-surface border border-border rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-primary"
         />
       </div>
       <input

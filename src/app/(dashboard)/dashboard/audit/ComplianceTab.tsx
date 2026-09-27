@@ -307,7 +307,7 @@ export default function ComplianceTab() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1040px] text-left text-sm">
+            <table className="w-full min-w-[1040px] text-start text-sm">
               <thead className="border-b border-border bg-sidebar/40 text-xs uppercase tracking-wider text-text-muted">
                 <tr>
                   <th className="px-4 py-3 font-medium">{t("timestamp")}</th>
@@ -317,7 +317,7 @@ export default function ComplianceTab() {
                   <th className="px-4 py-3 font-medium">{t("userOrKey")}</th>
                   <th className="px-4 py-3 font-medium">{t("action")}</th>
                   <th className="px-4 py-3 font-medium">{t("result")}</th>
-                  <th className="px-4 py-3 text-right font-medium">{t("details")}</th>
+                  <th className="px-4 py-3 text-end font-medium">{t("details")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -330,7 +330,9 @@ export default function ComplianceTab() {
                       </td>
                       <td className="px-4 py-3">
                         <span className="rounded-md border border-border bg-surface px-2 py-1 font-mono text-xs text-text-main">
-                          {t.has(`eventTypes.${entry.action}`) ? t(`eventTypes.${entry.action}`) : entry.action}
+                          {t.has(`eventTypes.${entry.action}`)
+                            ? t(`eventTypes.${entry.action}`)
+                            : entry.action}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -350,7 +352,7 @@ export default function ComplianceTab() {
                       <td className="px-4 py-3 text-text-muted">
                         {entry.status || t("notAvailable")}
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-end">
                         <button
                           onClick={() => setSelectedEntry(entry)}
                           className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-main transition-colors hover:bg-sidebar"

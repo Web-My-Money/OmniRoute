@@ -204,7 +204,7 @@ export default function CacheStatsCard() {
                           <span className="text-blue-400" title={t("cacheCreationWrite")}>
                             {t("writeShort")}: {formatNumberCompact(stats.cacheCreationTokens)}
                           </span>
-                          <span className="text-green-400 w-12 text-right">
+                          <span className="text-green-400 w-12 text-end">
                             {providerCacheRate.toFixed(0)}%
                           </span>
                         </div>

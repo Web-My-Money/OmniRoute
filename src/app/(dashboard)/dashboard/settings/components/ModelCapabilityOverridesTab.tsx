@@ -273,7 +273,7 @@ function ModelOverrideTargetButton({
     <button
       type="button"
       onClick={() => onSelect(entry.target)}
-      className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between gap-2 hover:bg-bg-hover/50 ${
+      className={`w-full px-3 py-2 text-start text-xs flex items-center justify-between gap-2 hover:bg-bg-hover/50 ${
         active ? "bg-primary/10 text-primary" : "text-text-main"
       }`}
     >

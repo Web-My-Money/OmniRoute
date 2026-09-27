@@ -45,7 +45,7 @@ export function CoverageBar({ coverage }: CoverageBarProps): ReactElement {
             style={{ width: `${api.total > 0 ? (api.have / api.total) * 100 : 0}%` }}
           />
         </div>
-        <span className="shrink-0 text-text-muted w-12 text-right">
+        <span className="shrink-0 text-text-muted w-12 text-end">
           {api.total > 0 ? Math.round((api.have / api.total) * 100) : 0}%
         </span>
       </div>
@@ -67,7 +67,7 @@ export function CoverageBar({ coverage }: CoverageBarProps): ReactElement {
             style={{ width: `${config.total > 0 ? (config.have / config.total) * 100 : 0}%` }}
           />
         </div>
-        <span className="shrink-0 text-text-muted w-12 text-right">
+        <span className="shrink-0 text-text-muted w-12 text-end">
           {config.total > 0 ? Math.round((config.have / config.total) * 100) : 0}%
         </span>
       </div>
@@ -89,7 +89,7 @@ export function CoverageBar({ coverage }: CoverageBarProps): ReactElement {
             style={{ width: `${cli.total > 0 ? (cli.have / cli.total) * 100 : 0}%` }}
           />
         </div>
-        <span className="shrink-0 text-text-muted w-12 text-right">
+        <span className="shrink-0 text-text-muted w-12 text-end">
           {cli.total > 0 ? Math.round((cli.have / cli.total) * 100) : 0}%
         </span>
       </div>

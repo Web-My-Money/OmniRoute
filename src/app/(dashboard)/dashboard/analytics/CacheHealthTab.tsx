@@ -179,8 +179,8 @@ export default function CacheHealthTab() {
                   {text(t, "cacheHealthConcentration", "Where the writes are concentrated")}
                 </h3>
                 <span className="text-xs text-text-muted">
-                  {text(t, "cacheHealthThreshold", "outlier above")} {compact(data.heavyWriteThreshold)}{" "}
-                  {text(t, "cacheHealthTokens", "tokens")}
+                  {text(t, "cacheHealthThreshold", "outlier above")}{" "}
+                  {compact(data.heavyWriteThreshold)} {text(t, "cacheHealthTokens", "tokens")}
                 </span>
               </div>
               <p className="text-sm text-text-main">
@@ -215,19 +215,21 @@ export default function CacheHealthTab() {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[560px] text-sm">
                 <thead>
-                  <tr className="border-b border-border text-left text-xs uppercase text-text-muted">
-                    <th className="pb-2 pr-4 font-medium">{text(t, "cacheHealthModel", "Model")}</th>
-                    <th className="pb-2 pr-4 text-right font-medium">
+                  <tr className="border-b border-border text-start text-xs uppercase text-text-muted">
+                    <th className="pb-2 pe-4 font-medium">
+                      {text(t, "cacheHealthModel", "Model")}
+                    </th>
+                    <th className="pb-2 pe-4 text-end font-medium">
                       {text(t, "cacheHealthCalls", "Calls")}
                     </th>
-                    <th className="pb-2 pr-4 text-right font-medium">
+                    <th className="pb-2 pe-4 text-end font-medium">
                       {text(t, "cacheHealthRead", "Read")}
                     </th>
-                    <th className="pb-2 pr-4 text-right font-medium">
+                    <th className="pb-2 pe-4 text-end font-medium">
                       {text(t, "cacheHealthWrite", "Written")}
                     </th>
-                    <th className="pb-2 pr-4 text-right font-medium">W/R</th>
-                    <th className="pb-2 text-right font-medium">
+                    <th className="pb-2 pe-4 text-end font-medium">W/R</th>
+                    <th className="pb-2 text-end font-medium">
                       {text(t, "cacheHealthHeavy", "Heavy")}
                     </th>
                   </tr>
@@ -235,17 +237,17 @@ export default function CacheHealthTab() {
                 <tbody>
                   {data.byModel.map((m) => (
                     <tr key={m.model} className="border-b border-border/50 last:border-0">
-                      <td className="py-2 pr-4 font-mono text-xs text-text-main">{m.model}</td>
-                      <td className="py-2 pr-4 text-right text-text-muted">{compact(m.calls)}</td>
-                      <td className="py-2 pr-4 text-right text-text-muted">
+                      <td className="py-2 pe-4 font-mono text-xs text-text-main">{m.model}</td>
+                      <td className="py-2 pe-4 text-end text-text-muted">{compact(m.calls)}</td>
+                      <td className="py-2 pe-4 text-end text-text-muted">
                         {compact(m.cacheReadTotal)}
                       </td>
-                      <td className="py-2 pr-4 text-right text-text-muted">
+                      <td className="py-2 pe-4 text-end text-text-muted">
                         {compact(m.cacheWriteTotal)}
                       </td>
                       <td
                         className={cn(
-                          "py-2 pr-4 text-right font-medium",
+                          "py-2 pe-4 text-end font-medium",
                           m.writeReadRatio > 1
                             ? "text-red-500"
                             : m.writeReadRatio > 0.2
@@ -255,7 +257,7 @@ export default function CacheHealthTab() {
                       >
                         {m.writeReadRatio.toFixed(2)}
                       </td>
-                      <td className="py-2 text-right text-text-muted">
+                      <td className="py-2 text-end text-text-muted">
                         {compact(m.heavyWriteCalls)}
                       </td>
                     </tr>

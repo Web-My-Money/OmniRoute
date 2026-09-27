@@ -68,7 +68,7 @@ export default function TokenHealthBadge() {
 
       {showTooltip && (
         <div
-          className="absolute top-full right-0 mt-1 z-50 min-w-[200px] p-3 rounded-lg shadow-lg"
+          className="absolute top-full end-0 mt-1 z-50 min-w-[200px] p-3 rounded-lg shadow-lg"
           style={{
             background: "rgba(15, 15, 25, 0.95)",
             border: "1px solid rgba(255,255,255,0.1)",

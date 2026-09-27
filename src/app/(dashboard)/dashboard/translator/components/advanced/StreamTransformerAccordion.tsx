@@ -241,7 +241,7 @@ export default function StreamTransformerAccordion({
           type="button"
           onClick={handleToggle}
           aria-expanded={open}
-          className="flex items-center gap-3 flex-1 min-w-0 text-left -m-1 p-1 rounded"
+          className="flex items-center gap-3 flex-1 min-w-0 text-start -m-1 p-1 rounded"
         >
           <span
             className="material-symbols-outlined text-text-muted text-[20px] shrink-0"
@@ -434,9 +434,9 @@ export default function StreamTransformerAccordion({
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="text-left text-xs text-text-muted border-b border-border">
-                          <th className="pb-2 pr-4">#</th>
-                          <th className="pb-2 pr-4">
+                        <tr className="text-start text-xs text-text-muted border-b border-border">
+                          <th className="pb-2 pe-4">#</th>
+                          <th className="pb-2 pe-4">
                             {translateOrFallback("eventType", "Event type")}
                           </th>
                           <th className="pb-2">{translateOrFallback("eventPreview", "Preview")}</th>
@@ -448,8 +448,8 @@ export default function StreamTransformerAccordion({
                             key={`${frame.event}_${index}`}
                             className="border-b border-border/50 align-top"
                           >
-                            <td className="py-2 pr-4 text-xs text-text-muted">{index + 1}</td>
-                            <td className="py-2 pr-4 font-mono text-xs text-primary">
+                            <td className="py-2 pe-4 text-xs text-text-muted">{index + 1}</td>
+                            <td className="py-2 pe-4 font-mono text-xs text-primary">
                               {frame.event}
                             </td>
                             <td className="py-2 text-xs text-text-muted break-all">

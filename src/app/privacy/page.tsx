@@ -46,7 +46,7 @@ export default function PrivacyPage() {
               {t("privacyDataStoredIn")}{" "}
               <code className="text-primary text-sm">~/.omniroute/storage.sqlite</code>:
             </p>
-            <ul className="list-disc pl-6 space-y-2">
+            <ul className="list-disc ps-6 space-y-2">
               <li>
                 <strong className="text-text-main">{t("providerConfigurations")}</strong>{" "}
                 {t("listSeparator")} {t("privacyDataProviderConfigurationsDesc")}
@@ -78,7 +78,7 @@ export default function PrivacyPage() {
               {t("privacySection4Title")}
             </h2>
             <p>{t("privacySection4Text")}</p>
-            <ul className="list-disc pl-6 space-y-2 mt-3">
+            <ul className="list-disc ps-6 space-y-2 mt-3">
               <li>
                 <a
                   href="https://openai.com/policies/privacy-policy"
@@ -124,7 +124,7 @@ export default function PrivacyPage() {
               {t("privacySection6Title")}
             </h2>
             <p>{t("privacyLoggingIntro")}</p>
-            <ul className="list-disc pl-6 space-y-2 mt-3">
+            <ul className="list-disc ps-6 space-y-2 mt-3">
               <li>{t("viewExportAnalytics")}</li>
               <li>{t("clearHistory")}</li>
               <li>{t("configureRetention")}</li>

@@ -26,13 +26,13 @@ export default function LandingPage() {
         ></div>
 
         {/* Animated gradient orbs */}
-        <div className="absolute top-0 left-1/4 w-[700px] h-[700px] bg-[#E54D5E]/12 rounded-full blur-[130px] animate-blob"></div>
+        <div className="absolute top-0 start-1/4 w-[700px] h-[700px] bg-[#E54D5E]/12 rounded-full blur-[130px] animate-blob"></div>
         <div
-          className="absolute top-1/3 right-1/4 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[130px] animate-blob"
+          className="absolute top-1/3 end-1/4 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[130px] animate-blob"
           style={{ animationDelay: "2s", animationDuration: "22s" }}
         ></div>
         <div
-          className="absolute bottom-0 left-1/2 w-[650px] h-[650px] bg-blue-500/8 rounded-full blur-[130px] animate-blob"
+          className="absolute bottom-0 start-1/2 w-[650px] h-[650px] bg-blue-500/8 rounded-full blur-[130px] animate-blob"
           style={{ animationDelay: "4s", animationDuration: "25s" }}
         ></div>
 

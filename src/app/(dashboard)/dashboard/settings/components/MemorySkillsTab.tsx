@@ -331,7 +331,7 @@ export default function MemorySkillsTab() {
             <p className="text-sm text-text-muted">{t("memoryDesc")}</p>
           </div>
           {status === "saved" && (
-            <span className="ml-auto text-xs font-medium text-emerald-500 flex items-center gap-1">
+            <span className="ms-auto text-xs font-medium text-emerald-500 flex items-center gap-1">
               <span className="material-symbols-outlined text-[14px]">check_circle</span>{" "}
               {t("saved")}
             </span>
@@ -355,7 +355,7 @@ export default function MemorySkillsTab() {
             aria-checked={config.enabled}
           >
             <span
-              className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+              className={`absolute top-1 start-1 w-4 h-4 bg-white rounded-full transition-transform ${
                 config.enabled ? "translate-x-5" : "translate-x-0"
               }`}
             />
@@ -444,7 +444,7 @@ export default function MemorySkillsTab() {
                   key={s.value}
                   onClick={() => save({ strategy: s.value as "recent" | "semantic" | "hybrid" })}
                   disabled={loading || saving}
-                  className={`flex flex-col items-start p-3 rounded-lg border text-left transition-all ${
+                  className={`flex flex-col items-start p-3 rounded-lg border text-start transition-all ${
                     config.strategy === s.value
                       ? "border-violet-500/50 bg-violet-500/5 ring-1 ring-violet-500/20"
                       : "border-border/50 hover:border-border hover:bg-surface/30"
@@ -477,7 +477,7 @@ export default function MemorySkillsTab() {
           </div>
 
           <span
-            className={`ml-auto inline-flex items-center gap-2 text-xs font-medium ${
+            className={`ms-auto inline-flex items-center gap-2 text-xs font-medium ${
               qdrant.enabled
                 ? qdrantHealth?.ok
                   ? "text-emerald-500"
@@ -523,7 +523,7 @@ export default function MemorySkillsTab() {
               aria-checked={qdrant.enabled}
             >
               <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                className={`absolute top-1 start-1 w-4 h-4 bg-white rounded-full transition-transform ${
                   qdrant.enabled ? "translate-x-5" : "translate-x-0"
                 }`}
               />
@@ -766,7 +766,7 @@ export default function MemorySkillsTab() {
             aria-checked={config.skillsEnabled}
           >
             <span
-              className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+              className={`absolute top-1 start-1 w-4 h-4 bg-white rounded-full transition-transform ${
                 config.skillsEnabled ? "translate-x-5" : "translate-x-0"
               }`}
             />
@@ -787,13 +787,13 @@ export default function MemorySkillsTab() {
             <p className="text-sm text-text-muted">{t("memorySkillsSkillsmpDescription")}</p>
           </div>
           {skillsmpStatus === "saved" && (
-            <span className="ml-auto text-xs font-medium text-emerald-500 flex items-center gap-1">
+            <span className="ms-auto text-xs font-medium text-emerald-500 flex items-center gap-1">
               <span className="material-symbols-outlined text-[14px]">check_circle</span>{" "}
               {t("saved")}
             </span>
           )}
           {skillsmpStatus === "error" && (
-            <span className="ml-auto text-xs font-medium text-red-500">
+            <span className="ms-auto text-xs font-medium text-red-500">
               {t("memorySkillsFailedToSave")}
             </span>
           )}
@@ -837,13 +837,13 @@ export default function MemorySkillsTab() {
             <p className="text-sm text-text-muted">{t("memorySkillsActiveProviderDescription")}</p>
           </div>
           {skillsProviderStatus === "saved" && (
-            <span className="ml-auto text-xs font-medium text-emerald-500 flex items-center gap-1">
+            <span className="ms-auto text-xs font-medium text-emerald-500 flex items-center gap-1">
               <span className="material-symbols-outlined text-[14px]">check_circle</span>{" "}
               {t("saved")}
             </span>
           )}
           {skillsProviderStatus === "error" && (
-            <span className="ml-auto text-xs font-medium text-red-500">
+            <span className="ms-auto text-xs font-medium text-red-500">
               {t("memorySkillsFailedToSave")}
             </span>
           )}
@@ -854,7 +854,7 @@ export default function MemorySkillsTab() {
             type="button"
             disabled={skillsProviderSaving}
             onClick={() => saveSkillsProvider("skillsmp")}
-            className={`flex flex-col items-start p-3 rounded-lg border text-left transition-all ${
+            className={`flex flex-col items-start p-3 rounded-lg border text-start transition-all ${
               skillsProvider === "skillsmp"
                 ? "border-indigo-500/50 bg-indigo-500/5 ring-1 ring-indigo-500/20"
                 : "border-border/50 hover:border-border hover:bg-surface/30"
@@ -874,7 +874,7 @@ export default function MemorySkillsTab() {
             type="button"
             disabled={skillsProviderSaving}
             onClick={() => saveSkillsProvider("skillssh")}
-            className={`flex flex-col items-start p-3 rounded-lg border text-left transition-all ${
+            className={`flex flex-col items-start p-3 rounded-lg border text-start transition-all ${
               skillsProvider === "skillssh"
                 ? "border-indigo-500/50 bg-indigo-500/5 ring-1 ring-indigo-500/20"
                 : "border-border/50 hover:border-border hover:bg-surface/30"

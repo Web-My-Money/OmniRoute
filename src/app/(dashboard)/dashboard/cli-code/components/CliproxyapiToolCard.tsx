@@ -228,7 +228,7 @@ export default function CliproxyapiToolCard({ isExpanded = false, onToggle = () 
                 onClick={() => apiCall("install")}
                 loading={loading === "install"}
               >
-                <span className="material-symbols-outlined text-[14px] mr-1">download</span>
+                <span className="material-symbols-outlined text-[14px] me-1">download</span>
                 {t("cliproxyapiInstall")}
               </Button>
             )}
@@ -239,7 +239,7 @@ export default function CliproxyapiToolCard({ isExpanded = false, onToggle = () 
                 onClick={() => apiCall("stop")}
                 loading={loading === "stop"}
               >
-                <span className="material-symbols-outlined text-[14px] mr-1">stop</span>
+                <span className="material-symbols-outlined text-[14px] me-1">stop</span>
                 {t("cliproxyapiStop")}
               </Button>
             ) : toolState?.installedVersion ? (
@@ -249,7 +249,7 @@ export default function CliproxyapiToolCard({ isExpanded = false, onToggle = () 
                 onClick={() => apiCall("start")}
                 loading={loading === "start"}
               >
-                <span className="material-symbols-outlined text-[14px] mr-1">play_arrow</span>
+                <span className="material-symbols-outlined text-[14px] me-1">play_arrow</span>
                 {t("cliproxyapiStart")}
               </Button>
             ) : null}
@@ -260,7 +260,7 @@ export default function CliproxyapiToolCard({ isExpanded = false, onToggle = () 
                 onClick={() => apiCall("restart")}
                 loading={loading === "restart"}
               >
-                <span className="material-symbols-outlined text-[14px] mr-1">restart_alt</span>
+                <span className="material-symbols-outlined text-[14px] me-1">restart_alt</span>
                 {t("cliproxyapiRestart")}
               </Button>
             )}
@@ -270,7 +270,7 @@ export default function CliproxyapiToolCard({ isExpanded = false, onToggle = () 
               onClick={fetchUpdateInfo}
               loading={loading === "check"}
             >
-              <span className="material-symbols-outlined text-[14px] mr-1">sync</span>
+              <span className="material-symbols-outlined text-[14px] me-1">sync</span>
               {t("cliproxyapiCheckUpdates")}
             </Button>
           </div>

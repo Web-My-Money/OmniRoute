@@ -37,7 +37,7 @@ export function OmniExecutionsTab({
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="text-left text-sm text-text-muted border-b border-border">
+            <tr className="text-start text-sm text-text-muted border-b border-border">
               <th className="pb-3 font-medium">{t("skill")}</th>
               <th className="pb-3 font-medium">{t("status")}</th>
               <th className="pb-3 font-medium">{t("duration")}</th>

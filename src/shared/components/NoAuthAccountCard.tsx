@@ -218,7 +218,7 @@ export default function NoAuthAccountCard({
     }
   };
 
-   const handleAddManualApiKey = async () => {
+  const handleAddManualApiKey = async () => {
     if (!manualApiKey.trim()) return;
     setAddingManualKey(true);
     try {
@@ -449,7 +449,7 @@ export default function NoAuthAccountCard({
         {!loading && allAccountIds.length > 0 && (
           <div
             data-testid="noauth-account-grid"
-            className="grid max-h-72 grid-cols-1 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3"
+            className="grid max-h-72 grid-cols-1 gap-1.5 overflow-y-auto pe-1 sm:grid-cols-2 lg:grid-cols-3"
           >
             {allAccountIds.map((id, i) => {
               const proxy = getDisplayProxy(

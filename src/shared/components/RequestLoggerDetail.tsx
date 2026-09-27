@@ -349,15 +349,15 @@ export default function RequestLoggerDetail({
                 </span>
               )}
             </div>
-            <span className="text-text-muted font-mono text-sm self-center ml-2">{log.path}</span>
+            <span className="text-text-muted font-mono text-sm self-center ms-2">{log.path}</span>
             {log.id && (
-              <span className="text-[10px] text-text-muted/50 font-mono self-center ml-2 px-1.5 py-0.5 rounded bg-bg-subtle border border-border/40 select-all">
+              <span className="text-[10px] text-text-muted/50 font-mono self-center ms-2 px-1.5 py-0.5 rounded bg-bg-subtle border border-border/40 select-all">
                 {log.id}
               </span>
             )}
             {log.correlationId && (
               <span
-                className="text-[10px] text-text-muted/50 font-mono self-center ml-2 px-1.5 py-0.5 rounded bg-bg-subtle border border-border/40 select-all"
+                className="text-[10px] text-text-muted/50 font-mono self-center ms-2 px-1.5 py-0.5 rounded bg-bg-subtle border border-border/40 select-all"
                 title={t("correlationId")}
               >
                 {t("correlationIdValue", { id: log.correlationId })}
@@ -775,7 +775,7 @@ export default function RequestLoggerDetail({
                         key={r.id}
                         onClick={() => !isCurrent && onSelectRelated?.(r)}
                         disabled={isCurrent}
-                        className={`flex items-center gap-2 px-2 py-1.5 rounded text-left text-xs transition-colors ${
+                        className={`flex items-center gap-2 px-2 py-1.5 rounded text-start text-xs transition-colors ${
                           isCurrent
                             ? "bg-primary/10 border border-primary/30 cursor-default"
                             : "hover:bg-bg-hover cursor-pointer"
@@ -796,11 +796,11 @@ export default function RequestLoggerDetail({
                         <span className="text-text-muted text-[10px]">
                           {startTime.toLocaleTimeString(locale, { hour12: false })}
                         </span>
-                        <span className="text-text-muted ml-auto">
+                        <span className="text-text-muted ms-auto">
                           {formatDuration(r.duration)}
                         </span>
                         {isCurrent && (
-                          <span className="text-[9px] text-primary font-bold ml-1">
+                          <span className="text-[9px] text-primary font-bold ms-1">
                             {t("current")}
                           </span>
                         )}

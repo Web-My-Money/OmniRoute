@@ -375,7 +375,7 @@ export default function AuthzSection() {
             )}
             {status && (
               <span
-                className={`ml-3 ${status.type === "error" ? "text-red-500" : "text-green-500"}`}
+                className={`ms-3 ${status.type === "error" ? "text-red-500" : "text-green-500"}`}
               >
                 {status.message}
               </span>

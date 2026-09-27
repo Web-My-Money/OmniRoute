@@ -367,7 +367,7 @@ export default function DroidToolCard({
                 {/* Current Base URL — first OmniRoute entry, any index (#618) */}
                 {droidStatus?.settings?.customModels?.find(isOmniRouteEntry)?.baseUrl && (
                   <div className="flex items-center gap-2">
-                    <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                    <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-end">
                       {t("current")}
                     </span>
                     <span className="material-symbols-outlined text-text-muted text-[14px]">
@@ -381,7 +381,7 @@ export default function DroidToolCard({
 
                 {/* Base URL */}
                 <div className="flex items-center gap-2">
-                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-end">
                     {t("baseUrl")}
                   </span>
                   <span className="material-symbols-outlined text-text-muted text-[14px]">
@@ -407,7 +407,7 @@ export default function DroidToolCard({
 
                 {/* API Key */}
                 <div className="flex items-center gap-2">
-                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-end">
                     {t("apiKey")}
                   </span>
                   <span className="material-symbols-outlined text-text-muted text-[14px]">
@@ -434,7 +434,7 @@ export default function DroidToolCard({
 
                 {/* Models — multi-model support (#618) */}
                 <div className="flex items-start gap-2">
-                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right pt-1.5">
+                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-end pt-1.5">
                     {t("model")}
                     {modelList.length > 0 && (
                       <span className="text-primary"> ({modelList.length})</span>
@@ -516,7 +516,7 @@ export default function DroidToolCard({
                   disabled={modelList.length === 0}
                   loading={applying}
                 >
-                  <span className="material-symbols-outlined text-[14px] mr-1">save</span>
+                  <span className="material-symbols-outlined text-[14px] me-1">save</span>
                   {t("apply")}
                 </Button>
                 <Button
@@ -526,11 +526,11 @@ export default function DroidToolCard({
                   disabled={!droidStatus?.hasOmniRoute}
                   loading={restoring}
                 >
-                  <span className="material-symbols-outlined text-[14px] mr-1">restore</span>
+                  <span className="material-symbols-outlined text-[14px] me-1">restore</span>
                   {t("reset")}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setShowManualConfigModal(true)}>
-                  <span className="material-symbols-outlined text-[14px] mr-1">content_copy</span>
+                  <span className="material-symbols-outlined text-[14px] me-1">content_copy</span>
                   {t("manualConfig")}
                 </Button>
                 <div className="flex-1" />
@@ -542,7 +542,7 @@ export default function DroidToolCard({
                     if (!showBackups) fetchBackups();
                   }}
                 >
-                  <span className="material-symbols-outlined text-[14px] mr-1">history</span>
+                  <span className="material-symbols-outlined text-[14px] me-1">history</span>
                   {t("backups")}
                   {backups.length > 0 && ` (${backups.length})`}
                 </Button>

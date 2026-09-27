@@ -187,12 +187,12 @@ export default function ProviderSummaryCard({
               placeholder={t("searchProviders")}
               aria-label={t("searchProviders")}
               icon="search"
-              inputClassName={searchQuery ? "pr-9" : ""}
+              inputClassName={searchQuery ? "pe-9" : ""}
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute inset-y-0 right-0 flex items-center pr-2.5 text-text-muted hover:text-text-primary transition-colors"
+                className="absolute inset-y-0 end-0 flex items-center pe-2.5 text-text-muted hover:text-text-primary transition-colors"
                 aria-label={tc("clear")}
               >
                 <span className="material-symbols-outlined text-[18px]">close</span>
@@ -206,12 +206,12 @@ export default function ProviderSummaryCard({
               placeholder={providerText(t, "searchByModel", "Search by model…")}
               aria-label={providerText(t, "searchByModelAria", "Search by model")}
               icon="psychology"
-              inputClassName={modelSearchQuery ? "pr-9" : ""}
+              inputClassName={modelSearchQuery ? "pe-9" : ""}
             />
             {modelSearchQuery && (
               <button
                 onClick={() => setModelSearchQuery("")}
-                className="absolute inset-y-0 right-0 flex items-center pr-2.5 text-text-muted hover:text-text-primary transition-colors"
+                className="absolute inset-y-0 end-0 flex items-center pe-2.5 text-text-muted hover:text-text-primary transition-colors"
                 aria-label={tc("clear")}
               >
                 <span className="material-symbols-outlined text-[18px]">close</span>
@@ -279,7 +279,7 @@ export default function ProviderSummaryCard({
         </div>
 
         <div className="border-t border-border pt-3 flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-medium uppercase tracking-wide text-text-muted mr-1">
+          <span className="text-[11px] font-medium uppercase tracking-wide text-text-muted me-1">
             {providerText(t, "filterByMedia", "Media")}
           </span>
           {SERVICE_KIND_CHIPS.map((chip) => {

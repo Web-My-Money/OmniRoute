@@ -112,7 +112,7 @@ export default function ApiKeyFilterDropdown({
 
       {open && (
         <div
-          className="absolute left-0 top-full z-50 mt-1.5 w-[260px] rounded-xl border border-border/50 bg-surface shadow-xl"
+          className="absolute start-0 top-full z-50 mt-1.5 w-[260px] rounded-xl border border-border/50 bg-surface shadow-xl"
           style={{ backdropFilter: "blur(16px)" }}
         >
           {/* Search */}
@@ -134,7 +134,7 @@ export default function ApiKeyFilterDropdown({
             <button
               type="button"
               onClick={selectAll}
-              className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs transition-colors ${
+              className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-start text-xs transition-colors ${
                 isAllSelected
                   ? "bg-primary/10 text-primary font-semibold"
                   : "text-text-muted hover:bg-black/[0.04] hover:text-text-main dark:hover:bg-white/[0.04]"
@@ -152,7 +152,7 @@ export default function ApiKeyFilterDropdown({
                 )}
               </span>
               {t("filterAllKeys")}
-              <span className="ml-auto text-[10px] text-text-muted font-normal">
+              <span className="ms-auto text-[10px] text-text-muted font-normal">
                 {available.length}
               </span>
             </button>
@@ -169,7 +169,7 @@ export default function ApiKeyFilterDropdown({
                   key={key.id}
                   type="button"
                   onClick={() => toggleKey(key.id)}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs transition-colors ${
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-start text-xs transition-colors ${
                     isChecked
                       ? "bg-primary/[0.06] text-text-main"
                       : "text-text-muted hover:bg-black/[0.04] hover:text-text-main dark:hover:bg-white/[0.04]"

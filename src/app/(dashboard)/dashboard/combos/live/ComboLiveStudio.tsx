@@ -334,7 +334,7 @@ export function ComboLiveStudio({
         )}
 
         {/* Single ⇄ Fleet toggle */}
-        <div className="ml-auto flex items-center border border-border rounded overflow-hidden text-xs">
+        <div className="ms-auto flex items-center border border-border rounded overflow-hidden text-xs">
           <button
             className="px-2.5 py-1 transition-colors"
             style={{

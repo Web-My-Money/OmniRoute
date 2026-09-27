@@ -169,28 +169,28 @@ export default function FilesListTab({
         <table className="w-full text-sm" role="table" aria-label={t("batchFilesListFilesTable")}>
           <thead>
             <tr className="bg-[var(--color-bg-alt)] border-b border-[var(--color-border)]">
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 ID
               </th>
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 {t("batchFilesFilename")}
               </th>
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 {t("batchFilesPurpose")}
               </th>
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 {t("filesListSizeColumn")}
               </th>
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 {t("filesListUsedByColumn")}
               </th>
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 {t("created")}
               </th>
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 {t("batchFilesExpires")}
               </th>
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 {/* Actions */}
               </th>
             </tr>

@@ -48,7 +48,7 @@ export default function HowItWorks() {
           </div>
 
           {/* Step 3: AI Providers */}
-          <div className="flex flex-col gap-6 relative group md:items-end md:text-right">
+          <div className="flex flex-col gap-6 relative group md:items-end md:text-end">
             <div className="w-24 h-24 rounded-2xl bg-[#0B0E14] border border-[#2D333B] flex items-center justify-center shadow-xl group-hover:border-gray-500 transition-colors z-10 mx-auto md:mx-0">
               <div className="grid grid-cols-2 gap-2">
                 <div className="w-6 h-6 rounded bg-white/10"></div>

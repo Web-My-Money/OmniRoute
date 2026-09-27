@@ -332,10 +332,10 @@ export default function ComboDefaultsTab() {
         <h3 className="text-lg font-semibold">
           {translateOrFallback(t, "comboDefaultsTitle", "Default Routing & Combo Settings")}
         </h3>
-        <span className="text-xs text-text-muted ml-auto">{t("globalComboConfig")}</span>
+        <span className="text-xs text-text-muted ms-auto">{t("globalComboConfig")}</span>
         {status.message && (
           <span
-            className={`text-xs font-medium ml-2 ${
+            className={`text-xs font-medium ms-2 ${
               status.type === "success" ? "text-emerald-500" : "text-red-500"
             }`}
           >
@@ -814,7 +814,7 @@ export default function ComboDefaultsTab() {
                 <span className="text-[10px] text-text-muted">{t("retries")}</span>
                 <button
                   onClick={() => removeProviderOverride(provider)}
-                  className="ml-auto text-red-400 hover:text-red-500 transition-colors"
+                  className="ms-auto text-red-400 hover:text-red-500 transition-colors"
                   aria-label={t("removeProviderOverrideAria", { provider })}
                 >
                   <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
@@ -831,7 +831,7 @@ export default function ComboDefaultsTab() {
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex items-center gap-2 px-3 py-2 text-xs rounded-lg border border-border/50 bg-black/[0.02] dark:bg-white/[0.02] hover:bg-black/[0.05] dark:hover:bg-white/[0.05] transition-colors w-full mt-2"
             >
-              <span className="flex-1 text-left text-text-muted">
+              <span className="flex-1 text-start text-text-muted">
                 {t("selectProviderPlaceholder") || "Select provider..."}
               </span>
               <span

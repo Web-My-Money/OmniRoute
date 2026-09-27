@@ -297,12 +297,12 @@ export default function CompressionSettingsTab() {
           <p className="text-sm text-text-muted">{t("compressionDesc")}</p>
         </div>
         {status === "saved" && (
-          <span className="ml-auto text-xs font-medium text-emerald-500 flex items-center gap-1">
+          <span className="ms-auto text-xs font-medium text-emerald-500 flex items-center gap-1">
             <span className="material-symbols-outlined text-[14px]">check_circle</span> {t("saved")}
           </span>
         )}
         {status === "error" && (
-          <span className="ml-auto text-xs font-medium text-red-500 flex items-center gap-1">
+          <span className="ms-auto text-xs font-medium text-red-500 flex items-center gap-1">
             <span className="material-symbols-outlined text-[14px]">error</span> {t("saveFailed")}
           </span>
         )}
@@ -320,7 +320,7 @@ export default function CompressionSettingsTab() {
                   key={m.value}
                   onClick={() => save({ defaultMode: m.value })}
                   disabled={saving}
-                  className={`flex items-start gap-3 p-3 rounded-lg border text-left transition-all ${
+                  className={`flex items-start gap-3 p-3 rounded-lg border text-start transition-all ${
                     config.defaultMode === m.value
                       ? "border-blue-500/50 bg-blue-500/5 ring-1 ring-blue-500/20"
                       : "border-border/50 hover:border-border hover:bg-surface/30"
@@ -438,7 +438,7 @@ export default function CompressionSettingsTab() {
               >
                 <span
                   className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                    config.mcpDescriptionCompressionEnabled !== false ? "left-5" : "left-0.5"
+                    config.mcpDescriptionCompressionEnabled !== false ? "start-5" : "start-0.5"
                   }`}
                 />
               </button>
@@ -584,7 +584,7 @@ export default function CompressionSettingsTab() {
               >
                 <span
                   className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                    config.cavemanOutputMode.autoClarity ? "left-5" : "left-0.5"
+                    config.cavemanOutputMode.autoClarity ? "start-5" : "start-0.5"
                   }`}
                 />
               </button>
@@ -622,7 +622,7 @@ export default function CompressionSettingsTab() {
               >
                 <span
                   className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                    config.aggressive.summarizerEnabled ? "left-5" : "left-0.5"
+                    config.aggressive.summarizerEnabled ? "start-5" : "start-0.5"
                   }`}
                 />
               </button>
@@ -768,7 +768,7 @@ export default function CompressionSettingsTab() {
               >
                 <span
                   className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                    config.ultra.enabled ? "left-5" : "left-0.5"
+                    config.ultra.enabled ? "start-5" : "start-0.5"
                   }`}
                 />
               </button>
@@ -853,7 +853,7 @@ export default function CompressionSettingsTab() {
               >
                 <span
                   className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                    config.ultra.slmFallbackToAggressive ? "left-5" : "left-0.5"
+                    config.ultra.slmFallbackToAggressive ? "start-5" : "start-0.5"
                   }`}
                 />
               </button>

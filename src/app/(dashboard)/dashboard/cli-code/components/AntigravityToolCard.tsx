@@ -337,7 +337,7 @@ export default function AntigravityToolCard({
           {isRunning && (
             <>
               <div className="flex items-center gap-2">
-                <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-end">
                   {t("apiKey")}
                 </span>
                 <span className="material-symbols-outlined text-text-muted text-[14px]">
@@ -366,7 +366,7 @@ export default function AntigravityToolCard({
                 const entry = getMappingEntry(modelMappings, model.alias);
                 return (
                   <div key={model.alias} className="flex items-center gap-2">
-                    <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                    <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-end">
                       {model.name}
                     </span>
                     <span className="material-symbols-outlined text-text-muted text-[14px]">
@@ -419,7 +419,7 @@ export default function AntigravityToolCard({
                   onClick={handleSaveMappings}
                   disabled={loading || Object.keys(modelMappings).length === 0}
                 >
-                  <span className="material-symbols-outlined text-[14px] mr-1">save</span>
+                  <span className="material-symbols-outlined text-[14px] me-1">save</span>
                   {t("saveMappings")}
                 </Button>
               </div>

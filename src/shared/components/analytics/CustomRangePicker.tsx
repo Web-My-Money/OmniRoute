@@ -117,7 +117,7 @@ export default function CustomRangePicker({
   return (
     <div
       ref={ref}
-      className="absolute right-0 top-full z-50 mt-2 w-[340px] rounded-xl border border-border/50 bg-surface p-4 shadow-xl"
+      className="absolute end-0 top-full z-50 mt-2 w-[340px] rounded-xl border border-border/50 bg-surface p-4 shadow-xl"
       style={{ backdropFilter: "blur(16px)" }}
     >
       {/* Quick presets */}

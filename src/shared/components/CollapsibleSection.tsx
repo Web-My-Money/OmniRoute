@@ -28,7 +28,7 @@ export default function CollapsibleSection({
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "flex items-center justify-between w-full px-4 py-3 text-left",
+          "flex items-center justify-between w-full px-4 py-3 text-start",
           "hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors",
           "rounded-t-lg",
           !open && "rounded-b-lg"

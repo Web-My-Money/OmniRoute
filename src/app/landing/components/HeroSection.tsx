@@ -9,7 +9,7 @@ export default function HeroSection() {
   return (
     <section className="relative pt-32 pb-20 px-4 sm:px-6 min-h-[90vh] flex flex-col items-center justify-center overflow-hidden">
       {/* Glow effect */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-[#E54D5E]/10 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute top-0 start-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-[#E54D5E]/10 rounded-full blur-[120px] pointer-events-none"></div>
 
       <div className="relative z-10 max-w-4xl w-full text-center flex flex-col items-center gap-8">
         {/* Version badge */}

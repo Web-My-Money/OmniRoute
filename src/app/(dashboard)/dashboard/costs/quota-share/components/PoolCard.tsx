@@ -88,7 +88,7 @@ export default function PoolCard({
                 </div>
               ))}
               {providers.length > 3 && (
-                <span className="text-[10px] text-text-muted font-semibold ml-0.5">
+                <span className="text-[10px] text-text-muted font-semibold ms-0.5">
                   +{providers.length - 3}
                 </span>
               )}

@@ -360,10 +360,11 @@
       "dedicatedGate": true
     },
     "rtlPhysicalClasses": {
-      "value": 1011,
+      "value": 0,
       "direction": "down",
       "eps": 0,
-      "_seeded_2026_07_28": "Measured by scripts/check/check-rtl-ratchet.mjs. tests/unit/ui/rtl-logical-classes.test.tsx pins four components and states it is partial (#3541); this bounds the remainder."
+      "_seeded_2026_07_28": "Measured by scripts/check/check-rtl-ratchet.mjs. tests/unit/ui/rtl-logical-classes.test.tsx pins four components and states it is partial (#3541); this bounds the remainder.",
+      "_rebaseline_2026_09_26_rtl_logical_codemod": "1083->0: codemod mecanico de classes fisicas p/ utilitarios logicos Tailwind v4 (ml->ms, pl->ps, left->start, text-left->text-start, border-l->border-s, rounded-l->rounded-s) em 268 .tsx — identico em LTR, corrige espelhamento RTL (ar/fa/he/ur)."
     }
   },
   "_coverage_note": "Pisos anti-flake ~2pt abaixo do real do CI mergeado MEDIDO COM os 135 testes religados (run 27247237268: statements 78.4 / lines 78.4 / functions 83.84 / branches 75.73). O religamento da 6A.1 HONESTIFICOU a regua: os ~82.5 anteriores eram inflados porque modulos nunca importados ficavam fora do denominador do c8. Apertar via --require-tighten na Fase 6A (2026-06-16).",

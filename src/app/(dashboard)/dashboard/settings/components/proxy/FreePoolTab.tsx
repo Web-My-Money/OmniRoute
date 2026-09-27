@@ -239,7 +239,7 @@ export default function FreePoolTab() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         <SourceToggleBar disabledSources={disabledSources} onToggle={handleToggleSource} />
-        <div className="flex gap-2 ml-auto flex-wrap items-center">
+        <div className="flex gap-2 ms-auto flex-wrap items-center">
           <select
             value={filterProtocol}
             onChange={(e) => setFilterProtocol(e.target.value)}
@@ -352,26 +352,26 @@ export default function FreePoolTab() {
         <table className="w-full text-sm">
           <thead className="bg-surface-alt text-text-muted text-xs">
             <tr>
-              <th className="px-3 py-2 text-left w-8" scope="col"></th>
-              <th className="px-3 py-2 text-left" scope="col">
+              <th className="px-3 py-2 text-start w-8" scope="col"></th>
+              <th className="px-3 py-2 text-start" scope="col">
                 {translateOrFallback("proxyFreePoolSource", "Source")}
               </th>
-              <th className="px-3 py-2 text-left" scope="col">
+              <th className="px-3 py-2 text-start" scope="col">
                 {translateOrFallback("proxyFreePoolHostPort", "Host:Port")}
               </th>
-              <th className="px-3 py-2 text-left" scope="col">
+              <th className="px-3 py-2 text-start" scope="col">
                 {translateOrFallback("proxyFreePoolType", "Type")}
               </th>
-              <th className="px-3 py-2 text-left" scope="col">
+              <th className="px-3 py-2 text-start" scope="col">
                 {translateOrFallback("proxyFreePoolCountry", "Country")}
               </th>
-              <th className="px-3 py-2 text-left" scope="col">
+              <th className="px-3 py-2 text-start" scope="col">
                 {translateOrFallback("proxyFreePoolQuality", "Quality")}
               </th>
-              <th className="px-3 py-2 text-left" scope="col">
+              <th className="px-3 py-2 text-start" scope="col">
                 {translateOrFallback("proxyFreePoolLatency", "Latency")}
               </th>
-              <th className="px-3 py-2 text-left" scope="col"></th>
+              <th className="px-3 py-2 text-start" scope="col"></th>
             </tr>
           </thead>
           <tbody>

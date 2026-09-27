@@ -169,15 +169,13 @@ function TargetConfiguredRow({ target }: { target: ComboControlCenterTarget }) {
         <div className={`rounded-lg border px-3 py-2 text-xs ${targetHealthTone(target)}`}>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1">
             <span>{t("requests")}</span>
-            <span className="text-right font-semibold">{target.health?.requests ?? 0}</span>
+            <span className="text-end font-semibold">{target.health?.requests ?? 0}</span>
             <span>{t("success")}</span>
-            <span className="text-right font-semibold">
-              {fmtPercent(target.health?.successRate)}
-            </span>
+            <span className="text-end font-semibold">{fmtPercent(target.health?.successRate)}</span>
             <span>{t("latency")}</span>
-            <span className="text-right font-semibold">{fmtMs(target.health?.avgLatencyMs)}</span>
+            <span className="text-end font-semibold">{fmtMs(target.health?.avgLatencyMs)}</span>
             <span>{t("quota")}</span>
-            <span className="text-right font-semibold">
+            <span className="text-end font-semibold">
               {fmtPercent(target.health?.quotaRemainingPct)}
             </span>
           </div>

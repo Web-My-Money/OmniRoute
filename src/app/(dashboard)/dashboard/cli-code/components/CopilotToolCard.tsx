@@ -347,7 +347,7 @@ export default function CopilotToolCard({
                 </span>
                 {t("advancedOptions")}
               </summary>
-              <div className="mt-3 grid grid-cols-2 gap-3 pl-6">
+              <div className="mt-3 grid grid-cols-2 gap-3 ps-6">
                 <div>
                   <label className="text-xs text-text-muted block mb-1">
                     {t("copilotMaxInputTokens")}
@@ -411,7 +411,7 @@ export default function CopilotToolCard({
                     size="sm"
                     onClick={() => handleCopy(generateConfig(), "config")}
                   >
-                    <span className="material-symbols-outlined text-[14px] mr-1">
+                    <span className="material-symbols-outlined text-[14px] me-1">
                       {copiedField === "config" ? "check" : "content_copy"}
                     </span>
                     {copiedField === "config" ? t("copied") : t("copyConfig")}

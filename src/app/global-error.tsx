@@ -66,7 +66,7 @@ function GlobalErrorContent({ error, reset }: GlobalErrorProps) {
       </p>
       {process.env.NODE_ENV === "development" && error?.message && (
         <pre
-          className="p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 text-xs max-w-[600px] overflow-auto text-left mb-6"
+          className="p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 text-xs max-w-[600px] overflow-auto text-start mb-6"
           aria-label={t("globalError.detailsAriaLabel")}
         >
           {error.message}

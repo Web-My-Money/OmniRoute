@@ -163,11 +163,11 @@ export default function HomeRecentRequests({ enabled = true }: { enabled?: boole
             <thead className="sticky top-0 z-10 bg-surface">
               <tr className="border-b border-border text-text-muted">
                 <th className="w-2 py-1.5" />
-                <th className="py-1.5 text-left font-semibold">{t("recentRequestsModel")}</th>
-                <th className="py-1.5 text-right font-semibold whitespace-nowrap">
+                <th className="py-1.5 text-start font-semibold">{t("recentRequestsModel")}</th>
+                <th className="py-1.5 text-end font-semibold whitespace-nowrap">
                   {t("recentRequestsTokens")}
                 </th>
-                <th className="py-1.5 text-right font-semibold">{t("recentRequestsWhen")}</th>
+                <th className="py-1.5 text-end font-semibold">{t("recentRequestsWhen")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
@@ -178,17 +178,14 @@ export default function HomeRecentRequests({ enabled = true }: { enabled?: boole
                     <td className="py-1.5">
                       <span className={`block size-1.5 rounded-full ${STATE_DOT[state]}`} />
                     </td>
-                    <td
-                      className="py-1.5 font-mono truncate max-w-[140px]"
-                      title={row.model || ""}
-                    >
+                    <td className="py-1.5 font-mono truncate max-w-[140px]" title={row.model || ""}>
                       {row.model || "—"}
                     </td>
-                    <td className="py-1.5 text-right whitespace-nowrap">
+                    <td className="py-1.5 text-end whitespace-nowrap">
                       <span className="text-primary">{fmtCompact(row.tokens?.in)}↑</span>{" "}
                       <span className="text-green-500">{fmtCompact(row.tokens?.out)}↓</span>
                     </td>
-                    <td className="py-1.5 text-right whitespace-nowrap text-text-muted">
+                    <td className="py-1.5 text-end whitespace-nowrap text-text-muted">
                       {state === "active" ? (
                         <span className="text-primary">•••</span>
                       ) : (

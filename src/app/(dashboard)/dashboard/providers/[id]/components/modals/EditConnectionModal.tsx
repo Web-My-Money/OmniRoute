@@ -1148,7 +1148,7 @@ export default function EditConnectionModal({
             {showAdvanced && (
               <div
                 id="edit-connection-advanced-settings"
-                className="flex flex-col gap-3 pl-2 border-l-2 border-border"
+                className="flex flex-col gap-3 ps-2 border-s-2 border-border"
               >
                 <Input
                   label={t("customUserAgentLabel")}
@@ -1421,7 +1421,7 @@ export default function EditConnectionModal({
             <div className="flex items-center justify-between gap-2">
               <label className="text-sm font-medium text-text-main">
                 {t("extraApiKeysLabel")}
-                <span className="ml-2 text-[11px] font-normal text-text-muted">
+                <span className="ms-2 text-[11px] font-normal text-text-muted">
                   ({t("extraApiKeysHint")})
                 </span>
               </label>

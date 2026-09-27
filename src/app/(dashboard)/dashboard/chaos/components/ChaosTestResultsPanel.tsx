@@ -58,9 +58,9 @@ export function ChaosTestResultsPanel({ result }: { result: ChaosTestResult }) {
         >
           <div className="font-medium text-text-main">
             [{idx + 1}] {model.providerName} / {model.modelId}
-            <span className="ml-2 text-text-muted">({model.durationMs}ms)</span>
+            <span className="ms-2 text-text-muted">({model.durationMs}ms)</span>
             <span
-              className={`ml-2 ${model.status === "success" ? "text-green-500" : "text-red-500"}`}
+              className={`ms-2 ${model.status === "success" ? "text-green-500" : "text-red-500"}`}
             >
               {model.status}
             </span>

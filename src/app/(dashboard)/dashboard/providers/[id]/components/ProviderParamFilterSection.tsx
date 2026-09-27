@@ -250,7 +250,7 @@ function AutoLearnToggle({ t, checked, onChange }: AutoLearnToggleProps) {
           {t("paramFiltersAutoLearnLabel")}
         </span>
       </label>
-      <p className="text-[11px] text-text-muted mt-1 ml-5">{t("paramFiltersAutoLearnHint")}</p>
+      <p className="text-[11px] text-text-muted mt-1 ms-5">{t("paramFiltersAutoLearnHint")}</p>
     </div>
   );
 }

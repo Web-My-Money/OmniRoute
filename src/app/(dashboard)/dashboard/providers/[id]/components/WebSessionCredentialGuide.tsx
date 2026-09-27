@@ -89,7 +89,7 @@ export default function WebSessionCredentialGuide({
             })}
           </p>
           {guideSteps ? (
-            <ol className="list-decimal space-y-1 pl-5">
+            <ol className="list-decimal space-y-1 ps-5">
               {guideSteps.map((step, index) => (
                 <li key={step}>
                   {step}
@@ -98,7 +98,7 @@ export default function WebSessionCredentialGuide({
                       href={providerWebsite}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="ml-2 inline-flex items-center gap-1 text-primary hover:underline"
+                      className="ms-2 inline-flex items-center gap-1 text-primary hover:underline"
                     >
                       {providerText(t, "webSessionGuideOpenProvider", "Open {host}", {
                         host: providerWebsiteHost,
@@ -112,7 +112,7 @@ export default function WebSessionCredentialGuide({
               ))}
             </ol>
           ) : (
-            <ol className="list-decimal space-y-1 pl-5">
+            <ol className="list-decimal space-y-1 ps-5">
               <li>
                 {providerText(t, "webSessionGuideStep1", "Sign in to {provider} in your browser.", {
                   provider: providerName,
@@ -122,7 +122,7 @@ export default function WebSessionCredentialGuide({
                     href={providerWebsite}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ml-2 inline-flex items-center gap-1 text-primary hover:underline"
+                    className="ms-2 inline-flex items-center gap-1 text-primary hover:underline"
                   >
                     {providerText(t, "webSessionGuideOpenProvider", "Open {host}", {
                       host: providerWebsiteHost,

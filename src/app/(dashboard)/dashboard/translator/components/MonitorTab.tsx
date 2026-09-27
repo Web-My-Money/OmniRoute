@@ -255,7 +255,7 @@ export default function MonitorTab({ onGoToTranslate }: MonitorTabProps) {
 
           {loading ? (
             <div className="flex items-center justify-center py-12 text-text-muted">
-              <span className="material-symbols-outlined animate-spin mr-2" aria-hidden="true">
+              <span className="material-symbols-outlined animate-spin me-2" aria-hidden="true">
                 progress_activity
               </span>
               {tc("loading")}
@@ -278,14 +278,14 @@ export default function MonitorTab({ onGoToTranslate }: MonitorTabProps) {
             <div className="overflow-x-auto" data-testid="monitor-events-table">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-text-muted border-b border-border">
-                    <th className="pb-2 pr-4">{t("time")}</th>
-                    <th className="pb-2 pr-4">{translateOrFallback("routeDetails", "Route")}</th>
-                    <th className="pb-2 pr-4">{t("source")}</th>
-                    <th className="pb-2 pr-4">{t("target")}</th>
-                    <th className="pb-2 pr-4">{t("model")}</th>
-                    <th className="pb-2 pr-4">{t("status")}</th>
-                    <th className="pb-2 text-right">{t("latency")}</th>
+                  <tr className="text-start text-xs text-text-muted border-b border-border">
+                    <th className="pb-2 pe-4">{t("time")}</th>
+                    <th className="pb-2 pe-4">{translateOrFallback("routeDetails", "Route")}</th>
+                    <th className="pb-2 pe-4">{t("source")}</th>
+                    <th className="pb-2 pe-4">{t("target")}</th>
+                    <th className="pb-2 pe-4">{t("model")}</th>
+                    <th className="pb-2 pe-4">{t("status")}</th>
+                    <th className="pb-2 text-end">{t("latency")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -305,12 +305,12 @@ export default function MonitorTab({ onGoToTranslate }: MonitorTabProps) {
                         className="border-b border-border/50 hover:bg-bg-subtle/50 transition-colors"
                         data-testid="monitor-event-row"
                       >
-                        <td className="py-2 pr-4 text-xs text-text-muted whitespace-nowrap">
+                        <td className="py-2 pe-4 text-xs text-text-muted whitespace-nowrap">
                           {event.timestamp
                             ? new Date(event.timestamp).toLocaleTimeString()
                             : notAvailable}
                         </td>
-                        <td className="py-2 pr-4 min-w-[220px]">
+                        <td className="py-2 pe-4 min-w-[220px]">
                           <div className="flex flex-col gap-1">
                             <div className="flex flex-wrap items-center gap-1.5">
                               <Badge variant="default" size="sm">
@@ -336,20 +336,20 @@ export default function MonitorTab({ onGoToTranslate }: MonitorTabProps) {
                             </div>
                           </div>
                         </td>
-                        <td className="py-2 pr-4">
+                        <td className="py-2 pe-4">
                           <Badge variant="default" size="sm">
                             {srcMeta.label}
                           </Badge>
                         </td>
-                        <td className="py-2 pr-4">
+                        <td className="py-2 pe-4">
                           <Badge variant="primary" size="sm">
                             {tgtMeta.label}
                           </Badge>
                         </td>
-                        <td className="py-2 pr-4 text-xs font-mono text-text-muted break-all">
+                        <td className="py-2 pe-4 text-xs font-mono text-text-muted break-all">
                           {event.model ?? notAvailable}
                         </td>
-                        <td className="py-2 pr-4">
+                        <td className="py-2 pe-4">
                           {event.status === "success" ? (
                             <Badge variant="success" size="sm" dot>
                               {t("ok")}
@@ -360,7 +360,7 @@ export default function MonitorTab({ onGoToTranslate }: MonitorTabProps) {
                             </Badge>
                           )}
                         </td>
-                        <td className="py-2 text-right text-xs text-text-muted">
+                        <td className="py-2 text-end text-xs text-text-muted">
                           {event.latency ? formatLatency(event.latency) : notAvailable}
                         </td>
                       </tr>

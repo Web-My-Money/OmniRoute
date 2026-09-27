@@ -67,7 +67,7 @@ export default function AutoComboCatalog({
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="flex w-full items-start justify-between gap-3 text-left"
+        className="flex w-full items-start justify-between gap-3 text-start"
         aria-expanded={open}
         aria-label={open ? t("autoCatalogCollapse") : t("autoCatalogExpand")}
       >
@@ -96,7 +96,7 @@ export default function AutoComboCatalog({
               <button
                 onClick={() => handleDuplicateTemplate(tpl)}
                 disabled={duplicatingName !== null}
-                className="absolute bottom-1.5 right-1.5 p-0.5 hover:bg-black/5 dark:hover:bg-white/5 rounded text-text-muted hover:text-primary transition-colors"
+                className="absolute bottom-1.5 end-1.5 p-0.5 hover:bg-black/5 dark:hover:bg-white/5 rounded text-text-muted hover:text-primary transition-colors"
                 title={t("duplicateAutoComboTitle", { name: tpl.name })}
               >
                 <span

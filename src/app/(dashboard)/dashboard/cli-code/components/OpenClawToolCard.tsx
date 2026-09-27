@@ -348,7 +348,7 @@ export default function OpenClawToolCard({
                 not on the server. Upstream report: #579.
               */}
               <Button variant="ghost" size="sm" onClick={() => setShowManualConfigModal(true)}>
-                <span className="material-symbols-outlined text-[14px] mr-1">content_copy</span>
+                <span className="material-symbols-outlined text-[14px] me-1">content_copy</span>
                 {t("manualConfig")}
               </Button>
             </div>
@@ -360,7 +360,7 @@ export default function OpenClawToolCard({
                 {/* Current Base URL */}
                 {openclawStatus?.settings?.models?.providers?.["omniroute"]?.baseUrl && (
                   <div className="flex items-center gap-2">
-                    <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                    <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-end">
                       {t("current")}
                     </span>
                     <span className="material-symbols-outlined text-text-muted text-[14px]">
@@ -374,7 +374,7 @@ export default function OpenClawToolCard({
 
                 {/* Base URL */}
                 <div className="flex items-center gap-2">
-                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-end">
                     {t("baseUrl")}
                   </span>
                   <span className="material-symbols-outlined text-text-muted text-[14px]">
@@ -400,7 +400,7 @@ export default function OpenClawToolCard({
 
                 {/* API Key */}
                 <div className="flex items-center gap-2">
-                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-end">
                     {t("apiKey")}
                   </span>
                   <span className="material-symbols-outlined text-text-muted text-[14px]">
@@ -427,7 +427,7 @@ export default function OpenClawToolCard({
 
                 {/* Model */}
                 <div className="flex items-center gap-2">
-                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-end">
                     {t("model")}
                   </span>
                   <span className="material-symbols-outlined text-text-muted text-[14px]">
@@ -478,7 +478,7 @@ export default function OpenClawToolCard({
                   disabled={!selectedModel}
                   loading={applying}
                 >
-                  <span className="material-symbols-outlined text-[14px] mr-1">save</span>
+                  <span className="material-symbols-outlined text-[14px] me-1">save</span>
                   {t("apply")}
                 </Button>
                 <Button
@@ -488,11 +488,11 @@ export default function OpenClawToolCard({
                   disabled={!openclawStatus?.hasOmniRoute}
                   loading={restoring}
                 >
-                  <span className="material-symbols-outlined text-[14px] mr-1">restore</span>
+                  <span className="material-symbols-outlined text-[14px] me-1">restore</span>
                   {t("reset")}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setShowManualConfigModal(true)}>
-                  <span className="material-symbols-outlined text-[14px] mr-1">content_copy</span>
+                  <span className="material-symbols-outlined text-[14px] me-1">content_copy</span>
                   {t("manualConfig")}
                 </Button>
                 <div className="flex-1" />
@@ -504,7 +504,7 @@ export default function OpenClawToolCard({
                     if (!showBackups) fetchBackups();
                   }}
                 >
-                  <span className="material-symbols-outlined text-[14px] mr-1">history</span>
+                  <span className="material-symbols-outlined text-[14px] me-1">history</span>
                   {t("backups")}
                   {backups.length > 0 && ` (${backups.length})`}
                 </Button>

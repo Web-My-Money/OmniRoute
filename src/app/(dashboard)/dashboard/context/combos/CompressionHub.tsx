@@ -53,7 +53,7 @@ function Toggle({
     >
       <span
         className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-          checked ? "left-5" : "left-0.5"
+          checked ? "start-5" : "start-0.5"
         }`}
       />
     </button>
@@ -179,7 +179,7 @@ export default function CompressionHub() {
               strong: (chunks) => <strong className="text-text-main">{chunks}</strong>,
             })}
           </p>
-          <ol className="ml-4 list-decimal space-y-1.5">
+          <ol className="ms-4 list-decimal space-y-1.5">
             <li>
               {t.rich("explanationActiveProfile", {
                 strong: (chunks) => <strong className="text-text-main">{chunks}</strong>,

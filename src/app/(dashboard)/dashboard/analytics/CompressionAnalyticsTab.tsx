@@ -99,7 +99,7 @@ function ModeBar({
           style={{ width: `${pct}%` }}
         />
       </div>
-      <div className="text-xs text-text-muted text-right">{pct}%</div>
+      <div className="text-xs text-text-muted text-end">{pct}%</div>
     </div>
   );
 }
@@ -134,7 +134,7 @@ function ProviderBar({
           style={{ width: `${pct}%` }}
         />
       </div>
-      <div className="text-xs text-text-muted text-right">{pct}%</div>
+      <div className="text-xs text-text-muted text-end">{pct}%</div>
     </div>
   );
 }
@@ -163,7 +163,7 @@ export default function CompressionAnalyticsTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16 text-text-muted">
-        <span className="material-symbols-outlined animate-spin mr-2">progress_activity</span>
+        <span className="material-symbols-outlined animate-spin me-2">progress_activity</span>
         {t("compressionAnalyticsLoading")}
       </div>
     );

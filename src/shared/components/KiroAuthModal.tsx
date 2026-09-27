@@ -186,7 +186,7 @@ export default function KiroAuthModal({
             {/* AWS Builder ID */}
             <button
               onClick={() => onMethodSelect("builder-id")}
-              className="w-full p-4 text-left border border-border rounded-lg hover:bg-sidebar transition-colors"
+              className="w-full p-4 text-start border border-border rounded-lg hover:bg-sidebar transition-colors"
             >
               <div className="flex items-start gap-3">
                 <span className="material-symbols-outlined text-primary mt-0.5">shield</span>
@@ -202,7 +202,7 @@ export default function KiroAuthModal({
             {/* AWS IAM Identity Center (IDC) */}
             <button
               onClick={() => handleMethodSelect("idc")}
-              className="w-full p-4 text-left border border-border rounded-lg hover:bg-sidebar transition-colors"
+              className="w-full p-4 text-start border border-border rounded-lg hover:bg-sidebar transition-colors"
             >
               <div className="flex items-start gap-3">
                 <span className="material-symbols-outlined text-primary mt-0.5">business</span>
@@ -220,7 +220,7 @@ export default function KiroAuthModal({
             {/* Google Social Login */}
             <button
               onClick={() => handleSocialLogin("google")}
-              className="w-full p-4 text-left border border-border rounded-lg hover:bg-sidebar transition-colors"
+              className="w-full p-4 text-start border border-border rounded-lg hover:bg-sidebar transition-colors"
             >
               <div className="flex items-start gap-3">
                 <span className="material-symbols-outlined text-primary mt-0.5">
@@ -236,7 +236,7 @@ export default function KiroAuthModal({
             {/* GitHub Social Login */}
             <button
               onClick={() => handleSocialLogin("github")}
-              className="w-full p-4 text-left border border-border rounded-lg hover:bg-sidebar transition-colors"
+              className="w-full p-4 text-start border border-border rounded-lg hover:bg-sidebar transition-colors"
             >
               <div className="flex items-start gap-3">
                 <span className="material-symbols-outlined text-primary mt-0.5">code</span>
@@ -250,7 +250,7 @@ export default function KiroAuthModal({
             {/* Import Token */}
             <button
               onClick={() => handleMethodSelect("import")}
-              className="w-full p-4 text-left border border-border rounded-lg hover:bg-sidebar transition-colors"
+              className="w-full p-4 text-start border border-border rounded-lg hover:bg-sidebar transition-colors"
             >
               <div className="flex items-start gap-3">
                 <span className="material-symbols-outlined text-primary mt-0.5">file_upload</span>
@@ -266,7 +266,7 @@ export default function KiroAuthModal({
             {/* API Key */}
             <button
               onClick={() => handleMethodSelect("api-key")}
-              className="w-full p-4 text-left border border-border rounded-lg hover:bg-sidebar transition-colors"
+              className="w-full p-4 text-start border border-border rounded-lg hover:bg-sidebar transition-colors"
             >
               <div className="flex items-start gap-3">
                 <span className="material-symbols-outlined text-primary mt-0.5">key</span>

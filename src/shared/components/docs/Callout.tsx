@@ -21,7 +21,7 @@ export default function Callout({ type, title, children, className }: CalloutPro
       role="note"
       aria-labelledby="callout-title"
       className={cn(
-        "relative overflow-hidden rounded-lg border-l-4 p-4 my-4 transition-colors",
+        "relative overflow-hidden rounded-lg border-s-4 p-4 my-4 transition-colors",
         "bg-bg-subtle border-border",
         className
       )}

@@ -1170,7 +1170,7 @@ export default function EvalsTab() {
       <Card className="p-0 overflow-hidden">
         <button
           onClick={() => setShowHowItWorks((prev) => !prev)}
-          className="w-full flex items-center justify-between px-6 py-4 hover:bg-surface/30 transition-colors text-left"
+          className="w-full flex items-center justify-between px-6 py-4 hover:bg-surface/30 transition-colors text-start"
         >
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
@@ -1455,7 +1455,7 @@ export default function EvalsTab() {
                       <p className="text-xs text-text-muted">
                         {t("casesCount", { count: suite.cases?.length || suite.caseCount || 0 })}
                         {suite.description ? (
-                          <span className="ml-1">- {suite.description}</span>
+                          <span className="ms-1">- {suite.description}</span>
                         ) : null}
                       </p>
                       {suite.source === "custom" && suite.updatedAt ? (
@@ -1625,7 +1625,7 @@ export default function EvalsTab() {
                             </div>
 
                             {run.results.length > 0 ? (
-                              <div className="flex max-h-[420px] flex-col gap-2 overflow-auto pr-1">
+                              <div className="flex max-h-[420px] flex-col gap-2 overflow-auto pe-1">
                                 {run.results.map((result, index) => {
                                   const resultKey = `${run.id}:${result.caseId || index}`;
                                   const isResultExpanded = expandedResults.has(resultKey);
@@ -1642,7 +1642,7 @@ export default function EvalsTab() {
                                     >
                                       <button
                                         type="button"
-                                        className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-surface/30"
+                                        className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-3 py-3 text-start transition-colors hover:bg-surface/30"
                                         aria-expanded={isResultExpanded}
                                         aria-label={
                                           isResultExpanded ? t("collapseResult") : t("expandResult")
@@ -1846,7 +1846,11 @@ export default function EvalsTab() {
   );
 }
 
-const HeroSection = memo(function HeroSection({ t }: { t: (key: string, values?: Record<string, unknown>) => string }) {
+const HeroSection = memo(function HeroSection({
+  t,
+}: {
+  t: (key: string, values?: Record<string, unknown>) => string;
+}) {
   return (
     <Card className="p-0 overflow-hidden">
       <div
@@ -1977,7 +1981,7 @@ function SuiteBuilderModal({
       title={draft.id ? t("suiteBuilderEditTitle") : t("suiteBuilderCreateTitle")}
       onClose={onClose}
     >
-      <div className="flex max-h-[75vh] flex-col gap-4 overflow-y-auto pr-1">
+      <div className="flex max-h-[75vh] flex-col gap-4 overflow-y-auto pe-1">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Input
             label={t("suiteBuilderNameLabel")}

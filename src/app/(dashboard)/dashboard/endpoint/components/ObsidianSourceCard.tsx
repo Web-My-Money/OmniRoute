@@ -189,7 +189,7 @@ export default function ObsidianSourceCard() {
       <div className="p-5">
         <button
           onClick={() => setExpanded(!expanded)}
-          className="w-full flex items-center gap-3 text-left"
+          className="w-full flex items-center gap-3 text-start"
         >
           <div className="flex items-center justify-center size-10 rounded-lg bg-purple-500/10 shrink-0">
             <svg

@@ -1,5 +1,8 @@
 import Button from "@/shared/components/Button";
-import { hasExactModelStepDuplicate, type ComboBuilderGlobalModelEntry } from "@/lib/combos/builderDraft";
+import {
+  hasExactModelStepDuplicate,
+  type ComboBuilderGlobalModelEntry,
+} from "@/lib/combos/builderDraft";
 
 type TranslationFn = {
   (key: string, values?: Record<string, unknown>): string;
@@ -91,13 +94,13 @@ export default function GlobalModelSearchPanel({
                   "builderGlobalSearchPlaceholder",
                   "Search models across all providers (e.g. opus, sonnet, deepseek, kimi, qwen)..."
                 )}
-                className="w-full text-xs py-2 pl-3 pr-7 rounded border border-black/10 dark:border-white/10 bg-white dark:bg-white/5 text-text-main focus:border-primary focus:outline-none"
+                className="w-full text-xs py-2 ps-3 pe-7 rounded border border-black/10 dark:border-white/10 bg-white dark:bg-white/5 text-text-main focus:border-primary focus:outline-none"
               />
               {globalSearchQuery && (
                 <button
                   type="button"
                   onClick={() => onGlobalSearchQueryChange("")}
-                  className="absolute right-2.5 top-2 text-text-muted hover:text-text-main text-xs"
+                  className="absolute end-2.5 top-2 text-text-muted hover:text-text-main text-xs"
                 >
                   <span className="material-symbols-outlined text-[14px]">close</span>
                 </button>
@@ -111,15 +114,16 @@ export default function GlobalModelSearchPanel({
                 size="sm"
                 className="shrink-0 text-xs"
               >
-                <span className="material-symbols-outlined text-[14px] mr-1">playlist_add</span>
-                {getI18nOrFallback(t, "builderGlobalAddAll", "Add all")} ({filteredGlobalModels.length})
+                <span className="material-symbols-outlined text-[14px] me-1">playlist_add</span>
+                {getI18nOrFallback(t, "builderGlobalAddAll", "Add all")} (
+                {filteredGlobalModels.length})
               </Button>
             )}
           </div>
 
           {/* Quick Presets */}
           <div className="flex flex-wrap items-center gap-1">
-            <span className="text-[10px] text-text-muted uppercase font-semibold mr-1">
+            <span className="text-[10px] text-text-muted uppercase font-semibold me-1">
               {getI18nOrFallback(t, "builderGlobalShortcuts", "Shortcuts:")}
             </span>
             {QUICK_PRESETS.map((preset) => (
@@ -142,9 +146,14 @@ export default function GlobalModelSearchPanel({
           <div className="max-h-[220px] overflow-y-auto rounded border border-black/10 dark:border-white/10 bg-white dark:bg-white/5 divide-y divide-black/5 dark:divide-white/5">
             {filteredGlobalModels.length === 0 ? (
               <div className="p-4 text-center text-xs text-text-muted">
-                {getI18nOrFallback(t, "builderGlobalNoResults", `No model found for "${globalSearchQuery}".`, {
-                  query: globalSearchQuery,
-                })}
+                {getI18nOrFallback(
+                  t,
+                  "builderGlobalNoResults",
+                  `No model found for "${globalSearchQuery}".`,
+                  {
+                    query: globalSearchQuery,
+                  }
+                )}
               </div>
             ) : (
               filteredGlobalModels.map((item) => {
@@ -154,8 +163,10 @@ export default function GlobalModelSearchPanel({
                     key={`${item.providerId}-${item.modelId}`}
                     className="flex items-center justify-between px-3 py-2 text-xs hover:bg-black/[0.02] dark:hover:bg-white/[0.03]"
                   >
-                    <div className="flex flex-col min-w-0 pr-2">
-                      <span className="font-semibold text-text-main truncate">{item.modelName}</span>
+                    <div className="flex flex-col min-w-0 pe-2">
+                      <span className="font-semibold text-text-main truncate">
+                        {item.modelName}
+                      </span>
                       <span className="text-[10px] text-text-muted truncate">
                         {getI18nOrFallback(t, "builderGlobalProviderLabel", "Provider:")}{" "}
                         <strong className="text-text-main">{item.providerName}</strong> (
@@ -178,7 +189,9 @@ export default function GlobalModelSearchPanel({
                           : "bg-primary/10 text-primary hover:bg-primary/20 font-medium"
                       }`}
                     >
-                      <span className="material-symbols-outlined text-[13px]">{isAdded ? "check" : "add"}</span>
+                      <span className="material-symbols-outlined text-[13px]">
+                        {isAdded ? "check" : "add"}
+                      </span>
                       {isAdded
                         ? getI18nOrFallback(t, "builderGlobalAdded", "Added")
                         : getI18nOrFallback(t, "builderGlobalAdd", "Add")}

@@ -363,7 +363,7 @@ export default function ChatTab({ configState, onMetricsUpdate }: ChatTabProps) 
             <div
               key={i}
               className={`flex flex-col max-w-[85%] ${
-                msg.role === "user" ? "ml-auto items-end" : "mr-auto items-start"
+                msg.role === "user" ? "ms-auto items-end" : "me-auto items-start"
               }`}
             >
               <span className="text-[10px] text-text-muted uppercase mb-1 px-1">
@@ -398,7 +398,7 @@ export default function ChatTab({ configState, onMetricsUpdate }: ChatTabProps) 
 
         {/* Loading indicator */}
         {loading && messages[messages.length - 1]?.role === "user" && (
-          <div className="flex flex-col max-w-[85%] mr-auto items-start">
+          <div className="flex flex-col max-w-[85%] me-auto items-start">
             <span className="text-[10px] text-text-muted uppercase mb-1 px-1">
               {t("role.assistant")}
             </span>

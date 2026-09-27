@@ -20,11 +20,7 @@ interface PluginConfig {
   configSchema: Record<string, ConfigField>;
 }
 
-export default function PluginConfigPage({
-  params,
-}: {
-  params: Promise<{ name: string }>;
-}) {
+export default function PluginConfigPage({ params }: { params: Promise<{ name: string }> }) {
   const { name } = use(params);
   const { addNotification } = useNotificationStore();
   const t = useTranslations("plugins");
@@ -100,9 +96,7 @@ export default function PluginConfigPage({
                 <label className="text-sm font-medium">
                   {key}
                   {field.description && (
-                    <span className="ml-2 text-xs text-gray-500">
-                      {field.description}
-                    </span>
+                    <span className="ms-2 text-xs text-gray-500">{field.description}</span>
                   )}
                 </label>
                 {field.type === "boolean" ? (
@@ -110,7 +104,7 @@ export default function PluginConfigPage({
                     type="checkbox"
                     checked={!!value}
                     onChange={(e) => handleChange(key, e.target.checked)}
-                    className="ml-2"
+                    className="ms-2"
                   />
                 ) : field.enum ? (
                   <select

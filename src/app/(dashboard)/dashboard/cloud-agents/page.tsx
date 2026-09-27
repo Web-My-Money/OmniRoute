@@ -508,7 +508,7 @@ export default function CloudAgentsPage() {
               </div>
               <div className="flex justify-end">
                 <Button type="submit" variant="primary" loading={creating}>
-                  <span className="material-symbols-outlined text-[16px] mr-1">rocket_launch</span>
+                  <span className="material-symbols-outlined text-[16px] me-1">rocket_launch</span>
                   {t("startTask")}
                 </Button>
               </div>
@@ -647,7 +647,7 @@ export default function CloudAgentsPage() {
                       </pre>
                       <div className="flex gap-2 mt-2">
                         <Button variant="primary" size="sm" onClick={handleApprovePlan}>
-                          <span className="material-symbols-outlined text-[14px] mr-1">check</span>
+                          <span className="material-symbols-outlined text-[14px] me-1">check</span>
                           {t("approvePlan")}
                         </Button>
                         <Button
@@ -750,7 +750,7 @@ export default function CloudAgentsPage() {
                       onClick={() => handleCancelTask(selectedTask.id)}
                       disabled={["completed", "failed", "cancelled"].includes(selectedTask.status)}
                     >
-                      <span className="material-symbols-outlined text-[14px] mr-1">cancel</span>
+                      <span className="material-symbols-outlined text-[14px] me-1">cancel</span>
                       {t("cancel")}
                     </Button>
                     <Button
@@ -759,7 +759,7 @@ export default function CloudAgentsPage() {
                       onClick={() => handleDeleteTask(selectedTask.id)}
                       className="text-red-500 hover:text-red-400"
                     >
-                      <span className="material-symbols-outlined text-[14px] mr-1">delete</span>
+                      <span className="material-symbols-outlined text-[14px] me-1">delete</span>
                       {t("delete")}
                     </Button>
                   </div>
@@ -819,7 +819,7 @@ export default function CloudAgentsPage() {
                       window.location.href = "/dashboard/providers?section=cloudagent";
                     }}
                   >
-                    <span className="material-symbols-outlined text-[14px] mr-1">settings</span>
+                    <span className="material-symbols-outlined text-[14px] me-1">settings</span>
                     {t("configure") || "Configure"}
                   </Button>
                 </div>

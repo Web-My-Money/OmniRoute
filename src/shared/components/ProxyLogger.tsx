@@ -212,7 +212,7 @@ export default function ProxyLogger() {
 
         {/* Search */}
         <div className="flex-1 min-w-[200px] relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-[18px]">
+          <span className="material-symbols-outlined absolute start-3 top-1/2 -translate-y-1/2 text-text-muted text-[18px]">
             search
           </span>
           <input
@@ -220,7 +220,7 @@ export default function ProxyLogger() {
             placeholder={t("searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg bg-bg-subtle border border-border text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary"
+            className="w-full ps-10 pe-4 py-2 rounded-lg bg-bg-subtle border border-border text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary"
           />
         </div>
 
@@ -371,7 +371,7 @@ export default function ProxyLogger() {
 
       {/* Column Visibility Toggles */}
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="text-[10px] text-text-muted uppercase tracking-wider mr-1">
+        <span className="text-[10px] text-text-muted uppercase tracking-wider me-1">
           {t("columns")}
         </span>
         {columns.map((col) => (
@@ -543,7 +543,7 @@ export default function ProxyLogger() {
                         </td>
                       )}
                       {visibleColumns.latency && (
-                        <td className="px-3 py-2 text-right text-text-muted font-mono">
+                        <td className="px-3 py-2 text-end text-text-muted font-mono">
                           {formatLatency(log.latencyMs)}
                         </td>
                       )}
@@ -553,7 +553,7 @@ export default function ProxyLogger() {
                         </td>
                       )}
                       {visibleColumns.time && (
-                        <td className="px-3 py-2 text-right text-text-muted">
+                        <td className="px-3 py-2 text-end text-text-muted">
                           {formatTime(log.timestamp)}
                         </td>
                       )}

@@ -243,28 +243,28 @@ export default function OneproxyTab() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="text-left py-2 px-3 text-text-muted font-medium">
+                  <th className="text-start py-2 px-3 text-text-muted font-medium">
                     {t("oneproxyHost")}
                   </th>
-                  <th className="text-left py-2 px-3 text-text-muted font-medium">
+                  <th className="text-start py-2 px-3 text-text-muted font-medium">
                     {t("oneproxyProtocol")}
                   </th>
-                  <th className="text-left py-2 px-3 text-text-muted font-medium">
+                  <th className="text-start py-2 px-3 text-text-muted font-medium">
                     {t("oneproxyCountry")}
                   </th>
-                  <th className="text-left py-2 px-3 text-text-muted font-medium">
+                  <th className="text-start py-2 px-3 text-text-muted font-medium">
                     {t("oneproxyQuality")}
                   </th>
-                  <th className="text-left py-2 px-3 text-text-muted font-medium">
+                  <th className="text-start py-2 px-3 text-text-muted font-medium">
                     {t("oneproxyLatency")}
                   </th>
-                  <th className="text-left py-2 px-3 text-text-muted font-medium">
+                  <th className="text-start py-2 px-3 text-text-muted font-medium">
                     {t("oneproxyAnonymity")}
                   </th>
-                  <th className="text-left py-2 px-3 text-text-muted font-medium">
+                  <th className="text-start py-2 px-3 text-text-muted font-medium">
                     {t("oneproxyGoogle")}
                   </th>
-                  <th className="text-left py-2 px-3 text-text-muted font-medium">
+                  <th className="text-start py-2 px-3 text-text-muted font-medium">
                     {t("oneproxyActions")}
                   </th>
                 </tr>

@@ -246,7 +246,7 @@ export default function UsageAnalytics() {
                     setCustomStart("");
                     setCustomEnd("");
                   }}
-                  className="ml-0.5 opacity-70 hover:opacity-100"
+                  className="ms-0.5 opacity-70 hover:opacity-100"
                 >
                   <span className="material-symbols-outlined text-[11px]">close</span>
                 </span>

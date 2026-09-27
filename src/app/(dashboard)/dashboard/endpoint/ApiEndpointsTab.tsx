@@ -405,14 +405,14 @@ export default function ApiEndpointsTab() {
           {/* Search & filter */}
           <div className="flex items-center gap-2">
             <div className="relative flex-1 max-w-md">
-              <span className="material-symbols-outlined text-[16px] text-text-muted absolute left-3 top-1/2 -translate-y-1/2">
+              <span className="material-symbols-outlined text-[16px] text-text-muted absolute start-3 top-1/2 -translate-y-1/2">
                 search
               </span>
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t("apiEndpointsSearchPlaceholder")}
-                className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-black/10 dark:border-white/10
+                className="w-full ps-9 pe-3 py-2 text-xs rounded-lg border border-black/10 dark:border-white/10
                            bg-white dark:bg-black/20 focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
@@ -449,7 +449,7 @@ export default function ApiEndpointsTab() {
               )}
             </div>
             {/* Security tier filter */}
-            <div className="flex items-center gap-1 ml-1 border-l border-black/10 dark:border-white/10 pl-2 flex-wrap">
+            <div className="flex items-center gap-1 ms-1 border-l border-black/10 dark:border-white/10 ps-2 flex-wrap">
               {(["all", "auth", "loopback", "always-protected", "public"] as const).map((tier) => (
                 <button
                   key={tier}
@@ -474,7 +474,7 @@ export default function ApiEndpointsTab() {
               ))}
               <button
                 onClick={() => setShowInternal(!showInternal)}
-                className={`px-2 py-1 text-[10px] font-medium rounded-md transition-colors ml-1
+                className={`px-2 py-1 text-[10px] font-medium rounded-md transition-colors ms-1
                   ${
                     showInternal
                       ? "bg-amber-500/10 text-amber-500"

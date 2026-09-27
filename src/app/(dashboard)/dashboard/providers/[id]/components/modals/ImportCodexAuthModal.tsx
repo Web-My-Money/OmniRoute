@@ -380,7 +380,7 @@ export function ImportCodexAuthModal({ onClose, onSuccess }: ImportCodexAuthModa
                   type="file"
                   accept=".json"
                   onChange={handleSingleFileChange}
-                  className="text-sm text-text-muted file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-border file:text-xs file:bg-bg-subtle file:text-text-main hover:file:bg-bg-hover cursor-pointer"
+                  className="text-sm text-text-muted file:me-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-border file:text-xs file:bg-bg-subtle file:text-text-main hover:file:bg-bg-hover cursor-pointer"
                 />
                 <p className="text-xs text-text-muted">
                   {t("codexImportFileHint") ||
@@ -510,7 +510,7 @@ export function ImportCodexAuthModal({ onClose, onSuccess }: ImportCodexAuthModa
                   accept=".json"
                   multiple
                   onChange={handleBulkFilesChange}
-                  className="text-sm text-text-muted file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-border file:text-xs file:bg-bg-subtle file:text-text-main hover:file:bg-bg-hover cursor-pointer"
+                  className="text-sm text-text-muted file:me-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-border file:text-xs file:bg-bg-subtle file:text-text-main hover:file:bg-bg-hover cursor-pointer"
                 />
                 <p className="text-xs text-text-muted">
                   {t("codexImportBulkUploadHint") || "Select multiple .json files"}
@@ -542,7 +542,7 @@ export function ImportCodexAuthModal({ onClose, onSuccess }: ImportCodexAuthModa
                   accept=".zip"
                   onChange={handleZipUpload}
                   disabled={bulkZipExtracting}
-                  className="text-sm text-text-muted file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-border file:text-xs file:bg-bg-subtle file:text-text-main hover:file:bg-bg-hover cursor-pointer disabled:opacity-50"
+                  className="text-sm text-text-muted file:me-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-border file:text-xs file:bg-bg-subtle file:text-text-main hover:file:bg-bg-hover cursor-pointer disabled:opacity-50"
                 />
                 {bulkZipExtracting && (
                   <p className="text-xs text-text-muted animate-pulse">
@@ -698,7 +698,7 @@ export function ApplyCodexAuthModal({
         </div>
         <div>
           <div className="text-xs uppercase text-text-muted mb-1">{backupLabel}</div>
-          <ul className="text-xs text-text-muted space-y-0.5 list-disc pl-4">
+          <ul className="text-xs text-text-muted space-y-0.5 list-disc ps-4">
             <li>
               <code className="text-text-main">~/.codex/auth-&lt;timestamp&gt;.bak</code> — quick
               local rollback

@@ -168,7 +168,7 @@ export default function BuilderIntelligentStep({
                 }`}
               >
                 {provider.label}
-                <span className="ml-1 text-[10px] text-text-muted">
+                <span className="ms-1 text-[10px] text-text-muted">
                   {provider.connectionCount} acct
                   {provider.connectionCount === 1 ? "" : "s"}
                 </span>

@@ -409,7 +409,7 @@ export default function QuotaEndpointsCard({
                           {quotaGroupSlug(group.name)}
                         </span>
                       </div>
-                      <div className="space-y-1 pl-4">
+                      <div className="space-y-1 ps-4">
                         {entries.map(({ provider, models }) => (
                           <div key={provider} className="space-y-0.5">
                             <span className="text-[10px] text-text-muted font-medium">

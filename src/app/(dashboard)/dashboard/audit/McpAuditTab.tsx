@@ -224,7 +224,7 @@ export default function McpAuditTab() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[860px] text-left text-sm">
+            <table className="w-full min-w-[860px] text-start text-sm">
               <thead className="border-b border-border bg-sidebar/40 text-xs uppercase tracking-wider text-text-muted">
                 <tr>
                   <th className="px-4 py-3 font-medium">{t("timestamp")}</th>

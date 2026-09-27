@@ -1816,7 +1816,7 @@ function ComboCardInner({
           </div>
         </div>
 
-        <div className="flex items-center justify-between md:justify-end gap-1.5 shrink-0 ml-0 md:ml-2 w-full md:w-auto mt-2 md:mt-0 pt-2 md:pt-0 border-t border-black/5 dark:border-white/5 md:border-t-0">
+        <div className="flex items-center justify-between md:justify-end gap-1.5 shrink-0 ms-0 md:ms-2 w-full md:w-auto mt-2 md:mt-0 pt-2 md:pt-0 border-t border-black/5 dark:border-white/5 md:border-t-0">
           <div className="flex items-center gap-2">
             <Toggle
               size="sm"
@@ -2979,7 +2979,7 @@ function ComboFormModal({ isOpen, combo, onClose, onSave, activeProviders, combo
                         setBuilderStage(stageMeta.id);
                       }}
                       disabled={!canVisitStage}
-                      className={`text-left rounded-lg border px-3 py-2 transition-all ${
+                      className={`text-start rounded-lg border px-3 py-2 transition-all ${
                         isActive
                           ? "border-primary bg-primary/8"
                           : canVisitStage
@@ -3087,7 +3087,7 @@ function ComboFormModal({ isOpen, combo, onClose, onSave, activeProviders, combo
                         key={template.id}
                         onClick={() => applyTemplate(template)}
                         data-testid={`combo-template-${template.id}`}
-                        className={`text-left rounded-md border px-3 py-2 transition-all ${
+                        className={`text-start rounded-md border px-3 py-2 transition-all ${
                           template.isFeatured
                             ? "border-emerald-500/50 bg-emerald-500/5 hover:border-emerald-500/80 hover:bg-emerald-500/10 ring-1 ring-emerald-500/20"
                             : "border-black/10 dark:border-white/10 bg-white/70 dark:bg-white/[0.03] hover:border-primary/40 hover:bg-primary/5"
@@ -3103,7 +3103,7 @@ function ComboFormModal({ isOpen, combo, onClose, onSave, activeProviders, combo
                             {getI18nOrFallback(t, template.titleKey, template.fallbackTitle)}
                           </span>
                           {template.isFeatured && (
-                            <span className="ml-auto text-[9px] font-bold uppercase tracking-wide bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded">
+                            <span className="ms-auto text-[9px] font-bold uppercase tracking-wide bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded">
                               FREE
                             </span>
                           )}
@@ -3155,7 +3155,7 @@ function ComboFormModal({ isOpen, combo, onClose, onSave, activeProviders, combo
                         : "text-text-muted hover:text-text-main"
                     }`}
                   >
-                    <span className="material-symbols-outlined text-[14px] align-middle mr-0.5">
+                    <span className="material-symbols-outlined text-[14px] align-middle me-0.5">
                       {s.icon}
                     </span>
                     {getStrategyLabel(t, s.value)}

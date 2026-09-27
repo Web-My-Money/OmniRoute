@@ -416,7 +416,7 @@ export default function VolcengineConnectModal({
                     type="button"
                     disabled={selectingIdentity}
                     onClick={() => handleSelectIdentity(option.index)}
-                    className="w-full rounded-lg border border-border p-3 text-left text-sm transition-colors hover:bg-sidebar disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full rounded-lg border border-border p-3 text-start text-sm transition-colors hover:bg-sidebar disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {selectingIdentity ? (
                       <span className="flex items-center gap-2">

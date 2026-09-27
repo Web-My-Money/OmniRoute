@@ -270,7 +270,7 @@ export default function ProviderUsdCostModal({
                               })}
                             </div>
                           </div>
-                          <div className="text-right">
+                          <div className="text-end">
                             <div className="text-sm font-semibold tabular-nums text-text-main">
                               {formatUsd(row.costUsd)}
                             </div>

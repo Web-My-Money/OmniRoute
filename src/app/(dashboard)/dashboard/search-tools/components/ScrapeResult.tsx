@@ -118,7 +118,7 @@ export default function ScrapeResult({ result, latencyMs }: ScrapeResultProps) {
         >
           <span>{t("contentTruncated", { size: formatBytes(contentSize) })}</span>
           <button
-            className="ml-3 text-xs px-2 py-1 rounded bg-warning/20 text-warning hover:bg-warning/30 transition-colors"
+            className="ms-3 text-xs px-2 py-1 rounded bg-warning/20 text-warning hover:bg-warning/30 transition-colors"
             onClick={() => setRawModalOpen(true)}
             data-testid="view-raw-button"
           >

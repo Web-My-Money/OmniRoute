@@ -280,7 +280,7 @@ export default function ReasoningCacheTab() {
           <div className="mt-3 overflow-x-auto rounded-2xl border border-border/20 bg-surface">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border/20 text-left text-[11px] uppercase tracking-[0.12em] text-text-muted">
+                <tr className="border-b border-border/20 text-start text-[11px] uppercase tracking-[0.12em] text-text-muted">
                   <th className="px-4 py-3">{t("tableProvider")}</th>
                   <th className="px-4 py-3">{t("reasoningEntries")}</th>
                   <th className="px-4 py-3">{t("reasoningChars")}</th>
@@ -333,7 +333,7 @@ export default function ReasoningCacheTab() {
           <div className="mt-3 overflow-x-auto rounded-2xl border border-border/20 bg-surface">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border/20 text-left text-[11px] uppercase tracking-[0.12em] text-text-muted">
+                <tr className="border-b border-border/20 text-start text-[11px] uppercase tracking-[0.12em] text-text-muted">
                   <th className="px-4 py-3">{t("tableModel")}</th>
                   <th className="px-4 py-3">{t("reasoningEntries")}</th>
                   <th className="px-4 py-3">{t("reasoningAvgChars")}</th>

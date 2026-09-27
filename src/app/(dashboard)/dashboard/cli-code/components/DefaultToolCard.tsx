@@ -610,7 +610,7 @@ export default function DefaultToolCard({
                   disabled={isMultiModelTool ? getSelectedModels().length === 0 : !modelValue}
                   loading={saving}
                 >
-                  <span className="material-symbols-outlined text-[14px] mr-1">save</span>
+                  <span className="material-symbols-outlined text-[14px] me-1">save</span>
                   {t("saveConfig")}
                 </Button>
               )}
@@ -620,7 +620,7 @@ export default function DefaultToolCard({
                   size="sm"
                   onClick={() => handleCopy(getRenderedCodeBlock(), "codeblock")}
                 >
-                  <span className="material-symbols-outlined text-[14px] mr-1">
+                  <span className="material-symbols-outlined text-[14px] me-1">
                     {copiedField === "codeblock" ? "check" : "content_copy"}
                   </span>
                   {copiedField === "codeblock" ? t("copied") : t("copyConfig")}

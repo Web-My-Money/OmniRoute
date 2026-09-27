@@ -183,7 +183,7 @@ export function ApiExplorerClient() {
               <button
                 key={`${endpoint.method}-${endpoint.path}`}
                 onClick={() => handleSelect(endpoint)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors
+                className={`w-full text-start px-3 py-2 rounded-lg text-sm transition-colors
                   ${
                     selected?.path === endpoint.path && selected?.method === endpoint.method
                       ? "bg-primary/10 border border-primary/20"

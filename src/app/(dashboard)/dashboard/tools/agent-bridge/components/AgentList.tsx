@@ -82,7 +82,7 @@ export function AgentList({
     <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-3 px-5 py-4 border-b border-border/30">
-        <h2 className="text-sm font-semibold text-text-main mr-auto">
+        <h2 className="text-sm font-semibold text-text-main me-auto">
           {t("agentListTitle") || "IDE Agents"}{" "}
           <span className="text-text-muted font-normal">({targets.length})</span>
         </h2>
@@ -107,12 +107,12 @@ export function AgentList({
 
         {/* Search */}
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-2 top-1/2 -translate-y-1/2 text-[16px] text-text-muted pointer-events-none">
+          <span className="material-symbols-outlined absolute start-2 top-1/2 -translate-y-1/2 text-[16px] text-text-muted pointer-events-none">
             search
           </span>
           <input
             type="text"
-            className="rounded-lg border border-border/50 bg-surface pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="rounded-lg border border-border/50 bg-surface ps-8 pe-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/50"
             placeholder={t("searchAgents") || "Search agents…"}
             value={search}
             onChange={(e) => setSearch(e.target.value)}

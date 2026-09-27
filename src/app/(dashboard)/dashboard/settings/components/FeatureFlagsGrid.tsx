@@ -288,7 +288,7 @@ export default function FeatureFlagsGrid() {
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           {/* Search input with search icon */}
           <div className="relative">
-            <span className="material-symbols-outlined absolute left-2.5 top-2 text-sm text-text-muted">
+            <span className="material-symbols-outlined absolute start-2.5 top-2 text-sm text-text-muted">
               search
             </span>
             <input
@@ -296,7 +296,7 @@ export default function FeatureFlagsGrid() {
               placeholder={t("searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-border bg-bg-subtle py-1.5 pl-8 pr-4 text-sm text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 sm:w-64"
+              className="w-full rounded-lg border border-border bg-bg-subtle py-1.5 ps-8 pe-4 text-sm text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 sm:w-64"
             />
           </div>
 

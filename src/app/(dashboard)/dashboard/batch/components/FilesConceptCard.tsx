@@ -89,7 +89,7 @@ export default function FilesConceptCard({ className = "" }: Props) {
 
       {/* Expandable bullets */}
       {!collapsed && (
-        <ul className="flex flex-col gap-2 pl-1">
+        <ul className="flex flex-col gap-2 ps-1">
           <li className="flex items-start gap-2 text-sm text-[var(--color-text-muted)]">
             <span
               className="material-symbols-outlined text-[16px] text-blue-400 mt-0.5 shrink-0"

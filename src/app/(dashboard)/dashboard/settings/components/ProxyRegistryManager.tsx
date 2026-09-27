@@ -30,7 +30,7 @@ import {
   repairRelayResponseSchema,
 } from "./proxyRegistryData";
 
- export default function ProxyRegistryManager({
+export default function ProxyRegistryManager({
   onRedeployRelay,
   showVercelRelay = false,
   showDenoRelay = false,
@@ -668,7 +668,7 @@ import {
                 </Button>
                 {relayMenuOpen && (
                   <div
-                    className="absolute right-0 top-full z-50 mt-1 w-56 rounded-md border border-border bg-surface p-1 shadow-xl"
+                    className="absolute end-0 top-full z-50 mt-1 w-56 rounded-md border border-border bg-surface p-1 shadow-xl"
                     role="menu"
                   >
                     {showVercelRelay && (
@@ -737,7 +737,7 @@ import {
               </Button>
               {actionsOpen && (
                 <div
-                  className="absolute right-0 top-full z-50 mt-1 w-56 rounded-md border border-border bg-surface p-1 shadow-xl"
+                  className="absolute end-0 top-full z-50 mt-1 w-56 rounded-md border border-border bg-surface p-1 shadow-xl"
                   role="menu"
                 >
                   <Button
@@ -816,8 +816,8 @@ import {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-text-muted border-b border-border">
-                  <th className="py-2 pr-2 w-8">
+                <tr className="text-start text-text-muted border-b border-border">
+                  <th className="py-2 pe-2 w-8">
                     <input
                       type="checkbox"
                       className="accent-blue-500 w-4 h-4 cursor-pointer"
@@ -831,10 +831,10 @@ import {
                       aria-label={t("selectAllProxies")}
                     />
                   </th>
-                  <th className="py-2 pr-3">{t("tableName")}</th>
-                  <th className="py-2 pr-3">{t("tableStatus")}</th>
-                  <th className="py-2 pr-3">{t("tableHealth")}</th>
-                  <th className="py-2 pr-3">{t("tableUsage")}</th>
+                  <th className="py-2 pe-3">{t("tableName")}</th>
+                  <th className="py-2 pe-3">{t("tableStatus")}</th>
+                  <th className="py-2 pe-3">{t("tableHealth")}</th>
+                  <th className="py-2 pe-3">{t("tableUsage")}</th>
                   <th className="py-2">{t("tableActions")}</th>
                 </tr>
               </thead>
@@ -849,25 +849,25 @@ import {
                         onChange={() => toggleSelect(item.id)}
                         label={t("selectProxy", { name: item.name })}
                       />
-                      <td className="py-2 pr-3">
+                      <td className="py-2 pe-3">
                         <div className="font-medium text-text-main">{item.name}</div>
                         {item.region && (
                           <div className="text-xs text-text-muted">{item.region}</div>
                         )}
                       </td>
-                      <td className="py-2 pr-3 font-mono text-xs text-text-muted">
+                      <td className="py-2 pe-3 font-mono text-xs text-text-muted">
                         {item.type}://{item.host}:{item.port}
                       </td>
-                      <td className="py-2 pr-3">
+                      <td className="py-2 pe-3">
                         <ProxyStatusBadge status={item.status} />
                       </td>
-                      <td className="py-2 pr-3 text-xs text-text-muted">
+                      <td className="py-2 pe-3 text-xs text-text-muted">
                         <ProxyHealthCell
                           testResult={testById[item.id] ?? undefined}
                           health={health ?? undefined}
                         />
                       </td>
-                      <td className="py-2 pr-3 text-xs text-text-muted">
+                      <td className="py-2 pe-3 text-xs text-text-muted">
                         {usageById[item.id] != null
                           ? t("assignmentsCount", { count: usageById[item.id].count })
                           : t("noData")}
@@ -898,13 +898,13 @@ import {
                               </Button>
                             )}
                           {item.relayInfo?.isRelay && item.relayInfo.authMissing && (
-                            <span className="ml-1 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-400">
+                            <span className="ms-1 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-400">
                               {t("relayAuthMissing")}
                             </span>
                           )}
                           {repairErrorById[item.id] && (
                             <span
-                              className="ml-1 text-[10px] text-red-400"
+                              className="ms-1 text-[10px] text-red-400"
                               title={repairErrorById[item.id]}
                             >
                               {t("relayRepairError")}
@@ -1390,7 +1390,7 @@ import {
             <div className="overflow-x-auto max-h-48 overflow-y-auto rounded border border-border">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="text-left text-text-muted border-b border-border bg-bg-subtle sticky top-0">
+                  <tr className="text-start text-text-muted border-b border-border bg-bg-subtle sticky top-0">
                     <th className="py-1.5 px-2">{t("tableName")}</th>
                     <th className="py-1.5 px-2">{t("labelType")}</th>
                     <th className="py-1.5 px-2">{t("labelHost")}</th>

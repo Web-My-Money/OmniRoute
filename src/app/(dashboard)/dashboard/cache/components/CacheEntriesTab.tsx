@@ -114,31 +114,31 @@ export default function CacheEntriesTab() {
           <div className="overflow-x-auto bg-surface">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-text-muted border-b border-border/30">
-                  <th className="pb-2 pr-4">{t("signature")}</th>
-                  <th className="pb-2 pr-4">{t("model")}</th>
-                  <th className="pb-2 pr-4">{t("hits")}</th>
-                  <th className="pb-2 pr-4">{t("tokensSaved")}</th>
-                  <th className="pb-2 pr-4">{t("created")}</th>
-                  <th className="pb-2 pr-4">{t("expires")}</th>
+                <tr className="text-start text-xs text-text-muted border-b border-border/30">
+                  <th className="pb-2 pe-4">{t("signature")}</th>
+                  <th className="pb-2 pe-4">{t("model")}</th>
+                  <th className="pb-2 pe-4">{t("hits")}</th>
+                  <th className="pb-2 pe-4">{t("tokensSaved")}</th>
+                  <th className="pb-2 pe-4">{t("created")}</th>
+                  <th className="pb-2 pe-4">{t("expires")}</th>
                   <th className="pb-2">{t("actions")}</th>
                 </tr>
               </thead>
               <tbody>
                 {entries.map((entry) => (
                   <tr key={entry.id} className="border-b border-border/20">
-                    <td className="py-2 pr-4 font-mono text-xs">
+                    <td className="py-2 pe-4 font-mono text-xs">
                       {entry.signature.slice(0, 12)}...
                     </td>
-                    <td className="py-2 pr-4">{entry.model}</td>
-                    <td className="py-2 pr-4 tabular-nums">{entry.hit_count}</td>
-                    <td className="py-2 pr-4 tabular-nums text-green-500">
+                    <td className="py-2 pe-4">{entry.model}</td>
+                    <td className="py-2 pe-4 tabular-nums">{entry.hit_count}</td>
+                    <td className="py-2 pe-4 tabular-nums text-green-500">
                       {(entry.tokens_saved ?? 0).toLocaleString()}
                     </td>
-                    <td className="py-2 pr-4 text-xs text-text-muted">
+                    <td className="py-2 pe-4 text-xs text-text-muted">
                       {formatDate(entry.created_at)}
                     </td>
-                    <td className="py-2 pr-4 text-xs text-text-muted">
+                    <td className="py-2 pe-4 text-xs text-text-muted">
                       {formatDate(entry.expires_at)}
                     </td>
                     <td className="py-2">

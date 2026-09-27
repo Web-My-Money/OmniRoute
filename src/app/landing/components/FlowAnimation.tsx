@@ -64,7 +64,7 @@ export default function FlowAnimation() {
         </div>
 
         {/* CLI Tools - Left side */}
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 flex flex-col gap-7">
+        <div className="absolute start-0 top-1/2 -translate-y-1/2 flex flex-col gap-7">
           {cliTools.map((tool) => (
             <div
               key={tool.id}
@@ -148,7 +148,7 @@ export default function FlowAnimation() {
         </svg>
 
         {/* AI Providers - Right side */}
-        <div className="absolute right-0 top-0 bottom-0 flex flex-col justify-between py-6">
+        <div className="absolute end-0 top-0 bottom-0 flex flex-col justify-between py-6">
           {providers.map((provider, idx) => (
             <div
               key={provider.id}

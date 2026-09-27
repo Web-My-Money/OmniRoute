@@ -173,10 +173,10 @@ export default function CodexFastTierTab() {
                 {modelsOpen ? "expand_less" : "expand_more"}
               </span>
               {t("codexFastTierModelsLabel")}
-              <span className="ml-1 text-xs text-text-muted">({supportedModels.length})</span>
+              <span className="ms-1 text-xs text-text-muted">({supportedModels.length})</span>
             </button>
             {modelsOpen && (
-              <div className="mt-3 pl-6 flex flex-col gap-2">
+              <div className="mt-3 ps-6 flex flex-col gap-2">
                 <p className="text-xs text-text-muted/80">{t("codexFastTierModelsHint")}</p>
                 {allCatalogModels.map((slug) => {
                   const checked = supportedModels.includes(slug);

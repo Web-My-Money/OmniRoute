@@ -40,7 +40,7 @@ function StepRow({ step, maxTokens }: { step: CompressionEngineStep; maxTokens: 
           {step.engine}
         </span>
         {skipped && (
-          <span className="ml-1.5 text-[10px] text-muted bg-muted/10 px-1 rounded">
+          <span className="ms-1.5 text-[10px] text-muted bg-muted/10 px-1 rounded">
             {t("skipped")}
           </span>
         )}
@@ -51,7 +51,7 @@ function StepRow({ step, maxTokens }: { step: CompressionEngineStep; maxTokens: 
         {/* in bar */}
         <div className="relative h-2 rounded-full bg-border/30 overflow-hidden">
           <div
-            className="absolute inset-y-0 left-0 rounded-full bg-muted/40"
+            className="absolute inset-y-0 start-0 rounded-full bg-muted/40"
             style={{ width: `${barWidthIn.toFixed(1)}%` }}
           />
         </div>
@@ -59,7 +59,7 @@ function StepRow({ step, maxTokens }: { step: CompressionEngineStep; maxTokens: 
         {!skipped && (
           <div className="relative h-2 rounded-full bg-border/30 overflow-hidden">
             <div
-              className="absolute inset-y-0 left-0 rounded-full"
+              className="absolute inset-y-0 start-0 rounded-full"
               style={{ width: `${barWidthOut.toFixed(1)}%`, backgroundColor: color }}
             />
           </div>
@@ -67,7 +67,7 @@ function StepRow({ step, maxTokens }: { step: CompressionEngineStep; maxTokens: 
       </div>
 
       {/* Token counts */}
-      <div className="w-36 shrink-0 text-right">
+      <div className="w-36 shrink-0 text-end">
         <div className="text-[10px] text-muted">
           {fmt(step.originalTokens)} → {fmt(step.compressedTokens)}
         </div>
@@ -120,7 +120,7 @@ export function WaterfallInspector({ run, className = "" }: WaterfallInspectorPr
             <div className="h-full w-full rounded-full bg-muted/50" />
           </div>
         </div>
-        <span className="w-36 shrink-0 text-right">
+        <span className="w-36 shrink-0 text-end">
           {t("tokenCount", { count: run.originalTokens })}
         </span>
       </div>
@@ -141,7 +141,7 @@ export function WaterfallInspector({ run, className = "" }: WaterfallInspectorPr
             />
           </div>
         </div>
-        <div className="w-36 shrink-0 text-right">
+        <div className="w-36 shrink-0 text-end">
           <div className="text-xs font-semibold text-green-500">
             {t("tokenCount", { count: run.compressedTokens })}
           </div>
@@ -162,7 +162,7 @@ export function WaterfallInspector({ run, className = "" }: WaterfallInspectorPr
         </span>
         <span className="text-green-500 font-bold">−{run.savingsPercent.toFixed(1)}%</span>
         {run.comboId && <span className="font-mono opacity-70">{run.comboId}</span>}
-        <span className="ml-auto opacity-60">{run.mode}</span>
+        <span className="ms-auto opacity-60">{run.mode}</span>
       </div>
     </div>
   );

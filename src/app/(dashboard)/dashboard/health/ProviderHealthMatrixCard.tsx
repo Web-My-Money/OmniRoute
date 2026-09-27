@@ -437,7 +437,7 @@ export default function ProviderHealthMatrixCard() {
               <button
                 type="button"
                 onClick={() => setExpanded(isExpanded ? null : provider.provider)}
-                className="flex w-full flex-col gap-3 p-4 text-left lg:flex-row lg:items-center lg:justify-between"
+                className="flex w-full flex-col gap-3 p-4 text-start lg:flex-row lg:items-center lg:justify-between"
               >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">

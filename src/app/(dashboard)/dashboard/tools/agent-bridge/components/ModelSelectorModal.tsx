@@ -101,14 +101,14 @@ export function ModelSelectorModal({
               key={m.id}
               type="button"
               onClick={() => onSelect(m.id)}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+              className={`w-full text-start px-3 py-2 rounded-lg text-sm transition-colors ${
                 m.id === currentModel
                   ? "bg-primary/10 text-primary font-medium"
                   : "hover:bg-surface text-text-main"
               }`}
             >
               <span className="font-mono text-xs">{m.id}</span>
-              {m.name !== m.id && <span className="ml-2 text-text-muted text-xs">{m.name}</span>}
+              {m.name !== m.id && <span className="ms-2 text-text-muted text-xs">{m.name}</span>}
             </button>
           ))}
         </div>

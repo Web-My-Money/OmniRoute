@@ -125,7 +125,7 @@ export default function LeaderboardPage() {
               <p className="text-sm text-text-muted">{t("leaderboardYourRank")}</p>
               <p className="text-3xl font-bold mt-1">#{myRank}</p>
             </div>
-            <div className="text-right">
+            <div className="text-end">
               <p className="text-sm text-text-muted">{tg("scope")}</p>
               <p className="text-lg font-semibold">{tg(SCOPE_LABEL_KEYS[scope])}</p>
             </div>
@@ -175,10 +175,10 @@ export default function LeaderboardPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="text-left text-sm text-text-muted border-b border-border">
+                    <tr className="text-start text-sm text-text-muted border-b border-border">
                       <th className="pb-3 font-medium w-16">{tg("rank")}</th>
                       <th className="pb-3 font-medium">{tg("name")}</th>
-                      <th className="pb-3 font-medium text-right">{tg("score")}</th>
+                      <th className="pb-3 font-medium text-end">{tg("score")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -189,7 +189,7 @@ export default function LeaderboardPage() {
                       >
                         <td className="py-3 text-text-muted font-mono">{idx + 4}</td>
                         <td className="py-3 font-medium">{entry.apiKeyId.slice(0, 12)}...</td>
-                        <td className="py-3 text-right font-mono">
+                        <td className="py-3 text-end font-mono">
                           {entry.score.toLocaleString(locale)}
                         </td>
                       </tr>

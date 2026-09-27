@@ -45,7 +45,7 @@ export function OmniSkillCard({ skill, selected, onClick }: OmniSkillCardProps):
       role="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`w-full text-left rounded-lg border p-3 transition-all focus:outline-none focus:ring-2 focus:ring-violet-500/50 ${
+      className={`w-full text-start rounded-lg border p-3 transition-all focus:outline-none focus:ring-2 focus:ring-violet-500/50 ${
         selected
           ? "border-violet-500 bg-violet-500/5"
           : "border-border bg-surface/30 hover:border-border/80 hover:bg-surface/50"

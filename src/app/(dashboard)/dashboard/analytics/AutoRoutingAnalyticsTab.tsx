@@ -117,7 +117,7 @@ export default function AutoRoutingAnalyticsTab() {
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
-                <div className="w-20 text-sm text-text-muted text-right">
+                <div className="w-20 text-sm text-text-muted text-end">
                   {count.toLocaleString()} ({percentage.toFixed(1)}%)
                 </div>
               </div>
@@ -133,9 +133,9 @@ export default function AutoRoutingAnalyticsTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left py-2 px-3 font-medium">{t("chartProvider")}</th>
-                <th className="text-right py-2 px-3 font-medium">{t("chartRequests")}</th>
-                <th className="text-right py-2 px-3 font-medium">{t("chartShare")}</th>
+                <th className="text-start py-2 px-3 font-medium">{t("chartProvider")}</th>
+                <th className="text-end py-2 px-3 font-medium">{t("chartRequests")}</th>
+                <th className="text-end py-2 px-3 font-medium">{t("chartShare")}</th>
               </tr>
             </thead>
             <tbody>
@@ -150,10 +150,8 @@ export default function AutoRoutingAnalyticsTab() {
                         <span className="font-medium">{provider.provider}</span>
                       </div>
                     </td>
-                    <td className="text-right py-2 px-3">{provider.count.toLocaleString()}</td>
-                    <td className="text-right py-2 px-3 text-text-muted">
-                      {percentage.toFixed(1)}%
-                    </td>
+                    <td className="text-end py-2 px-3">{provider.count.toLocaleString()}</td>
+                    <td className="text-end py-2 px-3 text-text-muted">{percentage.toFixed(1)}%</td>
                   </tr>
                 );
               })}

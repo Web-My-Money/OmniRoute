@@ -50,9 +50,9 @@ export default function GamificationAdminPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="text-left p-2 font-medium text-text-muted">{t("apiKey")}</th>
-                  <th className="text-right p-2 font-medium text-text-muted">{t("xpLastHour")}</th>
-                  <th className="text-right p-2 font-medium text-text-muted">{t("zScore")}</th>
+                  <th className="text-start p-2 font-medium text-text-muted">{t("apiKey")}</th>
+                  <th className="text-end p-2 font-medium text-text-muted">{t("xpLastHour")}</th>
+                  <th className="text-end p-2 font-medium text-text-muted">{t("zScore")}</th>
                   <th className="text-center p-2 font-medium text-text-muted">Status</th>
                 </tr>
               </thead>
@@ -60,8 +60,8 @@ export default function GamificationAdminPage() {
                 {anomalies.map((a) => (
                   <tr key={a.apiKeyId} className="border-b border-border/50 last:border-b-0">
                     <td className="p-2 font-mono text-xs">{a.apiKeyId.slice(0, 16)}...</td>
-                    <td className="p-2 text-right">{a.xpLastHour.toLocaleString()}</td>
-                    <td className="p-2 text-right text-red-400">{a.zScore.toFixed(2)}</td>
+                    <td className="p-2 text-end">{a.xpLastHour.toLocaleString()}</td>
+                    <td className="p-2 text-end text-red-400">{a.zScore.toFixed(2)}</td>
                     <td className="p-2 text-center">
                       <span className="px-2 py-0.5 text-xs bg-red-500/20 text-red-400 rounded-full">
                         Suspicious

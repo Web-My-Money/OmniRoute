@@ -161,8 +161,8 @@ export default function Modal({
             <div className="flex items-center min-w-0">
               <div
                 className={cn(
-                  "flex items-center gap-1.5 mr-3 shrink-0",
-                  compactHeader ? "" : "gap-2 mr-4"
+                  "flex items-center gap-1.5 me-3 shrink-0",
+                  compactHeader ? "" : "gap-2 me-4"
                 )}
                 aria-hidden="true"
               >

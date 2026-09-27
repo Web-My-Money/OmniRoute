@@ -54,11 +54,11 @@ export default function SegmentedControl({
             value === option.value
               ? "bg-white dark:bg-white/10 text-text-main shadow-sm"
               : "text-text-muted hover:text-text-main",
-            option.icon && "flex items-center",
+            option.icon && "flex items-center"
           )}
         >
           {option.icon && (
-            <span className="material-symbols-outlined text-[16px] mr-1.5" aria-hidden="true">
+            <span className="material-symbols-outlined text-[16px] me-1.5" aria-hidden="true">
               {option.icon}
             </span>
           )}

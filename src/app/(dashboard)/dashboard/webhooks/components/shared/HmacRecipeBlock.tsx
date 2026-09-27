@@ -52,14 +52,14 @@ export function HmacRecipeBlock({ code, title, snippets }: HmacRecipeBlockProps)
         </div>
       )}
       <div className="relative">
-        <pre className="overflow-x-auto rounded-lg bg-sidebar p-3 pr-10 text-xs text-text-main">
+        <pre className="overflow-x-auto rounded-lg bg-sidebar p-3 pe-10 text-xs text-text-main">
           {tabs[active]?.code}
         </pre>
         <button
           type="button"
           onClick={() => void copy()}
           title={copied ? "Copied!" : "Copy"}
-          className="absolute right-2 top-2 rounded p-1 text-text-muted transition-colors hover:bg-surface hover:text-text-main"
+          className="absolute end-2 top-2 rounded p-1 text-text-muted transition-colors hover:bg-surface hover:text-text-main"
         >
           <span className="material-symbols-outlined text-[14px]">
             {copied ? "check" : "content_copy"}
