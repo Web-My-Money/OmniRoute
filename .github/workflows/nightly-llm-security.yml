@@ -36,7 +36,10 @@ jobs:
             sleep 2
           done
       - name: promptfoo guard-validation
-        run: npx --yes promptfoo@latest eval -c promptfooconfig.yaml --no-cache
+        # Use the lockfile-pinned devDependency (installed by `npm ci` above), NOT
+        # a floating promptfoo release — 0.123.1 (published 2026-09-18) broke this
+        # job with `result?.error?.includes is not a function` on every probe response.
+        run: npx promptfoo eval -c promptfooconfig.yaml --no-cache
         env:
           OMNIROUTE_URL: http://localhost:20128
           OMNIROUTE_API_KEY: not-needed-blocked-before-upstream

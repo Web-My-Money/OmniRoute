@@ -33,7 +33,7 @@
 // orchestration lives in the /green-prs + review-prs flows that call it.
 //
 // Usage:
-//   node scripts/quality/validate-release-green.mjs [--json] [--with-build] [--quick] [--full-ci] [--hermetic]
+//   node scripts/quality/validate-release-green.mjs [--json] [--with-build] [--quick] [--full-ci] [--serial] [--hermetic]
 //     --json        emit machine-readable JSON to stdout (report goes to stderr)
 //     --with-build  also run check:pack-artifact (needs a dist/ build — slow)
 //     --quick       skip the slow unit + vitest + integration suites (drift + fast
@@ -400,6 +400,7 @@ async function main() {
   const WITH_BUILD = args.has("--with-build");
   const QUICK = args.has("--quick");
   const FULL_CI = args.has("--full-ci");
+  const SERIAL = args.has("--serial") || process.env.RELEASE_GREEN_SERIAL === "1";
   hermetic = args.has("--hermetic");
 
   const results = [];
@@ -638,7 +639,8 @@ async function main() {
         // forever) into a visible failure — survives at 100min.
         // Measured on idle .113: unavailable (checkout not found). Tightened to 80min from 100min as a conservative step. TODO: re-measure on idle .113 and tighten to ~1.8× measured.
         id: "unit",
-        label: "Unit tests (full suite, CI concurrency — ~30-50min idle, up to ~80min under load (awaiting idle .113 measurement, #9532))",
+        label:
+          "Unit tests (full suite, CI concurrency — ~30-50min idle, up to ~80min under load (awaiting idle .113 measurement, #9532))",
         args: ["run", "test:unit:ci"],
         timeout: 80 * 60 * 1000,
       },
@@ -669,10 +671,23 @@ async function main() {
         timeout: 20 * 60 * 1000,
       });
     }
-    slow.forEach((g) => announce(`${g.label} [parallel]`));
-    const slowResults = await Promise.all(
-      slow.map((g) => runAsync(npmCmd, g.args, { timeout: g.timeout }))
-    );
+    // --serial: run the slow suites one at a time instead of concurrently. The parallel
+    // wave is the right default on a real machine (devbox / omni-release VPS), but on a
+    // hosted ubuntu-latest runner (~7GB RAM) unit+vitest+integration+pack-artifact in
+    // Promise.all peaks past the memory ceiling and the runner is reclaimed mid-sweep
+    // ("runner has received a shutdown signal", no exit code — same signature as #8090).
+    const slowResults = [];
+    if (SERIAL) {
+      for (const g of slow) {
+        announce(`${g.label} [serial]`);
+        slowResults.push(await runAsync(npmCmd, g.args, { timeout: g.timeout }));
+      }
+    } else {
+      slow.forEach((g) => announce(`${g.label} [parallel]`));
+      slowResults.push(
+        ...(await Promise.all(slow.map((g) => runAsync(npmCmd, g.args, { timeout: g.timeout }))))
+      );
+    }
     slow.forEach((g, i) => {
       const { code, out } = slowResults[i];
       saveGateLog(g.id, out);

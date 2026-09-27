@@ -40,6 +40,14 @@ const nightlyCompatWorkflowPath = new URL(
   "../../../.github/workflows/nightly-compat.yml",
   import.meta.url
 );
+const nightlyReleaseGreenPath = new URL(
+  "../../../.github/workflows/nightly-release-green.yml",
+  import.meta.url
+);
+const nightlyLlmSecurityPath = new URL(
+  "../../../.github/workflows/nightly-llm-security.yml",
+  import.meta.url
+);
 
 function readWorkflow(workflowPath: URL): string {
   return fs.readFileSync(workflowPath, "utf8").replace(/\r\n/g, "\n");
@@ -399,6 +407,50 @@ test("nightly-compat reports failures without requiring Issues", () => {
   );
   assert.ok(issueBlock, "issue create/comment must be gated on has_issues");
   assert.match(issueBlock[0], /gh issue (comment|create)/);
+});
+
+test("nightly-release-green reports failures without requiring Issues", () => {
+  // Same disabled-Isses hazard as nightly-compat: both report steps must surface
+  // the failure via warning annotation + step summary and only call the Issues
+  // API when the repo actually has it enabled.
+  const source = readWorkflow(nightlyReleaseGreenPath);
+  const issueGates = source.match(
+    /if \[ "\$\(gh api "repos\/\$GITHUB_REPOSITORY" --jq '.has_issues'\)" = "true" \]; then/g
+  );
+  assert.equal(
+    issueGates?.length,
+    2,
+    "both release-green and main-green report steps must gate on has_issues"
+  );
+  assert.match(source, /::warning title=release-green::/);
+  assert.match(source, /::warning title=main-green::/);
+  assert.match(source, /GITHUB_STEP_SUMMARY/);
+});
+
+test("nightly-release-green runs the full sweep serially on hosted runners", () => {
+  // The scheduled --with-build --full-ci wave runs unit+vitest+integration+
+  // pack-artifact concurrently, which exceeds a hosted ubuntu-latest runner's
+  // ~7GB and gets the job reclaimed mid-sweep (no exit code). Hosted runs must
+  // pass --serial; the omni-release VPS runner keeps the parallel wave.
+  const source = readWorkflow(nightlyReleaseGreenPath);
+  const hostedSerial = source.match(
+    /if \[ "\$\{\{ runner\.environment \}\}" = "github-hosted" \]; then\s+MODE="\$MODE --serial"/g
+  );
+  assert.equal(
+    hostedSerial?.length,
+    2,
+    "both release-green and main-green must add --serial on github-hosted"
+  );
+});
+
+test("nightly-llm-security uses the lockfile-pinned promptfoo", () => {
+  // `npx promptfoo@latest` pulled 0.123.1 (published 2026-09-18) which crashes on
+  // OmniRoute's structured error body with `result?.error?.includes is not a
+  // function` — every probe errored, 0 assertions ran. The eval must use the
+  // devDependency version installed by `npm ci` so the lockfile pins it.
+  const source = readWorkflow(nightlyLlmSecurityPath);
+  assert.doesNotMatch(source, /promptfoo@latest/);
+  assert.match(source, /npx promptfoo eval/);
 });
 
 test("#7307 quality.yml adds an advisory production build for release PR code changes", () => {

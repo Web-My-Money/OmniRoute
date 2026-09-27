@@ -238,13 +238,35 @@ test("pre-flight runs the slow suites CONCURRENTLY (v3.8.45 perf — was ~1h ser
   assert.match(src, /slow\.forEach\([\s\S]*?saveGateLog\(g\.id/, "each slow gate persists its log");
 });
 
+test("pre-flight supports --serial so hosted runners survive the slow wave", async () => {
+  // The concurrent Promise.all wave peaks past a hosted ubuntu-latest runner's
+  // ~7GB and the job is reclaimed mid-sweep ("runner has received a shutdown
+  // signal", no exit code — the #8090 signature). --serial (or
+  // RELEASE_GREEN_SERIAL=1) must run the same gates one at a time; the VPS
+  // runner keeps the fast parallel default.
+  const fs = await import("node:fs");
+  const src = fs.readFileSync(
+    new URL("../../scripts/quality/validate-release-green.mjs", import.meta.url),
+    "utf8"
+  );
+  assert.match(src, /args\.has\("--serial"\)/, "--serial flag must be parsed");
+  assert.match(src, /RELEASE_GREEN_SERIAL/, "RELEASE_GREEN_SERIAL env must be honoured");
+  assert.match(
+    src,
+    /if \(SERIAL\)[\s\S]*?for \(const g of slow\)[\s\S]*?await runAsync/,
+    "SERIAL must run the slow gates sequentially"
+  );
+  // The parallel wave remains the non-serial path.
+  assert.match(src, /else[\s\S]*?await Promise\.all\(slow\.map\(/, "parallel stays the default");
+});
+
 test("pre-flight runs tarball boot only after the package artifact builder completes", async () => {
   const fs = await import("node:fs");
   const src = fs.readFileSync(
     new URL("../../scripts/quality/validate-release-green.mjs", import.meta.url),
     "utf8"
   );
-  const parallelWave = src.indexOf("const slowResults = await Promise.all");
+  const parallelWave = src.indexOf("await Promise.all(slow.map(");
   const packBoot = src.indexOf('id: "pack-boot"');
 
   assert.ok(parallelWave >= 0, "the parallel slow-gate wave must exist");
