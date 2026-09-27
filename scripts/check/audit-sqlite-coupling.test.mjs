@@ -48,7 +48,7 @@ test("audit separates code syntax from comments/literals and rejects a dirty cor
     git(root, "commit", "-qm", "fixture");
 
     const result = JSON.parse(
-      execFileSync("node", ["scripts/check/audit-sqlite-coupling.mjs", "--json"], {
+      execFileSync(process.execPath, ["scripts/check/audit-sqlite-coupling.mjs", "--json"], {
         cwd: root,
         encoding: "utf8",
       })
@@ -65,7 +65,7 @@ test("audit separates code syntax from comments/literals and rejects a dirty cor
     assert.match(result.corpusSha256, /^[a-f0-9]{64}$/);
 
     writeFileSync(path.join(root, "src/consumer.ts"), "// dirty tracked source\n", { flag: "a" });
-    const dirtyRun = spawnSync("node", ["scripts/check/audit-sqlite-coupling.mjs", "--json"], {
+    const dirtyRun = spawnSync(process.execPath, ["scripts/check/audit-sqlite-coupling.mjs", "--json"], {
       cwd: root,
       encoding: "utf8",
     });

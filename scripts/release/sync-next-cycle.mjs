@@ -227,7 +227,7 @@ function main() {
     if (!fs.existsSync(nm)) fs.symlinkSync(path.join(ROOT, "node_modules"), nm, "dir");
     console.log("[sync-next-cycle] release-green --quick on the merged tree (pre-push gate)…");
     try {
-      execFileSync("node", gate, { cwd: WT, stdio: "inherit", maxBuffer: 64 * 1024 * 1024 });
+      execFileSync(process.execPath, gate, { cwd: WT, stdio: "inherit", maxBuffer: 64 * 1024 * 1024 });
     } catch {
       console.error(
         `[sync-next-cycle] ABORT: release-green --quick found HARD failures in the merged tree.` +
