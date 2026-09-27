@@ -20,7 +20,10 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 const ROOT = process.cwd();
-const KNIP_BIN = path.join(ROOT, "node_modules", ".bin", "knip");
+// Invoke knip's JS entry through node directly: the .bin/knip shim is a POSIX
+// script that cannot be spawned on Windows (ENOENT), so the gate never ran
+// locally on Windows hosts.
+const KNIP_BIN = path.join(ROOT, "node_modules", "knip", "bin", "knip.js");
 const QUIET = process.argv.includes("--quiet");
 const PRINT_JSON = process.argv.includes("--json");
 const UPDATE = process.argv.includes("--update");
@@ -117,7 +120,7 @@ function runKnip() {
 
   let stdout;
   try {
-    stdout = execFileSync(KNIP_BIN, args, {
+    stdout = execFileSync(process.execPath, [KNIP_BIN, ...args], {
       cwd: ROOT,
       encoding: "utf8",
       maxBuffer: 128 * 1024 * 1024,

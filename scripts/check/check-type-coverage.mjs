@@ -85,7 +85,7 @@ export function evaluateTypeCoverage(current, baseline, eps = 0) {
 }
 
 function runTypeCoverage() {
-  const typeCoverageBin = path.join(ROOT, "node_modules", ".bin", "type-coverage");
+  const typeCoverageBin = path.join(ROOT, "node_modules", "type-coverage", "bin", "type-coverage");
 
   if (!fs.existsSync(typeCoverageBin)) {
     throw new Error(`[type-coverage] Binary not found at ${typeCoverageBin}`);
@@ -96,7 +96,7 @@ function runTypeCoverage() {
 
   let stdout;
   try {
-    stdout = execFileSync(typeCoverageBin, ["--json-output", "-p", TSCONFIG], {
+    stdout = execFileSync(process.execPath, [typeCoverageBin, "--json-output", "-p", TSCONFIG], {
       encoding: "utf8",
       maxBuffer: 32 * 1024 * 1024,
       cwd: ROOT,

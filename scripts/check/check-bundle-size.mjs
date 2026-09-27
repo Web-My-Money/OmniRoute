@@ -40,7 +40,7 @@ import { pathToFileURL, fileURLToPath } from "node:url";
 
 const ROOT = process.cwd();
 const SIZE_LIMIT_CONFIG = path.join(ROOT, ".size-limit.json");
-const SIZE_LIMIT_BIN = path.join(ROOT, "node_modules", ".bin", "size-limit");
+const SIZE_LIMIT_BIN = path.join(ROOT, "node_modules", "size-limit", "bin.js");
 const BASELINE_PATH = path.join(ROOT, "config/quality/quality-baseline.json");
 const RATCHET = process.argv.includes("--ratchet");
 
@@ -57,7 +57,7 @@ export function runSizeLimit(cwd = ROOT, binPath = SIZE_LIMIT_BIN) {
   }
   let stdout;
   try {
-    stdout = execFileSync("node", [binPath, "--json"], {
+    stdout = execFileSync(process.execPath, [binPath, "--json"], {
       encoding: "utf8",
       cwd,
       maxBuffer: 8 * 1024 * 1024,

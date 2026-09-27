@@ -1,7 +1,6 @@
 {
   "_comment": "SPDX license allowlist for OmniRoute (MIT project). Task 7.20 / PLANO-QUALITY-GATES-FASE7.md.",
   "_policy": "Production deps with a license outside 'allowed' and not in 'exceptions' fail the gate. devDeps get an advisory warning only.",
-
   "allowed": [
     "MIT",
     "Apache-2.0",
@@ -20,7 +19,6 @@
     "PSF-2.0",
     "CC-BY-3.0"
   ],
-
   "allowedExpressions": [
     "MIT*",
     "MIT AND ISC",
@@ -31,7 +29,6 @@
     "(BSD-2-Clause OR MIT OR Apache-2.0)",
     "(MPL-2.0 OR Apache-2.0)"
   ],
-
   "exceptions": {
     "@img/sharp-libvips-linux-x64": {
       "license": "LGPL-3.0-or-later",
@@ -80,6 +77,12 @@
       "justification": "TODO: revisar — tls-client-node uses Apache-2.0 with a 'Commons Clause' addendum that restricts 'Selling' the software (i.e., offering it as a hosted/commercial service whose value derives substantially from tls-client-node). OmniRoute is an open-source proxy; however if deployed as a paid SaaS/hosting service, this restriction could apply. The package is used by grokTlsClient.ts for Grok TLS fingerprinting. RISK: medium — legal review recommended before commercial deployment. Alternatives: consider replacing with a native TLS fingerprinting approach or a truly permissive library.",
       "risk": "medium",
       "reviewAt": "v3.9.0"
+    },
+    "@img/sharp-win32-x64": {
+      "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "justification": "Windows platform binary of sharp (optional dep of next/transformers). The AND-ed LGPL-3.0 applies to the bundled prebuilt libvips DLLs — same rationale as the already-registered @img/sharp-libvips-linux-x64 / -linuxmusl-x64 exceptions: dynamically-linked native binaries distributed by the sharp project, not modified or statically linked by OmniRoute. Only surfaces in scans on Windows hosts (npm installs optional platform deps per-OS), which is why it was invisible to Linux CI.",
+      "risk": "low",
+      "reviewAt": "v4.0.0"
     }
   }
 }

@@ -23,7 +23,13 @@ import { pathToFileURL } from "node:url";
 
 const ROOT = process.cwd();
 const ALLOWLIST_PATH = path.join(ROOT, "config/quality/.license-allowlist.json");
-const CHECKER_BIN = path.join(ROOT, "node_modules", ".bin", "license-checker-rseidelsohn");
+const CHECKER_BIN = path.join(
+  ROOT,
+  "node_modules",
+  "license-checker-rseidelsohn",
+  "bin",
+  "license-checker-rseidelsohn.js"
+);
 
 const VERBOSE = process.argv.includes("--verbose");
 const PRINT_JSON = process.argv.includes("--json");
@@ -129,7 +135,7 @@ function runLicenseChecker() {
     );
   }
 
-  const output = execFileSync(CHECKER_BIN, ["--production", "--json"], {
+  const output = execFileSync(process.execPath, [CHECKER_BIN, "--production", "--json"], {
     cwd: ROOT,
     encoding: "utf-8",
     maxBuffer: 32 * 1024 * 1024, // 32 MB
