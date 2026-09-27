@@ -16,6 +16,13 @@ const PATHS = [
   path.join(HOME, ".local", "bin", "zed"),
   path.join(HOME, ".local", "share", "zed"),
   path.join(HOME, ".config", "zed"),
+  // Windows
+  path.join(
+    process.env.LOCALAPPDATA ?? path.join(HOME, "AppData", "Local"),
+    "Programs",
+    "Zed",
+    "Zed.exe"
+  ),
 ];
 
 export function detectZed(): DetectionResult {
