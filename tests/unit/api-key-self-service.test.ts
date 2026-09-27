@@ -15,8 +15,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import DatabaseSync from "better-sqlite3";
 
-import { SELF_ACCOUNT_QUOTA_SCOPE, SELF_USAGE_SCOPE } from "../../src/shared/constants/selfServiceScopes.ts";
+import {
+  SELF_ACCOUNT_QUOTA_SCOPE,
+  SELF_USAGE_SCOPE,
+} from "../../src/shared/constants/selfServiceScopes.ts";
 import { buildApiKeySelfServiceStatus } from "../../src/lib/usage/apiKeySelfService.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const migrationPath = path.join(
@@ -57,10 +61,7 @@ test("self-service scope migration backfills own usage once and preserves explic
   assert.deepEqual(scopesById.get("legacy-empty"), [SELF_USAGE_SCOPE]);
   assert.deepEqual(scopesById.get("legacy-null"), [SELF_USAGE_SCOPE]);
   assert.deepEqual(scopesById.get("custom"), ["custom:scope", SELF_USAGE_SCOPE]);
-  assert.deepEqual(scopesById.get("quota-opt-in"), [
-    SELF_ACCOUNT_QUOTA_SCOPE,
-    SELF_USAGE_SCOPE,
-  ]);
+  assert.deepEqual(scopesById.get("quota-opt-in"), [SELF_ACCOUNT_QUOTA_SCOPE, SELF_USAGE_SCOPE]);
   assert.deepEqual(scopesById.get("already-disabled-after-migration"), ["custom:scope"]);
 });
 
@@ -119,7 +120,7 @@ test("self-service status reports own cost and token usage with null budget fiel
   };
   const { deps, dbParams } = makeDeps();
 
-  const status = await buildApiKeySelfServiceStatus(metadata, deps);
+  const status = await looseAsync(buildApiKeySelfServiceStatus)(metadata, deps);
 
   assert.deepEqual(status.apiKey, { id: "key-a", name: "team-a" });
   assert.equal(status.usage.cost.usedUsd, 12.34);
@@ -158,7 +159,7 @@ test("self-service status reports USD budget percentage using the budget period"
     }),
   });
 
-  const status = await buildApiKeySelfServiceStatus(metadata, deps);
+  const status = await looseAsync(buildApiKeySelfServiceStatus)(metadata, deps);
 
   assert.equal(status.usage.cost.usedUsd, 12.5);
   assert.equal(status.usage.cost.limitUsd, 50);
@@ -191,7 +192,7 @@ test("self-service status preserves ISO and Date budget timestamps", async () =>
     }),
   });
 
-  const status = await buildApiKeySelfServiceStatus(metadata, deps);
+  const status = await looseAsync(buildApiKeySelfServiceStatus)(metadata, deps);
 
   assert.equal(status.usage.cost.periodStartAt, "2026-05-18T00:00:00.000Z");
   assert.equal(status.usage.cost.resetAt, "2026-05-25T00:00:00.000Z");
@@ -231,7 +232,11 @@ test("self-service status reports all explicitly allowed provider account quotas
         usage: {
           plan: "Claude Max",
           quotas: {
-            daily: { usedPercentage: 35, remainingPercentage: 65, resetAt: "2026-05-30T00:00:00.000Z" },
+            daily: {
+              usedPercentage: 35,
+              remainingPercentage: 65,
+              resetAt: "2026-05-30T00:00:00.000Z",
+            },
           },
         },
         cache: { quotas: null, plan: null, message: null, fetchedAt: "" },
@@ -239,7 +244,7 @@ test("self-service status reports all explicitly allowed provider account quotas
     },
   });
 
-  const status = await buildApiKeySelfServiceStatus(metadata, deps);
+  const status = await looseAsync(buildApiKeySelfServiceStatus)(metadata, deps);
 
   assert.deepEqual(fetches, ["conn-codex", "conn-claude"]);
   assert.deepEqual(
@@ -268,7 +273,10 @@ test("self-service status reports all active provider account quotas for unrestr
       { id: "conn-disabled", provider: "claude", isActive: false },
     ],
     fetchAndPersistProviderLimits: async (connectionId: string) => ({
-      connection: { id: connectionId, provider: connectionId === "conn-codex" ? "codex" : "cursor" },
+      connection: {
+        id: connectionId,
+        provider: connectionId === "conn-codex" ? "codex" : "cursor",
+      },
       usage: {
         plan: connectionId === "conn-codex" ? "ChatGPT Plus" : "Cursor Pro",
         quotas: {
@@ -279,7 +287,7 @@ test("self-service status reports all active provider account quotas for unrestr
     }),
   });
 
-  const status = await buildApiKeySelfServiceStatus(metadata, deps);
+  const status = await looseAsync(buildApiKeySelfServiceStatus)(metadata, deps);
 
   assert.deepEqual(
     status.accountQuotas.map((quota: { connectionId: string }) => quota.connectionId),
@@ -316,7 +324,7 @@ test("self-service status isolates provider account quota fetch failures per con
     },
   });
 
-  const status = await buildApiKeySelfServiceStatus(metadata, deps);
+  const status = await looseAsync(buildApiKeySelfServiceStatus)(metadata, deps);
 
   assert.equal(status.accountQuotas[0].connectionId, "conn-codex");
   assert.equal(status.accountQuotas[0].quotas.weekly.remainingPercentage, 60);
@@ -356,7 +364,7 @@ test("self-service status isolates explicit provider connection lookup failures"
     }),
   });
 
-  const status = await buildApiKeySelfServiceStatus(metadata, deps);
+  const status = await looseAsync(buildApiKeySelfServiceStatus)(metadata, deps);
 
   assert.equal(status.accountQuotas[0].connectionId, "conn-codex");
   assert.equal(status.accountQuotas[0].quotas.weekly.remainingPercentage, 60);
@@ -382,7 +390,7 @@ test("self-service status keeps usage visible when unrestricted provider lookup 
     },
   });
 
-  const status = await buildApiKeySelfServiceStatus(metadata, deps);
+  const status = await looseAsync(buildApiKeySelfServiceStatus)(metadata, deps);
 
   assert.equal(status.usage.cost.usedUsd, 12.34);
   assert.deepEqual(status.accountQuotas, []);
@@ -413,7 +421,7 @@ test("self-service status normalizes Codex account quota for one explicit connec
     }),
   });
 
-  const status = await buildApiKeySelfServiceStatus(metadata, deps);
+  const status = await looseAsync(buildApiKeySelfServiceStatus)(metadata, deps);
 
   assert.equal(status.accountQuotas.length, 1);
   assert.deepEqual(status.accountQuotas[0], status.accountQuota);

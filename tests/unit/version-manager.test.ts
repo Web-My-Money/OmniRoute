@@ -5,6 +5,9 @@ import os from "node:os";
 import path from "node:path";
 import { EventEmitter } from "node:events";
 import { createRequire, syncBuiltinESMExports } from "node:module";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const require = createRequire(import.meta.url);
 const childProcess = require("node:child_process");
@@ -35,11 +38,12 @@ async function resetStorage() {
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       if (fs.existsSync(TEST_DATA_DIR)) {
-        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       }
       break;
-    } catch (error: any) {
-      if ((error?.code === "EBUSY" || error?.code === "EPERM") && attempt < 9) {
+    } catch (error) {
+      const code = (error as { code?: string } | undefined)?.code;
+      if ((code === "EBUSY" || code === "EPERM") && attempt < 9) {
         await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
       } else {
         throw error;
@@ -57,10 +61,10 @@ function installSpawnStub(startPid = 6100) {
 
   childProcess.spawn = (command, args, options) => {
     const child = new EventEmitter();
-    child.pid = nextPid++;
-    child.stdout = new EventEmitter();
-    child.stderr = new EventEmitter();
-    child.kill = () => true;
+    (child as LooseDeep).pid = nextPid++;
+    (child as LooseDeep).stdout = new EventEmitter();
+    (child as LooseDeep).stderr = new EventEmitter();
+    (child as LooseDeep).kill = () => true;
     calls.push({ command, args, options, child });
     return child;
   };
@@ -87,7 +91,7 @@ function installProcessKillStub(initialRunning = []) {
         return true;
       }
       const error = new Error("ESRCH");
-      error.code = "ESRCH";
+      (error as LooseDeep).code = "ESRCH";
       throw error;
     }
 
@@ -112,7 +116,7 @@ function installTimerStubs() {
   const timeouts = [];
   const intervals = [];
 
-  globalThis.setTimeout = (fn, ms) => {
+  globalThis.setTimeout = ((fn, ms) => {
     const handle = {
       fn,
       ms,
@@ -125,9 +129,9 @@ function installTimerStubs() {
     };
     timeouts.push(handle);
     return handle;
-  };
+  }) as unknown as typeof setTimeout;
 
-  globalThis.setInterval = (fn, ms) => {
+  globalThis.setInterval = ((fn, ms) => {
     const handle = {
       fn,
       ms,
@@ -140,7 +144,7 @@ function installTimerStubs() {
     };
     intervals.push(handle);
     return handle;
-  };
+  }) as unknown as typeof setInterval;
 
   globalThis.clearTimeout = (handle) => {
     if (handle) {
@@ -169,7 +173,7 @@ function installTimerStubs() {
 function installFetchStub() {
   const calls = [];
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     calls.push({ url: String(url), options });
 
     if (String(url).includes("/v1/models")) {
@@ -208,7 +212,7 @@ function installFetchStub() {
   };
 }
 
-async function seedTool(overrides = {}) {
+async function seedTool(overrides: JsonRecord = {}) {
   return versionManagerDb.upsertVersionManagerTool({
     tool: "cliproxyapi",
     installedVersion: "2.0.0",
@@ -236,7 +240,7 @@ async function prepareInstalledVersions(versions) {
   fs.symlinkSync(path.join(binDir, "cliproxyapi-2.0.0", "CLIProxyAPI"), symlinkPath);
 }
 
-async function flushAsyncTurns(count = 3) {
+async function _flushAsyncTurns(count = 3) {
   for (let i = 0; i < count; i++) {
     await Promise.resolve();
   }
@@ -260,7 +264,7 @@ test.afterEach(() => {
 
 test.after(async () => {
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("processManager reuses an alive persisted pid without spawning a new process", async () => {

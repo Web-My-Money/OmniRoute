@@ -142,7 +142,7 @@ export default function ProviderStatsPage() {
   const SortIcon = ({ column }: { column: SortKey }) => {
     if (sortKey !== column) return null;
     return (
-      <span className="material-symbols-outlined text-[14px] ml-1 align-middle text-primary">
+      <span className="material-symbols-outlined text-[14px] ms-1 align-middle text-primary">
         {sortDir === "desc" ? "arrow_downward" : "arrow_upward"}
       </span>
     );
@@ -255,46 +255,48 @@ export default function ProviderStatsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left py-2 px-3 text-text-muted font-medium">{t("provider")}</th>
+                <th className="text-start py-2 px-3 text-text-muted font-medium">
+                  {t("provider")}
+                </th>
                 <th
-                  className="text-right py-2 px-3 text-text-muted font-medium cursor-pointer hover:text-text-main transition-colors select-none"
+                  className="text-end py-2 px-3 text-text-muted font-medium cursor-pointer hover:text-text-main transition-colors select-none"
                   onClick={() => handleSort("totalRequests")}
                 >
                   {t("requests")} <SortIcon column="totalRequests" />
                 </th>
                 <th
-                  className="text-right py-2 px-3 text-text-muted font-medium cursor-pointer hover:text-text-main transition-colors select-none"
+                  className="text-end py-2 px-3 text-text-muted font-medium cursor-pointer hover:text-text-main transition-colors select-none"
                   onClick={() => handleSort("successfulRequests")}
                 >
                   {t("success")} <SortIcon column="successfulRequests" />
                 </th>
-                <th className="text-right py-2 px-3 text-text-muted font-medium">{t("rate")}</th>
+                <th className="text-end py-2 px-3 text-text-muted font-medium">{t("rate")}</th>
                 <th
-                  className="text-right py-2 px-3 text-text-muted font-medium cursor-pointer hover:text-text-main transition-colors select-none"
+                  className="text-end py-2 px-3 text-text-muted font-medium cursor-pointer hover:text-text-main transition-colors select-none"
                   onClick={() => handleSort("avgLatencyMs")}
                 >
                   {t("avgLatency")} <SortIcon column="avgLatencyMs" />
                 </th>
                 <th
-                  className="text-right py-2 px-3 text-text-muted font-medium cursor-pointer hover:text-text-main transition-colors select-none"
+                  className="text-end py-2 px-3 text-text-muted font-medium cursor-pointer hover:text-text-main transition-colors select-none"
                   onClick={() => handleSort("totalTokensIn")}
                 >
                   {t("tokensIn")} <SortIcon column="totalTokensIn" />
                 </th>
                 <th
-                  className="text-right py-2 px-3 text-text-muted font-medium cursor-pointer hover:text-text-main transition-colors select-none"
+                  className="text-end py-2 px-3 text-text-muted font-medium cursor-pointer hover:text-text-main transition-colors select-none"
                   onClick={() => handleSort("totalTokensOut")}
                 >
                   {t("tokensOut")} <SortIcon column="totalTokensOut" />
                 </th>
                 <th
-                  className="text-right py-2 px-3 text-text-muted font-medium cursor-pointer hover:text-text-main transition-colors select-none"
+                  className="text-end py-2 px-3 text-text-muted font-medium cursor-pointer hover:text-text-main transition-colors select-none"
                   onClick={() => handleSort("avgTtftAfterToolMs")}
                 >
                   {t("ttftAfterTool")} <SortIcon column="avgTtftAfterToolMs" />
                 </th>
                 <th
-                  className="text-right py-2 px-3 text-text-muted font-medium cursor-pointer hover:text-text-main transition-colors select-none"
+                  className="text-end py-2 px-3 text-text-muted font-medium cursor-pointer hover:text-text-main transition-colors select-none"
                   onClick={() => handleSort("avgGapAfterToolMs")}
                 >
                   {t("gapAfterTool")} <SortIcon column="avgGapAfterToolMs" />
@@ -321,13 +323,13 @@ export default function ProviderStatsPage() {
                       <td className="py-2.5 px-3 font-medium text-text-main">
                         {resolveProviderName(p.provider, nodeMap)}
                       </td>
-                      <td className="py-2.5 px-3 text-right tabular-nums text-text-main">
+                      <td className="py-2.5 px-3 text-end tabular-nums text-text-main">
                         {formatNumber(p.totalRequests)}
                       </td>
-                      <td className="py-2.5 px-3 text-right tabular-nums text-text-main">
+                      <td className="py-2.5 px-3 text-end tabular-nums text-text-main">
                         {formatNumber(p.successfulRequests)}
                       </td>
-                      <td className="py-2.5 px-3 text-right tabular-nums">
+                      <td className="py-2.5 px-3 text-end tabular-nums">
                         <span
                           className={
                             rate >= 99
@@ -340,19 +342,19 @@ export default function ProviderStatsPage() {
                           {rate.toFixed(1)}%
                         </span>
                       </td>
-                      <td className="py-2.5 px-3 text-right tabular-nums text-text-main">
+                      <td className="py-2.5 px-3 text-end tabular-nums text-text-main">
                         {formatLatency(p.avgLatencyMs)}
                       </td>
-                      <td className="py-2.5 px-3 text-right tabular-nums text-text-muted">
+                      <td className="py-2.5 px-3 text-end tabular-nums text-text-muted">
                         {formatNumber(p.totalTokensIn)}
                       </td>
-                      <td className="py-2.5 px-3 text-right tabular-nums text-text-muted">
+                      <td className="py-2.5 px-3 text-end tabular-nums text-text-muted">
                         {formatNumber(p.totalTokensOut)}
                       </td>
-                      <td className="py-2.5 px-3 text-right tabular-nums text-text-main">
+                      <td className="py-2.5 px-3 text-end tabular-nums text-text-main">
                         {formatLatency(data?.toolLatency?.[p.provider]?.avgTtftAfterToolMs ?? null)}
                       </td>
-                      <td className="py-2.5 px-3 text-right tabular-nums text-text-main">
+                      <td className="py-2.5 px-3 text-end tabular-nums text-text-main">
                         {formatLatency(data?.toolLatency?.[p.provider]?.avgGapAfterToolMs ?? null)}
                       </td>
                       <td className="py-2.5 px-3 text-center">
@@ -374,19 +376,17 @@ export default function ProviderStatsPage() {
                             <table className="w-full text-xs">
                               <thead>
                                 <tr className="text-text-muted">
-                                  <th className="text-left py-1.5 px-6 pl-12 font-medium">
+                                  <th className="text-start py-1.5 px-6 ps-12 font-medium">
                                     {t("model")}
                                   </th>
-                                  <th className="text-right py-1.5 px-3 font-medium">
+                                  <th className="text-end py-1.5 px-3 font-medium">
                                     {t("requests")}
                                   </th>
-                                  <th className="text-right py-1.5 px-3 font-medium">
+                                  <th className="text-end py-1.5 px-3 font-medium">
                                     {t("success")}
                                   </th>
-                                  <th className="text-right py-1.5 px-3 font-medium">
-                                    {t("rate")}
-                                  </th>
-                                  <th className="text-right py-1.5 px-3 font-medium">
+                                  <th className="text-end py-1.5 px-3 font-medium">{t("rate")}</th>
+                                  <th className="text-end py-1.5 px-3 font-medium">
                                     {t("avgLatency")}
                                   </th>
                                   <th className="px-3 w-8" />
@@ -398,16 +398,16 @@ export default function ProviderStatsPage() {
                                     m.requests > 0 ? (m.successfulRequests / m.requests) * 100 : 0;
                                   return (
                                     <tr key={m.model} className="border-t border-border/20">
-                                      <td className="py-1.5 px-6 pl-12 font-mono text-text-main">
+                                      <td className="py-1.5 px-6 ps-12 font-mono text-text-main">
                                         {m.model}
                                       </td>
-                                      <td className="py-1.5 px-3 text-right tabular-nums text-text-main">
+                                      <td className="py-1.5 px-3 text-end tabular-nums text-text-main">
                                         {formatNumber(m.requests)}
                                       </td>
-                                      <td className="py-1.5 px-3 text-right tabular-nums text-text-main">
+                                      <td className="py-1.5 px-3 text-end tabular-nums text-text-main">
                                         {formatNumber(m.successfulRequests)}
                                       </td>
-                                      <td className="py-1.5 px-3 text-right tabular-nums">
+                                      <td className="py-1.5 px-3 text-end tabular-nums">
                                         <span
                                           className={
                                             mRate >= 99
@@ -420,7 +420,7 @@ export default function ProviderStatsPage() {
                                           {mRate.toFixed(1)}%
                                         </span>
                                       </td>
-                                      <td className="py-1.5 px-3 text-right tabular-nums text-text-main">
+                                      <td className="py-1.5 px-3 text-end tabular-nums text-text-main">
                                         {formatLatency(m.avgLatencyMs)}
                                       </td>
                                       <td className="px-3 w-8" />
@@ -460,19 +460,15 @@ export default function ProviderStatsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="text-left py-2 px-3 text-text-muted font-medium">Combo</th>
-                  <th className="text-right py-2 px-3 text-text-muted font-medium">
+                  <th className="text-start py-2 px-3 text-text-muted font-medium">Combo</th>
+                  <th className="text-end py-2 px-3 text-text-muted font-medium">
                     {t("requests")}
                   </th>
-                  <th className="text-right py-2 px-3 text-text-muted font-medium">
-                    {t("avgTtft")}
-                  </th>
-                  <th className="text-right py-2 px-3 text-text-muted font-medium">
+                  <th className="text-end py-2 px-3 text-text-muted font-medium">{t("avgTtft")}</th>
+                  <th className="text-end py-2 px-3 text-text-muted font-medium">
                     {t("avgTotal")}
                   </th>
-                  <th className="text-right py-2 px-3 text-text-muted font-medium">
-                    {t("success")}
-                  </th>
+                  <th className="text-end py-2 px-3 text-text-muted font-medium">{t("success")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -482,16 +478,16 @@ export default function ProviderStatsPage() {
                     className="border-b border-border/50 hover:bg-surface/50 transition-colors"
                   >
                     <td className="py-2 px-3 font-medium text-text-main">{name}</td>
-                    <td className="py-2 px-3 text-right tabular-nums text-text-main">
+                    <td className="py-2 px-3 text-end tabular-nums text-text-main">
                       {formatNumber(m.requestCount ?? m.totalRequests ?? 0)}
                     </td>
-                    <td className="py-2 px-3 text-right tabular-nums text-text-main">
+                    <td className="py-2 px-3 text-end tabular-nums text-text-main">
                       {formatLatency(m.avgTtft ?? m.ttftMs ?? null)}
                     </td>
-                    <td className="py-2 px-3 text-right tabular-nums text-text-main">
+                    <td className="py-2 px-3 text-end tabular-nums text-text-main">
                       {formatLatency(m.avgLatency ?? m.avgTotalMs ?? null)}
                     </td>
-                    <td className="py-2 px-3 text-right tabular-nums">
+                    <td className="py-2 px-3 text-end tabular-nums">
                       {typeof m.successRate === "number"
                         ? `${(m.successRate * 100).toFixed(1)}%`
                         : "—"}

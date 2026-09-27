@@ -86,8 +86,16 @@ export const COLLECTORS = [
       ".github/workflows/quality.yml": "test:unit:ci:shard",
     },
   },
-  // Node native runner — test:integration (top-level only; tests/integration/services/ NÃO roda)
+  // Node native runner — test:integration (top-level only)
   { glob: "tests/integration/*.test.ts", sources: ["package.json"] },
+  // Node native runner — test:integration (services/ subdir: mocked coexistence, pure
+  // route-guard invariants, RUN_SERVICES_INT=1 self-skipping lifecycle tests)
+  { glob: "tests/integration/services/*.test.ts", sources: ["package.json"] },
+  // Node native runner — test:integration (compression golden-set regression tests;
+  // upstream-parity self-skips when the gitignored _references/ tree is not vendored)
+  { glob: "tests/golden-set/*.test.ts", sources: ["package.json"] },
+  // Node native runner — test:live (gated live-provider smoke; self-skips without creds)
+  { glob: "tests/live/*.test.ts", sources: ["package.json"] },
   // Node native runner — test:combo:matrix / test:integration (combo strategy decision matrix, 17 strategies)
   { glob: "tests/integration/combo-matrix/*.test.ts", sources: ["package.json"] },
   // Node native runner — test:combo:live (gated real-upstream smoke; RUN_COMBO_LIVE=1 + VPS creds)
@@ -144,6 +152,16 @@ export const COLLECTORS = [
     glob: "src/lib/skills/__tests__/**/*.test.ts",
     sources: ["vitest.config.ts"],
     anchors: { "vitest.config.ts": "src/lib/skills/__tests__/**/*.test.ts" },
+  },
+  {
+    glob: "src/app/api/settings/__tests__/**/*.test.ts",
+    sources: ["vitest.config.ts"],
+    anchors: { "vitest.config.ts": "src/app/api/settings/__tests__/**/*.test.ts" },
+  },
+  {
+    glob: "src/lib/db/__tests__/**/*.test.ts",
+    sources: ["vitest.config.ts"],
+    anchors: { "vitest.config.ts": "src/lib/db/__tests__/**/*.test.ts" },
   },
   // vitest.config.ts include — single-file entry for the .test.ts encryption file.
   {

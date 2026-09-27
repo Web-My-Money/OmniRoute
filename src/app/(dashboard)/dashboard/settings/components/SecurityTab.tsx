@@ -295,7 +295,7 @@ export default function SecurityTab() {
         <div className="flex flex-col gap-4">
           <div className="rounded-lg border border-border/50 bg-black/[0.02] dark:bg-white/[0.02] p-3 text-sm text-text-muted">
             <p className="font-medium text-text">{t("authModelHeading")}</p>
-            <ul className="list-disc pl-5 mt-1 space-y-1">
+            <ul className="list-disc ps-5 mt-1 space-y-1">
               <li>{t("authModelClient")}</li>
               <li>{t("authModelManagement")}</li>
               <li>{t("authModelPublic")}</li>

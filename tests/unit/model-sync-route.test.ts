@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-model-sync-route-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -34,7 +35,7 @@ async function resetStorage() {
   modelSyncRoute.__resetLoopbackReadinessForTests();
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -42,7 +43,7 @@ test.after(() => {
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 async function enableAuth() {
@@ -53,13 +54,13 @@ async function enableAuth() {
 test("model sync route skips success log when fetched models do not change stored models", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "MAIN",
     displayName: "OpenRouter Main",
     apiKey: "test-key",
-  });
+  })) as JsonRecord & { id: string };
 
   await modelsDb.replaceSyncedAvailableModelsForConnection("openrouter", connection.id, [
     {
@@ -87,7 +88,7 @@ test("model sync route skips success log when fetched models do not change store
         method: "POST",
         headers: scheduler.buildModelSyncInternalHeaders(),
       }),
-      { params: { id: connection.id } }
+      { params: Promise.resolve({ id: connection.id }) }
     );
 
     assert.equal(response.status, 200);
@@ -106,13 +107,13 @@ test("model sync route skips success log when fetched models do not change store
 test("model sync route stores the real provider while keeping the account label", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "MAIN",
     displayName: "OpenRouter Main",
     apiKey: "test-key",
-  });
+  })) as JsonRecord & { id: string };
 
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async (url) => {
@@ -132,7 +133,7 @@ test("model sync route stores the real provider while keeping the account label"
         method: "POST",
         headers: scheduler.buildModelSyncInternalHeaders(),
       }),
-      { params: { id: connection.id } }
+      { params: Promise.resolve({ id: connection.id }) }
     );
 
     assert.equal(response.status, 200);
@@ -155,18 +156,18 @@ test("model sync route requires authentication for external requests when auth i
   await resetStorage();
   await enableAuth();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "Protected Connection",
     apiKey: "test-key",
-  });
+  })) as JsonRecord & { id: string };
 
   const response = await modelSyncRoute.POST(
     new Request(`http://localhost/api/providers/${connection.id}/sync-models`, {
       method: "POST",
     }),
-    { params: { id: connection.id } }
+    { params: Promise.resolve({ id: connection.id }) }
   );
   const body = (await response.json()) as any;
 
@@ -183,7 +184,7 @@ test("model sync route returns 404 for unknown connections after internal auth p
       method: "POST",
       headers: scheduler.buildModelSyncInternalHeaders(),
     }),
-    { params: { id: "missing" } }
+    { params: Promise.resolve({ id: "missing" }) }
   );
 
   assert.equal(response.status, 404);
@@ -193,12 +194,12 @@ test("model sync route returns 404 for unknown connections after internal auth p
 test("model sync route propagates upstream failures and records an error log entry", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "Error Branch",
     apiKey: "test-key",
-  });
+  })) as JsonRecord & { id: string };
 
   globalThis.fetch = async (url) => {
     if (String(url).includes("__readiness_probe__")) return new Response(null, { status: 404 });
@@ -214,7 +215,7 @@ test("model sync route propagates upstream failures and records an error log ent
       method: "POST",
       headers: scheduler.buildModelSyncInternalHeaders(),
     }),
-    { params: { id: connection.id } }
+    { params: Promise.resolve({ id: connection.id }) }
   );
   const body = (await response.json()) as any;
   const logs = await callLogs.getCallLogs({ model: "model-sync", limit: 10 });
@@ -230,12 +231,12 @@ test("model sync route propagates upstream failures and records an error log ent
 test("model sync route falls back to the upstream HTTP status when the models payload has no error field", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "Rate Limited Sync",
     apiKey: "test-key",
-  });
+  })) as JsonRecord & { id: string };
 
   globalThis.fetch = async (url) => {
     if (String(url).includes("__readiness_probe__")) return new Response(null, { status: 404 });
@@ -251,7 +252,7 @@ test("model sync route falls back to the upstream HTTP status when the models pa
       method: "POST",
       headers: scheduler.buildModelSyncInternalHeaders(),
     }),
-    { params: { id: connection.id } }
+    { params: Promise.resolve({ id: connection.id }) }
   );
   const body = (await response.json()) as any;
   const logs = await callLogs.getCallLogs({ model: "model-sync", limit: 10 });
@@ -266,12 +267,12 @@ test("model sync route falls back to the upstream HTTP status when the models pa
 test("model sync route reports invalid JSON /models responses without losing upstream status", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "Invalid JSON Sync",
     apiKey: "test-key",
-  });
+  })) as JsonRecord & { id: string };
 
   globalThis.fetch = async (url) => {
     if (String(url).includes("__readiness_probe__")) return new Response(null, { status: 404 });
@@ -290,7 +291,7 @@ test("model sync route reports invalid JSON /models responses without losing ups
       method: "POST",
       headers: scheduler.buildModelSyncInternalHeaders(),
     }),
-    { params: { id: connection.id } }
+    { params: Promise.resolve({ id: connection.id }) }
   );
   const body = (await response.json()) as any;
   const logs = await callLogs.getCallLogs({ model: "model-sync", limit: 10 });
@@ -306,12 +307,12 @@ test("model sync route reports invalid JSON /models responses without losing ups
 test("model sync route preserves previously synced models when the upstream omits the models list", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "No Models Returned",
     apiKey: "test-key",
-  });
+  })) as JsonRecord & { id: string };
 
   await modelsDb.replaceSyncedAvailableModelsForConnection("openrouter", connection.id, [
     {
@@ -335,7 +336,7 @@ test("model sync route preserves previously synced models when the upstream omit
       method: "POST",
       headers: scheduler.buildModelSyncInternalHeaders(),
     }),
-    { params: { id: connection.id } }
+    { params: Promise.resolve({ id: connection.id }) }
   );
   const body = (await response.json()) as any;
   const logs = await callLogs.getCallLogs({ model: "model-sync", limit: 10 });
@@ -358,12 +359,12 @@ test("model sync route preserves previously synced models when the upstream omit
 test("model sync route writes synced available models for Gemini connections", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "gemini",
     authType: "apikey",
     name: "Gemini Sync",
     apiKey: "gm-key",
-  });
+  })) as JsonRecord & { id: string };
 
   globalThis.fetch = async (url) => {
     if (String(url).includes("__readiness_probe__")) return new Response(null, { status: 404 });
@@ -391,7 +392,7 @@ test("model sync route writes synced available models for Gemini connections", a
       method: "POST",
       headers: scheduler.buildModelSyncInternalHeaders(),
     }),
-    { params: { id: connection.id } }
+    { params: Promise.resolve({ id: connection.id }) }
   );
   const body = (await response.json()) as any;
   const synced = await modelsDb.getSyncedAvailableModels("gemini");
@@ -422,12 +423,12 @@ test("model sync route writes synced available models for Gemini connections", a
 test("model sync route writes synced available models for non-Gemini providers too", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "opencode-go",
     authType: "apikey",
     name: "OpenCode Go Sync",
     apiKey: "opencode-go-key",
-  });
+  })) as JsonRecord & { id: string };
 
   globalThis.fetch = async (url) => {
     if (String(url).includes("__readiness_probe__")) return new Response(null, { status: 404 });
@@ -452,7 +453,7 @@ test("model sync route writes synced available models for non-Gemini providers t
       method: "POST",
       headers: scheduler.buildModelSyncInternalHeaders(),
     }),
-    { params: { id: connection.id } }
+    { params: Promise.resolve({ id: connection.id }) }
   );
   const body = (await response.json()) as any;
   const synced = await modelsDb.getSyncedAvailableModels("opencode-go");
@@ -478,12 +479,12 @@ test("model sync route writes synced available models for non-Gemini providers t
 test("model sync route import mode merges discovered models without deleting manual models", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "OpenRouter Import",
     apiKey: "test-key",
-  });
+  })) as JsonRecord & { id: string };
 
   await modelsDb.addCustomModel("openrouter", "manual-only", "Manual Only", "manual");
   await modelsDb.addCustomModel("openrouter", "router-v4", "Manual Router V4", "manual");
@@ -505,7 +506,7 @@ test("model sync route import mode merges discovered models without deleting man
       method: "POST",
       headers: scheduler.buildModelSyncInternalHeaders(),
     }),
-    { params: { id: connection.id } }
+    { params: Promise.resolve({ id: connection.id }) }
   );
   const body = (await response.json()) as any;
   const aliases = await localDb.getModelAliases();
@@ -542,12 +543,12 @@ test("model sync route import mode merges discovered models without deleting man
 test("model sync route import mode ignores supported endpoint ordering changes", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "OpenRouter Import Stable",
     apiKey: "test-key",
-  });
+  })) as JsonRecord & { id: string };
 
   await modelsDb.replaceSyncedAvailableModelsForConnection("openrouter", connection.id, [
     {
@@ -580,7 +581,7 @@ test("model sync route import mode ignores supported endpoint ordering changes",
       method: "POST",
       headers: scheduler.buildModelSyncInternalHeaders(),
     }),
-    { params: { id: connection.id } }
+    { params: Promise.resolve({ id: connection.id }) }
   );
   const body = (await response.json()) as any;
   const logs = await callLogs.getCallLogs({ model: "model-sync", limit: 10 });
@@ -606,12 +607,12 @@ test("model sync route import mode ignores supported endpoint ordering changes",
 test("model sync route import mode reports updates without counting them as new imports", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "OpenRouter Import Update",
     apiKey: "test-key",
-  });
+  })) as JsonRecord & { id: string };
 
   await modelsDb.replaceSyncedAvailableModelsForConnection("openrouter", connection.id, [
     {
@@ -644,7 +645,7 @@ test("model sync route import mode reports updates without counting them as new 
       method: "POST",
       headers: scheduler.buildModelSyncInternalHeaders(),
     }),
-    { params: { id: connection.id } }
+    { params: Promise.resolve({ id: connection.id }) }
   );
   const body = (await response.json()) as any;
   const logs = await callLogs.getCallLogs({ model: "model-sync", limit: 10 });
@@ -676,12 +677,12 @@ test("model sync route import mode reports updates without counting them as new 
 test("model sync route records added, removed, and updated model diffs with fallback identifiers", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "oauth",
     email: "sync@example.com",
     accessToken: "sync-token",
-  });
+  })) as JsonRecord & { id: string };
 
   await modelsDb.replaceSyncedAvailableModelsForConnection("openrouter", connection.id, [
     {
@@ -723,7 +724,7 @@ test("model sync route records added, removed, and updated model diffs with fall
       method: "POST",
       headers: scheduler.buildModelSyncInternalHeaders(),
     }),
-    { params: { id: connection.id } }
+    { params: Promise.resolve({ id: connection.id }) }
   );
   const body = (await response.json()) as any;
   const logs = await callLogs.getCallLogs({ model: "model-sync", limit: 10 });
@@ -764,18 +765,18 @@ test("model sync route forwards cookies, filters built-ins, and syncs aliases fo
   await resetStorage();
   await enableAuth();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "External Sync",
     displayName: "OpenRouter External",
     apiKey: "test-key",
-  });
+  })) as JsonRecord & { id: string };
 
   await localDb.setModelAlias("stale-model", "openrouter/stale-model");
   await localDb.setModelAlias("router-v2", "other-provider/router-v2");
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     if (String(url).includes("__readiness_probe__")) return new Response(null, { status: 404 });
     assert.equal(
       String(url),
@@ -804,7 +805,7 @@ test("model sync route forwards cookies, filters built-ins, and syncs aliases fo
         ...scheduler.buildModelSyncInternalHeaders(),
       },
     }),
-    { params: { id: connection.id } }
+    { params: Promise.resolve({ id: connection.id }) }
   );
   const body = (await response.json()) as any;
   const aliases = await localDb.getModelAliases();
@@ -837,12 +838,12 @@ test("model sync route forwards cookies, filters built-ins, and syncs aliases fo
 test("model sync route reports synced managed models separately from preserved manual models", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "Mixed Sync",
     apiKey: "test-key",
-  });
+  })) as JsonRecord & { id: string };
 
   await modelsDb.addCustomModel("openrouter", "manual-only", "Manual Only", "manual");
   await modelsDb.addCustomModel("openrouter", "router-v4", "Manual Router V4", "manual");
@@ -863,7 +864,7 @@ test("model sync route reports synced managed models separately from preserved m
       method: "POST",
       headers: scheduler.buildModelSyncInternalHeaders(),
     }),
-    { params: { id: connection.id } }
+    { params: Promise.resolve({ id: connection.id }) }
   );
   const body = (await response.json()) as any;
 
@@ -901,7 +902,7 @@ test("model sync route uses provider-node prefixes when syncing compatible-provi
     chatPath: "/v1/messages",
     modelsPath: "/v1/models",
   });
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "anthropic-compatible-demo",
     authType: "apikey",
     name: "Compatible Sync",
@@ -911,7 +912,7 @@ test("model sync route uses provider-node prefixes when syncing compatible-provi
       chatPath: "/v1/messages",
       modelsPath: "/v1/models",
     },
-  });
+  })) as JsonRecord & { id: string };
 
   await localDb.setModelAlias("sonnet-4-6", "some-other-provider/sonnet-4-6");
 
@@ -931,7 +932,7 @@ test("model sync route uses provider-node prefixes when syncing compatible-provi
       method: "POST",
       headers: scheduler.buildModelSyncInternalHeaders(),
     }),
-    { params: { id: connection.id } }
+    { params: Promise.resolve({ id: connection.id }) }
   );
   const body = (await response.json()) as any;
   const aliases = await localDb.getModelAliases();
@@ -945,7 +946,7 @@ test("model sync route uses provider-node prefixes when syncing compatible-provi
 test("model sync route falls back to in-process discovery when internal self-fetch throws", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai-compatible-aio",
     authType: "apikey",
     name: "AIO Import",
@@ -957,7 +958,7 @@ test("model sync route falls back to in-process discovery when internal self-fet
       nodeName: "aio",
       autoSync: true,
     },
-  });
+  })) as JsonRecord & { id: string };
 
   // Reset shared readiness gate so this test exercises the probe path cleanly.
   modelSyncRoute.__resetLoopbackReadinessForTests();
@@ -989,7 +990,7 @@ test("model sync route falls back to in-process discovery when internal self-fet
       method: "POST",
       headers: scheduler.buildModelSyncInternalHeaders(),
     }),
-    { params: { id: connection.id } }
+    { params: Promise.resolve({ id: connection.id }) }
   );
   const body = (await response.json()) as {
     importedCount: number;
@@ -1030,3 +1031,5 @@ test("model sync route falls back to in-process discovery when internal self-fet
   assert.equal(fetchCalls[3], "https://api.bltcy.ai/v1/models", "4th call should be upstream");
   assert.equal(fetchCalls.length, 4, "should have exactly 3 retries + 1 upstream call");
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

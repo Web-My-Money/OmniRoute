@@ -386,7 +386,7 @@ export default function ModelLockoutCard() {
           {/* Suggested common codes — chips as clickable suggestions */}
           {draft.errorCodes.length === 0 && errorCodesInput === "" && (
             <div className="mt-3 flex flex-wrap items-center gap-1.5">
-              <span className="mr-1 text-xs text-text-muted">{t("suggestions")}</span>
+              <span className="me-1 text-xs text-text-muted">{t("suggestions")}</span>
               {[403, 404, 429, 502, 503, 504].map((code) => (
                 <button
                   key={code}

@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 function inferAspectRatioFromSize(size) {
   if (typeof size !== "string") return null;
@@ -35,7 +36,7 @@ test("nanobanana pro payload inference maps size to aspectRatio and resolution",
 test("nanobanana async flow (submit->poll->url) normalizes to OpenAI-style url item", async () => {
   const calls = [];
 
-  const fetchMock = async (url, options = {}) => {
+  const fetchMock = async (url, options: MockRequestInit = {}) => {
     calls.push({ url: String(url), method: options.method || "GET", body: options.body });
 
     if (String(url).includes("/generate")) {

@@ -26,6 +26,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createComboRoutingHarness, providerFromUrl } from "../_comboRoutingHarness.ts";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 const h = await createComboRoutingHarness("combo-relay-handoff");
 const {
@@ -42,9 +43,8 @@ const {
 
 // Import DB helpers AFTER harness so they share the same DB instance (DATA_DIR
 // is set by the harness before any import triggers DB init).
-const { recordSessionModelUsage, getHandoff } = await import(
-  "../../../src/lib/db/contextHandoffs.ts"
-);
+const { recordSessionModelUsage, getHandoff } =
+  await import("../../../src/lib/db/contextHandoffs.ts");
 
 // A minimal but valid handoff-JSON blob that parseHandoffJSON will accept.
 // Must have at minimum a non-empty "summary" field.
@@ -99,8 +99,8 @@ function installHandoffAwareFetch() {
     try {
       bodyObj =
         typeof init?.body === "string"
-          ? (JSON.parse(init.body) as Record<string, unknown>)
-          : ((init?.body ?? {}) as Record<string, unknown>);
+          ? (JSON.parse(init.body) as LooseDeep)
+          : ((init?.body ?? {}) as LooseDeep);
     } catch {
       bodyObj = {};
     }
@@ -109,7 +109,7 @@ function installHandoffAwareFetch() {
       index: h.calls.length,
       provider,
       url: u,
-      authorization: headers.authorization,
+      authorization: (headers as LooseDeep).authorization,
       model: typeof bodyObj.model === "string" ? bodyObj.model : undefined,
     };
     h.calls.push(call);
@@ -172,10 +172,7 @@ test("context-relay universal handoff: fires and writes handoff record on model 
 
   // Wait for the setImmediate + generateUniversalHandoffAsync to complete and
   // write the DB record. Poll for up to 2 s — typically resolves in <100 ms.
-  const handoff = await waitFor(
-    () => getHandoff(SESSION_ID, COMBO_NAME),
-    2000
-  );
+  const handoff = await waitFor(() => getHandoff(SESSION_ID, COMBO_NAME), 2000);
 
   assert.ok(
     handoff !== null,
@@ -185,16 +182,8 @@ test("context-relay universal handoff: fires and writes handoff record on model 
     typeof handoff!.summary === "string" && handoff!.summary.length > 0,
     `handoff.summary must be non-empty; got: ${JSON.stringify(handoff!.summary)}`
   );
-  assert.equal(
-    handoff!.comboName,
-    COMBO_NAME,
-    "handoff must be keyed to the correct combo"
-  );
-  assert.equal(
-    handoff!.sessionId,
-    SESSION_ID,
-    "handoff must be keyed to the correct session"
-  );
+  assert.equal(handoff!.comboName, COMBO_NAME, "handoff must be keyed to the correct combo");
+  assert.equal(handoff!.sessionId, SESSION_ID, "handoff must be keyed to the correct session");
 
   // Extra dispatch observable: main (index 0) + summary (index ≥ 1).
   assert.ok(

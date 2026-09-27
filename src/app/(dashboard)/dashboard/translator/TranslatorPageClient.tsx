@@ -203,7 +203,7 @@ function AutoFeaturesCard() {
         onClick={() => setShowFeatures((prev) => !prev)}
         aria-expanded={showFeatures}
         aria-controls="auto-features-grid"
-        className="flex w-full items-center justify-between p-4 text-left"
+        className="flex w-full items-center justify-between p-4 text-start"
       >
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-[20px] text-primary">auto_fix_high</span>

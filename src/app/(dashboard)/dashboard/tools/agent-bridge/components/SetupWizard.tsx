@@ -13,7 +13,10 @@ interface SetupWizardProps {
   currentMappings: { source: string; target: string }[]; // Current mappings for this agent
   onClose: () => void;
   onDnsToggle: (agentId: string, enabled: boolean) => Promise<void>;
-  onMappingsSave: (agentId: string, mappings: { source: string; target: string }[]) => Promise<void>;
+  onMappingsSave: (
+    agentId: string,
+    mappings: { source: string; target: string }[]
+  ) => Promise<void>;
 }
 
 type Step = "verify" | "dns" | "mappings";
@@ -185,7 +188,7 @@ export function SetupWizard({
               >
                 {s.label}
               </span>
-              {i < steps.length - 1 && <div className="flex-1 h-px bg-border/30 ml-1" />}
+              {i < steps.length - 1 && <div className="flex-1 h-px bg-border/30 ms-1" />}
             </div>
           ))}
         </div>
@@ -267,13 +270,16 @@ export function SetupWizard({
 
               {loadingModels ? (
                 <div className="flex items-center gap-2 text-sm text-text-muted">
-                  <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                  <span className="material-symbols-outlined text-[16px] animate-spin">
+                    progress_activity
+                  </span>
                   Detecting models from intercepted traffic...
                 </div>
               ) : detectedModels.length > 0 ? (
                 <div className="flex flex-col gap-2">
                   <p className="text-sm text-text-muted">
-                    Found {detectedModels.length} model{detectedModels.length !== 1 ? "s" : ""} in intercepted traffic. Select the ones you want to add:
+                    Found {detectedModels.length} model{detectedModels.length !== 1 ? "s" : ""} in
+                    intercepted traffic. Select the ones you want to add:
                   </p>
                   <div className="rounded-lg border border-border/40 bg-surface p-3 flex flex-col gap-2 max-h-[200px] overflow-y-auto">
                     {detectedModels.map((model) => (
@@ -293,14 +299,16 @@ export function SetupWizard({
                   </div>
                   {selectedModels.size > 0 && (
                     <p className="text-xs text-text-muted">
-                      {selectedModels.size} model{selectedModels.size !== 1 ? "s" : ""} selected. You&apos;ll map them to OmniRoute models in the next screen.
+                      {selectedModels.size} model{selectedModels.size !== 1 ? "s" : ""} selected.
+                      You&apos;ll map them to OmniRoute models in the next screen.
                     </p>
                   )}
                 </div>
               ) : (
                 <div className="rounded-lg border border-border/40 bg-surface/30 p-3">
                   <p className="text-sm text-text-muted">
-                    No models detected yet. Use {target.name} to make a request, then run this wizard again to auto-detect models from traffic.
+                    No models detected yet. Use {target.name} to make a request, then run this
+                    wizard again to auto-detect models from traffic.
                   </p>
                   <p className="text-xs text-text-muted mt-2">
                     Or close this wizard and add mappings manually in the agent card.
@@ -333,7 +341,7 @@ export function SetupWizard({
                 className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 transition-colors"
               >
                 {t("next")}{" "}
-                <span className="material-symbols-outlined text-[14px] ml-1">arrow_forward</span>
+                <span className="material-symbols-outlined text-[14px] ms-1">arrow_forward</span>
               </button>
             )}
 

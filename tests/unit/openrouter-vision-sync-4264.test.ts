@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // #4264: When a provider key is imported and its models are synced, the synced
 // model records dropped the vision capability — OpenRouter (and other catalogs)
@@ -24,7 +25,7 @@ const v1ModelsCatalog = await import("../../src/app/api/v1/models/catalog.ts");
 async function resetStorage() {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -35,7 +36,7 @@ test.beforeEach(async () => {
 test.after(async () => {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#4264 normalizeDiscoveredModels captures vision from OpenRouter architecture", () => {
@@ -72,7 +73,7 @@ test("#4264 normalizeDiscoveredModels captures vision from OpenRouter architectu
 });
 
 test("#4264 synced OpenRouter vision model surfaces capabilities.vision in /v1/models", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "openrouter-test",
@@ -80,7 +81,7 @@ test("#4264 synced OpenRouter vision model surfaces capabilities.vision in /v1/m
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 
   // Simulate "import models": persist the raw OpenRouter /models entries (with
   // architecture) through the real discovery path. Having synced models makes the
@@ -107,9 +108,7 @@ test("#4264 synced OpenRouter vision model surfaces capabilities.vision in /v1/m
   assert.equal(response.status, 200);
   const body = (await response.json()) as any;
 
-  const visionModel = body.data.find((m: any) =>
-    String(m.id).endsWith("nex-agi/nex-n2-pro:free")
-  );
+  const visionModel = body.data.find((m: any) => String(m.id).endsWith("nex-agi/nex-n2-pro:free"));
   assert.ok(visionModel, `expected the synced vision model in the catalog`);
   // RED before the fix: synced models carried no capabilities at all.
   assert.equal(visionModel.capabilities?.vision, true);

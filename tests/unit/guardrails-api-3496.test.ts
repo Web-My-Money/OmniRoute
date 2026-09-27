@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 
 import { makeManagementSessionRequest } from "../helpers/managementSession.ts";
+import type { NextRequest } from "next/server";
 
 // #3496 — docs/reference/API_REFERENCE.md documented a `/api/guardrails*` and
 // `/api/shadow*` surface that did not exist (doc-fiction, frozen in the
@@ -34,12 +35,12 @@ test.after(() => {
   } catch {
     /* ignore */
   }
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#3496 GET /api/guardrails lists the registered guardrails with status", async () => {
   const req = await makeManagementSessionRequest("http://localhost/api/guardrails");
-  const res = await listRoute.GET(req);
+  const res = await listRoute.GET(req as unknown as NextRequest);
   assert.equal(res.status, 200);
 
   const body = await res.json();
@@ -62,7 +63,7 @@ test("#3496 POST /api/guardrails/test runs the pre-call pipeline over a sample i
     method: "POST",
     body: { input: { messages: [{ role: "user", content: "hello world" }] } },
   });
-  const res = await testRoute.POST(req);
+  const res = await testRoute.POST(req as unknown as NextRequest);
   assert.equal(res.status, 200);
 
   const body = await res.json();
@@ -81,7 +82,7 @@ test("#3496 POST /api/guardrails/test honors disabledGuardrails", async () => {
     method: "POST",
     body: { input: "hello", disabledGuardrails: ["pii-masker"] },
   });
-  const res = await testRoute.POST(req);
+  const res = await testRoute.POST(req as unknown as NextRequest);
   assert.equal(res.status, 200);
 
   const body = await res.json();
@@ -95,7 +96,7 @@ test("#3496 POST /api/guardrails/test rejects a body without input (400)", async
     method: "POST",
     body: {},
   });
-  const res = await testRoute.POST(req);
+  const res = await testRoute.POST(req as unknown as NextRequest);
   assert.equal(res.status, 400);
 });
 
@@ -119,8 +120,6 @@ test("#3496 check-docs-symbols no longer freezes guardrails/shadow + API_REFEREN
   const src = fs.readFileSync(path.join(process.cwd(), apiRefRel), "utf8");
   const docPathsByFile = [{ file: apiRefRel, paths: extractDocApiPaths(src) }];
   const misses = findStaleDocApiRefs(docPathsByFile, routeFiles, KNOWN_STALE_DOC_REFS);
-  const ghosts = misses.filter(
-    (m) => m.includes("/api/guardrails") || m.includes("/api/shadow")
-  );
+  const ghosts = misses.filter((m) => m.includes("/api/guardrails") || m.includes("/api/shadow"));
   assert.deepEqual(ghosts, [], `stale guardrails/shadow refs remain: ${ghosts.join("; ")}`);
 });

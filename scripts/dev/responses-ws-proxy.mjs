@@ -857,6 +857,18 @@ class ResponsesWsSession {
   }
 }
 
+/**
+ * @param {{
+ *   baseUrl: string,
+ *   bridgeSecret: string,
+ *   fetchImpl?: typeof fetch,
+ *   wsFactory?: unknown,
+ *   pingIntervalMs?: number,
+ *   idleTimeoutMs?: number,
+ *   maxBufferBytes?: number,
+ *   maxMessageBytes?: number,
+ * }} [options]
+ */
 export function createResponsesWsProxy({
   baseUrl,
   bridgeSecret,

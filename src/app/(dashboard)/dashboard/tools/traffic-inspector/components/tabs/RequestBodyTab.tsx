@@ -49,7 +49,7 @@ export function RequestBodyTab({ request }: RequestBodyTabProps) {
         >
           {raw ? t("formatted") : t("raw")}
         </button>
-        <span className="ml-auto text-xs text-text-muted">{request.requestSize} B</span>
+        <span className="ms-auto text-xs text-text-muted">{request.requestSize} B</span>
       </div>
       <div className="flex-1 overflow-auto bg-bg-subtle rounded border border-border p-2">
         {raw || !parsed ? (

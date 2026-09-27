@@ -22,6 +22,7 @@ import assert from "node:assert/strict";
 import { normalizeDiscoveredModels } from "@/lib/providerModels/modelDiscovery";
 import { applyDefaultReasoningEffort } from "../../open-sse/services/defaultReasoningEffort.ts";
 import { MODEL_SPECS } from "../../src/shared/constants/modelSpecs.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ---------------------------------------------------------------------------
 // Discovery capture
@@ -81,13 +82,13 @@ test("no reasoning metadata -> defaultThinkingEffort unset", () => {
 test("injects the vendor-declared default when no reasoning field and no other default exists", () => {
   const body = { model: "stealth/ox-alpha", messages: [] };
   const result = applyDefaultReasoningEffort(body, "stealth/ox-alpha", null, "xhigh");
-  assert.equal(result.reasoning_effort, "xhigh");
+  assert.equal((result as LooseDeep).reasoning_effort, "xhigh");
 });
 
 test("a suffix-resolved effort (#7694) wins over the vendor default", () => {
   const body = { model: "stealth/ox-alpha-low", messages: [] };
   const result = applyDefaultReasoningEffort(body, "stealth/ox-alpha", "low", "xhigh");
-  assert.equal(result.reasoning_effort, "low");
+  assert.equal((result as LooseDeep).reasoning_effort, "low");
 });
 
 test("an explicit client reasoning_effort still wins over the vendor default", () => {
@@ -108,7 +109,7 @@ test("an operator ModelSpec.defaultReasoningEffort wins over the vendor default"
   try {
     const body = { model: FIXTURE_MODEL_ID, messages: [] };
     const result = applyDefaultReasoningEffort(body, FIXTURE_MODEL_ID, null, "xhigh");
-    assert.equal(result.reasoning_effort, "none");
+    assert.equal((result as LooseDeep).reasoning_effort, "none");
   } finally {
     delete MODEL_SPECS[FIXTURE_MODEL_ID];
   }

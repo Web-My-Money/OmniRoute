@@ -51,6 +51,7 @@
 // diagnose a red from the file instead of re-running the gate.
 
 import { execFile, execFileSync } from "node:child_process";
+import { execHostTool, execHostToolAsync } from "../build/buildToolRunner.mjs";
 import { promisify } from "node:util";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -59,7 +60,9 @@ import { parse as parseYaml } from "yaml";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..", "..");
-const npmCmd = process.platform === "win32" ? "npm.cmd" : "npm";
+// Plain name — run()/runAsync() route npm/npx through the host-tool helpers,
+// which add the cmd.exe shell hop those .cmd shims need on Windows.
+const npmCmd = "npm";
 
 // Per-gate captured output. execFileSync buffers everything and the report only
 // shows a one-line summary, so without these files every red requires RE-RUNNING
@@ -356,7 +359,8 @@ function buildGateEnv(extra) {
 
 function run(cmd, cmdArgs, opts = {}) {
   try {
-    const out = execFileSync(cmd, cmdArgs, {
+    const exec = /^(npm|npx)(\.cmd)?$/i.test(cmd) ? execHostTool : execFileSync;
+    const out = exec(cmd, cmdArgs, {
       cwd: ROOT,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
@@ -381,7 +385,8 @@ const execFileAsync = promisify(execFile);
 // isolation, so overlapping them cuts the pre-flight to ~the slowest single one.
 async function runAsync(cmd, cmdArgs, opts = {}) {
   try {
-    const { stdout, stderr } = await execFileAsync(cmd, cmdArgs, {
+    const exec = /^(npm|npx)(.cmd)?$/i.test(cmd) ? execHostToolAsync : execFileAsync;
+    const { stdout, stderr } = await exec(cmd, cmdArgs, {
       cwd: ROOT,
       encoding: "utf8",
       maxBuffer: 256 * 1024 * 1024,

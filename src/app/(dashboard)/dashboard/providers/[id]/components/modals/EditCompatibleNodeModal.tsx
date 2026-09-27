@@ -305,7 +305,7 @@ export default function EditCompatibleNodeModal({
           {t("advancedSettings")}
         </button>
         {showAdvanced && (
-          <div id="advanced-settings" className="flex flex-col gap-3 pl-2 border-l-2 border-border">
+          <div id="advanced-settings" className="flex flex-col gap-3 ps-2 border-s-2 border-border">
             <Input
               label={t("chatPathLabel")}
               value={formData.chatPath}

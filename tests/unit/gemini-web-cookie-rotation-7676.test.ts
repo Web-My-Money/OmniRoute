@@ -28,7 +28,10 @@ test("#7676: GeminiWebExecutor persists rotated __Secure-1PSIDTS/__Secure-1PSIDC
         addCookies: async () => {},
         cookies: async () => rotatedJarCookies,
         newPage: async () => ({
-          on: (event: string, handler: (resp: { url: () => string; text: () => Promise<string> }) => void) => {
+          on: (
+            event: string,
+            handler: (resp: { url: () => string; text: () => Promise<string> }) => void
+          ) => {
             if (event === "response") {
               const body =
                 ")]}'\n" +
@@ -55,7 +58,7 @@ test("#7676: GeminiWebExecutor persists rotated __Secure-1PSIDTS/__Secure-1PSIDC
         }),
       }),
       close: async () => {},
-    }) as unknown as typeof originalLaunch;
+    }) as unknown as Awaited<ReturnType<typeof originalLaunch>>;
 
   let persistedCredentials: Record<string, unknown> | null = null;
 

@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 // Split out of tests/unit/provider-validation-specialty.test.ts (#5855) to keep that
 // god-file under its frozen file-size cap — see config/quality/file-size-baseline.json.
@@ -32,14 +33,19 @@ function toPlainHeaders(headers: any) {
 test("qwen-web validator probes /api/v1/auths/ (not /api/v2/models) and returns valid on 200", async () => {
   let probedUrl = "";
   let sentHeaders: Record<string, string> = {};
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     probedUrl = String(url);
     sentHeaders = toPlainHeaders(init.headers);
     // /api/v1/auths/ returns the user object at the top level when the
     // Authorization header is valid. The id must be >= 8 chars for the
     // tightened top-level user-id check (#5855) to accept it.
     return new Response(
-      JSON.stringify({ id: "u-1234567", email: "tester@example.com", name: "Tester", role: "user" }),
+      JSON.stringify({
+        id: "u-1234567",
+        email: "tester@example.com",
+        name: "Tester",
+        role: "user",
+      }),
       {
         status: 200,
         headers: { "content-type": "application/json" },

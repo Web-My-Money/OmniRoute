@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import net from "node:net";
 
 import { createChatPipelineHarness } from "./_chatPipelineHarness.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Proxy-context passthrough on execution paths:
 //  1. combo targets must each run under their OWN connection's proxy
@@ -10,8 +11,16 @@ import { createChatPipelineHarness } from "./_chatPipelineHarness.ts";
 //     provider-side count call (it used to run with no proxy context at all)
 
 const harness = await createChatPipelineHarness("proxy-context-passthrough");
-const { buildClaudeResponse, buildRequest, combosDb, handleChat, resetStorage, seedConnection, settingsDb, toPlainHeaders } =
-  harness;
+const {
+  buildClaudeResponse,
+  buildRequest,
+  combosDb,
+  handleChat,
+  resetStorage,
+  seedConnection,
+  settingsDb,
+  toPlainHeaders,
+} = harness;
 const proxiesDb = await import("../../src/lib/db/proxies.ts");
 const { resolveProxyForRequest } = await import("../../open-sse/utils/proxyFetch.ts");
 const countTokensRoute = await import("../../src/app/api/v1/messages/count_tokens/route.ts");
@@ -84,7 +93,8 @@ test("combo targets each execute under their own connection's proxy", async () =
 
     globalThis.fetch = async (_url: any, init: any = {}) => {
       const headers = toPlainHeaders(init.headers);
-      const authHeader = headers.authorization ?? headers.Authorization;
+      const authHeader =
+        (headers as LooseDeep).authorization ?? (headers as LooseDeep).Authorization;
       const apiKeyHeader = headers["x-api-key"] ?? headers["X-Api-Key"];
 
       if (authHeader === "Bearer sk-openai-proxy-a") {

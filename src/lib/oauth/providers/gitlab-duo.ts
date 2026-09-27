@@ -99,7 +99,7 @@ export const gitlabDuo = {
 
     return { userInfo, directAccess };
   },
-  mapTokens: (tokens, extra) => {
+  mapTokens: (tokens, extra = undefined) => {
     const userInfo =
       extra?.userInfo && typeof extra.userInfo === "object"
         ? (extra.userInfo as Record<string, unknown>)

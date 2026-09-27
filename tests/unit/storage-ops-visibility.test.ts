@@ -10,14 +10,13 @@ process.env.DATA_DIR = dataDir;
 const { getLastCleanupRun, runAutoCleanup } = await import("../../src/lib/db/cleanup.ts");
 const { getTopTablesBySize } = await import("../../src/lib/db/stats.ts");
 const { measureMemoryFts } = await import("../../src/lib/db/memoryFtsMaintenance.ts");
-const { parseCgroupMemoryStat, readCgroupMemory } = await import(
-  "../../src/lib/monitoring/cgroupMemory.ts"
-);
+const { parseCgroupMemoryStat, readCgroupMemory } =
+  await import("../../src/lib/monitoring/cgroupMemory.ts");
 const { closeDbInstance, getDbInstance } = await import("../../src/lib/db/core.ts");
 
 after(() => {
   closeDbInstance();
-  fs.rmSync(dataDir, { recursive: true, force: true });
+  fs.rmSync(dataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 describe("last auto-cleanup run record", () => {

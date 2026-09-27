@@ -68,7 +68,7 @@ export default function UsageLogCard({ poolId, keyLabels }: UsageLogCardProps) {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="flex items-center gap-1 text-[10px] uppercase tracking-wide font-bold text-text-muted hover:text-text-main w-full text-left cursor-pointer"
+        className="flex items-center gap-1 text-[10px] uppercase tracking-wide font-bold text-text-muted hover:text-text-main w-full text-start cursor-pointer"
       >
         <span
           className={`material-symbols-outlined text-[13px] transition-transform ${open ? "rotate-90" : ""}`}
@@ -85,7 +85,7 @@ export default function UsageLogCard({ poolId, keyLabels }: UsageLogCardProps) {
           ) : events.length === 0 ? (
             <div className="text-[11px] text-text-muted italic">{t("logEmpty")}</div>
           ) : (
-            <div className="flex flex-col gap-0.5 max-h-48 overflow-y-auto pr-1">
+            <div className="flex flex-col gap-0.5 max-h-48 overflow-y-auto pe-1">
               {events.map((ev, i) => (
                 <div
                   key={`${ev.apiKeyId}-${ev.dimensionKey}-${ev.bucketIndex}-${i}`}

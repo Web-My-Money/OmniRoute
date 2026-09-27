@@ -30,20 +30,20 @@ export function SessionPicker({ sessions, selectedId, onSelect, onDelete }: Sess
         {selected
           ? (selected.name ?? t("sessionName", { id: selected.id.slice(0, 6) }))
           : t("sessions")}
-        <span className="material-symbols-outlined text-[12px] ml-1" aria-hidden="true">
+        <span className="material-symbols-outlined text-[12px] ms-1" aria-hidden="true">
           {open ? "expand_less" : "expand_more"}
         </span>
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-50 mt-1 min-w-[200px] rounded-lg border border-border bg-surface shadow-lg py-1">
+        <div className="absolute start-0 top-full z-50 mt-1 min-w-[200px] rounded-lg border border-border bg-surface shadow-lg py-1">
           <button
             type="button"
             onClick={() => {
               onSelect(undefined);
               setOpen(false);
             }}
-            className="w-full text-left px-3 py-1.5 text-xs text-text-muted hover:bg-bg-subtle focus-ring"
+            className="w-full text-start px-3 py-1.5 text-xs text-text-muted hover:bg-bg-subtle focus-ring"
           >
             {t("allTraffic")}
           </button>
@@ -58,12 +58,12 @@ export function SessionPicker({ sessions, selectedId, onSelect, onDelete }: Sess
                   onSelect(s.id);
                   setOpen(false);
                 }}
-                className={`flex-1 text-left px-3 py-1.5 text-xs hover:bg-bg-subtle focus-ring ${
+                className={`flex-1 text-start px-3 py-1.5 text-xs hover:bg-bg-subtle focus-ring ${
                   selectedId === s.id ? "text-blue-400 font-medium" : "text-text-main"
                 }`}
               >
                 {s.name ?? t("sessionName", { id: s.id.slice(0, 6) })}
-                <span className="text-text-muted ml-1">
+                <span className="text-text-muted ms-1">
                   ({t("requestCountShort", { count: s.requestCount })})
                 </span>
               </button>

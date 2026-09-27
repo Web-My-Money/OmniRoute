@@ -6,6 +6,9 @@ on:
 permissions:
   contents: read
   issues: write
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 jobs:
   property-random-seed:
     runs-on: ubuntu-latest

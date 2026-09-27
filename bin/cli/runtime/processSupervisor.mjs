@@ -23,7 +23,7 @@ export class ServerSupervisor {
     env,
     maxRestarts = DEFAULT_MAX_RESTARTS,
     memoryLimit = 512,
-    onCrashCallback,
+    onCrashCallback = undefined,
   }) {
     this.serverPath = serverPath;
     this.env = env;

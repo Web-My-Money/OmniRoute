@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-// @ts-expect-error — plain .mjs gate script, no type declarations by design.
+//
 import { findStaleTranslations, flattenLeaves } from "../../scripts/i18n/check-ui-value-drift.mjs";
 
 // Why this gate exists (the #8463 defect):

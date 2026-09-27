@@ -35,10 +35,7 @@ export default function BatchTestResultsModal({
   if (!batchTestResults) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh]"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh]" onClick={onClose}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       <div
         className="relative bg-bg-primary border border-border rounded-xl w-full max-w-[600px] max-h-[80vh] overflow-y-auto shadow-2xl"
@@ -76,7 +73,7 @@ export default function BatchTestResultsModal({
                       {t("failedCount", { count: batchTestResults.summary.failed })}
                     </span>
                   )}
-                  <span className="text-text-muted ml-auto">
+                  <span className="text-text-muted ms-auto">
                     {t("testedCount", { count: batchTestResults.summary.total })}
                   </span>
                 </div>
@@ -105,9 +102,7 @@ export default function BatchTestResultsModal({
                   )}
                   <span
                     className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
-                      r.valid
-                        ? "bg-emerald-500/15 text-emerald-400"
-                        : "bg-red-500/15 text-red-400"
+                      r.valid ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"
                     }`}
                   >
                     {r.valid ? t("okShort") : r.diagnosis?.type || t("errorShort")}

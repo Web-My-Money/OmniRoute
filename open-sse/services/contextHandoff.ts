@@ -5,6 +5,8 @@ import {
   type HandoffPayload,
   upsertHandoff,
 } from "../../src/lib/db/contextHandoffs.ts";
+
+export type { HandoffPayload } from "../../src/lib/db/contextHandoffs.ts";
 import { estimateTokens } from "./contextManager.ts";
 import { stripMarkdownCodeFence } from "../utils/aiSdkCompat.ts";
 

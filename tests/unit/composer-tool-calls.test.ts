@@ -127,7 +127,7 @@ test("parseComposerToolCalls: coerces boolean arg value", () => {
 });
 
 test("parseComposerToolCalls: returns empty toolCalls for null/undefined input", () => {
-  // @ts-expect-error testing runtime safety
+  //
   const result = parseComposerToolCalls(null);
   assert.equal(result.content, "");
   assert.deepEqual(result.toolCalls, []);

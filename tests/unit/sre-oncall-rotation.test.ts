@@ -7,6 +7,7 @@ import {
   formatInTimezone,
   utcForTimezone,
 } from "../../scripts/sre/oncall-rotation.mjs";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -85,7 +86,7 @@ test("shiftFor: at the very start of the rotation", () => {
   const startMs = Date.parse("2026-06-01T16:00:00Z");
   const shift = shiftFor(startMs, ROTATION);
   assert.equal(shift.member, "alice");
-  assert.equal(shift.shiftNumber, 0);
+  assert.equal((shift as LooseDeep).shiftNumber, 0);
   assert.equal(shift.startsAt, "2026-06-01T16:00:00.000Z");
 });
 
@@ -93,7 +94,7 @@ test("shiftFor: at the start of week 2 (boundary)", () => {
   const t = Date.parse("2026-06-08T16:00:00Z");
   const shift = shiftFor(t, ROTATION);
   assert.equal(shift.member, "bob");
-  assert.equal(shift.shiftNumber, 1);
+  assert.equal((shift as LooseDeep).shiftNumber, 1);
   assert.equal(shift.startsAt, "2026-06-08T16:00:00.000Z");
 });
 
@@ -140,7 +141,7 @@ test("shiftsInRange: range spanning one full cycle returns all 4 members", () =>
   assert.equal(shifts.length, 4);
   assert.deepEqual(
     shifts.map((s) => s.member),
-    ["alice", "bob", "carol", "dave"],
+    ["alice", "bob", "carol", "dave"]
   );
 });
 
@@ -153,14 +154,14 @@ test("shiftsInRange: empty range returns empty array", () => {
 test("shiftsInRange: reversed range throws", () => {
   assert.throws(
     () => shiftsInRange("2026-06-15T00:00:00Z", "2026-06-01T00:00:00Z", ROTATION),
-    /empty or reversed/,
+    /empty or reversed/
   );
 });
 
 test("shiftsInRange: invalid datetime throws", () => {
   assert.throws(
     () => shiftsInRange("not-a-date", "2026-06-15T00:00:00Z", ROTATION),
-    /invalid date/,
+    /invalid date/
   );
 });
 
@@ -210,7 +211,7 @@ test("shiftFor: pre-rotation instant gives the expected member", () => {
   const oneWeekBefore = Date.parse("2026-06-01T16:00:00Z") - WEEK;
   const shift = shiftFor(oneWeekBefore, ROTATION);
   assert.equal(shift.member, "dave");
-  assert.equal(shift.shiftNumber, -1);
+  assert.equal((shift as LooseDeep).shiftNumber, -1);
 });
 
 // ─── 8. Different shift lengths ─────────────────────────────────────────────

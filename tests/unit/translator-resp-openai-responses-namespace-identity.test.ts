@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { openaiResponsesToOpenAIRequest } =
   await import("../../open-sse/translator/request/openai-responses.ts");
@@ -99,11 +100,7 @@ function functionItems(events: ResponseEvent[]) {
 // `{namespace, name}` tuple on every output item.
 test("Chat -> Responses emits namespace tuple in added, done, and completed output", () => {
   const wireName = "mcp__1mcp__tool_list";
-  const events = collectToolEvents(
-    wireName,
-    "call_1mcp",
-    identityMapFor("mcp__1mcp", "tool_list")
-  );
+  const events = collectToolEvents(wireName, "call_1mcp", identityMapFor("mcp__1mcp", "tool_list"));
   for (const item of Object.values(functionItems(events))) {
     assert.deepEqual(
       { namespace: item.namespace, name: item.name },
@@ -188,7 +185,11 @@ test("Chat -> Responses keeps apply_patch as a custom tool without namespace res
   assert.ok(added);
   assert.ok(done);
   assert.ok(completed);
-  for (const item of [added.data.item, done.data.item, completed.data.response.output[0]]) {
+  for (const item of [
+    added.data.item,
+    done.data.item,
+    (completed.data.response as LooseDeep).output[0],
+  ]) {
     assert.equal(item.type, "custom_tool_call");
     assert.equal(item.name, "apply_patch");
     assert.equal("namespace" in item, false);

@@ -42,7 +42,7 @@ async function seedCodexOAuthConnection({
   workspaceId,
   priority,
 }) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name,
@@ -53,7 +53,7 @@ async function seedCodexOAuthConnection({
     testStatus: "active",
     priority,
     providerSpecificData: { workspaceId },
-  });
+  })) as JsonRecord & { id: string };
 }
 
 function buildQuotaResponse(usedPercent, resetAfterSeconds = 3600) {
@@ -357,3 +357,5 @@ test("handleChat injects context-relay handoffs during live failover for Respons
   // injected request (src/sse/handlers/chat.ts deleteHandoff-on-success).
   assert.equal(handoffDb.getHandoff(sessionId, "relay-live-combo"), null);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

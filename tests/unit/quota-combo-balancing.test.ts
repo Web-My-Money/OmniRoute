@@ -13,6 +13,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // ── DB harness ───────────────────────────────────────────────────────────────
 // Use a stable per-file temp dir so DATA_DIR is set ONCE before any module
@@ -85,7 +86,7 @@ test.beforeEach(() => {
 test.after(() => {
   core.resetDbInstance();
   try {
-    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   } catch {
     // best-effort cleanup
   }
@@ -119,18 +120,18 @@ test("B1: syncQuotaCombos — 2-connection same-provider pool produces ONE combo
   const modelsForProvider = (PROVIDER_MODELS[PROVIDER] ?? []).map((m) => m.id);
   assert.ok(modelsForProvider.length > 0, `${PROVIDER} must have at least one model in registry`);
 
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: PROVIDER,
     authType: "apikey",
     name: "b1-conn-a",
     apiKey: "sk-b1-a",
-  });
-  const connB = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const connB = (await providersDb.createProviderConnection({
     provider: PROVIDER,
     authType: "apikey",
     name: "b1-conn-b",
     apiKey: "sk-b1-b",
-  });
+  })) as JsonRecord & { id: string };
   const idA = (connA as Record<string, unknown>).id as string;
   const idB = (connB as Record<string, unknown>).id as string;
 
@@ -207,12 +208,12 @@ test("B1: syncQuotaCombos — 2-connection same-provider pool produces ONE combo
 // ---------------------------------------------------------------------------
 
 test("B2: syncQuotaCombos — single-connection pool still produces 1-step combos (regression guard)", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: PROVIDER,
     authType: "apikey",
     name: "b2-conn",
     apiKey: "sk-b2",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as Record<string, unknown>).id as string;
 
   const pool = poolsDb.createPool({
@@ -242,18 +243,18 @@ test("B2: syncQuotaCombos — single-connection pool still produces 1-step combo
 // ---------------------------------------------------------------------------
 
 test("B3: syncQuotaCombos — idempotent on 2-connection pool (no duplicates after second run)", async () => {
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: PROVIDER,
     authType: "apikey",
     name: "b3-conn-a",
     apiKey: "sk-b3-a",
-  });
-  const connB = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const connB = (await providersDb.createProviderConnection({
     provider: PROVIDER,
     authType: "apikey",
     name: "b3-conn-b",
     apiKey: "sk-b3-b",
-  });
+  })) as JsonRecord & { id: string };
   const idA = (connA as Record<string, unknown>).id as string;
   const idB = (connB as Record<string, unknown>).id as string;
 
@@ -296,18 +297,18 @@ test("B3: syncQuotaCombos — idempotent on 2-connection pool (no duplicates aft
 // ---------------------------------------------------------------------------
 
 test("B4: syncQuotaCombos — after removing one connection from pool, re-sync collapses combo to 1 step", async () => {
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: PROVIDER,
     authType: "apikey",
     name: "b4-conn-a",
     apiKey: "sk-b4-a",
-  });
-  const connB = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const connB = (await providersDb.createProviderConnection({
     provider: PROVIDER,
     authType: "apikey",
     name: "b4-conn-b",
     apiKey: "sk-b4-b",
-  });
+  })) as JsonRecord & { id: string };
   const idA = (connA as Record<string, unknown>).id as string;
 
   const pool = poolsDb.createPool({
@@ -355,18 +356,18 @@ test("B4: syncQuotaCombos — after removing one connection from pool, re-sync c
 // ---------------------------------------------------------------------------
 
 test("B5: after syncQuotaCombos on 2-connection pool, getComboByName returns the N-step combo (no collision)", async () => {
-  const connA = await providersDb.createProviderConnection({
+  const connA = (await providersDb.createProviderConnection({
     provider: PROVIDER,
     authType: "apikey",
     name: "b5-conn-a",
     apiKey: "sk-b5-a",
-  });
-  const connB = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const connB = (await providersDb.createProviderConnection({
     provider: PROVIDER,
     authType: "apikey",
     name: "b5-conn-b",
     apiKey: "sk-b5-b",
-  });
+  })) as JsonRecord & { id: string };
   const idA = (connA as Record<string, unknown>).id as string;
   const idB = (connB as Record<string, unknown>).id as string;
 

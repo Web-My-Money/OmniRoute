@@ -525,7 +525,13 @@ const DEFAULT_AUTO_HISTORY_WINDOW = 20;
  * transcript.
  */
 export function messagesToPrompt(
-  messages: Array<{ role: string; content: string; tool_call_id?: string; name?: string }>,
+  messages: Array<{
+    role: string;
+    content: string;
+    tool_call_id?: string;
+    tool_calls?: unknown;
+    name?: string;
+  }>,
   historyWindow = 0
 ): string {
   if (messages.length === 0) return "";
@@ -540,7 +546,7 @@ export function messagesToPrompt(
     } else if (m.role === "user" || m.role === "assistant") {
       if (text) conversation.push({ role: m.role, text });
       if (m.role === "user") lastUserContent = text;
-      const toolCalls = (m as { tool_calls?: unknown }).tool_calls;
+      const toolCalls = m.tool_calls;
       const calls = Array.isArray(toolCalls)
         ? (toolCalls as Array<{ id?: string; function?: { name?: string } }>)
         : [];
@@ -566,11 +572,7 @@ export function messagesToPrompt(
   }
 
   const effectiveWindow =
-    historyWindow > 0
-      ? historyWindow
-      : conversation.length > 1
-        ? DEFAULT_AUTO_HISTORY_WINDOW
-        : 0;
+    historyWindow > 0 ? historyWindow : conversation.length > 1 ? DEFAULT_AUTO_HISTORY_WINDOW : 0;
 
   if (effectiveWindow > 0 && conversation.length > 1) {
     // Rolling-window transcript of the most recent turns (#2942, auto-applied per

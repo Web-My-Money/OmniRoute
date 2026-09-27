@@ -10,12 +10,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 const { REGISTRY } = await import("../../open-sse/config/providerRegistry.ts");
-const { APIKEY_PROVIDERS_GATEWAYS } = await import(
-  "../../src/shared/constants/providers/apikey/gateways.ts"
-);
+const { APIKEY_PROVIDERS_GATEWAYS } =
+  await import("../../src/shared/constants/providers/apikey/gateways.ts");
 
 test("#5065 factory is registered with the OpenAI-compatible v1 endpoint", () => {
-  const entry = (REGISTRY as Record<string, Record<string, unknown>>).factory;
+  const entry = (REGISTRY as unknown as Record<string, Record<string, unknown>>).factory;
   assert.ok(entry, "factory should be present in the executor registry");
   assert.equal(entry.format, "openai");
   assert.equal(entry.baseUrl, "https://api.factory.ai/v1/chat/completions");

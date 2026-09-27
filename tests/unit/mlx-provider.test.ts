@@ -7,7 +7,7 @@ const originalFetch = global.fetch;
 
 describe("MLX Provider Registry Entries", () => {
   beforeEach(() => {
-    global.fetch = async () => ({ ok: false, status: 500 });
+    global.fetch = async () => ({ ok: false, status: 500 }) as unknown as Promise<Response>;
   });
 
   afterEach(() => {

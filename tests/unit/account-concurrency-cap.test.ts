@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-account-cap-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -31,18 +32,18 @@ function getConnectionId(connection: NonNullable<Connection>): string {
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 async function createConnection(maxConcurrent: number | null): Promise<Connection> {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: `openai-${String(maxConcurrent)}-${Math.random().toString(16).slice(2, 8)}`,
     apiKey: "sk-test",
     maxConcurrent,
-  });
+  })) as JsonRecord & { id: string };
 }
 
 beforeEach(async () => {
@@ -51,7 +52,7 @@ beforeEach(async () => {
 
 after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 describe("maxConcurrent DB round-trip", () => {

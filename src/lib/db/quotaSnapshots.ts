@@ -1,5 +1,9 @@
 import { getDbInstance, rowToCamel } from "./core";
-import type { QuotaSnapshotRow, ProviderUtilizationPoint } from "@/shared/types/utilization";
+import type {
+  QuotaSnapshot,
+  QuotaSnapshotRow,
+  ProviderUtilizationPoint,
+} from "@/shared/types/utilization";
 
 interface StatementLike<TRow = unknown> {
   all: (...params: unknown[]) => TRow[];
@@ -50,7 +54,7 @@ export function getQuotaSnapshots(opts: {
   connectionId?: string;
   since: string;
   until?: string;
-}): QuotaSnapshotRow[] {
+}): QuotaSnapshot[] {
   const db = getDbInstance() as unknown as DbLike;
   const conditions: string[] = ["created_at >= ?"];
   const params: unknown[] = [opts.since];
@@ -73,7 +77,7 @@ export function getQuotaSnapshots(opts: {
   try {
     const sql = `SELECT * FROM quota_snapshots WHERE ${conditions.join(" AND ")} ORDER BY created_at ASC`;
     const rows = db.prepare(sql).all(...params);
-    return rows.map((r) => rowToCamel(r) as unknown as QuotaSnapshotRow);
+    return rows.map((r) => rowToCamel(r) as unknown as QuotaSnapshot);
   } catch (err: any) {
     if (err?.message?.includes("no such table")) {
       return [];

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { extractSystemRoleMessages } from "../../open-sse/handlers/chatCore.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("extractSystemRoleMessages moves role=system to top-level system", () => {
   const payload = {
@@ -13,7 +14,7 @@ test("extractSystemRoleMessages moves role=system to top-level system", () => {
   extractSystemRoleMessages(payload);
   assert.equal(payload.messages.length, 2);
   assert.equal(payload.messages[0].role, "user");
-  assert.deepEqual(payload.system, [{ type: "text", text: "Memory context: foo" }]);
+  assert.deepEqual((payload as LooseDeep).system, [{ type: "text", text: "Memory context: foo" }]);
 });
 
 test("extractSystemRoleMessages also lifts role=developer (OpenAI Responses system alias)", () => {
@@ -28,7 +29,7 @@ test("extractSystemRoleMessages also lifts role=developer (OpenAI Responses syst
   // both developer and system are removed from messages and lifted into system
   assert.equal(payload.messages.length, 1);
   assert.equal(payload.messages[0].role, "user");
-  assert.deepEqual(payload.system, [
+  assert.deepEqual((payload as LooseDeep).system, [
     { type: "text", text: "Dev instructions" },
     { type: "text", text: "Sys context" },
   ]);
@@ -75,7 +76,7 @@ test("extractSystemRoleMessages does nothing when no system role messages", () =
   };
   extractSystemRoleMessages(payload);
   assert.equal(payload.messages.length, 2);
-  assert.equal(payload.system, undefined);
+  assert.equal((payload as LooseDeep).system, undefined);
 });
 
 test("extractSystemRoleMessages handles non-array messages gracefully", () => {
@@ -99,7 +100,7 @@ test("extractSystemRoleMessages handles case-insensitive role System", () => {
   };
   extractSystemRoleMessages(payload);
   assert.equal(payload.messages.length, 1);
-  assert.deepEqual(payload.system, [{ type: "text", text: "Memory context: caps" }]);
+  assert.deepEqual((payload as LooseDeep).system, [{ type: "text", text: "Memory context: caps" }]);
 });
 
 test("extractSystemRoleMessages drops empty text content from system messages", () => {
@@ -112,7 +113,7 @@ test("extractSystemRoleMessages drops empty text content from system messages", 
   };
   extractSystemRoleMessages(payload);
   assert.equal(payload.messages.length, 1);
-  assert.deepEqual(payload.system, [{ type: "text", text: "valid" }]);
+  assert.deepEqual((payload as LooseDeep).system, [{ type: "text", text: "valid" }]);
 });
 
 test("extractSystemRoleMessages handles system messages with array content", () => {
@@ -130,7 +131,7 @@ test("extractSystemRoleMessages handles system messages with array content", () 
   };
   extractSystemRoleMessages(payload);
   assert.equal(payload.messages.length, 1);
-  assert.deepEqual(payload.system, [
+  assert.deepEqual((payload as LooseDeep).system, [
     { type: "text", text: "Block 1" },
     { type: "text", text: "Block 2" },
   ]);

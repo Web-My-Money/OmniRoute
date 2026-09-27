@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 // Port of decolua/9router PR #1437 — Deno Deploy relays.
 // OmniRoute already supports Vercel-typed relays (#2743 test). Deno Deploy is a
@@ -21,7 +22,7 @@ type FetchCall = { input: unknown; init: RequestInit & { headers?: HeadersInit }
 const relayCalls: FetchCall[] = [];
 const realGlobalFetch = globalThis.fetch;
 
-const relaySink = (async (input: unknown, init: RequestInit = {}) => {
+const relaySink = (async (input: unknown, init: MockRequestInit = {}) => {
   relayCalls.push({ input, init });
   return Response.json({ via: "deno-relay" });
 }) as unknown as typeof globalThis.fetch;

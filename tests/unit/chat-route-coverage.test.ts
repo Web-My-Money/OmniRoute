@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { createChatPipelineHarness } from "../integration/_chatPipelineHarness.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const harness = await createChatPipelineHarness("chat-route-unit");
 const {
@@ -118,7 +120,7 @@ test("handleChat redacts PII before sending the upstream request", async () => {
   await seedConnection("openai", { apiKey: "sk-openai-redact" });
   const fetchCalls = [];
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     fetchCalls.push(JSON.parse(String(init.body)));
     return buildOpenAIResponse("Redacted response");
   };
@@ -212,9 +214,11 @@ test("handleChat applies task-aware routing when a semantic override is enabled"
     },
   });
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     const headers = toPlainHeaders(init.headers);
-    seenAuthHeaders.push(headers.Authorization ?? headers.authorization);
+    seenAuthHeaders.push(
+      (headers as LooseDeep).Authorization ?? (headers as LooseDeep).authorization
+    );
     seenRequestBodies.push(JSON.parse(String(init.body)));
     return new Response(
       JSON.stringify({
@@ -285,7 +289,11 @@ test("handleChat keeps protected combo fallback separate from Global Fallback Mo
   const attemptedKeys: string[] = [];
   globalThis.fetch = async (_url, init) => {
     const headers = toPlainHeaders(init?.headers);
-    const key = headers["x-api-key"] ?? headers.Authorization ?? headers.authorization ?? "";
+    const key =
+      headers["x-api-key"] ??
+      (headers as LooseDeep).Authorization ??
+      (headers as LooseDeep).authorization ??
+      "";
     attemptedKeys.push(key);
     if (key === "sk-deepseek-combo-backup") {
       assert.fail("protected primary must not invoke the ordinary combo target");
@@ -329,7 +337,7 @@ test("handleChat defaults a Combo's incompatible reasoning fallback to drop", as
   });
 
   let upstreamBody: { input?: unknown } | null = null;
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     upstreamBody = JSON.parse(String(init.body));
     return new Response(
       JSON.stringify({
@@ -533,7 +541,7 @@ test("handleChat uses the emergency fallback model on budget exhaustion", async 
   await seedConnection("nvidia", { apiKey: "sk-nvidia-fallback" });
   const seenBodies = [];
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     const body = JSON.parse(String(init.body));
     seenBodies.push(body);
 
@@ -577,7 +585,7 @@ test("handleChat returns the primary budget error when emergency fallback also f
   await seedConnection("nvidia", { apiKey: "sk-nvidia-fallback-fail" });
   const seenModels = [];
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     const body = JSON.parse(String(init.body));
     seenModels.push(body.model);
 

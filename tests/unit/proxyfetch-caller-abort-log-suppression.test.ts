@@ -17,7 +17,7 @@ import proxyFetch, { runWithProxyContext } from "../../open-sse/utils/proxyFetch
 
 async function withHttpServer(handler, fn) {
   const server = http.createServer(handler);
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
     server.listen(0, "127.0.0.1", resolve);
   });
@@ -26,7 +26,7 @@ async function withHttpServer(handler, fn) {
   try {
     return await fn(`http://127.0.0.1:${address.port}`);
   } finally {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       server.close((error) => (error ? reject(error) : resolve()));
     });
   }
@@ -88,8 +88,7 @@ test("pinned-proxy dispatch still logs genuine (non-abort) proxy transport failu
         await assert.rejects(
           runWithProxyContext(
             { type: "http", host: parsed.hostname, port: parsed.port },
-            async () =>
-              proxyFetch("https://example.invalid/", {}, { undiciFetch: throwingUndici })
+            async () => proxyFetch("https://example.invalid/", {}, { undiciFetch: throwingUndici })
           ),
           /proxy tunnel refused/
         );

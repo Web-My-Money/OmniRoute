@@ -56,23 +56,23 @@ export function WebhookDeliveriesPanel({ webhookId, t }: WebhookDeliveriesPanelP
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-left text-xs">
+      <table className="w-full text-start text-xs">
         <thead className="border-b border-border text-text-muted">
           <tr>
-            <th className="py-2 pr-3 font-medium">{t("deliveries.status")}</th>
-            <th className="py-2 pr-3 font-medium">{t("deliveries.event")}</th>
-            <th className="py-2 pr-3 font-medium">{t("deliveries.latency")}</th>
+            <th className="py-2 pe-3 font-medium">{t("deliveries.status")}</th>
+            <th className="py-2 pe-3 font-medium">{t("deliveries.event")}</th>
+            <th className="py-2 pe-3 font-medium">{t("deliveries.latency")}</th>
             <th className="py-2 font-medium">{t("deliveries.at")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
           {deliveries.map((d) => (
             <tr key={d.id}>
-              <td className="py-2 pr-3">
+              <td className="py-2 pe-3">
                 <DeliveryStatusBadge status={d.status} httpStatus={d.http_status} />
               </td>
-              <td className="py-2 pr-3 font-mono text-text-main">{d.event_type}</td>
-              <td className="py-2 pr-3 text-text-muted">
+              <td className="py-2 pe-3 font-mono text-text-main">{d.event_type}</td>
+              <td className="py-2 pe-3 text-text-muted">
                 {d.latency_ms != null ? `${d.latency_ms}ms` : "—"}
               </td>
               <td className="py-2 text-text-muted">

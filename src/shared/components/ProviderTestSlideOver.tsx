@@ -114,7 +114,7 @@ function ProviderTestSlideOverPanel({
         <SlideOverTabs tab={tab} onChange={setTab} />
         <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
           {tab === "test" && (
-            <div className="flex-1 min-h-0 flex flex-col pl-4 pr-2 py-3">
+            <div className="flex-1 min-h-0 flex flex-col ps-4 pe-2 py-3">
               <LlmChatCard
                 providerId={providerId}
                 embedded
@@ -467,7 +467,7 @@ function LogsTab({ providerId }: { providerId: string }) {
               <button
                 type="button"
                 onClick={() => setExpanded(isExpanded ? null : key)}
-                className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2 text-start hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors"
               >
                 <span className={`text-[11px] font-mono shrink-0 w-10 ${statusColor}`}>
                   {log.status ?? "—"}
@@ -489,7 +489,7 @@ function LogsTab({ providerId }: { providerId: string }) {
                     {requester.label}
                   </span>
                 </div>
-                <span className="text-[11px] text-text-muted shrink-0 font-mono w-14 text-right">
+                <span className="text-[11px] text-text-muted shrink-0 font-mono w-14 text-end">
                   {formatDurationMs(log.duration)}
                 </span>
                 <span

@@ -9,7 +9,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
-// @ts-expect-error — .mjs helper has no type declarations; runtime shape is known.
+//
 import {
   classifyLicense,
   stripVersion,

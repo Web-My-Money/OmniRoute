@@ -9,7 +9,7 @@ export const execSync = realCp.execSync;
 export const spawnSync = realCp.spawnSync;
 
 /** All spawn calls recorded as [command, args, options]. */
-export const spawnCalls: Array<{ command: string; args: string[] }> = [];
+export const spawnCalls: Array<{ command: string; args: string[]; options?: unknown }> = [];
 
 export function spawn(command: string, args?: string[], options?: any) {
   spawnCalls.push({ command, args: args ?? [], options });

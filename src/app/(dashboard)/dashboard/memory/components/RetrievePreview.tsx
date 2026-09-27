@@ -40,13 +40,13 @@ export default function RetrievePreview({ result }: Props) {
         </p>
         {resolution.rerankApplied && (
           <p className="text-emerald-400">
-            <span className="material-symbols-outlined text-[12px] align-middle mr-1">check</span>
+            <span className="material-symbols-outlined text-[12px] align-middle me-1">check</span>
             {t("playground.rerankApplied")}
           </p>
         )}
         {resolution.fallbackReason && (
           <p className="text-amber-400">
-            <span className="material-symbols-outlined text-[12px] align-middle mr-1">warning</span>
+            <span className="material-symbols-outlined text-[12px] align-middle me-1">warning</span>
             {t("playground.fallback")}: {resolution.fallbackReason}
           </p>
         )}
@@ -54,9 +54,7 @@ export default function RetrievePreview({ result }: Props) {
 
       {/* Results list */}
       {memories.length === 0 ? (
-        <div className="p-6 text-center text-sm text-text-muted">
-          {t("playground.noResults")}
-        </div>
+        <div className="p-6 text-center text-sm text-text-muted">{t("playground.noResults")}</div>
       ) : (
         <div className="space-y-2">
           {memories.map((m) => (
@@ -69,7 +67,7 @@ export default function RetrievePreview({ result }: Props) {
                   {m.tier}
                 </Badge>
                 <span className="text-xs font-medium text-text-main">{m.key}</span>
-                <span className="ml-auto text-xs text-text-muted font-mono">
+                <span className="ms-auto text-xs text-text-muted font-mono">
                   score {m.score.toFixed(3)}
                 </span>
                 <span className="text-xs text-text-muted">{m.tokens} tok</span>

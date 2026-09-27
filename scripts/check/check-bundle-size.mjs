@@ -37,10 +37,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { pathToFileURL, fileURLToPath } from "node:url";
+import { resolveLocalBinEntry } from "../build/buildToolRunner.mjs";
 
 const ROOT = process.cwd();
 const SIZE_LIMIT_CONFIG = path.join(ROOT, ".size-limit.json");
-const SIZE_LIMIT_BIN = path.join(ROOT, "node_modules", ".bin", "size-limit");
+// Resolve via the package's own bin entry — the .bin/size-limit shim is a POSIX
+// script that cannot be spawned on Windows (ENOENT).
+const SIZE_LIMIT_BIN = resolveLocalBinEntry("size-limit", "size-limit", ROOT);
 const BASELINE_PATH = path.join(ROOT, "config/quality/quality-baseline.json");
 const RATCHET = process.argv.includes("--ratchet");
 
@@ -52,12 +55,12 @@ const RATCHET = process.argv.includes("--ratchet");
  * @throws {SizeLimitNoPluginsError}
  */
 export function runSizeLimit(cwd = ROOT, binPath = SIZE_LIMIT_BIN) {
-  if (!fs.existsSync(binPath)) {
+  if (!binPath || !fs.existsSync(binPath)) {
     throw Object.assign(new Error("size-limit binary not found"), { code: "SL_NO_BIN" });
   }
   let stdout;
   try {
-    stdout = execFileSync("node", [binPath, "--json"], {
+    stdout = execFileSync(process.execPath, [binPath, "--json"], {
       encoding: "utf8",
       cwd,
       maxBuffer: 8 * 1024 * 1024,

@@ -4,6 +4,8 @@ import dns from "node:dns";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-fal-images-"));
 
@@ -25,7 +27,7 @@ const { handleFalAIImageEdit } =
 test("handleFalAIImageEdit forwards multiple references to the Fal edit endpoint", async () => {
   const originalFetch = globalThis.fetch;
   let captured;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     if (stringUrl === "https://fal.run/fal-ai/flux-2-flex/edit") {
       captured = {
@@ -41,7 +43,7 @@ test("handleFalAIImageEdit forwards multiple references to the Fal edit endpoint
   };
 
   try {
-    const result = await handleFalAIImageEdit({
+    const result = await looseAsync(handleFalAIImageEdit)({
       model: "fal-ai/flux-2-flex",
       provider: "fal-ai",
       providerConfig: { baseUrl: "https://fal.run" },

@@ -12,6 +12,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-apikey-guard-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -31,13 +32,13 @@ async function storeDashboardPassword(plaintext: string) {
 
 beforeEach(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 });
 
 after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 describe("management password as a provider credential", () => {
@@ -106,26 +107,26 @@ describe("management password as a provider credential", () => {
   it("a real API key is stored normally", async () => {
     await storeDashboardPassword(DASHBOARD_PASSWORD);
 
-    const conn = await providersDb.createProviderConnection({
+    const conn = (await providersDb.createProviderConnection({
       provider: "openai",
       authType: "apikey",
       name: "genuine",
       apiKey: "sk-a-real-provider-key",
       isActive: true,
-    });
+    })) as JsonRecord & { id: string };
     assert.ok(conn?.id);
   });
 
   it("update is refused too, which is where the repair attempt gets re-infected", async () => {
     await storeDashboardPassword(DASHBOARD_PASSWORD);
 
-    const conn = await providersDb.createProviderConnection({
+    const conn = (await providersDb.createProviderConnection({
       provider: "openai",
       authType: "apikey",
       name: "genuine",
       apiKey: "sk-a-real-provider-key",
       isActive: true,
-    });
+    })) as JsonRecord & { id: string };
     assert.ok(conn?.id);
 
     await assert.rejects(
@@ -140,13 +141,13 @@ describe("management password as a provider credential", () => {
   it("an update that does not carry an apiKey is untouched by the guard", async () => {
     await storeDashboardPassword(DASHBOARD_PASSWORD);
 
-    const conn = await providersDb.createProviderConnection({
+    const conn = (await providersDb.createProviderConnection({
       provider: "openai",
       authType: "apikey",
       name: "before",
       apiKey: "sk-a-real-provider-key",
       isActive: true,
-    });
+    })) as JsonRecord & { id: string };
     assert.ok(conn?.id);
 
     const updated = await providersDb.updateProviderConnection(conn.id as string, {
@@ -159,13 +160,13 @@ describe("management password as a provider credential", () => {
     // Seed the bad state the way the incident produced it: the password was
     // stored before the guard existed. Write it with no dashboard password
     // configured, then configure one.
-    const conn = await providersDb.createProviderConnection({
+    const conn = (await providersDb.createProviderConnection({
       provider: "openai",
       authType: "apikey",
       name: "poisoned",
       apiKey: DASHBOARD_PASSWORD,
       isActive: true,
-    });
+    })) as JsonRecord & { id: string };
     assert.ok(conn?.id, "no dashboard password configured yet, so the write goes through");
     await storeDashboardPassword(DASHBOARD_PASSWORD);
 
@@ -176,13 +177,13 @@ describe("management password as a provider credential", () => {
   });
 
   it("no dashboard password configured means nothing to collide with", async () => {
-    const conn = await providersDb.createProviderConnection({
+    const conn = (await providersDb.createProviderConnection({
       provider: "openai",
       authType: "apikey",
       name: "fresh install",
       apiKey: DASHBOARD_PASSWORD,
       isActive: true,
-    });
+    })) as JsonRecord & { id: string };
     assert.ok(conn?.id);
   });
 
@@ -201,13 +202,13 @@ describe("management password as a provider credential", () => {
     };
 
     try {
-      const conn = await providersDb.createProviderConnection({
+      const conn = (await providersDb.createProviderConnection({
         provider: "claude",
         authType: "oauth",
         name: "oauth",
         accessToken: DASHBOARD_PASSWORD,
         isActive: true,
-      });
+      })) as JsonRecord & { id: string };
       assert.ok(conn?.id, "the guard covers apiKey only");
     } finally {
       console.warn = realWarn;
@@ -240,13 +241,13 @@ describe("management password as a provider credential", () => {
     };
 
     try {
-      const conn = await providersDb.createProviderConnection({
+      const conn = (await providersDb.createProviderConnection({
         provider: "openai",
         authType: "apikey",
         name: "unverifiable",
         apiKey: DASHBOARD_PASSWORD,
         isActive: true,
-      });
+      })) as JsonRecord & { id: string };
       assert.ok(conn?.id, "one broken settings row must not block every connection write");
     } finally {
       console.warn = realWarn;

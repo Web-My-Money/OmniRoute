@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { createChatPipelineHarness } from "./_chatPipelineHarness.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const harness = await createChatPipelineHarness("cline-task-id-propagation");
 const { buildRequest, cleanup, handleChat, seedConnection } = harness;
@@ -34,7 +35,7 @@ test("full chat pipeline omits absent task ids and preserves inbound ids", async
   await seedConnection("clinepass", { apiKey: "sk-clinepass-repro" });
   const upstreamHeaders: Record<string, string>[] = [];
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     upstreamHeaders.push(plainHeaders(init.headers));
     return upstreamStream("ok");
   };

@@ -43,7 +43,7 @@ function okResponse(body: unknown = { choices: [{ message: { content: "ok" } }] 
   });
 }
 
-function capabilityEntry(limitContext: unknown, overrides: Record<string, unknown> = {}) {
+function capabilityEntry(limitContext: number, overrides: Record<string, unknown> = {}) {
   return {
     tool_call: true,
     reasoning: false,
@@ -80,7 +80,7 @@ test.after(() => {
   clearModelsDevCapabilities();
   settingsDb.clearAllLKGP();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   if (ORIGINAL_DATA_DIR === undefined) {
     delete process.env.DATA_DIR;
   } else {

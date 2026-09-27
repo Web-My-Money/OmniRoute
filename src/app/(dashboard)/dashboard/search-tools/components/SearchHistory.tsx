@@ -53,7 +53,7 @@ export default function SearchHistory({ onReplay }: SearchHistoryProps) {
           <button
             key={`${entry.timestamp}:${entry.provider}:${entry.query}`}
             onClick={() => onReplay(entry)}
-            className="w-full text-left p-2 bg-surface border border-border rounded-lg hover:border-primary/30 transition-colors"
+            className="w-full text-start p-2 bg-surface border border-border rounded-lg hover:border-primary/30 transition-colors"
           >
             <div className="text-xs text-text-main truncate">{entry.query}</div>
             <div className="flex justify-between mt-0.5">

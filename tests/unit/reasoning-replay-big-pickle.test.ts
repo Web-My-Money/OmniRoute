@@ -36,7 +36,7 @@ type ModelEntry = {
 };
 
 function getModel(providerId: string, modelId: string): ModelEntry | undefined {
-  const provider = (REGISTRY as Record<string, { models?: ModelEntry[] }>)[providerId];
+  const provider = (REGISTRY as unknown as Record<string, { models?: ModelEntry[] }>)[providerId];
   return provider?.models?.find((m) => m.id === modelId);
 }
 

@@ -72,7 +72,7 @@ export default function NewsViewer() {
       {news.map((announcement) => (
         <article
           key={announcement.id}
-          className="flex flex-col gap-6 border-l-4 border-primary pl-5 md:flex-row md:items-center md:pl-6"
+          className="flex flex-col gap-6 border-s-4 border-primary ps-5 md:flex-row md:items-center md:ps-6"
         >
           <div className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-primary/10">
             <span className="material-symbols-outlined text-[30px] text-primary">
@@ -88,7 +88,7 @@ export default function NewsViewer() {
           </div>
 
           {announcement.link && (
-            <div className="shrink-0 md:ml-auto">
+            <div className="shrink-0 md:ms-auto">
               <a href={announcement.link} target="_blank" rel="noopener noreferrer">
                 <Button variant="primary" className="gap-2">
                   {announcement.linkLabel ?? t("learnMore")}

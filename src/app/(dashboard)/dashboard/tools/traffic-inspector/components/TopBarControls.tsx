@@ -181,7 +181,7 @@ export function TopBarControls({
       </button>
 
       {/* Session controls */}
-      <div className="flex items-center gap-2 ml-auto">
+      <div className="flex items-center gap-2 ms-auto">
         <SessionPicker
           sessions={sessions}
           selectedId={filters.sessionId}

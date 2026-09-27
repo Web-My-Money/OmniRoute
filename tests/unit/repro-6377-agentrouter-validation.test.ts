@@ -24,6 +24,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { validateProviderApiKey } = await import("../../src/lib/providers/validation.ts");
 
@@ -36,7 +37,7 @@ test.afterEach(() => {
 test("agentrouter key validation must not false-negative behind the CC-wire-image WAF gate (#6377)", async () => {
   const calls: { url: string; headers: Record<string, string> }[] = [];
 
-  globalThis.fetch = async (url: string | URL, init: RequestInit = {}) => {
+  globalThis.fetch = async (url: string | URL, init: MockRequestInit = {}) => {
     const u = String(url);
     const headers: Record<string, string> = {};
     if (init?.headers) {

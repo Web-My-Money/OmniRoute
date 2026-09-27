@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const { APIKEY_PROVIDERS } = await import("../../src/shared/constants/providers.ts");
 const { PROVIDER_ENDPOINTS } = await import("../../src/shared/constants/config.ts");
@@ -71,13 +72,13 @@ const modelsRoute = await import("../../src/app/api/providers/[id]/models/route.
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 interface ModelsBody {
@@ -89,12 +90,12 @@ interface ModelsBody {
 
 test("DGrid import fetches the live /v1/models catalog", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "dgrid",
     authType: "apikey",
     name: "dgrid-live",
     apiKey: "dgrid-key",
-  });
+  })) as JsonRecord & { id: string };
 
   let fetched = false;
   const originalFetch = globalThis.fetch;
@@ -133,12 +134,12 @@ test("DGrid import fetches the live /v1/models catalog", async () => {
 
 test("DGrid import falls back to the seeded free router when live fetch fails", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "dgrid",
     authType: "apikey",
     name: "dgrid-fallback",
     apiKey: "dgrid-key-2",
-  });
+  })) as JsonRecord & { id: string };
 
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => new Response("bad gateway", { status: 502 });

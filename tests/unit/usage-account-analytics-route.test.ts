@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-account-analytics-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -34,14 +35,14 @@ async function readAccounts() {
 
 test.beforeEach(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   usageHistory.clearPendingRequests();
 });
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("Codex account grouping follows workspace and user identity, not email", async () => {
@@ -53,13 +54,13 @@ test("Codex account grouping follows workspace and user identity, not email", as
   ];
 
   for (const [index, spec] of specs.entries()) {
-    const connection = await providersDb.createProviderConnection({
+    const connection = (await providersDb.createProviderConnection({
       provider: "codex",
       authType: "oauth",
       email: spec.email,
       displayName: `Account ${index + 1}`,
       providerSpecificData: spec,
-    });
+    })) as JsonRecord & { id: string };
     await usageHistory.saveRequestUsage({
       provider: "codex",
       model: "gpt-5.5",
@@ -69,13 +70,13 @@ test("Codex account grouping follows workspace and user identity, not email", as
     });
   }
 
-  const sameUser = await providersDb.createProviderConnection({
+  const sameUser = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "new@example.com",
     displayName: "Account 1 renamed",
     providerSpecificData: { workspaceId: "workspace-a", chatgptUserId: "user-a" },
-  });
+  })) as JsonRecord & { id: string };
   await usageHistory.saveRequestUsage({
     provider: "codex",
     model: "gpt-5.5",
@@ -112,12 +113,12 @@ test("updating an established Codex user or workspace does not reattribute earli
   ];
 
   for (const [index, change] of changes.entries()) {
-    const connection = await providersDb.createProviderConnection({
+    const connection = (await providersDb.createProviderConnection({
       provider: "codex",
       authType: "oauth",
       displayName: `${change.name} before`,
       providerSpecificData: change.before,
-    });
+    })) as JsonRecord & { id: string };
     await usageHistory.saveRequestUsage({
       provider: "codex",
       model: "gpt-5.5",
@@ -157,13 +158,13 @@ test("deleting and recreating the same Codex account preserves one historical ac
     workspaceId: "workspace-internal-recreated",
     chatgptUserId: "user-internal-recreated",
   };
-  const original = await providersDb.createProviderConnection({
+  const original = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "member@example.com",
     displayName: "Production Codex <member@example.com>",
     providerSpecificData: identity,
-  });
+  })) as JsonRecord & { id: string };
   await usageHistory.saveRequestUsage({
     provider: "codex",
     model: "gpt-5.5",
@@ -173,12 +174,12 @@ test("deleting and recreating the same Codex account preserves one historical ac
   });
 
   assert.equal(await providersDb.deleteProviderConnection(original.id as string), true);
-  const recreated = await providersDb.createProviderConnection({
+  const recreated = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "member@example.com",
     providerSpecificData: identity,
-  });
+  })) as JsonRecord & { id: string };
   assert.notEqual(recreated.id, original.id);
   await usageHistory.saveRequestUsage({
     provider: "codex",
@@ -297,13 +298,13 @@ test("generic provider and Codex workspace identities stay distinct under a shar
   ];
 
   for (const [index, spec] of accountSpecs.entries()) {
-    const connection = await providersDb.createProviderConnection({
+    const connection = (await providersDb.createProviderConnection({
       provider: spec.provider,
       authType: "oauth",
       email: "shared@example.com",
       accessToken: `secret-${index}`,
       providerSpecificData: spec.providerSpecificData,
-    });
+    })) as JsonRecord & { id: string };
     await usageHistory.saveRequestUsage({
       provider: spec.provider,
       model: spec.provider === "codex" ? "gpt-5.5" : "gpt-4o",

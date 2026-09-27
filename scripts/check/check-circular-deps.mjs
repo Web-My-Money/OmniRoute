@@ -6,9 +6,11 @@
 // imports relativos. Este script usa dpdm (v4) que rastreia path-aliases via
 // tsconfig.json e cobre entrypoints de alto risco.
 //
-// Advisory nesta versão: exit 0 sempre; imprime `circularDeps=N` para baseline.
-// Direção da catraca: down (não pode subir). Adicionar ao quality-baseline.json
-// como `{ value: N, direction: "down" }` após a primeira run verde no CI.
+// Ratchet-aware: reads metrics.circularDeps from quality-baseline.json when present;
+// direction "down" — a measured count ABOVE the baseline exits 1 (regression), at or
+// below exits 0. Without a baseline key it stays advisory (exit 0, prints the
+// suggested value). The CI step itself remains continue-on-error advisory (external
+// binary may self-skip), so the ratchet signal is visible in logs without blocking.
 //
 // Escopo limitado a 4 entrypoints principais para manter o tempo de análise
 // abaixo de 60s. dpdm rastreia transitivamente todas as deps de cada entry.
@@ -24,6 +26,7 @@ import { existsSync } from "node:fs";
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { resolveLocalBinEntry } from "../build/buildToolRunner.mjs";
 import os from "node:os";
 import path from "node:path";
 import fs from "node:fs";
@@ -40,7 +43,9 @@ const ENTRYPOINTS = [
   "src/lib/db/core.ts",
 ];
 
-const DPDM_BIN = resolve(projectRoot, "node_modules/.bin/dpdm");
+// Resolve via the package's own bin entry — the .bin/dpdm shim is a POSIX
+// script that cannot be spawned on Windows (ENOENT).
+const DPDM_BIN = resolveLocalBinEntry("dpdm", "dpdm", projectRoot);
 const TSCONFIG = resolve(projectRoot, "tsconfig.json");
 
 /**
@@ -67,15 +72,15 @@ export function parseDpdmOutput(jsonStr) {
  * @returns {string} conteúdo JSON do arquivo temporário.
  */
 function runDpdm() {
-  if (!existsSync(DPDM_BIN)) {
-    throw new Error(`dpdm binary not found at ${DPDM_BIN}. Run: npm install`);
+  if (!DPDM_BIN) {
+    throw new Error("dpdm binary not found in node_modules. Run: npm install");
   }
 
   const tmpFile = path.join(os.tmpdir(), `dpdm-output-${process.pid}.json`);
 
   try {
     execFileSync(
-      "node",
+      process.execPath,
       [
         DPDM_BIN,
         "--circular",
@@ -130,12 +135,36 @@ function main() {
     process.exit(1);
   }
 
-  // Advisory mode: always exit 0. Catraca pode ser adicionada no quality-baseline.json
-  // após baseline ser estabelecida.
+  // Ratchet: when a baseline exists, a count above it is a regression (exit 1).
+  // Sem baseline, permanece advisory e sugere o valor a congelar.
   console.log(`[circular-deps] circularDeps=${result.count}`);
-  console.log(
-    `[circular-deps] Advisory — add to quality-baseline.json: { "value": ${result.count}, "direction": "down" }`
-  );
+
+  const baselinePath = resolve(projectRoot, "config/quality/quality-baseline.json");
+  let baseline = null;
+  try {
+    if (existsSync(baselinePath)) {
+      const parsed = JSON.parse(readFileSync(baselinePath, "utf8"));
+      const entry = parsed?.metrics?.circularDeps;
+      if (entry && typeof entry.value === "number") baseline = entry.value;
+    }
+  } catch {
+    // baseline unreadable -> stay advisory
+  }
+
+  if (baseline === null) {
+    console.log(
+      `[circular-deps] Advisory — add to quality-baseline.json: { "value": ${result.count}, "direction": "down" }`
+    );
+    process.exit(0);
+  }
+
+  if (result.count > baseline) {
+    console.error(
+      `[circular-deps] FAIL — circularDeps=${result.count} regressed above baseline ${baseline} (direction: down). Break the new cycle or document a rebaseline.`
+    );
+    process.exit(1);
+  }
+  console.log(`[circular-deps] OK — ${result.count} <= baseline ${baseline}`);
   process.exit(0);
 }
 

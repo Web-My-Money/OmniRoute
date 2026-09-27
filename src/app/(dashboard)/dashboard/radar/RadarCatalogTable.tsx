@@ -178,14 +178,14 @@ export function RadarCatalogTable({ entries, refreshCatalog, onError }: RadarCat
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="text-left text-sm text-text-muted border-b border-border">
+              <tr className="text-start text-sm text-text-muted border-b border-border">
                 <th className="pb-3 font-medium">{t("colProvider")}</th>
                 <th className="pb-3 font-medium">{t("colModel")}</th>
                 <th className="pb-3 font-medium">{t("colQuota")}</th>
                 <th className="pb-3 font-medium">{t("colContext")}</th>
                 <th className="pb-3 font-medium">{t("colCapabilities")}</th>
                 <th className="pb-3 font-medium">{t("colTos")}</th>
-                <th className="pb-3 font-medium text-right">{t("colActions")}</th>
+                <th className="pb-3 font-medium text-end">{t("colActions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -280,7 +280,7 @@ export function RadarCatalogTable({ entries, refreshCatalog, onError }: RadarCat
                         {entry.tos}
                       </span>
                     </td>
-                    <td className="py-3 pl-3">
+                    <td className="py-3 ps-3">
                       {editingKey === key ? (
                         <div className="flex flex-wrap items-center justify-end gap-2">
                           <label className="inline-flex items-center gap-1 text-xs text-text-muted">
@@ -359,7 +359,7 @@ export function RadarCatalogTable({ entries, refreshCatalog, onError }: RadarCat
               >
                 <div>
                   <span className="font-medium">{state.provider}</span>
-                  <span className="ml-2 text-sm font-mono text-text-muted">
+                  <span className="ms-2 text-sm font-mono text-text-muted">
                     {state.displayName ?? state.modelId}
                   </span>
                 </div>

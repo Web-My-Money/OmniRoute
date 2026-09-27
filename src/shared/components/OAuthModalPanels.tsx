@@ -230,7 +230,7 @@ function OAuthGoogleLoopbackNotice({ hint }: { hint: GoogleLoopbackHint }) {
     <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 space-y-3">
       <div>
         <p className="text-sm font-semibold text-amber-500">
-          <span className="material-symbols-outlined text-sm align-middle mr-1">warning</span>
+          <span className="material-symbols-outlined text-sm align-middle me-1">warning</span>
           {t("googleLoopbackTitle")}
         </p>
         <p className="text-xs text-text-muted mt-1">
@@ -300,7 +300,7 @@ function OAuthRemoteAccessNotices({
 
   return (
     <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 text-xs text-blue-200">
-      <span className="material-symbols-outlined text-sm align-middle mr-1">info</span>
+      <span className="material-symbols-outlined text-sm align-middle me-1">info</span>
       {t("remoteAccessInfo")}
     </div>
   );
@@ -367,8 +367,8 @@ export function OAuthManualInputPanel({
           {provider === "zed-hosted" && (
             <p className="text-xs text-amber-500 mb-2">
               After signing in, Zed redirects to a local address like{" "}
-              <code className="font-mono">http://127.0.0.1:&lt;port&gt;/?user_id=...</code> which the
-              browser may show as unreachable — that is expected. Copy the FULL URL from the
+              <code className="font-mono">http://127.0.0.1:&lt;port&gt;/?user_id=...</code> which
+              the browser may show as unreachable — that is expected. Copy the FULL URL from the
               browser address bar (the access token is inside it) and paste it above.
             </p>
           )}

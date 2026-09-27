@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 import {
   formatBankSummary,
   verifyComplexityBaseline,
@@ -126,7 +127,7 @@ test("complexity: raising count is rejected", () => {
 test("complexity: adding a rebaseline note is rejected — the bot never justifies a ceiling", () => {
   const after = cxBefore();
   after.count = 2100;
-  after._rebaseline_new = "bot said so";
+  (after as LooseDeep)._rebaseline_new = "bot said so";
   const r = verifyComplexityBaseline(cxBefore(), after);
   assert.equal(r.problems.length, 1);
   assert.match(r.problems[0], /_rebaseline_new/);

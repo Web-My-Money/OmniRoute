@@ -3,9 +3,14 @@ import assert from "node:assert/strict";
 
 const autoUpdate = await import("../../src/lib/system/autoUpdate.ts");
 
+// execFile's promisified type carries a `child` handle tests never use.
+const asExecFile = <A extends unknown[]>(
+  fn: (...args: A) => Promise<{ stdout: string; stderr: string }>
+) => fn as unknown as Parameters<typeof autoUpdate.validateAutoUpdateRuntime>[1];
+
 describe("getAutoUpdateConfig", () => {
   it("defaults to npm or source mode locally", () => {
-    const config = autoUpdate.getAutoUpdateConfig({ DATA_DIR: "/tmp/omniroute" });
+    const config = autoUpdate.getAutoUpdateConfig({ NODE_ENV: "test", DATA_DIR: "/tmp/omniroute" });
     assert.ok(config.mode === "npm" || config.mode === "source");
     assert.equal(config.repoDir, "/workspace/omniroute");
     assert.equal(config.composeProfile, "cli");
@@ -13,6 +18,7 @@ describe("getAutoUpdateConfig", () => {
 
   it("reads docker-compose settings from env", () => {
     const config = autoUpdate.getAutoUpdateConfig({
+      NODE_ENV: "test",
       DATA_DIR: "/tmp/custom-data",
       AUTO_UPDATE_MODE: "docker-compose",
       AUTO_UPDATE_REPO_DIR: "/srv/omniroute",
@@ -37,16 +43,14 @@ describe("getAutoUpdateConfig", () => {
 
 describe("validateAutoUpdateRuntime", () => {
   it("supports source mode when git is available in a git repository", async () => {
-    const config = autoUpdate.getAutoUpdateConfig({
-      AUTO_UPDATE_MODE: "source",
-    });
+    const config = autoUpdate.getAutoUpdateConfig({ NODE_ENV: "test", AUTO_UPDATE_MODE: "source" });
 
     const result = await autoUpdate.validateAutoUpdateRuntime(
       config,
-      async (file) => {
+      asExecFile(async (file) => {
         if (file === "git") return { stdout: "git version 2.0.0", stderr: "" };
         throw new Error(`unexpected command: ${file}`);
-      },
+      }),
       async () => true
     );
 
@@ -59,6 +63,7 @@ describe("validateAutoUpdateRuntime", () => {
 
   it("reports missing docker socket for docker-compose mode", async () => {
     const config = autoUpdate.getAutoUpdateConfig({
+      NODE_ENV: "test",
       AUTO_UPDATE_MODE: "docker-compose",
       AUTO_UPDATE_REPO_DIR: "/repo",
       AUTO_UPDATE_COMPOSE_FILE: "/repo/docker-compose.yml",
@@ -66,7 +71,7 @@ describe("validateAutoUpdateRuntime", () => {
 
     const result = await autoUpdate.validateAutoUpdateRuntime(
       config,
-      async () => ({ stdout: "git version 2.0.0", stderr: "" }),
+      asExecFile(async () => ({ stdout: "git version 2.0.0", stderr: "" })),
       async (targetPath) => targetPath !== "/var/run/docker.sock"
     );
 
@@ -76,6 +81,7 @@ describe("validateAutoUpdateRuntime", () => {
 
   it("detects docker-compose command availability", async () => {
     const config = autoUpdate.getAutoUpdateConfig({
+      NODE_ENV: "test",
       AUTO_UPDATE_MODE: "docker-compose",
       AUTO_UPDATE_REPO_DIR: "/repo",
       AUTO_UPDATE_COMPOSE_FILE: "/repo/docker-compose.yml",
@@ -83,13 +89,13 @@ describe("validateAutoUpdateRuntime", () => {
 
     const result = await autoUpdate.validateAutoUpdateRuntime(
       config,
-      async (file, args) => {
+      asExecFile(async (file, args) => {
         if (file === "git") return { stdout: "git version 2.0.0", stderr: "" };
         if (file === "docker" && args?.[0] === "compose") {
           return { stdout: "Docker Compose version v2.0.0", stderr: "" };
         }
         throw new Error(`unexpected command: ${file}`);
-      },
+      }),
       async () => true
     );
 
@@ -101,6 +107,7 @@ describe("validateAutoUpdateRuntime", () => {
 describe("buildDockerComposeUpdateScript", () => {
   it("includes git checkout and compose rebuild steps", () => {
     const config = autoUpdate.getAutoUpdateConfig({
+      NODE_ENV: "test",
       AUTO_UPDATE_MODE: "docker-compose",
       AUTO_UPDATE_REPO_DIR: "/repo",
       AUTO_UPDATE_COMPOSE_FILE: "/repo/docker-compose.yml",

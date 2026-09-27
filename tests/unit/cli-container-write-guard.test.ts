@@ -29,7 +29,7 @@ const hostDeps = {
 test("guard allows any write on a host machine", async () => {
   const result = await assertHostConfigTarget("/Users/me/.codex", {
     deps: hostDeps,
-    env: {},
+    env: {} as NodeJS.ProcessEnv,
   });
   assert.deepEqual(result, { ok: true });
 });
@@ -39,7 +39,7 @@ test("guard refuses an ephemeral container home and explains both escape routes"
     toolLabel: "Codex",
     hostCommand: "omniroute setup-codex",
     deps: containerDeps,
-    env: {},
+    env: {} as NodeJS.ProcessEnv,
   });
 
   assert.equal(result.ok, false);
@@ -52,7 +52,7 @@ test("guard refuses an ephemeral container home and explains both escape routes"
 test("guard allows a bind-mounted container target without warning", async () => {
   const result = await assertHostConfigTarget("/host-home/.codex/glm.config.toml", {
     deps: containerDeps,
-    env: {},
+    env: {} as NodeJS.ProcessEnv,
   });
   assert.deepEqual(result, { ok: true });
 });
@@ -61,7 +61,7 @@ test("--allow-container-write proceeds but warns about the ephemeral write", asy
   const result = await assertHostConfigTarget("/home/node/.codex", {
     allowContainerWrite: true,
     deps: containerDeps,
-    env: {},
+    env: {} as NodeJS.ProcessEnv,
   });
   assert.equal(result.ok, true);
   assert.match(result.warning!, /lost when the container is recreated/);
@@ -71,7 +71,7 @@ test("OMNIROUTE_ALLOW_CONTAINER_CONFIG_WRITE env has the same effect as the flag
   for (const value of ["1", "true", "yes", "on", "TRUE"]) {
     const result = await assertHostConfigTarget("/home/node/.codex", {
       deps: containerDeps,
-      env: { OMNIROUTE_ALLOW_CONTAINER_CONFIG_WRITE: value },
+      env: { OMNIROUTE_ALLOW_CONTAINER_CONFIG_WRITE: value } as NodeJS.ProcessEnv,
     });
     assert.equal(result.ok, true, `expected ${value} to allow the write`);
   }
@@ -81,7 +81,7 @@ test("a falsy env override does not allow the write", async () => {
   for (const value of ["0", "false", "off", ""]) {
     const result = await assertHostConfigTarget("/home/node/.codex", {
       deps: containerDeps,
-      env: { OMNIROUTE_ALLOW_CONTAINER_CONFIG_WRITE: value },
+      env: { OMNIROUTE_ALLOW_CONTAINER_CONFIG_WRITE: value } as NodeJS.ProcessEnv,
     });
     assert.equal(result.ok, false, `expected ${value} to keep the refusal`);
   }
@@ -91,7 +91,7 @@ test("--dry-run is not blocked but says a real run would be refused", async () =
   const result = await assertHostConfigTarget("/home/node/.codex", {
     dryRun: true,
     deps: containerDeps,
-    env: {},
+    env: {} as NodeJS.ProcessEnv,
   });
   assert.equal(result.ok, true);
   assert.match(result.warning!, /\[dry-run\]/);

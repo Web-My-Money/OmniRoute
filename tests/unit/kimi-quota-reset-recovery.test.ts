@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-kimi-quota-reset-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -17,20 +18,20 @@ const quotaCache = await import("../../src/domain/quotaCache.ts");
 test.after(() => {
   quotaCache.__clearForTests();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("Kimi billing-cycle quota errors remain active and recover at the cached reset", async () => {
   await settingsDb.updateSettings({ autoDisableBannedAccounts: true });
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "kimi-coding",
     authType: "oauth",
     accessToken: "kimi-access-token",
     refreshToken: "kimi-refresh-token",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   const connectionId = (connection as { id: string }).id;
   const resetAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
   quotaCache.setQuotaCache(connectionId, "kimi-coding", {
@@ -56,6 +57,7 @@ test("Kimi billing-cycle quota errors remain active and recover at the cached re
   assert.equal(after.testStatus, "unavailable");
   assert.equal(after.lastErrorType, "quota_exhausted");
   assert.ok(
-    Math.abs(new Date(after.rateLimitedUntil).getTime() - new Date(resetAt).getTime()) < 100
+    Math.abs(new Date(after.rateLimitedUntil as string).getTime() - new Date(resetAt).getTime()) <
+      100
   );
 });

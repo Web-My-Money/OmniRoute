@@ -8,6 +8,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { prepareClaudeRequest } from "../../open-sse/translator/helpers/claudeHelper.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 describe("prepareClaudeRequest output_config stripping for MiniMax", () => {
   const buildBody = () => ({
@@ -34,7 +35,7 @@ describe("prepareClaudeRequest output_config stripping for MiniMax", () => {
     const result = prepareClaudeRequest(body as any, "minimax");
     assert.equal(result.output_config, undefined);
     // Sanity: rest of the request must still be intact.
-    assert.equal(result.messages?.[0]?.content?.[0]?.text, "continue");
+    assert.equal((result.messages?.[0]?.content?.[0] as LooseDeep)?.text, "continue");
     assert.equal(result.max_tokens, 1024);
   });
 

@@ -17,13 +17,18 @@
 // Sair com código 1 = violação de política em dep de produção.
 
 import { execFileSync } from "node:child_process";
+import { resolveLocalBinEntry } from "../build/buildToolRunner.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 const ROOT = process.cwd();
 const ALLOWLIST_PATH = path.join(ROOT, "config/quality/.license-allowlist.json");
-const CHECKER_BIN = path.join(ROOT, "node_modules", ".bin", "license-checker-rseidelsohn");
+const CHECKER_BIN = resolveLocalBinEntry(
+  "license-checker-rseidelsohn",
+  "license-checker-rseidelsohn",
+  ROOT
+);
 
 const VERBOSE = process.argv.includes("--verbose");
 const PRINT_JSON = process.argv.includes("--json");
@@ -122,14 +127,14 @@ export function stripVersion(pkgKey) {
  * @returns {Record<string, { licenses: string, path: string }>}
  */
 function runLicenseChecker() {
-  if (!fs.existsSync(CHECKER_BIN)) {
+  if (!CHECKER_BIN) {
     throw new Error(
       `license-checker-rseidelsohn not found at ${CHECKER_BIN}.\n` +
         `Install it: npm install --save-dev license-checker-rseidelsohn`
     );
   }
 
-  const output = execFileSync(CHECKER_BIN, ["--production", "--json"], {
+  const output = execFileSync(process.execPath, [CHECKER_BIN, "--production", "--json"], {
     cwd: ROOT,
     encoding: "utf-8",
     maxBuffer: 32 * 1024 * 1024, // 32 MB

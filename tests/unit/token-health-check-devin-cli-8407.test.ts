@@ -6,8 +6,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-hc-devin-cli-8407-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -20,7 +21,7 @@ const { supportsTokenRefresh } = await import("../../open-sse/services/tokenRefr
 async function resetStorage() {
   core.resetDbInstance();
   if (fs.existsSync(TEST_DATA_DIR)) {
-    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
@@ -32,7 +33,7 @@ function getCreatedConnectionId(connection: { id?: unknown }): string {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("supportsTokenRefresh excludes import-only Devin providers", () => {
@@ -51,7 +52,7 @@ test("supportsTokenRefresh excludes import-only Devin providers", () => {
 test("checkConnection leaves a devin-cli connection with no refresh token untouched (#8407)", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "devin-cli",
     authType: "oauth",
     name: "Devin CLI Local Account",
@@ -59,7 +60,7 @@ test("checkConnection leaves a devin-cli connection with no refresh token untouc
     refreshToken: null,
     testStatus: "active",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   await tokenHealthCheck.checkConnection(connection);
 
@@ -75,7 +76,7 @@ test("checkConnection leaves a devin-cli connection with no refresh token untouc
 test("checkConnection leaves an import-only devin-desktop connection active (#8228)", async () => {
   await resetStorage();
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "devin-desktop",
     authType: "oauth",
     name: "Devin Desktop Imported Account",
@@ -85,7 +86,7 @@ test("checkConnection leaves an import-only devin-desktop connection active (#82
     apiKey: null,
     testStatus: "active",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   await tokenHealthCheck.checkConnection(connection);
 

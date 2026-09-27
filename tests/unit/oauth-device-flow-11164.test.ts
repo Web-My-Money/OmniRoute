@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("device code normalization handles camelCase, snake_case, and authUrl without returning undefined", () => {
   const cases = [
@@ -23,12 +24,12 @@ test("device code normalization handles camelCase, snake_case, and authUrl witho
   for (const c of cases) {
     const userCode = c.input.userCode ?? c.input.user_code ?? "";
     const verificationUri =
-      c.input.verificationUriComplete ??
-      c.input.verification_uri_complete ??
+      (c.input as LooseDeep).verificationUriComplete ??
+      (c.input as LooseDeep).verification_uri_complete ??
       c.input.verificationUri ??
       c.input.verification_uri ??
-      c.input.authUrl ??
-      c.input.url ??
+      (c.input as LooseDeep).authUrl ??
+      (c.input as LooseDeep).url ??
       "";
 
     assert.equal(userCode, c.expectedCode);

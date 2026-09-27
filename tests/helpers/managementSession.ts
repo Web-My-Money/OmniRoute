@@ -32,7 +32,7 @@ export async function makeManagementSessionRequest(
     method?: string;
     token?: string;
     headers?: HeadersInit;
-    body?: BodyInit | Record<string, unknown> | unknown[] | number | boolean | null;
+    body?: unknown;
   } = {}
 ): Promise<Request> {
   const { method = "GET", token, headers, body } = options;
@@ -59,6 +59,6 @@ export async function makeManagementSessionRequest(
   return new Request(url, {
     method,
     headers: requestHeaders,
-    body: shouldSerializeJson ? JSON.stringify(body) : body,
+    body: shouldSerializeJson ? JSON.stringify(body) : (body as BodyInit | null | undefined),
   });
 }

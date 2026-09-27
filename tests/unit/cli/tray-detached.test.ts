@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
 import test from "node:test";
 
+import { spawn } from "node:child_process";
+
 import {
   buildTrayLaunch,
   buildTrayWorkerArgs,
@@ -135,7 +137,7 @@ test("startDetachedTray waits for worker readiness and detaches it", async () =>
     },
     {
       platform: "linux",
-      spawnProcess: (_command, args, options) => {
+      spawnProcess: ((_command, args, options) => {
         const child = new EventEmitter() as EventEmitter & {
           pid: number;
           unref: () => void;
@@ -150,7 +152,7 @@ test("startDetachedTray waits for worker readiness and detaches it", async () =>
         void notifyTrayReady(port, token);
         assert.deepEqual(options, { detached: true, stdio: "ignore", windowsHide: true });
         return child;
-      },
+      }) as unknown as typeof spawn,
     }
   );
 
@@ -182,7 +184,7 @@ test("startDetachedTray stops a worker that never becomes ready", async () => {
         },
         {
           platform: "linux",
-          spawnProcess: () => child,
+          spawnProcess: (() => child) as unknown as typeof spawn,
         }
       ),
       /did not become ready/

@@ -26,8 +26,7 @@ describe("sidebarVisibility — embedded-services", () => {
     const omniProxy = SIDEBAR_SECTIONS.find((s) => s.id === "omni-proxy");
     const flat = (omniProxy?.children ?? []).filter((c) => !("type" in c));
     const item = flat.find((c) => (c as { id: string }).id === "embedded-services") as
-      | { id: string; href: string }
-      | undefined;
+      { id: string; href: string } | undefined;
     assert.ok(item, "embedded-services item should exist in omni-proxy section");
     assert.equal(item.href, "/dashboard/providers/services");
   });
@@ -59,7 +58,8 @@ describe("tab configuration", () => {
   it("defaults to cliproxy tab when ?tab param is absent", () => {
     const DEFAULT_TAB = "cliproxy";
     // Mirrors the default in page.tsx: sp.get("tab") ?? "cliproxy"
-    const active = (null ?? DEFAULT_TAB) as string;
+    const tabParam: string | null = null;
+    const active = tabParam ?? DEFAULT_TAB;
     assert.equal(active, "cliproxy");
   });
 

@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import { type LooseDeep, looseSync } from "../helpers/looseTypes.ts";
 
 const {
   applyThinkingBudget,
@@ -13,6 +15,15 @@ const {
   ensureThinkingConfig,
   hasThinkingCapableModel,
 } = await import("../../open-sse/services/thinkingBudget.ts");
+
+// applyThinkingBudget returns the (possibly mutated) body as `unknown`; tests
+// only assert the fields they populated, so read it through this loose shape.
+type LooseBody = JsonRecord & {
+  reasoning_effort?: string;
+  thinking?: LooseDeep;
+  thinkingLevel?: unknown;
+  generationConfig?: JsonRecord;
+};
 
 // ─── Config Management ──────────────────────────────────────────────────────
 
@@ -37,7 +48,7 @@ test("PASSTHROUGH: body unchanged", () => {
     messages: [{ role: "user", content: "hello" }],
     thinking: { type: "enabled", budget_tokens: 8192 },
   };
-  const result = applyThinkingBudget(body);
+  const result = applyThinkingBudget(body) as LooseBody;
   assert.deepEqual(result, body);
   setThinkingBudgetConfig(DEFAULT_THINKING_CONFIG);
 });
@@ -49,7 +60,7 @@ test("PASSTHROUGH: keeps reasoning_effort for OpenAI-compatible Gemini routes", 
     messages: [{ role: "user", content: "hello" }],
     reasoning_effort: "high",
   };
-  const result = applyThinkingBudget(body);
+  const result = applyThinkingBudget(body) as LooseBody;
   assert.equal(result.reasoning_effort, "high");
   setThinkingBudgetConfig(DEFAULT_THINKING_CONFIG);
 });
@@ -63,7 +74,7 @@ test("AUTO: strips Claude thinking config", () => {
     messages: [{ role: "user", content: "hello" }],
     thinking: { type: "enabled", budget_tokens: 8192 },
   };
-  const result = applyThinkingBudget(body);
+  const result = applyThinkingBudget(body) as LooseBody;
   assert.equal(result.thinking, undefined);
   setThinkingBudgetConfig(DEFAULT_THINKING_CONFIG);
 });
@@ -75,7 +86,7 @@ test("AUTO: strips OpenAI reasoning_effort", () => {
     messages: [{ role: "user", content: "hello" }],
     reasoning_effort: "high",
   };
-  const result = applyThinkingBudget(body);
+  const result = applyThinkingBudget(body) as LooseBody;
   assert.equal(result.reasoning_effort, undefined);
   setThinkingBudgetConfig(DEFAULT_THINKING_CONFIG);
 });
@@ -86,7 +97,7 @@ test("AUTO: strips Gemini thinking_config", () => {
     model: "gemini-2.5-pro",
     generationConfig: { thinking_config: { thinking_budget: 8192 } },
   };
-  const result = applyThinkingBudget(body);
+  const result = applyThinkingBudget(body) as LooseBody;
   assert.equal(result.generationConfig.thinking_config, undefined);
   setThinkingBudgetConfig(DEFAULT_THINKING_CONFIG);
 });
@@ -100,7 +111,7 @@ test("CUSTOM: sets Claude budget", () => {
     messages: [{ role: "user", content: "hello" }],
     thinking: { type: "enabled", budget_tokens: 8192 },
   };
-  const result = applyThinkingBudget(body);
+  const result = applyThinkingBudget(body) as LooseBody;
   assert.equal(result.thinking.budget_tokens, 4096);
   setThinkingBudgetConfig(DEFAULT_THINKING_CONFIG);
 });
@@ -112,7 +123,7 @@ test("CUSTOM: sets OpenAI reasoning_effort from budget", () => {
     messages: [{ role: "user", content: "hello" }],
     reasoning_effort: "low",
   };
-  const result = applyThinkingBudget(body);
+  const result = applyThinkingBudget(body) as LooseBody;
   assert.equal(result.reasoning_effort, "xhigh");
   setThinkingBudgetConfig(DEFAULT_THINKING_CONFIG);
 });
@@ -124,7 +135,7 @@ test("CUSTOM: budget 0 disables Claude thinking", () => {
     messages: [{ role: "user", content: "hello" }],
     thinking: { type: "enabled", budget_tokens: 8192 },
   };
-  const result = applyThinkingBudget(body);
+  const result = applyThinkingBudget(body) as LooseBody;
   assert.equal(result.thinking.type, "disabled");
   setThinkingBudgetConfig(DEFAULT_THINKING_CONFIG);
 });
@@ -150,7 +161,7 @@ test("ADAPTIVE: Opus 4.7 budget capped within Anthropic-allowed range", () => {
     tools,
     output_config: { effort: "max" },
   };
-  const result = applyThinkingBudget(body);
+  const result = applyThinkingBudget(body) as LooseBody;
   assert.equal(result.thinking.type, "enabled");
   assert.ok(
     result.thinking.budget_tokens <= 128000,
@@ -172,7 +183,7 @@ test("ADAPTIVE: simple request gets base budget", () => {
     messages: [{ role: "user", content: "hello" }],
     thinking: { type: "enabled", budget_tokens: 8192 },
   };
-  const result = applyThinkingBudget(body);
+  const result = applyThinkingBudget(body) as LooseBody;
   assert.equal(result.thinking.budget_tokens, EFFORT_BUDGETS.medium);
   setThinkingBudgetConfig(DEFAULT_THINKING_CONFIG);
 });
@@ -190,7 +201,7 @@ test("ADAPTIVE: complex request (many messages + tools) gets higher budget", () 
     tools,
     thinking: { type: "enabled", budget_tokens: 1000 },
   };
-  const result = applyThinkingBudget(body);
+  const result = applyThinkingBudget(body) as LooseBody;
   // multiplier = 1.0 + 0.5 (msgs>10) + 0.5 (tools>3) + 0.3 (lastMsg>2000) = 2.3
   assert.ok(result.thinking.budget_tokens > EFFORT_BUDGETS.medium);
   setThinkingBudgetConfig(DEFAULT_THINKING_CONFIG);
@@ -225,7 +236,7 @@ test("normalizeThinkingLevel: converts thinkingLevel 'high' to budget", () => {
     thinkingLevel: "high",
     messages: [{ role: "user", content: "hello" }],
   };
-  const result = normalizeThinkingLevel(body);
+  const result = looseSync(normalizeThinkingLevel)(body);
   assert.equal(result.thinking.type, "enabled");
   assert.equal(result.thinking.budget_tokens, 24576);
   assert.equal(result.thinkingLevel, undefined);
@@ -237,7 +248,7 @@ test("normalizeThinkingLevel: converts thinking_level 'low' to budget", () => {
     thinking_level: "low",
     messages: [{ role: "user", content: "hello" }],
   };
-  const result = normalizeThinkingLevel(body);
+  const result = looseSync(normalizeThinkingLevel)(body);
   assert.equal(result.thinking.type, "enabled");
   assert.equal(result.thinking.budget_tokens, 4096);
   assert.equal(result.thinking_level, undefined);
@@ -245,7 +256,7 @@ test("normalizeThinkingLevel: converts thinking_level 'low' to budget", () => {
 
 test("normalizeThinkingLevel: converts 'none' to disabled", () => {
   const body = { model: "claude-sonnet-4", thinkingLevel: "none" };
-  const result = normalizeThinkingLevel(body);
+  const result = looseSync(normalizeThinkingLevel)(body);
   assert.equal(result.thinking.type, "disabled");
   assert.equal(result.thinking.budget_tokens, 0);
 });
@@ -257,14 +268,14 @@ test("normalizeThinkingLevel: converts Gemini thinkingConfig.thinkingLevel", () 
       thinkingConfig: { thinkingLevel: "high" },
     },
   };
-  const result = normalizeThinkingLevel(body);
+  const result = looseSync(normalizeThinkingLevel)(body);
   assert.equal(result.generationConfig.thinkingConfig.thinkingBudget, 24576);
   assert.equal(result.generationConfig.thinking_config, undefined);
 });
 
 test("normalizeThinkingLevel: ignores unknown string values", () => {
   const body = { model: "claude-sonnet-4", thinkingLevel: "ultra" };
-  const result = normalizeThinkingLevel(body);
+  const result = looseSync(normalizeThinkingLevel)(body);
   assert.equal(result.thinking, undefined); // not converted
   assert.equal(result.thinkingLevel, "ultra"); // preserved
 });
@@ -277,12 +288,12 @@ test("ensureThinkingConfig: auto-injects for -thinking suffix model", () => {
     messages: [{ role: "user", content: "hello" }],
   };
   const result = ensureThinkingConfig(body);
-  assert.equal(result.thinking.type, "enabled");
+  assert.equal((result as LooseDeep).thinking.type, "enabled");
   // Either the model's defaultThinkingBudget (when modelSpecs defines one
   // for the base model) or the EFFORT_BUDGETS.medium fallback. Both are
   // valid auto-inject outcomes.
   assert.ok(
-    result.thinking.budget_tokens > 0,
+    (result as LooseDeep).thinking.budget_tokens > 0,
     "budget_tokens should be positive after auto-inject"
   );
 });
@@ -294,7 +305,7 @@ test("ensureThinkingConfig: does NOT override existing thinking config", () => {
     messages: [{ role: "user", content: "hello" }],
   };
   const result = ensureThinkingConfig(body);
-  assert.equal(result.thinking.budget_tokens, 50000); // preserved
+  assert.equal((result as LooseDeep).thinking.budget_tokens, 50000); // preserved
 });
 
 test("ensureThinkingConfig: does nothing for non-thinking models", () => {
@@ -303,7 +314,7 @@ test("ensureThinkingConfig: does nothing for non-thinking models", () => {
     messages: [{ role: "user", content: "hello" }],
   };
   const result = ensureThinkingConfig(body);
-  assert.equal(result.thinking, undefined);
+  assert.equal((result as LooseDeep).thinking, undefined);
 });
 
 test("hasThinkingCapableModel: matches -thinking suffix", () => {
@@ -319,7 +330,7 @@ test("applyThinkingBudget: thinkingLevel 'high' + PASSTHROUGH = converts and pas
     thinkingLevel: "high",
     messages: [{ role: "user", content: "hello" }],
   };
-  const result = applyThinkingBudget(body);
+  const result = applyThinkingBudget(body) as LooseBody;
   assert.equal(result.thinking.budget_tokens, 24576);
   assert.equal(result.thinkingLevel, undefined);
   setThinkingBudgetConfig(DEFAULT_THINKING_CONFIG);
@@ -331,7 +342,7 @@ test("applyThinkingBudget: -thinking model without config + PASSTHROUGH = auto-i
     model: "claude-opus-4-6-thinking",
     messages: [{ role: "user", content: "hello" }],
   };
-  const result = applyThinkingBudget(body);
+  const result = applyThinkingBudget(body) as LooseBody;
   assert.equal(result.thinking.type, "enabled");
   assert.ok(
     result.thinking.budget_tokens > 0,

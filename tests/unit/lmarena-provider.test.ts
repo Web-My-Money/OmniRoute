@@ -30,7 +30,11 @@ const UUID_V7_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9
 type LMArenaExecutorTestAccess = {
   provider: string;
   buildUrl: (model: string, credentials: unknown) => string;
-  buildRequestHeaders: (model: string, credentials: unknown, body: unknown) => Record<string, string>;
+  buildRequestHeaders: (
+    model: string,
+    credentials: unknown,
+    body: unknown
+  ) => Record<string, string>;
   transformRequest: (
     body: unknown,
     model: string,
@@ -159,7 +163,11 @@ describe("LMArena Executor", () => {
     assert.equal(headers.Cookie, "session=def");
 
     // providerSpecificData.cookie
-    headers = ex.buildRequestHeaders("gpt-4", { providerSpecificData: { cookie: "session=ghi" } }, {});
+    headers = ex.buildRequestHeaders(
+      "gpt-4",
+      { providerSpecificData: { cookie: "session=ghi" } },
+      {}
+    );
     assert.equal(headers.Cookie, "session=ghi");
 
     // Priority: direct > apiKey > providerSpecificData
@@ -493,6 +501,7 @@ describe("LMArena Executor", () => {
     try {
       const result = await executor.execute({
         model: "gemini-3.1-pro-preview",
+        stream: true,
         body: { messages: [{ role: "user", content: "Hello" }] },
         credentials: { cookie: "session=test" },
         signal: new AbortController().signal,
@@ -521,6 +530,7 @@ describe("LMArena Executor", () => {
 
     const result = await executor.execute({
       model: "gpt-4",
+      stream: true,
       body: { messages: [{ role: "user", content: "Hello" }] },
       credentials: {},
       signal: new AbortController().signal,
@@ -556,6 +566,7 @@ describe("LMArena Executor", () => {
     try {
       const result = await executor.execute({
         model: TEST_ARENA_MODEL_ID,
+        stream: true,
         body: { messages: [{ role: "user", content: "Hello" }], stream: true },
         credentials: { cookie: "session=test" },
         signal: new AbortController().signal,
@@ -581,6 +592,7 @@ describe("LMArena Executor", () => {
     try {
       const result = await executor.execute({
         model: TEST_ARENA_MODEL_ID,
+        stream: true,
         body: { messages: [{ role: "user", content: "Hello" }] },
         credentials: { cookie: "session=test" },
         signal: new AbortController().signal,
@@ -617,6 +629,7 @@ describe("LMArena Executor", () => {
     try {
       const result = await executor.execute({
         model: TEST_ARENA_MODEL_ID,
+        stream: true,
         body: { messages: [{ role: "user", content: "Hello" }] },
         credentials: { cookie: "session=test" },
         signal: new AbortController().signal,

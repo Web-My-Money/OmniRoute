@@ -1,6 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createChatPipelineHarness } from "./_chatPipelineHarness.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+type FetchCall = {
+  url: string;
+  method?: string;
+  headers: Record<string, string>;
+  body: Record<string, unknown> | null;
+};
 
 const harness = await createChatPipelineHarness("reasoning-routing-pipeline");
 // Imported only AFTER the harness has set DATA_DIR and opened the DB: a static
@@ -61,7 +68,7 @@ test("chat pipeline applies a reasoning model/effort rule once and records route
     enabled: true,
   });
   const fetchCalls: FetchCall[] = [];
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       method: init.method || "GET",
@@ -99,7 +106,7 @@ test("chat pipeline applies a reasoning model/effort rule once and records route
 test("chat pipeline stays unchanged when the reasoning rule table is empty", async () => {
   await seedConnection("openai", { apiKey: "sk-openai-no-reasoning-rule" });
   const fetchCalls: FetchCall[] = [];
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       method: init.method || "GET",
@@ -152,7 +159,7 @@ test("reasoning routing works through Responses and Anthropic Messages transport
     enabled: true,
   });
   const fetchCalls: FetchCall[] = [];
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       method: init.method || "GET",
@@ -322,7 +329,7 @@ test("reasoning routing filters incompatible combo targets and rejects an empty 
     enabled: true,
   });
   const fetchCalls: FetchCall[] = [];
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),
@@ -427,7 +434,7 @@ test("connection reasoning rules apply only after selecting their connection", a
     enabled: true,
   });
   const fetchCalls: FetchCall[] = [];
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),

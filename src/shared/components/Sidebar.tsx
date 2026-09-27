@@ -712,7 +712,7 @@ export default function Sidebar({
           className="fixed z-[200] pointer-events-none flex items-center"
           style={{ left: hoveredItem.x, top: hoveredItem.y, transform: "translateY(-50%)" }}
         >
-          <div className="w-0 h-0 border-t-[5px] border-b-[5px] border-r-[6px] border-t-transparent border-b-transparent border-r-sidebar dark:border-r-sidebar" />
+          <div className="w-0 h-0 border-t-[5px] border-b-[5px] border-e-[6px] border-t-transparent border-b-transparent border-e-sidebar dark:border-e-sidebar" />
           <div className="px-2.5 py-1.5 bg-sidebar text-text-main text-xs font-medium rounded-md shadow-lg border border-black/10 dark:border-white/10 whitespace-nowrap">
             {hoveredItem.label}
           </div>

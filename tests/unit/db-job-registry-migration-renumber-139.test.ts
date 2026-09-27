@@ -14,6 +14,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import Database from "better-sqlite3";
+import type { SqliteAdapter } from "../../src/lib/db/adapters/types.ts";
 
 const migrationsDir = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-job-migration-"));
 const originalMigrationsDir = process.env.OMNIROUTE_MIGRATIONS_DIR;
@@ -35,7 +36,7 @@ fs.writeFileSync(
 const { runMigrations } = await import("../../src/lib/db/migrationRunner.ts");
 
 test.after(() => {
-  fs.rmSync(migrationsDir, { recursive: true, force: true });
+  fs.rmSync(migrationsDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   if (originalMigrationsDir === undefined) delete process.env.OMNIROUTE_MIGRATIONS_DIR;
   else process.env.OMNIROUTE_MIGRATIONS_DIR = originalMigrationsDir;
 });
@@ -54,7 +55,7 @@ test("job registry previously applied on 139 is rehomed so CCR can claim that sl
       INSERT INTO _omniroute_migrations (version, name) VALUES ('139', 'job_registry');
     `);
 
-    assert.equal(runMigrations(db), 1);
+    assert.equal(runMigrations(db as unknown as SqliteAdapter), 1);
     assert.deepEqual(
       db.prepare("SELECT version, name FROM _omniroute_migrations ORDER BY version").all(),
       [
@@ -97,7 +98,7 @@ test("untracked Job Registry tables do not suppress pending migration 146", () =
       VALUES ('139', 'ccr_blocks');
     `);
 
-    assert.equal(runMigrations(db), 1);
+    assert.equal(runMigrations(db as unknown as SqliteAdapter), 1);
 
     assert.deepEqual(
       db.prepare("SELECT version, name FROM _omniroute_migrations ORDER BY version").all(),

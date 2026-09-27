@@ -50,7 +50,8 @@ export type CompressionEngineId =
   | "llmlingua"
   | "relevance"
   | "omniglyph"
-  | "codex-responses";
+  | "codex-responses"
+  | "ionizer";
 
 export interface CavemanRule {
   name: string;

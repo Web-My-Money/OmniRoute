@@ -18,6 +18,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-provider-wildcard-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -417,7 +418,7 @@ test("#8926: inactive synced catalog does not override static wildcard fallback"
   );
 });
 test("expandProviderWildcardsInCombo: skips Alibaba free-tier drained models for pinned connections", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "alibaba",
     authType: "apikey",
     name: "alibaba-free-wildcard",
@@ -426,7 +427,7 @@ test("expandProviderWildcardsInCombo: skips Alibaba free-tier drained models for
       alibabaBillingMode: "free",
       alibabaFreeDrainedModels: ["qwen3.7-max-preview"],
     },
-  });
+  })) as JsonRecord & { id: string };
   await seedSyncedModels("alibaba", connection.id, [
     "qwen3.7-max-preview",
     "qwen3.6-plus",
@@ -451,7 +452,7 @@ test("expandProviderWildcardsInCombo: skips Alibaba free-tier drained models for
 });
 
 test("expandProviderWildcardsInCombo: alibabafree combo uses strict console allowlist only", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "alibaba",
     authType: "apikey",
     name: "alibaba-free-strict",
@@ -461,7 +462,7 @@ test("expandProviderWildcardsInCombo: alibabafree combo uses strict console allo
       alibabaFreeTierCapableModels: ["qwen3.6-plus"],
       alibabaNoFreeTierModels: ["glm-5.2-fast-preview", "qwen3.7-max"],
     },
-  });
+  })) as JsonRecord & { id: string };
   await seedSyncedModels("alibaba", connection.id, [
     "qwen3.6-plus",
     "qwen3.7-max",

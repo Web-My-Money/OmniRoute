@@ -47,8 +47,8 @@ const markdownComponents: Components = {
   },
   li({ children }) {
     return (
-      <li className="ml-2 flex items-start text-sm leading-relaxed text-text-muted">
-        <span className="mr-3 mt-2 size-1.5 shrink-0 rounded-full bg-text-muted/30" />
+      <li className="ms-2 flex items-start text-sm leading-relaxed text-text-muted">
+        <span className="me-3 mt-2 size-1.5 shrink-0 rounded-full bg-text-muted/30" />
         <span>{children}</span>
       </li>
     );

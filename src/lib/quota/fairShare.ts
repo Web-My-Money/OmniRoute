@@ -32,6 +32,7 @@ export interface FairShareDimension {
 }
 
 export interface FairShareAllocation {
+  apiKeyId?: string; // carried through from PoolAllocation callers; unused by the decision itself
   weight: number; // 0..100 — this key's share percentage
   capValue?: number; // absolute cap (optional)
   capUnit?: QuotaUnit; // unit of capValue

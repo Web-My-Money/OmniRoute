@@ -6,6 +6,7 @@ import {
   injectUniversalHandoffBody,
   type HandoffPayload,
 } from "../../open-sse/services/contextHandoff.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ── resolveUniversalHandoffConfig ────────────────────────────────────────────
 
@@ -160,7 +161,7 @@ test("injectUniversalHandoffBody prepends system handoff to messages", () => {
     ],
   };
   const r = injectUniversalHandoffBody(body, PREV, CURR, REASON, null);
-  assert.strictEqual(r.messages.length, 3);
+  assert.strictEqual((r.messages as LooseDeep).length, 3);
   assert.strictEqual(r.messages[0].role, "system");
   assert.ok((r.messages[0].content as string).includes("<context_handoff>"));
   assert.strictEqual(r.messages[1], body.messages[0]);
@@ -176,7 +177,7 @@ test("injectUniversalHandoffBody preserves original system message", () => {
     ],
   };
   const r = injectUniversalHandoffBody(body, PREV, CURR, REASON, null);
-  assert.strictEqual(r.messages.length, 3);
+  assert.strictEqual((r.messages as LooseDeep).length, 3);
   assert.strictEqual(r.messages[1].role, "system");
   assert.strictEqual(r.messages[1].content, "Be helpful");
 });

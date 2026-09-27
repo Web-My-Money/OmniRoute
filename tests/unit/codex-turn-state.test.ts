@@ -12,6 +12,7 @@ import {
   withCodexFingerprintCredentials,
 } from "../../open-sse/config/codexIdentity.ts";
 import { buildStreamingResponseHeaders } from "../../open-sse/handlers/chatCore/responseHeaders.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TURN_STATE = "ts-blob-0123456789";
 
@@ -108,9 +109,9 @@ test("withCodexFingerprintCredentials stashes the allowed echo independent of mo
 
   // Same account, explicit off: echo survives alongside original identity passthrough.
   const sameAccount = withCodexFingerprintCredentials(baseCredentials, clientHeaders, {});
-  assert.equal(sameAccount.providerSpecificData?.codexTurnStateEcho, TURN_STATE);
-  assert.ok(sameAccount.providerSpecificData?.codexOriginalIdentityHeaders);
-  assert.equal(sameAccount.providerSpecificData?.codexClientIdentity, undefined);
+  assert.equal((sameAccount.providerSpecificData as LooseDeep)?.codexTurnStateEcho, TURN_STATE);
+  assert.ok((sameAccount.providerSpecificData as LooseDeep)?.codexOriginalIdentityHeaders);
+  assert.equal((sameAccount.providerSpecificData as LooseDeep)?.codexClientIdentity, undefined);
 
   // Cross account: echo stripped, original client identity still preserved.
   const crossAccount = withCodexFingerprintCredentials(
@@ -118,7 +119,7 @@ test("withCodexFingerprintCredentials stashes the allowed echo independent of mo
     clientHeaders,
     {}
   );
-  assert.equal(crossAccount.providerSpecificData?.codexTurnStateEcho, undefined);
+  assert.equal((crossAccount.providerSpecificData as LooseDeep)?.codexTurnStateEcho, undefined);
 
   // Compact endpoint: convergence identity is skipped but the echo guard still runs.
   const compact = withCodexFingerprintCredentials(
@@ -126,8 +127,8 @@ test("withCodexFingerprintCredentials stashes the allowed echo independent of mo
     clientHeaders,
     {}
   );
-  assert.equal(compact.providerSpecificData?.codexClientIdentity, undefined);
-  assert.equal(compact.providerSpecificData?.codexTurnStateEcho, TURN_STATE);
+  assert.equal((compact.providerSpecificData as LooseDeep)?.codexClientIdentity, undefined);
+  assert.equal((compact.providerSpecificData as LooseDeep)?.codexTurnStateEcho, TURN_STATE);
 });
 
 test("streaming response headers forward x-codex-turn-state outside the byte budget", () => {

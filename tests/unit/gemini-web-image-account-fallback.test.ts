@@ -24,22 +24,21 @@ import assert from "node:assert/strict";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-geminiweb-image-fallback-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
 
-const { isExpiredOrBlockedGeminiWebSession, handleGeminiWebImageGeneration } = await import(
-  "../../open-sse/handlers/imageGeneration/providers/geminiWeb.ts"
-);
-const { executeImageWithCredentialFallback } = await import(
-  "../../src/sse/services/imageCredentialRetry.ts"
-);
+const { isExpiredOrBlockedGeminiWebSession, handleGeminiWebImageGeneration } =
+  await import("../../open-sse/handlers/imageGeneration/providers/geminiWeb.ts");
+const { executeImageWithCredentialFallback } =
+  await import("../../src/sse/services/imageCredentialRetry.ts");
 const { GeminiWebExecutor } = await import("../../open-sse/executors/gemini-web.ts");
 const core = await import("../../src/lib/db/core.ts");
 
 test.after(() => {
   core.resetDbInstance();
-  rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ── Classification (unit) ───────────────────────────────────────────────────
@@ -64,7 +63,7 @@ test("executeImageWithCredentialFallback: expired/blocked (400) on account 1 fal
   const accountA = { connectionId: "conn-a", apiKey: "cookie-a" };
   const accountB = { connectionId: "conn-b", apiKey: "cookie-b" };
 
-  const execution = await executeImageWithCredentialFallback({
+  const execution = await looseAsync(executeImageWithCredentialFallback)({
     provider: "gemini-web",
     requestedModel: "gemini-2.5-pro",
     credentials: accountA,
@@ -90,7 +89,7 @@ test("executeImageWithCredentialFallback: a non-retryable 400 (e.g. bad prompt) 
   const attempts: string[] = [];
   const accountA = { connectionId: "conn-a", apiKey: "cookie-a" };
 
-  const execution = await executeImageWithCredentialFallback({
+  const execution = await looseAsync(executeImageWithCredentialFallback)({
     provider: "gemini-web",
     requestedModel: "gemini-2.5-pro",
     credentials: accountA,
@@ -134,7 +133,9 @@ test("handler classifies the REAL GeminiWebExecutor's session-expired 400 as ret
         }),
       }),
       close: async () => {},
-    }) as unknown as ReturnType<typeof playwright.chromium.launch>) as typeof playwright.chromium.launch;
+    }) as unknown as ReturnType<
+      typeof playwright.chromium.launch
+    >) as typeof playwright.chromium.launch;
 
   try {
     const executor = new GeminiWebExecutor();
@@ -150,7 +151,7 @@ test("handler classifies the REAL GeminiWebExecutor's session-expired 400 as ret
     // synthetic status invented by the test).
     assert.equal(direct.response.status, 400, "sanity: executor's real session-expired status");
 
-    const res = await handleGeminiWebImageGeneration({
+    const res = await looseAsync(handleGeminiWebImageGeneration)({
       model: "gemini-2.5-pro",
       provider: "gemini-web",
       body: { prompt: "a kitten" },

@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { handleAudioSpeech } = await import("../../open-sse/handlers/audioSpeech.ts");
 const { AUDIO_SPEECH_PROVIDERS } = await import("../../open-sse/config/audioRegistry.ts");
@@ -30,7 +31,7 @@ test("handleAudioSpeech proxies OpenAI-compatible providers with defaults", asyn
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers,
@@ -74,7 +75,7 @@ test("handleAudioSpeech routes Deepgram with Token auth and model query paramete
   let capturedUrl;
   let capturedHeaders;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     capturedUrl = String(url);
     capturedHeaders = options.headers;
     const body = JSON.parse(String(options.body || "{}"));
@@ -155,10 +156,7 @@ test("handleAudioSpeech maps OpenAI stock voice name alloy to a real ElevenLabs 
     });
 
     assert.equal(response.status, 200);
-    assert.equal(
-      capturedUrl,
-      "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM"
-    );
+    assert.equal(capturedUrl, "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -187,10 +185,7 @@ test("handleAudioSpeech resolves ElevenLabs display name 'rachel' case-insensiti
     });
 
     assert.equal(response.status, 200);
-    assert.equal(
-      capturedUrl,
-      "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM"
-    );
+    assert.equal(capturedUrl, "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -218,10 +213,7 @@ test("handleAudioSpeech defaults to Rachel's voice_id when voice is omitted", as
     });
 
     assert.equal(response.status, 200);
-    assert.equal(
-      capturedUrl,
-      "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM"
-    );
+    assert.equal(capturedUrl, "https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM");
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -258,7 +250,7 @@ test("handleAudioSpeech maps Cartesia voice and wav output settings", async () =
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (_url, options = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     captured = {
       headers: options.headers,
       body: JSON.parse(String(options.body || "{}")),
@@ -298,7 +290,7 @@ test("handleAudioSpeech maps PlayHT credentials, output format, and speed", asyn
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (_url, options = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     captured = {
       headers: options.headers,
       body: JSON.parse(String(options.body || "{}")),
@@ -335,7 +327,7 @@ test("handleAudioSpeech signs AWS Polly synthesize requests with SigV4", async (
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers as Record<string, string>,
@@ -394,7 +386,7 @@ test("handleAudioSpeech maps Xiaomi MiMo TTS to chat completions audio payload",
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers,
@@ -476,7 +468,7 @@ test("handleAudioSpeech decodes Hyperbolic base64 audio responses", async () => 
   const originalFetch = globalThis.fetch;
   let capturedBody;
 
-  globalThis.fetch = async (_url, options = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     capturedBody = JSON.parse(String(options.body || "{}"));
 
     return new Response(JSON.stringify({ audio: "AQID" }), {
@@ -507,7 +499,7 @@ test("handleAudioSpeech routes Nvidia TTS providers with default voice", async (
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (_url, options = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     captured = {
       headers: options.headers,
       body: JSON.parse(String(options.body || "{}")),
@@ -559,7 +551,7 @@ test("handleAudioSpeech routes HuggingFace TTS providers to model-specific endpo
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers,
@@ -594,7 +586,7 @@ test("handleAudioSpeech maps Inworld requests to basic auth and wav output", asy
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (_url, options = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     captured = {
       headers: options.headers,
       body: JSON.parse(String(options.body || "{}")),
@@ -640,7 +632,7 @@ test("handleAudioSpeech maps Inworld opus output and rejects flac", async () => 
   let captured;
   let callCount = 0;
 
-  globalThis.fetch = async (_url, options = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     callCount += 1;
     captured = JSON.parse(String(options.body || "{}"));
 
@@ -689,7 +681,7 @@ test("handleAudioSpeech supports local Coqui providers without credentials", asy
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (_url, options = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     captured = JSON.parse(String(options.body || "{}"));
     return new Response(new Uint8Array([1, 1, 1]), {
       status: 200,
@@ -718,7 +710,7 @@ test("handleAudioSpeech supports local Tortoise providers with the default voice
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (_url, options = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     captured = JSON.parse(String(options.body || "{}"));
     return new Response(new Uint8Array([2, 2, 2]), {
       status: 200,

@@ -11,7 +11,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-// @ts-expect-error — .mjs helper has no type declarations; runtime shape is known.
+//
 import { parseOasdiffBreaking } from "../../../scripts/check/check-openapi-breaking.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

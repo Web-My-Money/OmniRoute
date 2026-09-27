@@ -779,7 +779,7 @@ export default function PoolWizard({
                       value={dim.limit}
                       onChange={(e) => updateDimension(i, { limit: Number(e.target.value) })}
                       placeholder={tPlans("limitLabel")}
-                      className="px-2 py-1.5 rounded border border-border bg-bg-base text-xs tabular-nums text-right"
+                      className="px-2 py-1.5 rounded border border-border bg-bg-base text-xs tabular-nums text-end"
                     />
                     <button
                       type="button"
@@ -859,7 +859,7 @@ export default function PoolWizard({
                         max={100}
                         value={a.weight}
                         onChange={(e) => updateWeight(a.apiKeyId, Number(e.target.value))}
-                        className="px-2 py-1 rounded border border-border bg-bg-base text-sm text-right tabular-nums"
+                        className="px-2 py-1 rounded border border-border bg-bg-base text-sm text-end tabular-nums"
                         title={t("weightPercent")}
                       />
                       <input

@@ -67,7 +67,7 @@ export default function MarkdownMessage({ content, className }: MarkdownMessageP
     },
     th({ children }) {
       return (
-        <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-left font-semibold">
+        <th className="border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-start font-semibold">
           {children}
         </th>
       );
@@ -127,7 +127,7 @@ export default function MarkdownMessage({ content, className }: MarkdownMessageP
     // Blockquotes
     blockquote({ children }) {
       return (
-        <blockquote className="border-l-4 border-neutral-400 pl-3 italic text-neutral-600 dark:text-neutral-400 my-2">
+        <blockquote className="border-s-4 border-neutral-400 ps-3 italic text-neutral-600 dark:text-neutral-400 my-2">
           {children}
         </blockquote>
       );

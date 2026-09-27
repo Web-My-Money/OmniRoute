@@ -14,7 +14,7 @@ import assert from "node:assert/strict";
 const { REGISTRY } = await import("../../open-sse/config/providerRegistry.ts");
 
 test("#3166 kilocode uses the OpenAI format + default executor (matches kilo-gateway)", () => {
-  const reg = REGISTRY as Record<string, Record<string, unknown>>;
+  const reg = REGISTRY as unknown as Record<string, Record<string, unknown>>;
   const kilocode = reg.kilocode;
   assert.ok(kilocode, "kilocode should be present in the executor registry");
   assert.equal(kilocode.format, "openai");
@@ -24,10 +24,6 @@ test("#3166 kilocode uses the OpenAI format + default executor (matches kilo-gat
   const gateway = reg["kilo-gateway"];
   if (gateway) {
     assert.equal(kilocode.format, gateway.format, "kilocode format must match kilo-gateway");
-    assert.equal(
-      kilocode.executor,
-      gateway.executor,
-      "kilocode executor must match kilo-gateway"
-    );
+    assert.equal(kilocode.executor, gateway.executor, "kilocode executor must match kilo-gateway");
   }
 });

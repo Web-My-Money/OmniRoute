@@ -18,11 +18,12 @@ async function resetStorage() {
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       if (fs.existsSync(TEST_DATA_DIR)) {
-        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       }
       break;
-    } catch (error: any) {
-      if ((error?.code === "EBUSY" || error?.code === "EPERM") && attempt < 9) {
+    } catch (error) {
+      const code = (error as { code?: string } | undefined)?.code;
+      if ((code === "EBUSY" || code === "EPERM") && attempt < 9) {
         await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
       } else {
         throw error;
@@ -41,7 +42,7 @@ function installTimerStubs() {
   const timeouts = [];
   const intervals = [];
 
-  globalThis.setTimeout = (fn, ms) => {
+  globalThis.setTimeout = ((fn, ms) => {
     const handle = {
       fn,
       ms,
@@ -54,9 +55,9 @@ function installTimerStubs() {
     };
     timeouts.push(handle);
     return handle;
-  };
+  }) as unknown as typeof setTimeout;
 
-  globalThis.setInterval = (fn, ms) => {
+  (globalThis.setInterval as unknown as typeof setInterval) = ((fn, ms) => {
     const handle = {
       fn,
       ms,
@@ -69,7 +70,7 @@ function installTimerStubs() {
     };
     intervals.push(handle);
     return handle;
-  };
+  }) as unknown as typeof setInterval;
 
   globalThis.clearTimeout = (handle) => {
     if (handle) {
@@ -107,7 +108,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   coreDb.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("modelSyncScheduler: internal auth headers validate only for scheduler requests", async () => {
@@ -301,9 +302,10 @@ test("cloud sync bootstrap is wired to server startup, not app layout imports", 
 
 test("initCloudSync skips auto initialization during build and test processes unless explicitly re-enabled", () => {
   assert.equal(
-    initCloudSync.shouldSkipCloudSyncInitialization({ NEXT_PHASE: "phase-production-build" }, [
-      "node",
-    ]),
+    initCloudSync.shouldSkipCloudSyncInitialization(
+      { NEXT_PHASE: "phase-production-build" } as NodeJS.ProcessEnv,
+      ["node"]
+    ),
     true
   );
   assert.equal(
@@ -323,28 +325,28 @@ test("initCloudSync skips auto initialization during build and test processes un
 });
 
 test("modelSyncScheduler starts once, honors env interval and syncs only active autoSync connections", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Auto Sync 1",
     apiKey: "sk-auto-1",
     providerSpecificData: { autoSync: true },
-  });
-  await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Manual Sync",
     apiKey: "sk-manual",
     providerSpecificData: { autoSync: false },
-  });
-  await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  (await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "apikey",
     name: "Disabled Auto Sync",
     apiKey: "sk-auto-2",
     isActive: false,
     providerSpecificData: { autoSync: true },
-  });
+  })) as JsonRecord & { id: string };
 
   process.env.MODEL_SYNC_INTERVAL_HOURS = "6";
   const timers = installTimerStubs();
@@ -420,13 +422,13 @@ test("modelSyncScheduler skips empty cycles and tolerates failing sync requests"
     timers.timeouts.length = 0;
     timers.intervals.length = 0;
 
-    await providersDb.createProviderConnection({
+    (await providersDb.createProviderConnection({
       provider: "gemini",
       authType: "apikey",
       name: "Auto Sync Failure",
       apiKey: "sk-auto-failure",
       providerSpecificData: { autoSync: true },
-    });
+    })) as JsonRecord & { id: string };
 
     const failingScheduler = await loadScheduler("failing-cycle");
     failingScheduler.startModelSyncScheduler("http://127.0.0.1:5555", 10_000);
@@ -441,3 +443,5 @@ test("modelSyncScheduler skips empty cycles and tolerates failing sync requests"
     timers.restore();
   }
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

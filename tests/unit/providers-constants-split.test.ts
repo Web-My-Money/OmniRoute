@@ -59,7 +59,7 @@ test("barrel still exports every catalog + key helpers", () => {
 });
 
 test("APIKEY_PROVIDERS merges the 6 family files into 233 entries (no loss / no dup)", async () => {
-  const keys = Object.keys((P as Record<string, object>).APIKEY_PROVIDERS);
+  const keys = Object.keys((P as unknown as Record<string, object>).APIKEY_PROVIDERS);
   assert.equal(keys.length, 233);
   assert.equal(new Set(keys).size, 233, "duplicate keys after spread-merge");
   // the merged object's entry-count equals the sum of the 6 semantic family files; families are a
@@ -87,12 +87,12 @@ test("APIKEY_PROVIDERS merges the 6 family files into 233 entries (no loss / no 
 });
 
 test("AI_PROVIDERS Proxy aggregates all sections; lookups resolve", () => {
-  const ai = (P as Record<string, Record<string, unknown>>).AI_PROVIDERS;
+  const ai = (P as unknown as Record<string, Record<string, unknown>>).AI_PROVIDERS;
   assert.ok(Object.keys(ai).length > 200);
-  assert.ok((P as Record<string, (id: string) => unknown>).getProviderById("openai"));
-  assert.ok((P as Record<string, (id: string) => unknown>).getProviderById("claude"));
+  assert.ok((P as unknown as Record<string, (id: string) => unknown>).getProviderById("openai"));
+  assert.ok((P as unknown as Record<string, (id: string) => unknown>).getProviderById("claude"));
   // a moved catalog is reachable through the barrel re-export
-  assert.ok((P as Record<string, Record<string, unknown>>).APIKEY_PROVIDERS["openai"]);
+  assert.ok((P as unknown as Record<string, Record<string, unknown>>).APIKEY_PROVIDERS["openai"]);
 });
 
 test("each extracted data module is importable on its own", async () => {

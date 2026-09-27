@@ -115,7 +115,7 @@ export function EngineNode({ data }: NodeProps) {
           </div>
           <div className="relative h-1.5 rounded-full overflow-hidden bg-border">
             <div
-              className="absolute inset-y-0 left-0 rounded-full"
+              className="absolute inset-y-0 start-0 rounded-full"
               style={{
                 width: tokIn > 0 ? `${(tokOut / tokIn) * 100}%` : "100%",
                 backgroundColor: color,

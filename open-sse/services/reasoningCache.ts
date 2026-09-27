@@ -132,6 +132,8 @@ interface MemoryCacheEntry {
 
 type AssistantMessageLike = {
   role?: unknown;
+  name?: unknown;
+  content?: unknown;
   tool_calls?: unknown;
   reasoning_content?: unknown;
   reasoning?: unknown;

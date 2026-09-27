@@ -9,6 +9,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-hide-auto-no-think-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -33,7 +34,7 @@ async function fetchCatalog(): Promise<Array<{ id: string; type?: string }>> {
 test.after(() => {
   core.resetDbInstance();
   try {
-    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   } catch {
     /* best-effort */
   }
@@ -47,20 +48,24 @@ test("hideAutoCombos and hideNoThinkVariants default to false", async () => {
 
 test("hideAutoCombos=true removes auto/* ids from /v1/models", async () => {
   // Ensure at least one provider connection exists so the catalog has content
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "openai-main",
     apiKey: "sk-test",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const isAutoId = (m: { id: string }) => m.id.startsWith("auto/");
 
   await settingsDb.updateSettings({ hideAutoCombos: false, hideNoThinkVariants: false });
   const off = await fetchCatalog();
   const autoWhenOff = off.filter(isAutoId).map((m) => m.id);
-  assert.equal(autoWhenOff.length > 0, true, `expected auto/* ids when toggle off, got ${autoWhenOff.length}`);
+  assert.equal(
+    autoWhenOff.length > 0,
+    true,
+    `expected auto/* ids when toggle off, got ${autoWhenOff.length}`
+  );
 
   await settingsDb.updateSettings({ hideAutoCombos: true, hideNoThinkVariants: false });
   const on = await fetchCatalog();
@@ -69,19 +74,23 @@ test("hideAutoCombos=true removes auto/* ids from /v1/models", async () => {
 
   // Original provider models must still be present
   const hasProviderModel = on.some((m) => m.id.startsWith("openai/") || m.id.startsWith("oa/"));
-  assert.equal(hasProviderModel, true, "original provider models must remain when hideAutoCombos=true");
+  assert.equal(
+    hasProviderModel,
+    true,
+    "original provider models must remain when hideAutoCombos=true"
+  );
 });
 
 test("hideNoThinkVariants=true removes no-think/* ids from /v1/models", async () => {
   // Add a claude provider connection so the catalog has no-think/* variants
   // (no-thinking variants are generated for Claude-family models that support thinking)
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "apikey",
     name: "claude-main",
     apiKey: "sk-ant-test",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const isNoThinkId = (m: { id: string }) => m.id.startsWith("no-think/");
 
@@ -97,20 +106,32 @@ test("hideNoThinkVariants=true removes no-think/* ids from /v1/models", async ()
     const hasProviderModel = on.some(
       (m) => m.id.startsWith("claude/") || m.id.startsWith("anthropic/")
     );
-    assert.equal(hasProviderModel, true, "original provider models must remain when hideNoThinkVariants=true");
+    assert.equal(
+      hasProviderModel,
+      true,
+      "original provider models must remain when hideNoThinkVariants=true"
+    );
     return;
   }
 
   await settingsDb.updateSettings({ hideAutoCombos: false, hideNoThinkVariants: true });
   const on = await fetchCatalog();
   const leaked = on.filter(isNoThinkId).map((m) => m.id);
-  assert.deepEqual(leaked, [], `no-think/* ids leaked when hideNoThinkVariants=true: ${leaked.join(", ")}`);
+  assert.deepEqual(
+    leaked,
+    [],
+    `no-think/* ids leaked when hideNoThinkVariants=true: ${leaked.join(", ")}`
+  );
 
   // Original provider models must still be present
   const hasProviderModel = on.some(
     (m) => m.id.startsWith("claude/") || m.id.startsWith("anthropic/")
   );
-  assert.equal(hasProviderModel, true, "original provider models must remain when hideNoThinkVariants=true");
+  assert.equal(
+    hasProviderModel,
+    true,
+    "original provider models must remain when hideNoThinkVariants=true"
+  );
 });
 
 test("both toggles on: neither auto/* nor no-think/* appear; original models present", async () => {
@@ -125,7 +146,15 @@ test("both toggles on: neither auto/* nor no-think/* appear; original models pre
   assert.deepEqual(noThinkLeaked, [], `no-think/* ids leaked: ${noThinkLeaked.join(", ")}`);
 
   const hasProviderModel = on.some(
-    (m) => m.id.startsWith("openai/") || m.id.startsWith("oa/") || m.id.startsWith("claude/") || m.id.startsWith("anthropic/")
+    (m) =>
+      m.id.startsWith("openai/") ||
+      m.id.startsWith("oa/") ||
+      m.id.startsWith("claude/") ||
+      m.id.startsWith("anthropic/")
   );
-  assert.equal(hasProviderModel, true, "original provider models must remain when both toggles are on");
+  assert.equal(
+    hasProviderModel,
+    true,
+    "original provider models must remain when both toggles are on"
+  );
 });

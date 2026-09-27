@@ -54,6 +54,9 @@ permissions:
 env:
   NPM_PUBLISH_NODE_VERSION: "24"
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 jobs:
   publish:
     # Same dynamic-runner rule as ci.yml's `build`/`test-unit`: `build:cli` falls back to a

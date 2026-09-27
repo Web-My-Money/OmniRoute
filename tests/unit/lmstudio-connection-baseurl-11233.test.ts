@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-lmstudio-embedding-11233-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -15,7 +16,7 @@ const { createEmbeddingResponse } = await import("../../src/lib/embeddings/servi
 
 test.after(() => {
   core.resetDbInstance();
-  rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // Issue #11233: the dashboard stores LM Studio connections under the provider
@@ -114,7 +115,7 @@ test("lmstudio service hydrates the lm-studio connection host without requiring 
 
   const originalFetch = globalThis.fetch;
   let captured: { url: string; headers: Record<string, string> } | null = null;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: (options.headers as Record<string, string>) || {},

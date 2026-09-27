@@ -14,6 +14,7 @@
 export function isDegradedLocalCatalog(modelsData: {
   source?: unknown;
   intentional?: unknown;
+  warning?: unknown;
 }): boolean {
   const source =
     typeof modelsData?.source === "string" ? modelsData.source.trim().toLowerCase() : "";

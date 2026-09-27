@@ -12,6 +12,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-openrouter-edits-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -37,13 +38,13 @@ async function resetStorage() {
   globalThis.fetch = originalFetch;
   apiKeysDb.resetApiKeyState();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   v1ModelsCatalog.__resetCatalogBuilderRunsForTest();
 }
 
-function seedOpenRouterConnection(overrides: { rateLimitedUntil?: string | null } = {}) {
-  return providersDb.createProviderConnection({
+async function seedOpenRouterConnection(overrides: { rateLimitedUntil?: string | null } = {}) {
+  return (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "openrouter-test",
@@ -51,7 +52,7 @@ function seedOpenRouterConnection(overrides: { rateLimitedUntil?: string | null 
     isActive: true,
     testStatus: "active",
     rateLimitedUntil: overrides.rateLimitedUntil ?? null,
-  });
+  })) as JsonRecord & { id: string };
 }
 
 function dataUrlPng(bytes: number[]): string {
@@ -68,7 +69,7 @@ test.after(() => {
   globalThis.fetch = originalFetch;
   apiKeysDb.resetApiKeyState();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#10197 v1 image edit POST forwards built-in openrouter edits to the unified Image API", async () => {
@@ -78,7 +79,7 @@ test("#10197 v1 image edit POST forwards built-in openrouter edits to the unifie
   let hitAuth: string | null = null;
   let hitBody = "";
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     hitUrl = String(url);
     const headers = init.headers;
     hitAuth =
@@ -95,10 +96,14 @@ test("#10197 v1 image edit POST forwards built-in openrouter edits to the unifie
     else if (raw instanceof Uint8Array) hitBody = Buffer.from(raw).toString("utf8");
     else if (raw instanceof ArrayBuffer) hitBody = Buffer.from(raw).toString("utf8");
     else if (raw && typeof (raw as { arrayBuffer?: unknown }).arrayBuffer === "function") {
-      hitBody = Buffer.from(await (raw as { arrayBuffer(): Promise<ArrayBuffer> }).arrayBuffer()).toString("utf8");
+      hitBody = Buffer.from(
+        await (raw as { arrayBuffer(): Promise<ArrayBuffer> }).arrayBuffer()
+      ).toString("utf8");
     }
     return new Response(
-      JSON.stringify({ data: [{ b64_json: Buffer.from([0x89, 0x50, 0x4e, 0x47]).toString("base64") }] }),
+      JSON.stringify({
+        data: [{ b64_json: Buffer.from([0x89, 0x50, 0x4e, 0x47]).toString("base64") }],
+      }),
       { status: 200, headers: { "content-type": "application/json" } }
     );
   };
@@ -183,3 +188,5 @@ test("#10197 v1 image edit POST surfaces openrouter rate-limit sentinel", async 
   assert.match(body.error.message, /All accounts rate limited/);
   assert.ok(!body.error.message.includes("at /"));
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

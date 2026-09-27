@@ -34,6 +34,9 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 jobs:
   # ─────────────────────────────────────────────────────────────────────────
   # Job 1 — Lock the release branch when a Release is published.

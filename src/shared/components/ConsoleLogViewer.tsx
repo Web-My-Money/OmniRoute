@@ -187,7 +187,7 @@ export default function ConsoleLogViewer() {
               : "bg-[var(--color-bg)] text-[var(--color-text-muted)] border-[var(--color-border)]"
           }`}
         >
-          <span className="material-symbols-outlined text-[16px] align-middle mr-1">
+          <span className="material-symbols-outlined text-[16px] align-middle me-1">
             {autoScroll ? "vertical_align_bottom" : "lock"}
           </span>
           {tv("autoScroll")}
@@ -203,7 +203,7 @@ export default function ConsoleLogViewer() {
         </button>
 
         {/* Status */}
-        <div className="flex items-center gap-2 ml-auto text-xs text-[var(--color-text-muted)]">
+        <div className="flex items-center gap-2 ms-auto text-xs text-[var(--color-text-muted)]">
           <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           <span>{tv("entryCount", { count: filteredLogs.length })}</span>
           <span className="text-[var(--color-text-muted)]/50">•</span>
@@ -223,9 +223,9 @@ export default function ConsoleLogViewer() {
           className="p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm"
           role="alert"
         >
-          <span className="material-symbols-outlined text-[16px] align-middle mr-2">error</span>
+          <span className="material-symbols-outlined text-[16px] align-middle me-2">error</span>
           {error}
-          <span className="text-xs ml-2 opacity-70">— {tv("fileLoggingRequired")}</span>
+          <span className="text-xs ms-2 opacity-70">— {tv("fileLoggingRequired")}</span>
         </div>
       )}
 
@@ -243,7 +243,7 @@ export default function ConsoleLogViewer() {
           <div className="w-3 h-3 rounded-full bg-[#FF5F56]" />
           <div className="w-3 h-3 rounded-full bg-[#FFBD2E]" />
           <div className="w-3 h-3 rounded-full bg-[#27C93F]" />
-          <span className="ml-3 text-[#8b949e] text-[11px]">
+          <span className="ms-3 text-[#8b949e] text-[11px]">
             OmniRoute — {tv("applicationConsole")}
           </span>
         </div>
@@ -294,7 +294,7 @@ export default function ConsoleLogViewer() {
                     {msg}
                     {/* Extra meta */}
                     {correlationId && (
-                      <span className="text-[#484f58] ml-2">cid:{correlationId.slice(0, 8)}</span>
+                      <span className="text-[#484f58] ms-2">cid:{correlationId.slice(0, 8)}</span>
                     )}
                   </span>
 

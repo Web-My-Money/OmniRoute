@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import { BedrockExecutor, openAIToBedrockConverse } from "../../open-sse/executors/bedrock.ts";
 import { runWithCapture } from "../../open-sse/utils/providerRequestLogging.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 function credentials(region = "eu-west-2") {
   return {
@@ -58,15 +59,15 @@ test("openAIToBedrockConverse maps OpenAI chat messages and tools to Bedrock Con
   });
 
   assert.equal(payload.modelId, "anthropic.claude-sonnet-4-6");
-  assert.deepEqual(payload.system, [{ text: "You are concise." }]);
+  assert.deepEqual((payload as LooseDeep).system, [{ text: "You are concise." }]);
   assert.equal(payload.messages[0].role, "user");
   assert.deepEqual(payload.messages[0].content, [{ text: "What is the weather?" }]);
   assert.equal(payload.messages[1].content[0].toolUse.name, "get_weather");
   assert.deepEqual(payload.messages[1].content[0].toolUse.input, { city: "Berlin" });
   assert.equal(payload.messages[2].content[0].toolResult.toolUseId, "call_weather");
-  assert.equal(payload.toolConfig.tools[0].toolSpec.name, "get_weather");
-  assert.deepEqual(payload.toolConfig.toolChoice, { auto: {} });
-  assert.deepEqual(payload.inferenceConfig, { maxTokens: 64, temperature: 0.2 });
+  assert.equal((payload as LooseDeep).toolConfig.tools[0].toolSpec.name, "get_weather");
+  assert.deepEqual((payload as LooseDeep).toolConfig.toolChoice, { auto: {} });
+  assert.deepEqual((payload as LooseDeep).inferenceConfig, { maxTokens: 64, temperature: 0.2 });
 });
 
 test("openAIToBedrockConverse avoids duplicate Bedrock toolUse ids from mixed tool formats", () => {
@@ -105,7 +106,7 @@ test("openAIToBedrockConverse preserves additionalModelRequestFields", () => {
     },
   });
 
-  assert.deepStrictEqual(payload.additionalModelRequestFields, {
+  assert.deepStrictEqual((payload as LooseDeep).additionalModelRequestFields, {
     thinking: { type: "enabled", budget_tokens: 2048 },
   });
 });

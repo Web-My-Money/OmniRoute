@@ -39,6 +39,7 @@ export interface ModelCapabilityEntry {
   limit_input: number | null;
   limit_output: number | null;
   interleaved_field: string | null;
+  last_synced?: string | null;
 }
 
 export type CapabilitiesByProvider = Record<string, Record<string, ModelCapabilityEntry>>;

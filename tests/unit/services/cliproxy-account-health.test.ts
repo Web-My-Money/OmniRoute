@@ -136,7 +136,7 @@ describe("CLIProxyAPI account health", () => {
       managementKey: "key",
       timeoutMs: 10,
       fetchImpl: (_input, init) =>
-        new Promise((_resolve, reject) => {
+        new Promise<Response>((_resolve, reject) => {
           init?.signal?.addEventListener("abort", () =>
             reject(new DOMException("aborted", "AbortError"))
           );

@@ -569,6 +569,7 @@ const { openaiToOpenAIResponsesResponse, openaiResponsesToOpenAIResponse } =
   await import("../../open-sse/translator/response/openai-responses.ts");
 const { initState } = await import("../../open-sse/translator/index.ts");
 const { FORMATS } = await import("../../open-sse/translator/formats.ts");
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("Chat→Responses streaming: usage-only chunk is captured (not dropped)", () => {
   const state = initState(FORMATS.OPENAI_RESPONSES);
@@ -591,7 +592,7 @@ test("Chat→Responses streaming: usage-only chunk is captured (not dropped)", (
   // Finish chunk
   const finishChunk = { choices: [{ index: 0, delta: {}, finish_reason: "stop" }] };
   const finishEvents = openaiToOpenAIResponsesResponse(finishChunk, state);
-  const completedEvent = finishEvents.find((e) => e.event === "response.completed");
+  const completedEvent: LooseDeep = finishEvents.find((e) => e.event === "response.completed");
   assert.ok(completedEvent, "should have completed event");
   assert.ok(completedEvent.data.response.usage, "completed event should include usage");
   assert.equal(completedEvent.data.response.usage.input_tokens, 10);
@@ -616,9 +617,14 @@ test("Chat→Responses streaming: completed event includes accumulated output", 
   // until the stream-end flush (no trailing usage-only chunk will ever arrive).
   const events = openaiToOpenAIResponsesResponse(null, state);
   const completedEvent = events.find((e) => e.event === "response.completed");
-  assert.ok(completedEvent.data.response.output, "completed should have output");
-  assert.ok(completedEvent.data.response.output.length > 0, "output should not be empty");
-  const msgOutput = completedEvent.data.response.output.find((o) => o.type === "message");
+  assert.ok((completedEvent.data.response as LooseDeep).output, "completed should have output");
+  assert.ok(
+    (completedEvent.data.response as LooseDeep).output.length > 0,
+    "output should not be empty"
+  );
+  const msgOutput = (completedEvent.data.response as LooseDeep).output.find(
+    (o) => o.type === "message"
+  );
   assert.ok(msgOutput, "should have message output item");
 });
 
@@ -792,6 +798,7 @@ test("Responses→Chat streaming: response.completed finalizes tool_calls when c
     toolCallIndex: 0,
     currentToolCallId: "call_def",
     finishReasonSent: false,
+    finishReason: null as string | null,
   };
 
   const chunk = { type: "response.completed", data: { response: {} } };
@@ -849,11 +856,14 @@ test("Chat→Responses streaming: reasoning and a following tool call use distin
   );
 
   const reasoningItem = reasoningEvents.find(
-    (event) => event.event === "response.output_item.added" && event.data.item.type === "reasoning"
+    (event) =>
+      event.event === "response.output_item.added" &&
+      (event.data.item as LooseDeep).type === "reasoning"
   );
   const toolItem = toolEvents.find(
     (event) =>
-      event.event === "response.output_item.added" && event.data.item.type === "function_call"
+      event.event === "response.output_item.added" &&
+      (event.data.item as LooseDeep).type === "function_call"
   );
 
   assert.ok(reasoningItem, "should announce the reasoning item");

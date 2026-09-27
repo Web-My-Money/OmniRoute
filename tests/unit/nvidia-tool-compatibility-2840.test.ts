@@ -11,6 +11,7 @@ import {
 import { FORMATS } from "../../open-sse/translator/formats.ts";
 import { openaiToClaudeResponse } from "../../open-sse/translator/response/openai-to-claude.ts";
 import { createPassthroughStreamWithLogger } from "../../open-sse/utils/stream.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("NVIDIA keeps tool calls and tool results linked with deterministic 9-character IDs", () => {
   const body = {
@@ -29,13 +30,13 @@ test("NVIDIA keeps tool calls and tool results linked with deterministic 9-chara
     ],
   };
 
-  const first = new DefaultExecutor("nvidia").transformRequest(
+  const first: LooseDeep = new DefaultExecutor("nvidia").transformRequest(
     "mistralai/mistral-medium-3.5-128b",
     structuredClone(body),
     false,
     null
   );
-  const second = new DefaultExecutor("nvidia").transformRequest(
+  const second: LooseDeep = new DefaultExecutor("nvidia").transformRequest(
     "mistralai/mistral-medium-3.5-128b",
     structuredClone(body),
     false,
@@ -67,8 +68,8 @@ test("NVIDIA keeps tool calls and tool results linked with deterministic 9-chara
     false,
     null
   );
-  assert.equal(valid.messages[0].tool_calls[0].id, "Abc123XyZ");
-  assert.equal(valid.messages[1].tool_call_id, "Abc123XyZ");
+  assert.equal((valid as LooseDeep).messages[0].tool_calls[0].id, "Abc123XyZ");
+  assert.equal((valid as LooseDeep).messages[1].tool_call_id, "Abc123XyZ");
 });
 
 test("NVIDIA aliases every OpenAI tool-name surface and can restore the provider response", () => {
@@ -141,13 +142,13 @@ test("NVIDIA executor applies its registry-scoped tool-name limit without changi
     null
   );
 
-  const alias = nvidia.tools[0].function.name;
+  const alias = (nvidia as LooseDeep).tools[0].function.name;
   assert.match(alias, /^[A-Za-z0-9_-]{1,64}$/);
-  assert.equal(nvidia.messages[0].tool_calls[0].function.name, alias);
-  assert.equal(nvidia._toolNameMap.get(alias), original);
+  assert.equal((nvidia as LooseDeep).messages[0].tool_calls[0].function.name, alias);
+  assert.equal((nvidia as LooseDeep)._toolNameMap.get(alias), original);
   assert.equal(Object.prototype.propertyIsEnumerable.call(nvidia, "_toolNameMap"), false);
-  assert.equal(openai.tools[0].function.name, original);
-  assert.equal(openai._toolNameMap, undefined);
+  assert.equal((openai as LooseDeep).tools[0].function.name, original);
+  assert.equal((openai as LooseDeep)._toolNameMap, undefined);
 });
 
 test("NVIDIA restores aliases in non-streaming OpenAI and OpenAI-to-Claude responses", () => {
@@ -186,7 +187,7 @@ test("NVIDIA restores aliases in non-streaming OpenAI and OpenAI-to-Claude respo
     FORMATS.CLAUDE,
     aliases
   );
-  const toolUse = claude.content.find((block) => block.type === "tool_use");
+  const toolUse = (claude.content as LooseDeep).find((block) => block.type === "tool_use");
   assert.equal(toolUse.name, original);
 });
 

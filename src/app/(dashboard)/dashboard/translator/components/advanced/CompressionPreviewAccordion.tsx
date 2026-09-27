@@ -262,7 +262,7 @@ export default function CompressionPreviewAccordion({
           onClick={handleToggle}
           aria-expanded={open}
           aria-controls="compression-preview-content"
-          className="flex items-center gap-3 flex-1 min-w-0 text-left -m-1 p-1 rounded"
+          className="flex items-center gap-3 flex-1 min-w-0 text-start -m-1 p-1 rounded"
         >
           <span
             className="material-symbols-outlined text-text-muted text-[20px] shrink-0"

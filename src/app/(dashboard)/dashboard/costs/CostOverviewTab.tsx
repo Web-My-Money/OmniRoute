@@ -1008,14 +1008,14 @@ function CostExplorerCard({
             onChange={(value) => onGroupByChange(value as CostExplorerGroupBy)}
           />
           <label className="relative block min-w-55">
-            <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-text-muted">
+            <span className="material-symbols-outlined pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-sm text-text-muted">
               search
             </span>
             <input
               value={searchQuery}
               onChange={(event) => onSearchChange(event.target.value)}
               placeholder={t("filterRows")}
-              className="w-full rounded-lg border border-border/40 bg-surface/40 py-2 pl-9 pr-3 text-sm text-text-main placeholder:text-text-muted focus:border-primary focus:outline-none"
+              className="w-full rounded-lg border border-border/40 bg-surface/40 py-2 ps-9 pe-3 text-sm text-text-main placeholder:text-text-muted focus:border-primary focus:outline-none"
               aria-label={t("filterCostExplorerRows")}
             />
           </label>
@@ -1040,7 +1040,7 @@ function CostExplorerCard({
                     <th
                       key={column.key}
                       className={`pb-2 font-semibold ${
-                        column.align === "right" ? "text-right" : "text-left"
+                        column.align === "right" ? "text-end" : "text-start"
                       }`}
                     >
                       <button
@@ -1062,7 +1062,7 @@ function CostExplorerCard({
               <tbody className="divide-y divide-border/20">
                 {rows.map((row) => (
                   <tr key={row.id} className="hover:bg-surface/20">
-                    <td className="py-3 pr-4">
+                    <td className="py-3 pe-4">
                       <div className="flex flex-col">
                         <span className="font-medium text-text-main">{row.name}</span>
                         {row.detail ? (
@@ -1072,21 +1072,21 @@ function CostExplorerCard({
                         ) : null}
                       </div>
                     </td>
-                    <td className="py-3 text-right font-mono text-text-muted">
+                    <td className="py-3 text-end font-mono text-text-muted">
                       {formatCost(row.cost)}
                     </td>
-                    <td className="py-3 text-right font-mono text-text-muted">
+                    <td className="py-3 text-end font-mono text-text-muted">
                       {numberFormatter.format(row.requests)}
                     </td>
-                    <td className="py-3 text-right font-mono text-text-muted">
+                    <td className="py-3 text-end font-mono text-text-muted">
                       {compactFormatter.format(row.totalTokens)}
                     </td>
-                    <td className="py-3 text-right font-mono text-text-muted">
+                    <td className="py-3 text-end font-mono text-text-muted">
                       {row.avgCostPerRequest > 0
                         ? currencyFormatter.format(row.avgCostPerRequest)
                         : "—"}
                     </td>
-                    <td className="py-3 text-right">
+                    <td className="py-3 text-end">
                       <div className="flex items-center justify-end gap-2">
                         <div className="h-1.5 w-16 overflow-hidden rounded-full bg-surface/60">
                           <div
@@ -1249,7 +1249,7 @@ function CostBreakdownTable({
                 <th
                   key={column.key}
                   className={`pb-2 font-semibold ${
-                    column.align === "right" ? "text-right" : "text-left"
+                    column.align === "right" ? "text-end" : "text-start"
                   }`}
                 >
                   {column.label}
@@ -1265,8 +1265,8 @@ function CostBreakdownTable({
                     key={column.key}
                     className={`py-2 ${
                       column.align === "right"
-                        ? "text-right font-mono text-text-muted"
-                        : "text-left text-text-main truncate max-w-50"
+                        ? "text-end font-mono text-text-muted"
+                        : "text-start text-text-main truncate max-w-50"
                     }`}
                   >
                     {formatValue(row[column.key], column.format)}

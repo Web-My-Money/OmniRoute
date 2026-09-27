@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { extractUsageFromResponse } = await import("../../open-sse/handlers/usageExtractor.ts");
 const { extractUsage, normalizeUsage } = await import("../../open-sse/utils/usageTracking.ts");
@@ -7,7 +8,7 @@ const { extractUsage, normalizeUsage } = await import("../../open-sse/utils/usag
 test("normalizeUsage keeps only finite numeric fields for stream cost calculation", () => {
   assert.deepEqual(
     normalizeUsage({
-      input_tokens: "12",
+      input_tokens: "12" as unknown as number,
       output_tokens: 3,
       total_tokens: Number.POSITIVE_INFINITY,
       input_tokens_details: { cached_tokens: 2 },
@@ -483,7 +484,7 @@ test("extractUsage ignores non-final Ollama NDJSON chunks (done=false)", () => {
     model: "llama3.1",
     done: false,
     response: "partial",
-  });
+  } as LooseDeep);
 
   assert.equal(usage, null);
 });

@@ -1641,10 +1641,7 @@ export function createSSEStream(options: StreamOptions = {}) {
                         isResponsesCommentaryMessageItem
                       ).items
                     : passthroughResponsesOutputItems;
-                  const backfilled = backfillResponsesCompletedOutput(
-                    parsed,
-                    backfillCandidates
-                  );
+                  const backfilled = backfillResponsesCompletedOutput(parsed, backfillCandidates);
                   const usageNormalized = normalizeUsage(parsed);
                   if (
                     stripped ||
@@ -2913,7 +2910,7 @@ export function createSSEStream(options: StreamOptions = {}) {
       cancel(reason) {
         clearIdleTimer();
       },
-    },
+    } as unknown as Transformer,
     { highWaterMark: 16384 },
     { highWaterMark: 16384 }
   );

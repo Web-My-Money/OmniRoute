@@ -5,6 +5,7 @@ import {
   drainLastTimeoutContexts,
 } from "../../open-sse/services/combo/targetTimeoutRunner.ts";
 import type { ComboLogger, SingleModelTarget } from "../../open-sse/services/combo/types.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const noopLog: ComboLogger = { warn() {}, info() {}, error() {}, debug() {} };
 
@@ -218,7 +219,7 @@ test("resolveTargetTimeoutMs provided: uses per-target timeout when present", as
       }),
     comboTargetTimeoutMs: 20,
     resolveTargetTimeoutMs: async (target) =>
-      target?.connectionId === "conn-1" ? 50 : undefined,
+      (target as LooseDeep)?.connectionId === "conn-1" ? 50 : undefined,
     log: noopLog,
   });
   const res = await runner({}, "slow-model", {
@@ -266,7 +267,7 @@ test("resolveTargetTimeoutMs extended: 50ms outlives the 20ms base (does not abo
     },
     comboTargetTimeoutMs: 20,
     resolveTargetTimeoutMs: async (target) =>
-      target?.connectionId === "conn-1" ? 50 : undefined,
+      (target as LooseDeep)?.connectionId === "conn-1" ? 50 : undefined,
     log: noopLog,
   });
   const res = await runner({}, "slow-model", {

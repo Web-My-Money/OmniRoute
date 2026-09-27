@@ -422,7 +422,7 @@ export function scoreAutoTargets(
  */
 export async function expandAutoComboCandidatePool(
   eligibleTargets: ResolvedComboTarget[],
-  combo: { autoConfig?: unknown; config?: unknown } | null | undefined
+  combo: { autoConfig?: unknown; config?: unknown; models?: unknown } | null | undefined
 ): Promise<ResolvedComboTarget[]> {
   const localAutoConfig =
     (combo?.autoConfig as Record<string, unknown> | undefined) ||

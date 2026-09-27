@@ -117,9 +117,9 @@ test("runStreamCommand --debug imprime timing no stderr", async () => {
 
   const { runStreamCommand } = await import("../../bin/cli/commands/stream.mjs");
   const cmd = { optsWithGlobals: () => ({ output: "text", quiet: true }) };
-  const err = await captureStderr(() =>
-    captureStdout(() => runStreamCommand("hi", { model: "auto", debug: true }, cmd as any))
-  );
+  const err = await captureStderr(async () => {
+    await captureStdout(() => runStreamCommand("hi", { model: "auto", debug: true }, cmd as any));
+  });
 
   globalThis.fetch = origFetch;
   assert.ok(err.includes("[+"));

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import path from "node:path";
 import { createRequire, syncBuiltinESMExports } from "node:module";
 import { pathToFileURL } from "node:url";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const require = createRequire(import.meta.url);
 const childProcess = require("node:child_process");
@@ -137,7 +138,7 @@ test("machineId: hashes consistently by salt and reports browser/server mode", a
   assert.notEqual(first, third);
   assert.equal(machineId.isBrowser(), false);
 
-  globalThis.window = {};
+  (globalThis as LooseDeep).window = {};
   assert.equal(machineId.isBrowser(), true);
 });
 

@@ -4,6 +4,7 @@
 // no assertions dropped or weakened in the split.
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { ProviderEntry } from "../../src/app/(dashboard)/dashboard/providers/providerPageUtils.ts";
 
 const providerPageUtils =
   await import("../../src/app/(dashboard)/dashboard/providers/providerPageUtils.ts");
@@ -35,7 +36,7 @@ test("featuredProviders identifies every Kimi/Moonshot dashboard provider id", (
 });
 
 test("sortProviderEntriesFeaturedFirst pins Kimi providers first, alphabetical otherwise", () => {
-  const entry = (providerId: string, name: string) => ({
+  const entry = (providerId: string, name: string): ProviderEntry => ({
     providerId,
     provider: { id: providerId, name },
     stats: { total: 0 },
@@ -69,13 +70,34 @@ test("sortProviderEntriesFeaturedFirst pins Kimi providers first, alphabetical o
 
 test("filterConfiguredProviderEntries surfaces Kimi first within a mixed category (oauth section shape)", () => {
   const entries = [
-    { providerId: "claude", provider: { name: "Claude" }, stats: { total: 1 }, displayAuthType: "oauth", toggleAuthType: "oauth" },
-    { providerId: "kimi-coding", provider: { name: "Kimi Code CLI" }, stats: { total: 0 }, displayAuthType: "oauth", toggleAuthType: "oauth" },
-    { providerId: "amazon-q", provider: { name: "Amazon Q" }, stats: { total: 0 }, displayAuthType: "oauth", toggleAuthType: "oauth" },
+    {
+      providerId: "claude",
+      provider: { name: "Claude" },
+      stats: { total: 1 },
+      displayAuthType: "oauth",
+      toggleAuthType: "oauth",
+    },
+    {
+      providerId: "kimi-coding",
+      provider: { name: "Kimi Code CLI" },
+      stats: { total: 0 },
+      displayAuthType: "oauth",
+      toggleAuthType: "oauth",
+    },
+    {
+      providerId: "amazon-q",
+      provider: { name: "Amazon Q" },
+      stats: { total: 0 },
+      displayAuthType: "oauth",
+      toggleAuthType: "oauth",
+    },
   ];
 
   // No filters applied (showConfiguredOnly=false) — pure ordering behavior.
-  const visible = providerPageUtils.filterConfiguredProviderEntries(entries, false);
+  const visible = providerPageUtils.filterConfiguredProviderEntries(
+    entries as unknown as ProviderEntry<{ name: string }>[],
+    false
+  );
   assert.deepEqual(
     visible.map((e) => e.providerId),
     ["kimi-coding", "amazon-q", "claude"],
@@ -84,7 +106,7 @@ test("filterConfiguredProviderEntries surfaces Kimi first within a mixed categor
 });
 
 test("sortProviderEntriesFeaturedFirst leaves a category with no featured providers alphabetical", () => {
-  const entry = (providerId: string, name: string) => ({
+  const entry = (providerId: string, name: string): ProviderEntry => ({
     providerId,
     provider: { name },
     stats: { total: 0 },
@@ -167,8 +189,14 @@ test("real API Key -> LLM subsection pins moonshot first (page.tsx's llmProvider
 
   // kimi-coding-apikey and kimi (both hiddenFromDashboard) never surface as
   // their own card here or in any other section — see the dedicated test below.
-  assert.equal(llmEntries.some((e) => e.providerId === "kimi-coding-apikey"), false);
-  assert.equal(llmEntries.some((e) => e.providerId === "kimi"), false);
+  assert.equal(
+    llmEntries.some((e) => e.providerId === "kimi-coding-apikey"),
+    false
+  );
+  assert.equal(
+    llmEntries.some((e) => e.providerId === "kimi"),
+    false
+  );
 });
 
 test("kimi-coding-apikey and kimi never render as their own dashboard card in ANY section (hiddenFromDashboard)", () => {

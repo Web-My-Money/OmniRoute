@@ -30,6 +30,9 @@ export async function getCurrentVersion() {
 // Without it `npm view` can return a stale cached version (e.g. report 3.8.30 as
 // "latest" after 3.8.31 was published), so the updater told users on an old build
 // they were already on the latest version (#4376). `execFn` is injectable for tests.
+/**
+ * @param {(file: string, args?: string[], options?: object) => Promise<{ stdout: string }>} [execFn]
+ */
 export async function getLatestVersion(execFn = execFileAsync) {
   try {
     // argv is all literals, so enabling the shell on win32 cannot splice a

@@ -56,6 +56,11 @@ async function exists(targetPath) {
   }
 }
 
+/**
+ * @param {string} sourcePath
+ * @param {string} destinationPath
+ * @param {Pick<typeof fs, "rename" | "cp" | "rm"> & { mkdir?: typeof fs.mkdir }} [fsImpl]
+ */
 export async function movePath(sourcePath, destinationPath, fsImpl = fs) {
   const mkdir = typeof fsImpl.mkdir === "function" ? fsImpl.mkdir.bind(fsImpl) : fs.mkdir.bind(fs);
   await mkdir(path.dirname(destinationPath), { recursive: true });
@@ -151,6 +156,7 @@ export function getWindowsBuildProfileDir() {
 }
 
 export function resolveNextBuildEnv(baseEnv = process.env, platform = process.platform) {
+  /** @type {Record<string, string | undefined>} */
   const env = {
     ...baseEnv,
     NEXT_PRIVATE_BUILD_WORKER: baseEnv.NEXT_PRIVATE_BUILD_WORKER || "0",

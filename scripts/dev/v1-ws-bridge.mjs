@@ -575,6 +575,14 @@ class WebSocketSession {
   }
 }
 
+/**
+ * @param {{
+ *   baseUrl: string,
+ *   fetchImpl?: typeof fetch,
+ *   pingIntervalMs?: number,
+ *   idleTimeoutMs?: number,
+ * }} [options]
+ */
 export function createOmnirouteWsBridge({
   baseUrl,
   fetchImpl = fetch,

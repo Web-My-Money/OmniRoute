@@ -116,7 +116,7 @@ function stripEmptyOptionalToolArgsObject(value, toolName, schema) {
 //     Read/Subagent allowlist above.
 // Without a schema, behavior is unchanged (allowlist + empty-only), preserving existing
 // callers that only pass (value, toolName).
-export function stripEmptyOptionalToolArgs(value, toolName, schema) {
+export function stripEmptyOptionalToolArgs(value, toolName, schema = undefined) {
   if (value == null) return value;
 
   if (typeof value === "string") {

@@ -71,7 +71,7 @@ export function RiskNoticeModal({
             {t("cancel") || "Cancel"}
           </Button>
           <Button variant="primary" onClick={handleAccept}>
-            <span className="material-symbols-outlined text-[14px] mr-1">check</span>
+            <span className="material-symbols-outlined text-[14px] me-1">check</span>
             {t("understand") || "I understand"}
           </Button>
         </div>

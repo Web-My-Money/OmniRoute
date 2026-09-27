@@ -45,6 +45,7 @@ import {
   type CompatModelRow,
   type CompatModelMap,
 } from "../../src/app/(dashboard)/dashboard/providers/[id]/providerPageHelpers.ts";
+import type { WebSessionCredentialRequirement } from "../../src/shared/providers/webSessionCredentials.ts";
 
 const tStub = Object.assign((key: string) => key, { has: (_k: string) => false });
 
@@ -98,18 +99,50 @@ test("routing-tags / excluded-models parse + format round-trip", () => {
 // Phase 2b — runtime guards for the newly-moved helpers
 // ---------------------------------------------------------------------------
 
-const tokenReq = { kind: "token" as const, credentialName: "myToken" };
-const cookieReq = { kind: "cookie" as const, credentialName: "SESS" };
-const noneReq = { kind: "none" as const, credentialName: "" };
+const tokenReq = {
+  kind: "token" as const,
+  credentialName: "myToken",
+  placeholder: "",
+  acceptsFullCookieHeader: false,
+  storageKeys: [],
+};
+const cookieReq = {
+  kind: "cookie" as const,
+  credentialName: "SESS",
+  placeholder: "",
+  acceptsFullCookieHeader: false,
+  storageKeys: [],
+};
+const noneReq = {
+  kind: "none" as const,
+  credentialName: "",
+  placeholder: "",
+  acceptsFullCookieHeader: false,
+  storageKeys: [],
+};
 
 test("getWebSessionCredentialLabel (Phase 2b — transitive import guard)", () => {
   assert.ok(getWebSessionCredentialLabel(tStub, tokenReq, false).length > 0);
   assert.ok(getWebSessionCredentialLabel(tStub, cookieReq, true).length > 0);
-  assert.ok(getWebSessionCredentialLabel(tStub, noneReq, false).length > 0);
+  assert.ok(
+    getWebSessionCredentialLabel(
+      tStub,
+      noneReq as unknown as WebSessionCredentialRequirement,
+      false
+    ).length > 0
+  );
 });
 
 test("getWebSessionCredentialHint returns undefined for none-kind, string otherwise", () => {
-  assert.equal(getWebSessionCredentialHint(tStub, noneReq, "Acme", false), undefined);
+  assert.equal(
+    getWebSessionCredentialHint(
+      tStub,
+      noneReq as unknown as WebSessionCredentialRequirement,
+      "Acme",
+      false
+    ),
+    undefined
+  );
   assert.equal(typeof getWebSessionCredentialHint(tStub, tokenReq, "Acme", false), "string");
   assert.equal(typeof getWebSessionCredentialHint(tStub, cookieReq, "Acme", true), "string");
 });
@@ -121,7 +154,10 @@ test("getWebSessionCredentialCheckLabel returns a non-empty string", () => {
 
 test("getAddCredentialModalTitle handles null/none/token/cookie requirements", () => {
   assert.ok(getAddCredentialModalTitle(tStub, "Acme", null).length > 0);
-  assert.ok(getAddCredentialModalTitle(tStub, "Acme", noneReq).length > 0);
+  assert.ok(
+    getAddCredentialModalTitle(tStub, "Acme", noneReq as unknown as WebSessionCredentialRequirement)
+      .length > 0
+  );
   assert.ok(getAddCredentialModalTitle(tStub, "Acme", tokenReq).length > 0);
   assert.ok(getAddCredentialModalTitle(tStub, "Acme", cookieReq).length > 0);
 });

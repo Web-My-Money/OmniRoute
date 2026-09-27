@@ -6,6 +6,7 @@ import {
   VIDEO_BRIDGE_DRILLDOWN_PATH,
 } from "../../src/lib/guardrails/videoBridgeBrokerAuth.ts";
 import { managementPolicy } from "../../src/server/authz/policies/management.ts";
+import type { PolicyContext } from "../../src/server/authz/context.ts";
 
 function policyContext(path: string, ip = "127.0.0.1") {
   return {
@@ -32,7 +33,9 @@ test("drill-down principal is canonical visible ASCII and is never silently trim
 });
 
 test("management policy carries the token-bound drill-down self-hop to the route", async () => {
-  const outcome = await managementPolicy.evaluate(policyContext(VIDEO_BRIDGE_DRILLDOWN_PATH));
+  const outcome = await managementPolicy.evaluate(
+    policyContext(VIDEO_BRIDGE_DRILLDOWN_PATH) as unknown as PolicyContext
+  );
 
   assert.equal(outcome.allow, true);
   if (outcome.allow) {
@@ -41,7 +44,7 @@ test("management policy carries the token-bound drill-down self-hop to the route
   }
 
   const adjacent = await managementPolicy.evaluate(
-    policyContext("/api/modality-bridge/video/runtime")
+    policyContext("/api/modality-bridge/video/runtime") as unknown as PolicyContext
   );
   assert.notEqual(
     adjacent.allow ? adjacent.subject.label : "rejected",
@@ -50,7 +53,7 @@ test("management policy carries the token-bound drill-down self-hop to the route
   );
 
   const remote = await managementPolicy.evaluate(
-    policyContext(VIDEO_BRIDGE_DRILLDOWN_PATH, "203.0.113.10")
+    policyContext(VIDEO_BRIDGE_DRILLDOWN_PATH, "203.0.113.10") as unknown as PolicyContext
   );
   assert.equal(remote.allow, false);
   if (!remote.allow) assert.equal(remote.code, "LOCAL_ONLY");

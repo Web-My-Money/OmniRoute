@@ -8,6 +8,7 @@ import {
   createBunSqliteAdapter,
   type BunSqliteDatabaseLike,
 } from "../../../src/lib/db/adapters/bunSqliteAdapter.ts";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 test("bun:sqlite adapter supports CRUD, pragmas, transactions, and close", async (t) => {
   if (!process.versions.bun) {
@@ -16,7 +17,10 @@ test("bun:sqlite adapter supports CRUD, pragmas, transactions, and close", async
   }
 
   const { Database } = await import("bun:sqlite");
-  const adapter = createBunSqliteAdapter(new Database(":memory:"), ":memory:");
+  const adapter = createBunSqliteAdapter(
+    new Database(":memory:") as unknown as BunSqliteDatabaseLike,
+    ":memory:"
+  );
   t.after(() => adapter.close());
 
   adapter.exec("CREATE TABLE items (id INTEGER PRIMARY KEY, name TEXT)");
@@ -39,7 +43,10 @@ test("bun:sqlite adapter supports CRUD, pragmas, transactions, and close", async
   adapter.transaction(() => {
     adapter.prepare("INSERT INTO items (name) VALUES (?)").run("transaction");
   })();
-  assert.equal(adapter.prepare("SELECT COUNT(*) AS count FROM items").get().count, 3);
+  assert.equal(
+    (adapter.prepare("SELECT COUNT(*) AS count FROM items").get() as LooseDeep).count,
+    3
+  );
   assert.equal(adapter.open, true);
   adapter.close();
   assert.equal(adapter.open, false);

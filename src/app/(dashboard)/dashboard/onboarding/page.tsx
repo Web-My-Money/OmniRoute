@@ -464,7 +464,7 @@ export default function OnboardingWizard() {
             {currentStep.id === "done" && (
               <div className="text-center space-y-4">
                 <p className="text-text-muted">{t("doneDesc")}</p>
-                <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-left">
+                <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-start">
                   <p className="text-xs text-text-muted mb-2 font-medium">{t("yourEndpoint")}</p>
                   <code className="text-sm text-primary">{apiEndpoint}</code>
                 </div>

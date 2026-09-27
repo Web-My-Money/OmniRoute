@@ -940,7 +940,7 @@ export default function HomePageClient({ machineId }: HomePageClientProps) {
               </div>
 
               {isElectron ? (
-                <div className="flex gap-2 shrink-0 ml-4">
+                <div className="flex gap-2 shrink-0 ms-4">
                   {electronUpdateStatus.status === "available" && (
                     <Button
                       size="sm"
@@ -991,7 +991,7 @@ export default function HomePageClient({ machineId }: HomePageClientProps) {
                   size="sm"
                   onClick={versionInfo.autoUpdateSupported ? handleUpdate : undefined}
                   disabled={updating || !versionInfo.autoUpdateSupported}
-                  className="ml-4 shrink-0 font-semibold"
+                  className="ms-4 shrink-0 font-semibold"
                   title={versionInfo.autoUpdateError || ""}
                 >
                   {versionInfo.autoUpdateSupported ? t("updateNow") : t("manualUpdate")}
@@ -1176,7 +1176,7 @@ function ProviderOverviewCard({
   return (
     <button
       onClick={onClick}
-      className="border border-border rounded-lg p-3 hover:bg-surface/40 transition-colors text-left cursor-pointer w-full"
+      className="border border-border rounded-lg p-3 hover:bg-surface/40 transition-colors text-start cursor-pointer w-full"
     >
       <div className="flex items-center gap-2.5">
         <div
@@ -1211,7 +1211,7 @@ function ProviderOverviewCard({
           )}
         </div>
 
-        <div className="text-right shrink-0">
+        <div className="text-end shrink-0">
           <p className="text-xs font-medium text-text-main">{item.modelCount}</p>
           <p className="text-[10px] text-text-muted">{tc("models")}</p>
         </div>
@@ -1262,7 +1262,7 @@ function ProviderModelsModal({
             ? t("modelAvailable", { count: models.length })
             : t("modelsAvailable", { count: models.length })}
           {provider.total > 0 && (
-            <span className="ml-auto text-xs text-green-500">
+            <span className="ms-auto text-xs text-green-500">
               ●{" "}
               {provider.connected === 1
                 ? t("connectionsActive", { count: provider.connected })
@@ -1298,7 +1298,7 @@ function ProviderModelsModal({
                 </div>
                 <button
                   onClick={() => handleCopy(m.fullModel)}
-                  className="shrink-0 ml-2 p-1.5 rounded-lg text-text-muted hover:text-text-main hover:bg-bg-subtle transition-colors opacity-0 group-hover:opacity-100"
+                  className="shrink-0 ms-2 p-1.5 rounded-lg text-text-muted hover:text-text-main hover:bg-bg-subtle transition-colors opacity-0 group-hover:opacity-100"
                   title={t("copyModelName")}
                 >
                   <span className="material-symbols-outlined text-[14px]">
@@ -1319,7 +1319,7 @@ function ProviderModelsModal({
             onClick={() => navigateTo(`/dashboard/providers/${provider.id}`)}
             className="flex-1"
           >
-            <span className="material-symbols-outlined text-[14px] mr-1">settings</span>
+            <span className="material-symbols-outlined text-[14px] me-1">settings</span>
             {t("configureProvider")}
           </Button>
           <Button variant="ghost" size="sm" onClick={onClose}>

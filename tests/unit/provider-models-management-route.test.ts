@@ -15,7 +15,7 @@ const providerModelsRoute = await import("../../src/app/api/provider-models/rout
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -47,7 +47,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("provider-models GET returns an empty hiddenModelsByProvider map with no hidden models", async () => {
@@ -82,9 +82,22 @@ test("provider-models GET surfaces hidden custom and catalog-override models per
       { isHidden: true }
     )
   );
-  await modelsDb.addCustomModel("claude", "claude-visible", "Claude Visible", "manual", "chat", [
-    "chat",
-  ]);
+  await modelsDb.addCustomModel(
+    "claude",
+    "claude-visible",
+    "Claude Visible",
+    "manual",
+    "chat" as unknown as
+      | "responses"
+      | "video"
+      | "chat-completions"
+      | "embeddings"
+      | "rerank"
+      | "audio-transcriptions"
+      | "audio-speech"
+      | "images-generations",
+    ["chat"]
+  );
 
   const response = await providerModelsRoute.GET(buildGetRequest());
   const body = await getBody(response);

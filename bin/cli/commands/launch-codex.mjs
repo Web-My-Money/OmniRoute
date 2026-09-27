@@ -170,7 +170,7 @@ export function buildCodexEnv(baseEnv, authToken) {
  * @param {string} baseUrl  OmniRoute root URL (no /v1)
  * @returns {string[]}
  */
-export function buildCodexProviderArgs(baseUrl, model) {
+export function buildCodexProviderArgs(baseUrl, model = undefined) {
   const args = [
     "-c",
     tomlAssign("model_provider", "omniroute"),

@@ -70,7 +70,7 @@ export default function GetStarted() {
                 <div className="w-3 h-3 rounded-full bg-red-500"></div>
                 <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                <div className="ml-2 text-xs text-gray-500 font-mono">{t("terminal")}</div>
+                <div className="ms-2 text-xs text-gray-500 font-mono">{t("terminal")}</div>
               </div>
 
               {/* Terminal content */}
@@ -81,7 +81,7 @@ export default function GetStarted() {
                 >
                   <span className="text-green-400">$</span>
                   <span className="text-white break-all">{command}</span>
-                  <span className="ml-auto text-gray-500 text-xs opacity-0 group-hover:opacity-100">
+                  <span className="ms-auto text-gray-500 text-xs opacity-0 group-hover:opacity-100">
                     {copied ? t("copied") : t("copy")}
                   </span>
                 </div>

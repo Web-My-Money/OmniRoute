@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-6272-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -15,7 +16,7 @@ const { safeResolveProxy } = await import("../../src/sse/handlers/chatHelpers.ts
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   if (ORIGINAL_INITIAL_PASSWORD === undefined) delete process.env.INITIAL_PASSWORD;
   else process.env.INITIAL_PASSWORD = ORIGINAL_INITIAL_PASSWORD;
 });
@@ -32,7 +33,7 @@ test("#6272: resolveProxyForConnection('noauth', ...) honors a provider-level pr
   const resolved = await settingsDb.resolveProxyForConnection("noauth", undefined);
 
   assert.equal(
-    resolved?.proxy?.host,
+    (resolved?.proxy as LooseDeep)?.host,
     "127.0.0.1",
     `expected the opencode provider-level proxy to be honored, got level=${resolved?.level} proxy=${JSON.stringify(resolved?.proxy)}`
   );
@@ -47,7 +48,7 @@ test("control: resolveProxyForConnection('noauth', ...) still honors the GLOBAL 
   await settingsDb.setProxyForLevel("global", null, proxy);
 
   const resolved = await settingsDb.resolveProxyForConnection("noauth", undefined);
-  assert.equal(resolved?.proxy?.host, "10.0.0.1");
+  assert.equal((resolved?.proxy as LooseDeep)?.host, "10.0.0.1");
   assert.equal(resolved?.level, "global");
 });
 
@@ -68,8 +69,8 @@ test("resolveProxyForConnection keeps provider-level no-auth proxies isolated", 
   const opencode = await settingsDb.resolveProxyForConnection("noauth", undefined, "opencode");
   const theOldLlm = await settingsDb.resolveProxyForConnection("noauth", undefined, "theoldllm");
 
-  assert.equal(opencode?.proxy?.host, "127.0.0.2");
-  assert.equal(theOldLlm?.proxy?.host, "127.0.0.3");
+  assert.equal((opencode?.proxy as LooseDeep)?.host, "127.0.0.2");
+  assert.equal((theOldLlm?.proxy as LooseDeep)?.host, "127.0.0.3");
 });
 
 test("safeResolveProxy keeps the synthetic no-auth connection provider-specific", async () => {
@@ -88,6 +89,6 @@ test("safeResolveProxy keeps the synthetic no-auth connection provider-specific"
   const opencode = await safeResolveProxy("noauth", undefined, "opencode");
   const theOldLlm = await safeResolveProxy("noauth", undefined, "theoldllm");
 
-  assert.equal(opencode?.proxy?.host, "127.0.0.4");
-  assert.equal(theOldLlm?.proxy?.host, "127.0.0.5");
+  assert.equal((opencode?.proxy as LooseDeep)?.host, "127.0.0.4");
+  assert.equal((theOldLlm?.proxy as LooseDeep)?.host, "127.0.0.5");
 });

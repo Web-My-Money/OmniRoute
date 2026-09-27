@@ -101,7 +101,7 @@ function restoreEnv() {
 
 function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -142,7 +142,7 @@ test.afterEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test.describe("modelsDevSync-extended", { concurrency: 1 }, async () => {
@@ -583,7 +583,7 @@ test.describe("modelsDevSync-extended", { concurrency: 1 }, async () => {
     let aborted = false;
 
     globalThis.fetch = async (_url, init) =>
-      await new Promise((_resolve, reject) => {
+      await new Promise<Response>((_resolve, reject) => {
         const signal = init?.signal;
         const onAbort = () => {
           aborted = true;

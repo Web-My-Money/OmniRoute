@@ -151,7 +151,7 @@ test("broker route accepts finite focus bounds and forwards them to the isolated
           frames: [{ timestampSeconds: 3, dataUri: "data:image/jpeg;base64,QQ==" }],
         };
       },
-    }
+    } as unknown as Parameters<typeof handleVideoExtractionBrokerRequest>[1]
   );
 
   assert.equal(response.status, 200);

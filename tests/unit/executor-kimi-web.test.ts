@@ -66,7 +66,7 @@ describe("KimiWebExecutor", () => {
     try {
       globalThis.fetch = (async (_url: Parameters<typeof fetch>[0], init?: RequestInit) => {
         capturedInit = init;
-        return new Response(endStream, {
+        return new Response(endStream as unknown as BodyInit, {
           status: 200,
           headers: { "content-type": "application/connect+json" },
         });
@@ -131,7 +131,8 @@ describe("KimiWebExecutor", () => {
     endStream[0] = 2;
     const originalFetch = globalThis.fetch;
     try {
-      globalThis.fetch = (async () => new Response(endStream, { status: 200 })) as typeof fetch;
+      globalThis.fetch = (async () =>
+        new Response(endStream as unknown as BodyInit, { status: 200 })) as typeof fetch;
       const accepted = await executor.execute({
         model: "k2d6",
         body: {

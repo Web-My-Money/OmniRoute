@@ -743,7 +743,7 @@ export default function RuntimePageClient() {
                       <div className="text-[10px] text-text-muted tabular-nums">
                         L{c.backoffLevel ?? 0}
                       </div>
-                      <div className="text-[10px] text-text-muted tabular-nums text-right">
+                      <div className="text-[10px] text-text-muted tabular-nums text-end">
                         {c.errorCode ?? ""}
                       </div>
                     </div>
@@ -790,7 +790,7 @@ export default function RuntimePageClient() {
                       <div className="text-[10px] text-text-muted truncate">
                         {lk.reason || "rate limit"}
                       </div>
-                      <div className="text-[11px] tabular-nums text-orange-400 text-right">
+                      <div className="text-[11px] tabular-nums text-orange-400 text-end">
                         {remaining > 0 ? fmtMs(remaining) : "—"}
                       </div>
                     </div>
@@ -838,7 +838,7 @@ export default function RuntimePageClient() {
             }
           />
 
-          <div className="mt-2 flex flex-col gap-1.5 max-h-[640px] overflow-auto pr-1">
+          <div className="mt-2 flex flex-col gap-1.5 max-h-[640px] overflow-auto pe-1">
             {filteredFeed.length === 0 ? (
               <div className="text-center py-12 text-text-muted">
                 <span className="material-symbols-outlined text-[40px] opacity-30 block mb-2">
@@ -908,19 +908,19 @@ export default function RuntimePageClient() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border/40">
-                    <th className="text-left py-2 px-2 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+                    <th className="text-start py-2 px-2 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
                       {t("tblSession")}
                     </th>
-                    <th className="text-right py-2 px-2 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+                    <th className="text-end py-2 px-2 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
                       {t("tblAge")}
                     </th>
-                    <th className="text-right py-2 px-2 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+                    <th className="text-end py-2 px-2 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
                       {t("tblIdle")}
                     </th>
-                    <th className="text-right py-2 px-2 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+                    <th className="text-end py-2 px-2 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
                       {t("tblReqs")}
                     </th>
-                    <th className="text-left py-2 px-2 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
+                    <th className="text-start py-2 px-2 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
                       {t("tblBoundTo")}
                     </th>
                   </tr>
@@ -933,13 +933,13 @@ export default function RuntimePageClient() {
                           {shortId(s.sessionId, 14)}
                         </span>
                       </td>
-                      <td className="py-2 px-2 text-right text-[11px] text-text-muted tabular-nums">
+                      <td className="py-2 px-2 text-end text-[11px] text-text-muted tabular-nums">
                         {fmtMs(s.ageMs)}
                       </td>
-                      <td className="py-2 px-2 text-right text-[11px] text-text-muted tabular-nums">
+                      <td className="py-2 px-2 text-end text-[11px] text-text-muted tabular-nums">
                         {fmtMs(s.idleMs)}
                       </td>
-                      <td className="py-2 px-2 text-right">
+                      <td className="py-2 px-2 text-end">
                         <span className="text-[11px] font-semibold tabular-nums">
                           {s.requestCount}
                         </span>
@@ -1044,7 +1044,7 @@ function KpiCard({
     <button
       type="button"
       onClick={onClick}
-      className="text-left rounded-xl border px-4 py-3 transition-colors cursor-pointer bg-surface"
+      className="text-start rounded-xl border px-4 py-3 transition-colors cursor-pointer bg-surface"
       style={{
         borderColor: active ? tone : "var(--color-border)",
         boxShadow: active ? `0 0 0 2px ${tone}22` : undefined,

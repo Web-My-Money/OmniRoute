@@ -72,7 +72,7 @@ test("payload rules apply default, default-raw, override, and filter operations"
 
   assert.equal(payload.temperature, 0.4);
   assert.equal((payload.metadata as any).routeTag, "feature-110");
-  assert.equal("removeMe" in payload.metadata, false);
+  assert.equal("removeMe" in (payload.metadata as unknown as object), false);
   assert.equal("dangerous" in payload, false);
   assert.equal((payload as any).reasoning.effort, "high");
   assert.deepEqual(payload.response_format, {
@@ -138,5 +138,5 @@ test("payload rules load from JSON file and reload changed content", async () =>
   assert.equal(second.defaultRaw.length, 1);
   assert.deepEqual(second.defaultRaw[0].params.response_format, { type: "json_object" });
 
-  fs.rmSync(tempDir, { recursive: true, force: true });
+  fs.rmSync(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });

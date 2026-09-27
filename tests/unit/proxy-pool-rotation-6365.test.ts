@@ -20,6 +20,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-proxy-pool-6365-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -31,7 +32,7 @@ const providersDb = await import("../../src/lib/db/providers.ts");
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -49,18 +50,18 @@ async function makeProxy(status?: string) {
 }
 
 async function makeConnection(): Promise<string> {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apiKey",
     name: `Conn ${Date.now()} ${Math.random()}`,
     apiKey: "sk-test",
-  });
+  })) as JsonRecord & { id: string };
   return (conn as { id: string }).id;
 }
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("round-robin (default for >1) cycles through the whole pool across calls", async () => {
@@ -176,7 +177,10 @@ test("random strategy always returns a member of the alive set", async () => {
   // The random strategy uses crypto.randomInt (not Math.random — CodeQL js/insecure-randomness).
   // Over 30 picks from a 3-member alive pool it must vary, not stick on one member
   // (P(all 30 identical) ≈ (1/3)^29 ≈ 0). Guards that randomInt selection is uniform-ish.
-  assert.ok(seen.size >= 2, `random strategy must vary its pick (saw only: ${[...seen].join(", ")})`);
+  assert.ok(
+    seen.size >= 2,
+    `random strategy must vary its pick (saw only: ${[...seen].join(", ")})`
+  );
 });
 
 test("setScopeRotationStrategy round-trips via getScopeRotationStrategy", async () => {

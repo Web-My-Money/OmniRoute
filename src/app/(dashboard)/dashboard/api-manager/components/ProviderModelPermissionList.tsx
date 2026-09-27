@@ -183,7 +183,7 @@ const ProviderModelPermissionList = memo(function ProviderModelPermissionList({
           <button
             type="button"
             onClick={() => onSearchChange("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main"
+            className="absolute end-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main"
           >
             <span className="material-symbols-outlined text-[18px]">close</span>
           </button>
@@ -214,7 +214,7 @@ const ProviderModelPermissionList = memo(function ProviderModelPermissionList({
 
             return (
               <div key={provider} className="group">
-                <div className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface/50 transition-colors text-left">
+                <div className="w-full flex items-center gap-2 px-3 py-2 hover:bg-surface/50 transition-colors text-start">
                   <button
                     type="button"
                     onClick={() => onToggleExpand(provider)}
@@ -259,7 +259,7 @@ const ProviderModelPermissionList = memo(function ProviderModelPermissionList({
 
                 {/* Expandable model list */}
                 {expandedProviders.has(provider) && (
-                  <div className="px-3 pb-2 pl-9">
+                  <div className="px-3 pb-2 ps-9">
                     <div className="flex flex-wrap gap-1">
                       {models.map((model) => {
                         const isSelected =

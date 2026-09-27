@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-qwen-token-plan-media-"));
 
@@ -67,7 +69,7 @@ test("Wan image generation uses the Token Plan multimodal endpoint and normalize
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers,
@@ -90,7 +92,7 @@ test("Wan image generation uses the Token Plan multimodal endpoint and normalize
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: {
         model: "qwen-cloud-token-plan/wan2.7-image-pro",
         prompt: "A watercolor horse",
@@ -127,8 +129,8 @@ async function captureHappyHorseRequest(body) {
   const originalSetTimeout = globalThis.setTimeout;
   let captured;
 
-  globalThis.setTimeout = immediateTimeout;
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.setTimeout = immediateTimeout as unknown as typeof setTimeout;
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const stringUrl = String(url);
     if (stringUrl.endsWith("/services/aigc/video-generation/video-synthesis")) {
       captured = {
@@ -150,7 +152,7 @@ async function captureHappyHorseRequest(body) {
   };
 
   try {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body,
       credentials: {
         apiKey: "token-plan-key",
@@ -226,7 +228,7 @@ test("HappyHorse R2V maps reference images in order", async () => {
 
 test("HappyHorse I2V and R2V reject missing image input before calling upstream", async () => {
   for (const model of ["happyhorse-1.1-i2v", "happyhorse-1.1-r2v"]) {
-    const result = await handleVideoGeneration({
+    const result = await looseAsync(handleVideoGeneration)({
       body: {
         model: `qwen-cloud-token-plan/${model}`,
         prompt: "missing input",

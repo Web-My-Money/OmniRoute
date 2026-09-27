@@ -40,7 +40,8 @@ export default function QdrantConfigCard() {
     collection?: { exists: boolean; vectorSize?: number; vectorName?: string | null };
   } | null>(null);
   const [searchValidated, setSearchValidated] = useState(false);
-  const [tutorialOpen, setTutorialOpen] = useState(false);  const [checking, setChecking] = useState(false);
+  const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<
@@ -109,7 +110,8 @@ export default function QdrantConfigCard() {
       // invalidate in-flight checks so they cannot overwrite the new state.
       healthSeqRef.current += 1;
       setHealth(null);
-      setSearchValidated(false);      setQdrant(next);
+      setSearchValidated(false);
+      setQdrant(next);
       setSaving(true);
       setSaveStatus("");
       try {
@@ -153,7 +155,8 @@ export default function QdrantConfigCard() {
         setSaving(false);
       }
     },
-    [qdrant, checkHealth]  );
+    [qdrant, checkHealth]
+  );
 
   // Auto-check on mount once settings load: without this the status badge
   // renders red after a page refresh because `health` starts as null and the
@@ -245,7 +248,8 @@ export default function QdrantConfigCard() {
                 ? "text-text-muted"
                 : health.ok
                   ? "text-emerald-500"
-                  : "text-red-500"          }`}
+                  : "text-red-500"
+          }`}
         >
           <span
             className={`inline-block w-2.5 h-2.5 rounded-full ${
@@ -299,7 +303,7 @@ export default function QdrantConfigCard() {
             }`}
           >
             <span
-              className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+              className={`absolute top-1 start-1 w-4 h-4 bg-white rounded-full transition-transform ${
                 qdrant.enabled ? "translate-x-5" : "translate-x-0"
               }`}
             />
@@ -535,7 +539,7 @@ export default function QdrantConfigCard() {
                 ×
               </button>
             </div>
-            <ol className="mt-5 list-decimal space-y-3 pl-5 text-sm text-text-muted">
+            <ol className="mt-5 list-decimal space-y-3 ps-5 text-sm text-text-muted">
               <li>Proteja o servidor com HTTPS e API key antes de uso produtivo.</li>
               <li>
                 Informe host, porta, coleção e um modelo no formato provider/model com credencial

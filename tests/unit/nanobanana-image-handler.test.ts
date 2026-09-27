@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import dns from "node:dns";
 
 import { handleImageGeneration } from "../../open-sse/handlers/imageGeneration.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 // Stub DNS for fetchRemoteImage's GHSA-cmhj-wh2f-9cgx DNS-rebinding guard
 // (assertHostnameResolvesPublic in src/shared/network/remoteImageFetch.ts).
@@ -27,7 +29,7 @@ test("handleImageGeneration(nanobanana): async submit+poll returns URL payload",
   const originalFetch = globalThis.fetch;
   let pollCount = 0;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     const u = String(url);
 
     if (u.includes("/generate-pro")) {
@@ -71,7 +73,7 @@ test("handleImageGeneration(nanobanana): async submit+poll returns URL payload",
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: {
         model: "nanobanana/nanobanana-pro",
         prompt: "galaxy test",
@@ -125,7 +127,7 @@ test("handleImageGeneration(nanobanana): response_format=b64_json converts URL t
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: {
         model: "nanobanana/nanobanana-flash",
         prompt: "galaxy test",

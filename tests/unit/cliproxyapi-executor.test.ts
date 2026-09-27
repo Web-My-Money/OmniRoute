@@ -200,11 +200,11 @@ describe("CliproxyapiExecutor", () => {
   describe("execute", () => {
     it("should make fetch request with correct URL, headers, and body", async () => {
       let capturedUrl, capturedOptions;
-      globalThis.fetch = async (url, options) => {
+      globalThis.fetch = (async (url, options) => {
         capturedUrl = url;
         capturedOptions = options;
         return { status: 200, ok: true };
-      };
+      }) as typeof fetch;
 
       const exec = new CliproxyapiExecutor();
       const result = await exec.execute({
@@ -224,10 +224,10 @@ describe("CliproxyapiExecutor", () => {
 
     it("should pass credentials to headers", async () => {
       let capturedHeaders;
-      globalThis.fetch = async (_url, options) => {
+      globalThis.fetch = (async (_url, options) => {
         capturedHeaders = options.headers;
         return { status: 200, ok: true };
-      };
+      }) as typeof fetch;
 
       const exec = new CliproxyapiExecutor();
       await exec.execute({
@@ -242,10 +242,10 @@ describe("CliproxyapiExecutor", () => {
 
     it("should merge upstream extra headers", async () => {
       let capturedHeaders;
-      globalThis.fetch = async (_url, options) => {
+      globalThis.fetch = (async (_url, options) => {
         capturedHeaders = options.headers;
         return { status: 200, ok: true };
-      };
+      }) as typeof fetch;
 
       const exec = new CliproxyapiExecutor();
       await exec.execute({
@@ -260,7 +260,7 @@ describe("CliproxyapiExecutor", () => {
     });
 
     it("should handle rate limited response", async () => {
-      globalThis.fetch = async () => ({ status: 429, ok: false });
+      globalThis.fetch = (async () => ({ status: 429, ok: false })) as unknown as typeof fetch;
       const log = { warn: (tag, msg) => {} };
       let logged = false;
       log.warn = () => {
@@ -280,7 +280,7 @@ describe("CliproxyapiExecutor", () => {
     });
 
     it("should return url, headers, and transformedBody", async () => {
-      globalThis.fetch = async () => ({ status: 200, ok: true });
+      globalThis.fetch = (async () => ({ status: 200, ok: true })) as unknown as typeof fetch;
 
       const exec = new CliproxyapiExecutor();
       const result = await exec.execute({
@@ -302,10 +302,10 @@ describe("CliproxyapiExecutor", () => {
       process.env.CLIPROXYAPI_PORT = "8317";
 
       let capturedUrl;
-      globalThis.fetch = async (url) => {
+      globalThis.fetch = (async (url) => {
         capturedUrl = String(url);
         return new Response(JSON.stringify({ data: [] }), { status: 200 });
-      };
+      }) as typeof fetch;
 
       const exec = new CliproxyapiExecutor();
       const result = await exec.healthCheck();

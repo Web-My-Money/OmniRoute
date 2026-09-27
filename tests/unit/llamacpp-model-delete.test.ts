@@ -3,6 +3,7 @@ import assert from "node:assert";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-llamacpp-delete-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -12,7 +13,7 @@ const modelsDb = await import("../../src/lib/db/models.ts");
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -22,7 +23,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("removeSyncedAvailableModel deletes a single model from syncedAvailableModels", async () => {
@@ -51,7 +52,7 @@ test("removeSyncedAvailableModel deletes a single model from syncedAvailableMode
   const rowA = db
     .prepare("SELECT value FROM key_value WHERE namespace = 'syncedAvailableModels' AND key = ?")
     .get("llama-cpp:conn-a");
-  const modelsA = JSON.parse(rowA.value);
+  const modelsA = JSON.parse((rowA as LooseDeep).value);
   assert.equal(modelsA.length, 1);
   assert.equal(modelsA[0].id, "model-a");
 
@@ -59,7 +60,7 @@ test("removeSyncedAvailableModel deletes a single model from syncedAvailableMode
   const rowB = db
     .prepare("SELECT value FROM key_value WHERE namespace = 'syncedAvailableModels' AND key = ?")
     .get("llama-cpp:conn-b");
-  const modelsB = JSON.parse(rowB.value);
+  const modelsB = JSON.parse((rowB as LooseDeep).value);
   assert.equal(modelsB.length, 1);
   assert.equal(modelsB[0].id, "model-c");
 });
@@ -114,7 +115,7 @@ test("removeSyncedAvailableModel skips malformed syncedAvailableModels rows", as
   const valid = db
     .prepare("SELECT value FROM key_value WHERE namespace = 'syncedAvailableModels' AND key = ?")
     .get("llama-cpp:conn-ok");
-  const validModels = JSON.parse(valid.value);
+  const validModels = JSON.parse((valid as LooseDeep).value);
   assert.deepEqual(
     validModels.map((m) => m.id),
     ["model-ok"]
@@ -123,5 +124,5 @@ test("removeSyncedAvailableModel skips malformed syncedAvailableModels rows", as
   const malformed = db
     .prepare("SELECT value FROM key_value WHERE namespace = 'syncedAvailableModels' AND key = ?")
     .get("llama-cpp:broken");
-  assert.equal(malformed.value, "{not valid json");
+  assert.equal((malformed as LooseDeep).value, "{not valid json");
 });

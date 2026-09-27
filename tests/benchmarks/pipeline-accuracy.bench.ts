@@ -84,8 +84,7 @@ async function callDeepSeek(
   const data = (await res.json()) as Record<string, unknown>;
   const usage = data.usage as Record<string, number> | undefined;
   const msg = (data.choices as Array<Record<string, unknown>>)?.[0]?.message as
-    | Record<string, unknown>
-    | undefined;
+    Record<string, unknown> | undefined;
   return {
     text: (msg?.content as string) ?? "",
     inputTokens: usage?.prompt_tokens ?? 0,

@@ -89,7 +89,7 @@ export default function CliAgentsPageClient({ machineId: _machineId }: CliAgents
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[180px] max-w-sm">
           <span
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[16px] text-text-muted pointer-events-none"
+            className="absolute start-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[16px] text-text-muted pointer-events-none"
             aria-hidden="true"
           >
             search
@@ -99,7 +99,7 @@ export default function CliAgentsPageClient({ machineId: _machineId }: CliAgents
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t("searchPlaceholder")}
-            className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface border border-black/10 dark:border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="w-full ps-8 pe-3 py-1.5 text-sm bg-surface border border-black/10 dark:border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
             aria-label={t("searchPlaceholder")}
           />
         </div>

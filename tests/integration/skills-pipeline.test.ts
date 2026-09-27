@@ -10,6 +10,7 @@ import { OMNIROUTE_WEB_SEARCH_FALLBACK_TOOL_NAME } from "../../open-sse/services
 import { encodeSkillToolName } from "../../src/lib/skills/injection.ts";
 
 import { createChatPipelineHarness } from "./_chatPipelineHarness.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const harness = await createChatPipelineHarness("skills-pipeline");
 const {
@@ -58,9 +59,9 @@ async function registerSkill({
   handler,
   enabled = true,
   description = "Test skill",
-  mode,
-  tags,
-  installCount,
+  mode = undefined,
+  tags = undefined,
+  installCount = undefined,
 }) {
   return skillRegistry.register({
     apiKeyId,
@@ -125,7 +126,7 @@ test("enabling a disabled skill makes it available in the request pipeline", asy
   );
 
   const fetchBodies = [];
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     fetchBodies.push(init.body ? JSON.parse(String(init.body)) : null);
     return buildOpenAIResponse("Skill enabled");
   };
@@ -236,6 +237,7 @@ test("sandbox-backed skill execution can be mocked through the executor", async 
 
   sandboxRunner.run = async () => ({
     id: "sandbox-1",
+    runtime: "docker",
     exitCode: 0,
     stdout: "sandbox ok",
     stderr: "",
@@ -314,7 +316,7 @@ test("disabling a skill removes it from request tool injection", async () => {
   );
 
   const fetchBodies = [];
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     fetchBodies.push(init.body ? JSON.parse(String(init.body)) : null);
     return buildOpenAIResponse("Skill disabled");
   };
@@ -429,7 +431,7 @@ test("responses input context participates in AUTO skill injection", async () =>
   });
 
   const fetchBodies = [];
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     fetchBodies.push(init.body ? JSON.parse(String(init.body)) : null);
     return buildOpenAIResponse("AUTO skill selection via responses input");
   };
@@ -578,7 +580,7 @@ test("skills pipeline can be disabled via skillsEnabled flag without crashing", 
   // injectSkills should still work (returns tools based on registry state)
   // but the pipeline should NOT inject when skillsEnabled is false
   const fetchBodies = [];
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     fetchBodies.push(init.body ? JSON.parse(String(init.body)) : null);
     return buildOpenAIResponse("Skills disabled test");
   };
@@ -770,7 +772,7 @@ test("builtin and custom skills coexist in the injected tool list", async () => 
   });
 
   const fetchBodies = [];
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     fetchBodies.push(init.body ? JSON.parse(String(init.body)) : null);
     return buildOpenAIResponse("Both skills available");
   };
@@ -803,7 +805,7 @@ test("web_search fallback converts built-in tools for unsupported providers and 
   const upstreamBodies = [];
   const searchCalls = [];
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const urlStr = String(url);
     const body = init.body ? JSON.parse(String(init.body)) : null;
 
@@ -867,7 +869,7 @@ test("web_search fallback preserves Responses API output by appending function_c
   await seedConnection("serper-search", { apiKey: "serper-search-key" });
   const apiKey = await seedApiKey();
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const urlStr = String(url);
     if (urlStr.includes("google.serper.dev/search")) {
       return new Response(

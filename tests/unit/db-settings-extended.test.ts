@@ -25,7 +25,7 @@ async function resetStorage() {
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       if (fs.existsSync(TEST_DATA_DIR)) {
-        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       }
       break;
     } catch {
@@ -178,11 +178,7 @@ test("getLKGP returns null for unknown combo/model", async () => {
 
 test("setLKGP and getLKGP round-trip", async () => {
   await resetStorage();
-  await settings.setLKGP("test-combo", "test-model", {
-    provider: "test",
-    model: "test",
-    connectionId: "conn-1",
-  });
+  await settings.setLKGP("test-combo", "test-model", "test", "conn-1");
   const result = await settings.getLKGP("test-combo", "test-model");
   assert.ok(result === null || typeof result === "object");
 });

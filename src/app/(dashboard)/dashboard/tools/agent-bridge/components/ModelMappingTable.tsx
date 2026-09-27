@@ -73,10 +73,10 @@ export function ModelMappingTable({ agentId, mappings, onSave }: ModelMappingTab
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border/40 bg-surface/60">
-                  <th className="px-3 py-2 text-left text-xs font-medium text-text-muted">
+                  <th className="px-3 py-2 text-start text-xs font-medium text-text-muted">
                     {t("sourceModel") || "Source model (agent native)"}
                   </th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-text-muted">
+                  <th className="px-3 py-2 text-start text-xs font-medium text-text-muted">
                     {t("targetModel") || "Target model (OmniRoute)"}
                   </th>
                   <th className="px-3 py-2 w-12"></th>

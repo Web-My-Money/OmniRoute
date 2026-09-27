@@ -105,7 +105,13 @@ test("applyNoThinkingAlias ignores a malformed prefix-only model", () => {
 
 // ── catalog gating ───────────────────────────────────────────────────────────
 
-const entry = (id: string, owned_by = "anthropic") => ({ id, object: "model", owned_by });
+const entry = (id: string, owned_by = "anthropic") =>
+  ({ id, object: "model", owned_by }) as {
+    id: string;
+    object: string;
+    owned_by: string;
+    root?: unknown;
+  };
 
 test("shouldExposeNoThinkingAlias accepts a Claude reasoning model that honors disabled", () => {
   assert.equal(shouldExposeNoThinkingAlias(entry("claude-opus-4-5")), true);

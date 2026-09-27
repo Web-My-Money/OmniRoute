@@ -9,7 +9,7 @@ import assert from "node:assert/strict";
 // delegates to PUT (both apply the same partial-update schema).
 
 async function loadRoute() {
-  return await import(new URL("../../src/app/api/providers/[id]/route.ts", import.meta.url));
+  return await import(new URL("../../src/app/api/providers/[id]/route.ts", import.meta.url).href);
 }
 
 test("providers [id] route exports a PATCH handler (CLI rotate 405 regression)", async () => {

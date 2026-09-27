@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { handleAudioSpeech } = await import("../../open-sse/handlers/audioSpeech.ts");
 
@@ -7,7 +8,7 @@ test("handleAudioSpeech maps Fish Audio headers and body, and passes audio throu
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (_url, options = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     captured = {
       headers: options.headers,
       body: JSON.parse(String(options.body || "{}")),

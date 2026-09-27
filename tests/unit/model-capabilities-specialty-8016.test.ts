@@ -5,6 +5,7 @@ import {
   isNonChatCatalogSurface,
 } from "../../src/lib/modelCapabilities.ts";
 import { enrichCatalogModelEntry } from "../../src/lib/modelMetadataRegistry.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 describe("specialty catalog surfaces (#8016)", () => {
   it("recognizes non-chat catalog types", () => {
@@ -37,7 +38,7 @@ describe("specialty catalog surfaces (#8016)", () => {
       type: "audio",
       subtype: "transcription",
     });
-    const caps = (enriched.capabilities || {}) as Record<string, unknown>;
+    const caps = ((enriched as LooseDeep).capabilities || {}) as LooseDeep;
     assert.equal(caps.tool_calling, false);
     assert.equal(caps.reasoning, false);
   });

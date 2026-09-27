@@ -18,8 +18,8 @@ function SortIcon({
   currentSort: string;
   currentOrder: string;
 }) {
-  if (currentSort !== field) return <span className="ml-1 opacity-20">↕</span>;
-  return <span className="ml-1">{currentOrder === "asc" ? "↑" : "↓"}</span>;
+  if (currentSort !== field) return <span className="ms-1 opacity-20">↕</span>;
+  return <span className="ms-1">{currentOrder === "asc" ? "↑" : "↓"}</span>;
 }
 
 function MiniBarGraph({
@@ -290,7 +290,7 @@ export default function UsageStats() {
                   <span className="mx-1 text-text-muted">|</span>
                   <span className="text-text font-medium">{req.account}</span>
                   {req.count > 1 && (
-                    <span className="ml-2 px-1.5 py-0.5 rounded bg-primary text-white font-bold">
+                    <span className="ms-2 px-1.5 py-0.5 rounded bg-primary text-white font-bold">
                       x{req.count}
                     </span>
                   )}
@@ -360,7 +360,7 @@ export default function UsageStats() {
           <h3 className="font-semibold">{t("usageByModel")}</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="w-full text-sm text-start">
             <thead className="bg-bg-subtle/30 text-text-muted uppercase text-xs">
               <tr>
                 <th
@@ -378,14 +378,14 @@ export default function UsageStats() {
                   <SortIcon field="provider" currentSort={sortBy} currentOrder={sortOrder} />
                 </th>
                 <th
-                  className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                  className="px-6 py-3 text-end cursor-pointer hover:bg-bg-subtle/50"
                   onClick={() => toggleSort("requests")}
                 >
                   {t("requests")}{" "}
                   <SortIcon field="requests" currentSort={sortBy} currentOrder={sortOrder} />
                 </th>
                 <th
-                  className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                  className="px-6 py-3 text-end cursor-pointer hover:bg-bg-subtle/50"
                   onClick={() => toggleSort("lastUsed")}
                 >
                   {t("lastUsed")}{" "}
@@ -394,7 +394,7 @@ export default function UsageStats() {
                 {viewMode === "tokens" ? (
                   <>
                     <th
-                      className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                      className="px-6 py-3 text-end cursor-pointer hover:bg-bg-subtle/50"
                       onClick={() => toggleSort("promptTokens")}
                     >
                       {t("inputTokens")}{" "}
@@ -405,7 +405,7 @@ export default function UsageStats() {
                       />
                     </th>
                     <th
-                      className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                      className="px-6 py-3 text-end cursor-pointer hover:bg-bg-subtle/50"
                       onClick={() => toggleSort("completionTokens")}
                     >
                       {t("outputTokens")}{" "}
@@ -416,7 +416,7 @@ export default function UsageStats() {
                       />
                     </th>
                     <th
-                      className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                      className="px-6 py-3 text-end cursor-pointer hover:bg-bg-subtle/50"
                       onClick={() => toggleSort("totalTokens")}
                     >
                       {t("totalTokens")}{" "}
@@ -426,7 +426,7 @@ export default function UsageStats() {
                 ) : (
                   <>
                     <th
-                      className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                      className="px-6 py-3 text-end cursor-pointer hover:bg-bg-subtle/50"
                       onClick={() => toggleSort("promptTokens")}
                     >
                       {t("inputCost")}{" "}
@@ -437,7 +437,7 @@ export default function UsageStats() {
                       />
                     </th>
                     <th
-                      className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                      className="px-6 py-3 text-end cursor-pointer hover:bg-bg-subtle/50"
                       onClick={() => toggleSort("completionTokens")}
                     >
                       {t("outputCost")}{" "}
@@ -448,7 +448,7 @@ export default function UsageStats() {
                       />
                     </th>
                     <th
-                      className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                      className="px-6 py-3 text-end cursor-pointer hover:bg-bg-subtle/50"
                       onClick={() => toggleSort("cost")}
                     >
                       {t("totalCost")}{" "}
@@ -473,29 +473,29 @@ export default function UsageStats() {
                       {data.provider}
                     </Badge>
                   </td>
-                  <td className="px-6 py-3 text-right">{fmt(data.requests)}</td>
-                  <td className="px-6 py-3 text-right text-text-muted whitespace-nowrap">
+                  <td className="px-6 py-3 text-end">{fmt(data.requests)}</td>
+                  <td className="px-6 py-3 text-end text-text-muted whitespace-nowrap">
                     {fmtTime(data.lastUsed)}
                   </td>
                   {viewMode === "tokens" ? (
                     <>
-                      <td className="px-6 py-3 text-right text-text-muted">
+                      <td className="px-6 py-3 text-end text-text-muted">
                         {fmt(data.promptTokens)}
                       </td>
-                      <td className="px-6 py-3 text-right text-text-muted">
+                      <td className="px-6 py-3 text-end text-text-muted">
                         {fmt(data.completionTokens)}
                       </td>
-                      <td className="px-6 py-3 text-right font-medium">{fmt(data.totalTokens)}</td>
+                      <td className="px-6 py-3 text-end font-medium">{fmt(data.totalTokens)}</td>
                     </>
                   ) : (
                     <>
-                      <td className="px-6 py-3 text-right text-text-muted">
+                      <td className="px-6 py-3 text-end text-text-muted">
                         {fmtCost(data.inputCost)}
                       </td>
-                      <td className="px-6 py-3 text-right text-text-muted">
+                      <td className="px-6 py-3 text-end text-text-muted">
                         {fmtCost(data.outputCost)}
                       </td>
-                      <td className="px-6 py-3 text-right font-medium text-warning">
+                      <td className="px-6 py-3 text-end font-medium text-warning">
                         {fmtCost(data.totalCost)}
                       </td>
                     </>
@@ -520,7 +520,7 @@ export default function UsageStats() {
           <h3 className="font-semibold">{t("usageByAccount")}</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="w-full text-sm text-start">
             <thead className="bg-bg-subtle/30 text-text-muted uppercase text-xs">
               <tr>
                 <th
@@ -545,14 +545,14 @@ export default function UsageStats() {
                   <SortIcon field="accountName" currentSort={sortBy} currentOrder={sortOrder} />
                 </th>
                 <th
-                  className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                  className="px-6 py-3 text-end cursor-pointer hover:bg-bg-subtle/50"
                   onClick={() => toggleSort("requests")}
                 >
                   {t("requests")}{" "}
                   <SortIcon field="requests" currentSort={sortBy} currentOrder={sortOrder} />
                 </th>
                 <th
-                  className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                  className="px-6 py-3 text-end cursor-pointer hover:bg-bg-subtle/50"
                   onClick={() => toggleSort("lastUsed")}
                 >
                   {t("lastUsed")}{" "}
@@ -561,7 +561,7 @@ export default function UsageStats() {
                 {viewMode === "tokens" ? (
                   <>
                     <th
-                      className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                      className="px-6 py-3 text-end cursor-pointer hover:bg-bg-subtle/50"
                       onClick={() => toggleSort("promptTokens")}
                     >
                       {t("inputTokens")}{" "}
@@ -572,7 +572,7 @@ export default function UsageStats() {
                       />
                     </th>
                     <th
-                      className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                      className="px-6 py-3 text-end cursor-pointer hover:bg-bg-subtle/50"
                       onClick={() => toggleSort("completionTokens")}
                     >
                       {t("outputTokens")}{" "}
@@ -583,7 +583,7 @@ export default function UsageStats() {
                       />
                     </th>
                     <th
-                      className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                      className="px-6 py-3 text-end cursor-pointer hover:bg-bg-subtle/50"
                       onClick={() => toggleSort("totalTokens")}
                     >
                       {t("totalTokens")}{" "}
@@ -593,7 +593,7 @@ export default function UsageStats() {
                 ) : (
                   <>
                     <th
-                      className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                      className="px-6 py-3 text-end cursor-pointer hover:bg-bg-subtle/50"
                       onClick={() => toggleSort("promptTokens")}
                     >
                       {t("inputCost")}{" "}
@@ -604,7 +604,7 @@ export default function UsageStats() {
                       />
                     </th>
                     <th
-                      className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                      className="px-6 py-3 text-end cursor-pointer hover:bg-bg-subtle/50"
                       onClick={() => toggleSort("completionTokens")}
                     >
                       {t("outputCost")}{" "}
@@ -615,7 +615,7 @@ export default function UsageStats() {
                       />
                     </th>
                     <th
-                      className="px-6 py-3 text-right cursor-pointer hover:bg-bg-subtle/50"
+                      className="px-6 py-3 text-end cursor-pointer hover:bg-bg-subtle/50"
                       onClick={() => toggleSort("cost")}
                     >
                       {t("totalCost")}{" "}
@@ -650,29 +650,29 @@ export default function UsageStats() {
                         t("accountLabel", { id: `${data.connectionId?.slice(0, 8)}...` })}
                     </span>
                   </td>
-                  <td className="px-6 py-3 text-right">{fmt(data.requests)}</td>
-                  <td className="px-6 py-3 text-right text-text-muted whitespace-nowrap">
+                  <td className="px-6 py-3 text-end">{fmt(data.requests)}</td>
+                  <td className="px-6 py-3 text-end text-text-muted whitespace-nowrap">
                     {fmtTime(data.lastUsed)}
                   </td>
                   {viewMode === "tokens" ? (
                     <>
-                      <td className="px-6 py-3 text-right text-text-muted">
+                      <td className="px-6 py-3 text-end text-text-muted">
                         {fmt(data.promptTokens)}
                       </td>
-                      <td className="px-6 py-3 text-right text-text-muted">
+                      <td className="px-6 py-3 text-end text-text-muted">
                         {fmt(data.completionTokens)}
                       </td>
-                      <td className="px-6 py-3 text-right font-medium">{fmt(data.totalTokens)}</td>
+                      <td className="px-6 py-3 text-end font-medium">{fmt(data.totalTokens)}</td>
                     </>
                   ) : (
                     <>
-                      <td className="px-6 py-3 text-right text-text-muted">
+                      <td className="px-6 py-3 text-end text-text-muted">
                         {fmtCost(data.inputCost)}
                       </td>
-                      <td className="px-6 py-3 text-right text-text-muted">
+                      <td className="px-6 py-3 text-end text-text-muted">
                         {fmtCost(data.outputCost)}
                       </td>
-                      <td className="px-6 py-3 text-right font-medium text-warning">
+                      <td className="px-6 py-3 text-end font-medium text-warning">
                         {fmtCost(data.totalCost)}
                       </td>
                     </>

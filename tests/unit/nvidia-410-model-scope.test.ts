@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-nvidia-410-model-scope-"));
 
@@ -28,12 +30,12 @@ const GONE_BODY = JSON.stringify({
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 async function seedNvidiaConnection() {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "nvidia",
     authType: "apikey",
     name: "nvidia-410-model-scope",
@@ -41,7 +43,7 @@ async function seedNvidiaConnection() {
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {
@@ -50,7 +52,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("NVIDIA 410 Gone stays model-scoped and leaves the connection usable", async () => {
@@ -101,7 +103,7 @@ test("NVIDIA 410 Gone stays model-scoped and leaves the connection usable", asyn
   const healthyCredentials = await auth.getProviderCredentials("nvidia", null, null, HEALTHY_MODEL);
 
   assert.equal(
-    healthyCredentials?.connectionId,
+    (healthyCredentials as LooseDeep)?.connectionId,
     connection.id,
     "the same NVIDIA connection must remain selectable for healthy sibling models"
   );
@@ -114,7 +116,7 @@ test("non-per-model provider keeps 410 connection-scoped", async () => {
     "plain OpenAI API-key connections are not per-model quota providers"
   );
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "openai-410-connection-scope",
@@ -122,7 +124,7 @@ test("non-per-model provider keeps 410 connection-scoped", async () => {
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await auth.markAccountUnavailable(
     connection.id,
@@ -155,7 +157,7 @@ test("other per-model providers retain existing 410 connection scope", async () 
     "Gemini provides a non-NVIDIA per-model control case"
   );
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "gemini",
     authType: "apikey",
     name: "gemini-410-control",
@@ -163,7 +165,7 @@ test("other per-model providers retain existing 410 connection scope", async () 
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 
   const result = await auth.markAccountUnavailable(
     connection.id,

@@ -4,6 +4,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createTranslator } from "next-intl";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 /**
  * Regression guard for next-intl INVALID_MESSAGE: UNCLOSED_TAG on CC
@@ -27,7 +28,7 @@ function localeFiles(): string[] {
 }
 
 function readLocale(file: string): Record<string, unknown> {
-  return JSON.parse(readFileSync(path.join(MESSAGES_DIR, file), "utf8")) as Record<string, unknown>;
+  return JSON.parse(readFileSync(path.join(MESSAGES_DIR, file), "utf8")) as LooseDeep;
 }
 
 test("no locale message file contains raw claude/<provider>/<model> in any language", () => {
@@ -47,8 +48,8 @@ test("no locale message file contains raw claude/<provider>/<model> in any langu
 
 test("en.json CC discovery-alias keys use HTML-entity escaped path", () => {
   const en = readLocale("en.json");
-  const providers = (en.providers ?? {}) as Record<string, unknown>;
-  const cliTools = (en.cliTools ?? {}) as Record<string, unknown>;
+  const providers = (en.providers ?? {}) as LooseDeep;
+  const cliTools = (en.cliTools ?? {}) as LooseDeep;
   const keys: Array<{ label: string; value: unknown }> = [
     {
       label: "featureFlagExposeCcDiscoveryAliasesDescription",
@@ -104,9 +105,11 @@ test("createTranslator accepts CC discovery-alias keys in every locale", () => {
     });
     const tRoot = createTranslator({ locale, messages, onError });
 
-    assert.ok(tProviders("ccAliasSectionHint").length > 0);
-    assert.ok(tCliTools("ccDiscoveryInfoTooltip").length > 0);
-    assert.ok(tRoot("featureFlagExposeCcDiscoveryAliasesDescription").length > 0);
+    assert.ok(tProviders("ccAliasSectionHint" as unknown as never).length > 0);
+    assert.ok(tCliTools("ccDiscoveryInfoTooltip" as unknown as never).length > 0);
+    assert.ok(
+      tRoot("featureFlagExposeCcDiscoveryAliasesDescription" as unknown as never).length > 0
+    );
   }
 
   const bad = errors.filter(

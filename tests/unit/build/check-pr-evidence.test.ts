@@ -156,7 +156,7 @@ test("evaluatePrBody: whitespace-only string => skip", () => {
 });
 
 test("evaluatePrBody: undefined body => skip (treat as empty)", () => {
-  // @ts-expect-error — testing defensive path
+  //
   const { result } = evaluatePrBody(undefined);
   assert.equal(result, "skip");
 });

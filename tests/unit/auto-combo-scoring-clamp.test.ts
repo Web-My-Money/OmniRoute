@@ -99,7 +99,7 @@ test("calculateFactors — cache affinity is clamped and can be weighted", () =>
   assert.equal(factors.cacheAffinity, 1);
   const weights = Object.fromEntries(
     Object.keys(DEFAULT_WEIGHTS).map((key) => [key, key === "cacheAffinity" ? 1 : 0])
-  ) as typeof DEFAULT_WEIGHTS;
+  ) as unknown as typeof DEFAULT_WEIGHTS;
   assert.equal(calculateScore(factors, weights), 1);
 });
 

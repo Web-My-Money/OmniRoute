@@ -11,6 +11,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-c1-effort-dispatch-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -25,7 +26,7 @@ const { recordLearnedReasoningEffort, __test_resetLearnedReasoningEffortCaps } =
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -33,14 +34,14 @@ const PROVIDER = "c1prov";
 const MODEL_ID = "c1-model";
 
 async function seed() {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: PROVIDER,
     authType: "apikey",
     name: "c1-runtime-efforts",
     apiKey: `${PROVIDER}-key`,
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   // Sync tiers deliberately EXCLUDE max — only the learned set will vouch for it.
   await modelDiscovery.persistDiscoveredModels(PROVIDER, connection.id, [
     { id: MODEL_ID, reasoning: { supported_efforts: ["none", "low", "medium", "high"] } },
@@ -55,7 +56,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("-max resolves once the learned set advertises it (sync metadata does not)", async () => {

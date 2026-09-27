@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { openaiToOpenAIResponsesResponse, openaiResponsesToOpenAIResponse } =
   await import("../../open-sse/translator/response/openai-responses.ts");
@@ -294,11 +295,11 @@ test("Responses -> OpenAI: response.failed records upstream error", () => {
   );
 
   assert.equal(result, null);
-  assert.ok(state.upstreamError);
-  assert.equal(state.upstreamError.status, 429);
-  assert.equal(state.upstreamError.type, "rate_limit_error");
-  assert.equal(state.upstreamError.code, "rate_limit_exceeded");
-  assert.match(state.upstreamError.message, /Rate limit reached/);
+  assert.ok((state as LooseDeep).upstreamError);
+  assert.equal((state as LooseDeep).upstreamError.status, 429);
+  assert.equal((state as LooseDeep).upstreamError.type, "rate_limit_error");
+  assert.equal((state as LooseDeep).upstreamError.code, "rate_limit_exceeded");
+  assert.match((state as LooseDeep).upstreamError.message, /Rate limit reached/);
 });
 
 test("OpenAI -> Responses: deduplicates repeated tool argument snapshots", () => {

@@ -36,6 +36,7 @@ import {
   ensureCacheControlOnLastUserMessage,
   normalizeCacheControlTtl,
 } from "../../open-sse/services/claudeCodeConstraints.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CCH Signing tests
@@ -186,7 +187,7 @@ describe("remapToolNamesInRequest", () => {
 
     remapToolNamesInRequest(body);
 
-    const mappedBody = body as Record<string, unknown> & {
+    const mappedBody = body as LooseDeep & {
       _toolNameMap?: Map<string, string>;
       _claudeCodeRequiresLowercaseToolNames?: boolean;
     };
@@ -357,7 +358,9 @@ describe("ensureCacheControlOnLastUserMessage", () => {
 
     ensureCacheControlOnLastUserMessage(body);
 
-    assert.deepEqual(body.messages[2].content[0].cache_control, { type: "ephemeral" });
+    assert.deepEqual((body.messages[2].content[0] as LooseDeep).cache_control, {
+      type: "ephemeral",
+    });
   });
 
   it("keeps an existing message breakpoint and advances one to the last user message", () => {
@@ -380,11 +383,16 @@ describe("ensureCacheControlOnLastUserMessage", () => {
     ensureCacheControlOnLastUserMessage(body);
     ensureCacheControlOnLastUserMessage(body);
 
-    assert.deepEqual(body.messages[0].content[0].cache_control, { type: "ephemeral" });
-    assert.deepEqual(body.messages[1].content[0].cache_control, { type: "ephemeral" });
+    assert.deepEqual((body.messages[0].content[0] as LooseDeep).cache_control, {
+      type: "ephemeral",
+    });
+    assert.deepEqual((body.messages[1].content[0] as LooseDeep).cache_control, {
+      type: "ephemeral",
+    });
     assert.equal(
-      body.messages.flatMap((message) => message.content).filter((block) => block.cache_control)
-        .length,
+      body.messages
+        .flatMap((message) => message.content)
+        .filter((block) => (block as LooseDeep).cache_control).length,
       2
     );
   });
@@ -400,7 +408,7 @@ describe("ensureCacheControlOnLastUserMessage", () => {
 
     ensureCacheControlOnLastUserMessage(body);
 
-    assert.deepEqual(body.messages[0].content[0].cache_control, {
+    assert.deepEqual((body.messages[0].content[0] as LooseDeep).cache_control, {
       type: "ephemeral",
       ttl: "5m",
     });
@@ -418,7 +426,7 @@ describe("ensureCacheControlOnLastUserMessage", () => {
 
     ensureCacheControlOnLastUserMessage(body);
 
-    assert.equal(body.messages[0].content[0].cache_control, undefined);
+    assert.equal((body.messages[0].content[0] as LooseDeep).cache_control, undefined);
   });
 
   it("handles body without messages without throwing", () => {
@@ -501,7 +509,7 @@ describe("normalizeCacheControlTtl", () => {
     };
 
     assert.doesNotThrow(() => normalizeCacheControlTtl(body));
-    assert.equal(body.system[0].cache_control, undefined);
+    assert.equal((body.system[0] as LooseDeep).cache_control, undefined);
   });
 
   it("handles a body with no system/tools/messages without throwing", () => {

@@ -137,12 +137,12 @@ export default function PricingModal({ isOpen, onClose, onSave }) {
                       <table className="w-full text-sm">
                         <thead className="bg-bg-hover text-text-muted uppercase text-xs">
                           <tr>
-                            <th className="px-3 py-2 text-left">{t("model")}</th>
-                            <th className="px-3 py-2 text-right">{t("input")}</th>
-                            <th className="px-3 py-2 text-right">{t("output")}</th>
-                            <th className="px-3 py-2 text-right">{t("cached")}</th>
-                            <th className="px-3 py-2 text-right">{t("reasoning")}</th>
-                            <th className="px-3 py-2 text-right">{t("cacheCreation")}</th>
+                            <th className="px-3 py-2 text-start">{t("model")}</th>
+                            <th className="px-3 py-2 text-end">{t("input")}</th>
+                            <th className="px-3 py-2 text-end">{t("output")}</th>
+                            <th className="px-3 py-2 text-end">{t("cached")}</th>
+                            <th className="px-3 py-2 text-end">{t("reasoning")}</th>
+                            <th className="px-3 py-2 text-end">{t("cacheCreation")}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
@@ -159,7 +159,7 @@ export default function PricingModal({ isOpen, onClose, onSave }) {
                                     onChange={(e) =>
                                       handlePricingChange(provider, model, field, e.target.value)
                                     }
-                                    className="w-20 px-2 py-1 text-right bg-bg-base border border-border rounded focus:outline-none focus:border-primary"
+                                    className="w-20 px-2 py-1 text-end bg-bg-base border border-border rounded focus:outline-none focus:border-primary"
                                   />
                                 </td>
                               ))}

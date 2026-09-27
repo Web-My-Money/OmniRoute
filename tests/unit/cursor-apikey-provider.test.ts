@@ -7,6 +7,7 @@
  */
 import { describe, it, afterEach } from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { APIKEY_PROVIDERS, OAUTH_PROVIDERS } =
   await import("../../src/shared/constants/providers.ts");
@@ -43,8 +44,8 @@ describe("cursor-api provider wiring", () => {
   it("leaves the IDE cursor provider OAuth-only", () => {
     assert.equal(cursorProvider.authType, "oauth");
     assert.equal(getProviderCategory("cursor"), "oauth");
-    assert.ok(OAUTH_PROVIDERS.cursor);
-    assert.ok(!APIKEY_PROVIDERS.cursor);
+    assert.ok((OAUTH_PROVIDERS as LooseDeep).cursor);
+    assert.ok(!(APIKEY_PROVIDERS as LooseDeep).cursor);
   });
 
   it("has its own API-key catalog card admitted by the managed-connection gate", () => {

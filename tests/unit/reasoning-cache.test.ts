@@ -46,8 +46,9 @@ import {
   clearModelsDevCapabilities,
   saveModelsDevCapabilities,
 } from "../../src/lib/modelsDevSync.ts";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
-function buildCapability(overrides = {}) {
+function buildCapability(overrides: JsonRecord = {}) {
   return {
     tool_call: null,
     reasoning: null,

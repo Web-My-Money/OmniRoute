@@ -353,7 +353,7 @@ export interface M365RefreshResult {
  */
 export async function refreshM365AccessToken(
   refreshToken: string,
-  tid: string,
+  tid?: string,
   log?: MinimalLog
 ): Promise<M365RefreshResult | { error: string }> {
   const endpoint = `https://login.microsoftonline.com/${tid || "common"}/oauth2/v2.0/token`;

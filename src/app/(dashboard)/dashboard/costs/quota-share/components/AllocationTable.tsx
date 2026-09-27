@@ -41,11 +41,11 @@ export default function AllocationTable({ allocations, usage, keyLabels }: Alloc
       <table className="w-full text-[11px]">
         <thead>
           <tr className="text-[10px] uppercase tracking-wide text-text-muted border-b border-border/40">
-            <th className="text-left py-1 pr-2 font-semibold">{t("apiKeyColumn")}</th>
-            <th className="text-right py-1 pr-2 font-semibold">{t("weightColumn")}</th>
-            <th className="text-right py-1 pr-2 font-semibold">{t("realConsumedColumn")}</th>
-            <th className="text-right py-1 pr-2 font-semibold">{t("deficitColumn")}</th>
-            <th className="text-right py-1 font-semibold">{t("policy")}</th>
+            <th className="text-start py-1 pe-2 font-semibold">{t("apiKeyColumn")}</th>
+            <th className="text-end py-1 pe-2 font-semibold">{t("weightColumn")}</th>
+            <th className="text-end py-1 pe-2 font-semibold">{t("realConsumedColumn")}</th>
+            <th className="text-end py-1 pe-2 font-semibold">{t("deficitColumn")}</th>
+            <th className="text-end py-1 font-semibold">{t("policy")}</th>
           </tr>
         </thead>
         <tbody>
@@ -61,7 +61,7 @@ export default function AllocationTable({ allocations, usage, keyLabels }: Alloc
 
             return (
               <tr key={alloc.apiKeyId} className="border-b border-border/20 last:border-0">
-                <td className="py-1.5 pr-2">
+                <td className="py-1.5 pe-2">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span
                       className="inline-block w-2.5 h-2.5 rounded-sm shrink-0"
@@ -78,13 +78,13 @@ export default function AllocationTable({ allocations, usage, keyLabels }: Alloc
                     )}
                   </div>
                 </td>
-                <td className="py-1.5 pr-2 text-right font-bold tabular-nums" style={{ color }}>
+                <td className="py-1.5 pe-2 text-end font-bold tabular-nums" style={{ color }}>
                   {alloc.weight}%
                 </td>
-                <td className="py-1.5 pr-2 text-right tabular-nums text-text-muted">
+                <td className="py-1.5 pe-2 text-end tabular-nums text-text-muted">
                   {consumed !== null ? consumed.toLocaleString() : "—"}
                 </td>
-                <td className="py-1.5 pr-2 text-right tabular-nums">
+                <td className="py-1.5 pe-2 text-end tabular-nums">
                   {deficit !== null ? (
                     <span
                       className={
@@ -102,12 +102,12 @@ export default function AllocationTable({ allocations, usage, keyLabels }: Alloc
                     <span className="text-text-muted">—</span>
                   )}
                   {fairShare !== null && (
-                    <span className="text-[9px] text-text-muted ml-1">
+                    <span className="text-[9px] text-text-muted ms-1">
                       ({t("fairShareShort")}: {fairShare.toLocaleString()})
                     </span>
                   )}
                 </td>
-                <td className="py-1.5 text-right">
+                <td className="py-1.5 text-end">
                   <span
                     className={`text-[9px] px-1.5 py-0.5 rounded font-semibold ${
                       alloc.policy === "hard"

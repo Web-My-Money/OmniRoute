@@ -17,7 +17,9 @@ describe("POST /api/providers/[id]/refresh-token", () => {
     const now = Math.floor(Date.now() / 1000);
     const mockAccessToken =
       "eyJhbGciOiJIUzUxMiJ9." +
-      Buffer.from(JSON.stringify({ sub: "user_test_99", exp: now + 3600, iat: now })).toString("base64url") +
+      Buffer.from(JSON.stringify({ sub: "user_test_99", exp: now + 3600, iat: now })).toString(
+        "base64url"
+      ) +
       ".sig";
     const mockRefreshToken =
       "eyJhbGciOiJIUzUxMiJ9." +
@@ -45,7 +47,7 @@ describe("POST /api/providers/[id]/refresh-token", () => {
       const req = new Request(`http://localhost/api/providers/${conn.id}/refresh-token`, {
         method: "POST",
       });
-      const res = await POST(req, { params: Promise.resolve({ id: conn.id }) });
+      const res = await POST(req, { params: Promise.resolve({ id: String(conn.id) }) });
       assert.equal(res.status, 200);
       const data = await res.json();
       assert.equal(data.success, true);

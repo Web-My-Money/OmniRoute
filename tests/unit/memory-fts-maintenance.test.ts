@@ -4,6 +4,7 @@ import Database from "better-sqlite3";
 
 import { createBetterSqliteAdapter } from "../../src/lib/db/adapters/betterSqliteAdapter.ts";
 import { maintainMemoryFts } from "../../src/lib/db/memoryFtsMaintenance.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 function createDb(withFts = true) {
   const raw = new Database(":memory:");
@@ -46,6 +47,9 @@ test("rebuilds an index above the configured threshold", () => {
   const result = maintainMemoryFts(db, { minFtsBytes: 1, rebuildRatio: 0 });
 
   assert.equal(result.action, "rebuilt");
-  assert.equal(raw.prepare("SELECT COUNT(*) AS count FROM memory_fts").get().count, 1);
+  assert.equal(
+    (raw.prepare("SELECT COUNT(*) AS count FROM memory_fts").get() as LooseDeep).count,
+    1
+  );
   raw.close();
 });

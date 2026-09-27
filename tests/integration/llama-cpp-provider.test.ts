@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-llamacpp-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -88,12 +89,12 @@ test.afterEach(() => {
   clearInflight();
   resetAllCircuitBreakers();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 });
 
 test("llama-cpp provider: routes request to custom baseUrl with no auth header", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "llama-cpp",
     authType: "apikey",
     name: "llama-cpp-primary",
@@ -101,18 +102,21 @@ test("llama-cpp provider: routes request to custom baseUrl with no auth header",
     isActive: true,
     testStatus: "active",
     providerSpecificData: { baseUrl: "http://localhost:10965/v1" },
-  });
+  })) as JsonRecord & { id: string };
 
   const fetchCalls: FetchCall[] = [];
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       method: init.method || "GET",
       headers: toPlainHeaders(init.headers),
       body: init.body ? JSON.parse(String(init.body)) : null,
     });
-    return buildLlamaResponse("Why did the programmer go broke? Because he used up all his cache!", "unsloth/gemma-4-26B-A4B-it-GGUF:UD-IQ2_M");
+    return buildLlamaResponse(
+      "Why did the programmer go broke? Because he used up all his cache!",
+      "unsloth/gemma-4-26B-A4B-it-GGUF:UD-IQ2_M"
+    );
   };
 
   const response = await handleChat(
@@ -135,11 +139,14 @@ test("llama-cpp provider: routes request to custom baseUrl with no auth header",
   assert.equal(upstream.headers.Authorization, undefined, "no auth header for local provider");
   assert.equal(upstream.body.messages[0].content, "Tell me a joke.");
   assert.equal(upstream.body.model, "unsloth/gemma-4-26B-A4B-it-GGUF:UD-IQ2_M");
-  assert.equal(json.choices[0].message.content, "Why did the programmer go broke? Because he used up all his cache!");
+  assert.equal(
+    json.choices[0].message.content,
+    "Why did the programmer go broke? Because he used up all his cache!"
+  );
 });
 
 test("llama-cpp provider: alias matching works via model catalog prefix", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "llama-cpp",
     authType: "apikey",
     name: "llama-cpp-secondary",
@@ -147,12 +154,17 @@ test("llama-cpp provider: alias matching works via model catalog prefix", async 
     isActive: true,
     testStatus: "active",
     providerSpecificData: { baseUrl: "http://localhost:10965/v1" },
-  });
+  })) as JsonRecord & { id: string };
 
   const fetchCalls: FetchCall[] = [];
 
-  globalThis.fetch = async (url, init: RequestInit = {}) => {
-    fetchCalls.push({ url: String(url), method: init.method, headers: toPlainHeaders(init.headers), body: init.body ? JSON.parse(String(init.body)) : null });
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
+    fetchCalls.push({
+      url: String(url),
+      method: init.method,
+      headers: toPlainHeaders(init.headers),
+      body: init.body ? JSON.parse(String(init.body)) : null,
+    });
     return buildLlamaResponse("42", "unsloth/gemma-4-26B-A4B-it-GGUF:UD-IQ2_M");
   };
 
@@ -167,7 +179,11 @@ test("llama-cpp provider: alias matching works via model catalog prefix", async 
   );
 
   const json = (await response.json()) as any;
-  assert.equal(response.status, 200, `expected 200, got ${response.status}: ${JSON.stringify(json)}`);
+  assert.equal(
+    response.status,
+    200,
+    `expected 200, got ${response.status}: ${JSON.stringify(json)}`
+  );
   assert.equal(json.choices[0].message.content, "42");
 });
 
@@ -188,3 +204,5 @@ test("llama-cpp provider: returns 401 when no connection exists", async () => {
   const json = (await response.json()) as any;
   assert.match(json.error.message, /No active credentials for provider/);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { handleAudioTranslation } = await import("../../open-sse/handlers/audioTranslation.ts");
 
@@ -53,14 +54,17 @@ test("handleAudioTranslation rejects unsupported providers", async () => {
   const payload = (await response.json()) as any;
 
   assert.equal(response.status, 400);
-  assert.match(payload.error.message, /No translation provider found for model "unknown\/provider"/);
+  assert.match(
+    payload.error.message,
+    /No translation provider found for model "unknown\/provider"/
+  );
 });
 
 test("handleAudioTranslation dispatches OpenAI-compatible multipart requests and returns { text }", async () => {
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers,
@@ -116,7 +120,7 @@ test("handleAudioTranslation dispatches Groq-compatible multipart requests", asy
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = { url: String(url), headers: options.headers };
     return new Response(JSON.stringify({ text: "bonjour" }), {
       status: 200,

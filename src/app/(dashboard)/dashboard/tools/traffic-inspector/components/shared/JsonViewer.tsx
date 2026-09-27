@@ -32,7 +32,7 @@ function JsonNode({ data, depth = 0 }: { data: unknown; depth?: number }) {
           {expanded ? "▼" : "▶"} [{data.length}]
         </button>
         {expanded && (
-          <div className="ml-4 border-l border-border pl-2">
+          <div className="ms-4 border-l border-border ps-2">
             {data.map((item, i) => (
               <div key={i} className="flex gap-1 text-xs font-mono">
                 <span className="text-text-muted">{i}:</span>
@@ -61,7 +61,7 @@ function JsonNode({ data, depth = 0 }: { data: unknown; depth?: number }) {
           {"}"}
         </button>
         {expanded && (
-          <div className="ml-4 border-l border-border pl-2">
+          <div className="ms-4 border-l border-border ps-2">
             {entries.map(([k, v], i) => (
               <div key={k} className="flex gap-1 text-xs font-mono">
                 <span className="text-text-main">&quot;{k}&quot;</span>

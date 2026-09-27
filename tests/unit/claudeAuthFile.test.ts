@@ -1,13 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // We don't import the full claudeAuthFile module (it pulls in DB/cliRuntime/tokenRefresh).
 // Instead, we re-implement the same pure primitives here and verify their shape
 // matches the rules documented in the spec — unit-testing the helpers in isolation.
 
 // ──── Helpers (mirror of claudeAuthFile.ts pure functions) ────────────────────
-
-type JsonRecord = Record<string, unknown>;
 
 function toRecord(value: unknown): JsonRecord {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : {};

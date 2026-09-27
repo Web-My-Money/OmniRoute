@@ -1,5 +1,5 @@
-
 import type { Response as Resp } from "undici";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 // Minimal fetch mock responses that satisfy what apiFetch needs.
 export function makeMcpResp(data: unknown, status = 200, headers: Record<string, string> = {}) {
@@ -15,7 +15,7 @@ export function makeMcpResp(data: unknown, status = 200, headers: Record<string,
 }
 
 export function makeMcpStreamFetch({
-  toolResult = { content: [{ type: "text", text: "ok" }] },
+  toolResult = { content: [{ type: "text", text: "ok" }] } as unknown,
   initStatus = 200,
   callStatus = 200,
   callError = false,
@@ -25,12 +25,17 @@ export function makeMcpStreamFetch({
     if (!u.includes("/api/mcp/stream")) {
       return makeMcpResp({ error: "not found" }, 404);
     }
-    const body = init?.body ? JSON.parse(init.body) : {};
+    const initBody = (init as LooseDeep | undefined)?.body;
+    const body = initBody ? JSON.parse(initBody) : {};
     if (body.method === "initialize") {
       return makeMcpResp(
-        { jsonrpc: "2.0", id: body.id, result: { protocolVersion: "2024-11-05", capabilities: {} } },
+        {
+          jsonrpc: "2.0",
+          id: body.id,
+          result: { protocolVersion: "2024-11-05", capabilities: {} },
+        },
         initStatus,
-        initStatus < 400 ? { "mcp-session-id": "sess-test" } : {},
+        initStatus < 400 ? { "mcp-session-id": "sess-test" } : {}
       );
     }
     if (body.method === "tools/call") {

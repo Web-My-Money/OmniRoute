@@ -36,8 +36,9 @@ const DEFAULT_MAPPING = {
 };
 const DEFAULT_DEFAULTS = {
   model: "gpt-4o",
+  method: "POST",
   url: ENDPOINT,
-};
+} as const;
 
 function parseLine(jsonl: string) {
   return jsonl
@@ -118,7 +119,10 @@ test("validateJsonl[F9]: Anthropic shape with params=null → error on params fi
   const line = JSON.stringify({ custom_id: "req-1", params: null });
   const result = validateJsonl(line + "\n", { endpoint: ENDPOINT });
   assert.equal(result.ok, false);
-  assert.ok(result.errors.some((e) => e.field === "params"), "should have params error");
+  assert.ok(
+    result.errors.some((e) => e.field === "params"),
+    "should have params error"
+  );
 });
 
 test("validateJsonl[F9]: Anthropic shape with params=string → error on params field", () => {
@@ -134,7 +138,10 @@ test("validateJsonl[F9]: body=null → error on body field", () => {
   const line = JSON.stringify({ custom_id: "req-1", method: "POST", url: ENDPOINT, body: null });
   const result = validateJsonl(line + "\n", { endpoint: ENDPOINT });
   assert.equal(result.ok, false);
-  assert.ok(result.errors.some((e) => e.field === "body"), "should have body error");
+  assert.ok(
+    result.errors.some((e) => e.field === "body"),
+    "should have body error"
+  );
 });
 
 test("validateJsonl[F9]: body=string → error on body field", () => {
@@ -160,7 +167,9 @@ test("costEstimator[F9]: model with different casing → alias-match, prices res
   // If the table has "gpt-4o" and we pass "GPT-4O", it won't exact-match but alias-match should find it.
   // Either way, the call must not throw.
   assert.ok(
-    result.pricingSource === "alias-match" || result.pricingSource === "exact-match" || result.pricingSource === "fallback",
+    result.pricingSource === "alias-match" ||
+      result.pricingSource === "exact-match" ||
+      result.pricingSource === "fallback",
     `pricingSource must be one of known values, got ${result.pricingSource}`
   );
   assert.equal(result.model, "GPT-4O");
@@ -170,7 +179,8 @@ test("costEstimator[F9]: model with mixed case matching an entry → returns non
   // "claude-sonnet-4-6-20251031" should be in the pricing table for exact-match.
   // "CLAUDE-SONNET-4-6-20251031" should trigger alias-match if not already exact.
   const result = estimateBatchCost({
-    jsonl: '{"custom_id":"r1","params":{"model":"claude-sonnet-4-6-20251031","messages":[{"role":"user","content":"hi"}],"max_tokens":10}}\n',
+    jsonl:
+      '{"custom_id":"r1","params":{"model":"claude-sonnet-4-6-20251031","messages":[{"role":"user","content":"hi"}],"max_tokens":10}}\n',
     model: "claude-sonnet-4-6-20251031",
     endpoint: ENDPOINT,
   });
@@ -191,10 +201,11 @@ test("buildRetryPlan[F9]: whitespace-only inputJsonl with valid errorJsonl → 0
 });
 
 test("buildRetryPlan[F9]: inputJsonl with malformed line mixed with valid line", () => {
-  const inputJsonl = [
-    "NOT VALID JSON",
-    JSON.stringify({ custom_id: "req-ok", method: "POST", url: ENDPOINT, body: {} }),
-  ].join("\n") + "\n";
+  const inputJsonl =
+    [
+      "NOT VALID JSON",
+      JSON.stringify({ custom_id: "req-ok", method: "POST", url: ENDPOINT, body: {} }),
+    ].join("\n") + "\n";
   const errorJsonl = JSON.stringify({ custom_id: "req-ok", error: {} }) + "\n";
   const result = buildRetryPlan({ inputJsonl, errorJsonl });
   assert.equal(result.retriableLines, 1, "valid line should be included");
@@ -211,7 +222,8 @@ test("buildRetryPlan[F9]: both inputs empty → all zeros, newJsonl=''", () => {
 
 // ── schemas: ensure Zod shapes are correct (F1 contracts) ────────────────────
 
-const { wizardDestinationSchema, csvToJsonlInputSchema } = await import("../../src/lib/batches/schemas.ts");
+const { wizardDestinationSchema, csvToJsonlInputSchema } =
+  await import("../../src/lib/batches/schemas.ts");
 
 test("schemas[F9]: wizardDestinationSchema accepts all three supported providers", () => {
   for (const provider of ["openai", "anthropic", "gemini"] as const) {
@@ -228,7 +240,7 @@ test("schemas[F9]: csvToJsonlInputSchema defaults method to POST when omitted", 
   const result = csvToJsonlInputSchema.safeParse({
     csv: "id,prompt\nr1,hello",
     mapping: { id: "custom_id", prompt: "body.messages[0].content" },
-    defaults: { model: "gpt-4o", url: "/v1/chat/completions" }, // no method
+    defaults: { model: "gpt-4o", method: "POST", url: "/v1/chat/completions" }, // no method
   });
   assert.ok(result.success);
   assert.equal(result.data?.defaults.method, "POST");

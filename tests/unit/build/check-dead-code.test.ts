@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-// @ts-expect-error — .mjs helper has no type declarations; runtime shape is known.
+//
 import { parseKnipMetrics } from "../../../scripts/check/check-dead-code.mjs";
 
 // ---------------------------------------------------------------------------
@@ -23,9 +23,7 @@ function makeReportWithExports() {
           { name: "unusedHelper", line: 10, col: 0 },
           { name: "deadFn", line: 20, col: 0 },
         ],
-        types: [
-          { name: "DeadType", line: 5, col: 0 },
-        ],
+        types: [{ name: "DeadType", line: 5, col: 0 }],
       },
     ],
   };
@@ -57,9 +55,7 @@ function makeReportMixed() {
           { name: "deadExport1", line: 1, col: 0 },
           { name: "deadExport2", line: 2, col: 0 },
         ],
-        nsExports: [
-          { name: "deadNsExport", line: 3, col: 0 },
-        ],
+        nsExports: [{ name: "deadNsExport", line: 3, col: 0 }],
       },
     ],
   };
@@ -135,9 +131,7 @@ test("parseKnipMetrics: input sem campo issues retorna zeros", () => {
 test("parseKnipMetrics: entry sem campos de export não incrementa contador", () => {
   // Arquivo que aparece na lista mas sem exports mortos e sem files
   const report = {
-    issues: [
-      { file: "src/lib/clean.ts" },
-    ],
+    issues: [{ file: "src/lib/clean.ts" }],
   };
   const result = parseKnipMetrics(report);
   assert.deepEqual(result, { deadExports: 0, deadFiles: 0, deadTotal: 0 });

@@ -23,18 +23,18 @@ import * as cliRuntime from "@/shared/services/cliRuntime";
 
 test("#10246 canonical resolveOpencodeConfigDir returns the XDG opencode directory", () => {
   assert.equal(
-    resolveOpencodeConfigDir({ XDG_CONFIG_HOME: "/xdg" }, "/home/u"),
+    resolveOpencodeConfigDir({ XDG_CONFIG_HOME: "/xdg" } as NodeJS.ProcessEnv, "/home/u"),
     path.join("/xdg", "opencode")
   );
   // No XDG_CONFIG_HOME → `<home>/.config/opencode` on every platform (#3330: OpenCode reads
   // XDG even on Windows, where it uses %USERPROFILE%\.config and never %APPDATA%).
   assert.equal(
-    resolveOpencodeConfigDir({}, "/home/u"),
+    resolveOpencodeConfigDir({} as NodeJS.ProcessEnv, "/home/u"),
     path.join("/home/u", ".config", "opencode")
   );
   // A blank/whitespace XDG_CONFIG_HOME must fall back, not produce a relative path.
   assert.equal(
-    resolveOpencodeConfigDir({ XDG_CONFIG_HOME: "   " }, "/home/u"),
+    resolveOpencodeConfigDir({ XDG_CONFIG_HOME: "   " } as NodeJS.ProcessEnv, "/home/u"),
     path.join("/home/u", ".config", "opencode")
   );
 });

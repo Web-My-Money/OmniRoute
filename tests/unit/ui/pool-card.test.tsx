@@ -13,7 +13,9 @@ vi.mock("next/dynamic", () => ({
 }));
 
 vi.mock("@/shared/components/Card", () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div data-testid="card">{children}</div>,
+  default: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="card">{children}</div>
+  ),
 }));
 
 vi.mock("@/shared/components/ProviderIcon", () => ({
@@ -23,10 +25,11 @@ vi.mock("@/shared/components/ProviderIcon", () => ({
 }));
 
 // Stub sub-components
-vi.mock(
-  "../../../src/app/(dashboard)/dashboard/costs/quota-share/components/DimensionBar",
-  () => ({ default: ({ dimension }: { dimension: { unit: string } }) => <div data-testid="dim-bar">{dimension.unit}</div> })
-);
+vi.mock("../../../src/app/(dashboard)/dashboard/costs/quota-share/components/DimensionBar", () => ({
+  default: ({ dimension }: { dimension: { unit: string } }) => (
+    <div data-testid="dim-bar">{dimension.unit}</div>
+  ),
+}));
 vi.mock(
   "../../../src/app/(dashboard)/dashboard/costs/quota-share/components/AllocationTable",
   () => ({ default: () => <div data-testid="alloc-table" /> })
@@ -43,13 +46,14 @@ vi.mock(
   })
 );
 
-const { default: PoolCard } = await import(
-  "../../../src/app/(dashboard)/dashboard/costs/quota-share/components/PoolCard"
-);
+const { default: PoolCard } =
+  await import("../../../src/app/(dashboard)/dashboard/costs/quota-share/components/PoolCard");
 
 const MOCK_POOL = {
   id: "pool_1",
   connectionId: "conn_1",
+  connectionIds: ["conn_1"],
+  groupId: "group_1",
   name: "Test Pool",
   createdAt: new Date().toISOString(),
   allocations: [{ apiKeyId: "key_1", weight: 60, policy: "hard" as const }],
@@ -59,8 +63,9 @@ let container: HTMLDivElement | null = null;
 let root: ReturnType<typeof createRoot> | null = null;
 
 async function renderCard(usage = null as null | object) {
-  (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT =
-    true;
+  (
+    globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
+  ).IS_REACT_ACT_ENVIRONMENT = true;
   container = document.createElement("div");
   document.body.appendChild(container);
   await act(async () => {
@@ -106,7 +111,9 @@ describe("PoolCard", { timeout: 10000 }, () => {
 
   it("renders DimensionBar when usage has dimensions", async () => {
     const usage = {
-      dimensions: [{ unit: "tokens", window: "daily", limit: 1000, consumedTotal: 500, perKey: [] }],
+      dimensions: [
+        { unit: "tokens", window: "daily", limit: 1000, consumedTotal: 500, perKey: [] },
+      ],
       burnRate: null,
     };
     await renderCard(usage);
@@ -115,7 +122,9 @@ describe("PoolCard", { timeout: 10000 }, () => {
 
   it("renders BurnRateChart when usage is non-null", async () => {
     const usage = {
-      dimensions: [{ unit: "tokens", window: "daily", limit: 1000, consumedTotal: 200, perKey: [] }],
+      dimensions: [
+        { unit: "tokens", window: "daily", limit: 1000, consumedTotal: 200, perKey: [] },
+      ],
       burnRate: null,
     };
     await renderCard(usage);

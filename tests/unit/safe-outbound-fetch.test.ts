@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { SafeOutboundFetchError, safeOutboundFetch } =
   await import("../../src/shared/network/safeOutboundFetch.ts");
@@ -37,8 +38,8 @@ test("safeOutboundFetch retries transient failures for idempotent methods", asyn
 });
 
 test("safeOutboundFetch normalizes timeout failures", async () => {
-  globalThis.fetch = async (_url, init = {}) =>
-    new Promise((_resolve, reject) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) =>
+    new Promise<Response>((_resolve, reject) => {
       init.signal.addEventListener(
         "abort",
         () => {

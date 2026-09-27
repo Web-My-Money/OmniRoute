@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Split out of translator-resp-openai-responses.test.ts (file-size ratchet —
 // this file plus the new tests would have exceeded both the production and
@@ -175,7 +176,7 @@ test("Responses -> OpenAI: response.completed with function_call in output[] set
   assert.ok(Array.isArray(result));
   // First chunk should have role: "assistant" in delta
   assert.equal(result[0].choices[0].delta.role, "assistant");
-  assert.equal(state.roleEmitted, true);
+  assert.equal((state as LooseDeep).roleEmitted, true);
 });
 
 test("Responses -> OpenAI: incremental tool call events + response.completed snapshot does NOT double-emit", () => {
@@ -296,5 +297,9 @@ test("Responses -> OpenAI: incremental tool call events + response.completed sna
   assert.equal(completed.usage.completion_tokens, 5);
 
   // toolCallIndex should be 2 (two tool calls were processed via incremental events)
-  assert.equal(state.toolCallIndex, 2, "toolCallIndex should reflect both incremental tool calls");
+  assert.equal(
+    (state as LooseDeep).toolCallIndex,
+    2,
+    "toolCallIndex should reflect both incremental tool calls"
+  );
 });

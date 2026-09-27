@@ -16,9 +16,7 @@ import { useEffect, useState } from "react";
  */
 export default function CallbackPage() {
   const [status, setStatus] = useState<"processing" | "success" | "done" | "manual">("processing");
-  const [currentUrl] = useState(() =>
-    typeof window === "undefined" ? "" : window.location.href
-  );
+  const [currentUrl] = useState(() => (typeof window === "undefined" ? "" : window.location.href));
   const t = useTranslations("auth");
 
   useEffect(() => {
@@ -86,10 +84,7 @@ export default function CallbackPage() {
     if (window.opener) {
       for (const origin of trustedTargetOrigins) {
         try {
-          window.opener.postMessage(
-            { type: "oauth_callback", data: callbackData },
-            origin
-          );
+          window.opener.postMessage({ type: "oauth_callback", data: callbackData }, origin);
           sent = true;
         } catch (e) {
           console.log("postMessage failed:", e);
@@ -176,7 +171,7 @@ export default function CallbackPage() {
             </div>
             <h1 className="text-xl font-semibold mb-2">{t("copyUrl")}</h1>
             <p className="text-text-muted mb-4">{t("copyUrlManual")}</p>
-            <div className="bg-surface border border-border rounded-lg p-3 text-left">
+            <div className="bg-surface border border-border rounded-lg p-3 text-start">
               <code className="text-xs break-all">{currentUrl}</code>
             </div>
           </>

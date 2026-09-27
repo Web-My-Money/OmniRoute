@@ -244,7 +244,7 @@ export default function Header({
       </div>
 
       {/* Right actions */}
-      <div className="flex items-center gap-3 ml-auto">
+      <div className="flex items-center gap-3 ms-auto">
         {onOpenCommandPalette && (
           <>
             <button

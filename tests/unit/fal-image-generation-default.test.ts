@@ -4,6 +4,7 @@ import dns from "node:dns";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-fal-images-"));
 
@@ -41,7 +42,7 @@ test("handleImageGeneration returns Fal images as base64 when response_format is
   };
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: { model: "fal-ai/fal-ai/flux-2-flex", prompt: "red apple" },
       credentials: { apiKey: "fal-key" },
       log: null,

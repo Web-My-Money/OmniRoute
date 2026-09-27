@@ -11,7 +11,7 @@ import assert from "node:assert/strict";
 
 const { REGISTRY } = await import("../../open-sse/config/providerRegistry.ts");
 
-const blackbox = (REGISTRY as Record<string, Record<string, unknown>>).blackbox;
+const blackbox = (REGISTRY as unknown as Record<string, Record<string, unknown>>).blackbox;
 
 // New model ids from upstream PR #2038 (upstreamModelId / thinkingConfig fields
 // are dropped — OmniRoute's RegistryModel only carries { id, name, ... })

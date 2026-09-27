@@ -1,6 +1,6 @@
 import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert";
-import { TheOldLlmExecutor, tokenCache } from "../open-sse/executors/theoldllm.ts";
+import { TheOldLlmExecutor, tokenCache } from "../../open-sse/executors/theoldllm.ts";
 
 const executor = new TheOldLlmExecutor();
 

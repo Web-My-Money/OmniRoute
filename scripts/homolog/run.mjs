@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { execSync, spawnSync } from "node:child_process";
+import { spawnHostTool } from "../build/buildToolRunner.mjs";
 import fs from "node:fs";
 import { evaluateParity } from "./lib/parity.mjs";
 import { createEphemeralKey } from "./lib/adminClient.mjs";
@@ -56,7 +57,7 @@ try {
     models.find((m) => critical.some((p) => m.id.startsWith(`${p}/`)))?.id || models[0].id;
 
   // ── L1 httpYac + SSE ───────────────────────────────────────────────────
-  const hy = spawnSync(
+  const hy = spawnHostTool(
     "npx",
     [
       "httpyac",
@@ -83,7 +84,7 @@ try {
   // ── L2 providers reais ─────────────────────────────────────────────────
   try {
     execSync("node scripts/homolog/gen-promptfoo.mjs", { stdio: "inherit", env: process.env });
-    spawnSync(
+    spawnHostTool(
       "npx",
       [
         "promptfoo",
@@ -110,7 +111,7 @@ try {
   }
 
   // ── L4 UI ──────────────────────────────────────────────────────────────
-  const pw = spawnSync(
+  const pw = spawnHostTool(
     "npx",
     ["playwright", "test", "-c", "tests/homolog/ui/playwright.config.ts"],
     {
@@ -127,14 +128,14 @@ try {
 }
 
 // ── L5 relatório unificado ───────────────────────────────────────────────
-spawnSync(
+spawnHostTool(
   "npx",
   ["junit-to-ctrf", "homolog-report/httpyac-junit.xml", "-o", "homolog-report/api-ctrf.json"],
   {
     stdio: "inherit",
   }
 );
-spawnSync(
+spawnHostTool(
   "npx",
   [
     "ctrf",

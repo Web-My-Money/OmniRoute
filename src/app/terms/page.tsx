@@ -38,7 +38,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-text-main mb-3">{t("termsSection2Title")}</h2>
-            <ul className="list-disc pl-6 space-y-2">
+            <ul className="list-disc ps-6 space-y-2">
               <li>{t("termsResponsibilityApiKeys")}</li>
               <li>{t("termsResponsibilityCompliance")}</li>
               <li>{t("termsResponsibilitySecurity")}</li>
@@ -52,7 +52,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-lg font-semibold text-text-main mb-3">{t("termsSection4Title")}</h2>
-            <ul className="list-disc pl-6 space-y-2">
+            <ul className="list-disc ps-6 space-y-2">
               <li>{t("termsDataStoredLocally")}</li>
               <li>{t("termsNoTransmission")}</li>
               <li>

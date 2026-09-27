@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-// @ts-expect-error — plain .mjs gate script, no type declarations by design
+//
 import { evaluateConvergence } from "../../scripts/check/check-install-upgrade.mjs";
 
 /**
@@ -66,7 +66,11 @@ test("UNKNOWN residue fails — a new divergence must not hide behind the allowl
   assert.equal(v.ok, false);
   assert.deepEqual(v.unknownResidue, ["surprise_table"]);
   assert.match(v.failures[0], /surprise_table/);
-  assert.doesNotMatch(v.failures[0], /cache_metrics/, "the known one must not be re-reported as new");
+  assert.doesNotMatch(
+    v.failures[0],
+    /cache_metrics/,
+    "the known one must not be re-reported as new"
+  );
 });
 
 test("both directions at once report both failures", () => {

@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { Writable } from "node:stream";
 import { redactString, redact, RedactTransform } from "../../scripts/sre/redact-logs.mjs";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ─── 1. email ────────────────────────────────────────────────────────────────
 
@@ -234,7 +235,7 @@ test("RedactTransform: streams input chunks to output, redacting as it goes", as
   });
   await src
     .pipeThrough(new TextDecoderStream())
-    .pipeThrough(t)
+    .pipeThrough(t as unknown as ReadableWritablePair<unknown, string>)
     .pipeTo(
       new WritableStream({
         write(chunk) {
@@ -246,8 +247,8 @@ test("RedactTransform: streams input chunks to output, redacting as it goes", as
   assert.match(joined, /\[REDACTED_EMAIL\]/);
   assert.match(joined, /\[REDACTED_IPV4\]/);
   // Counts accumulated on the transform.
-  assert.equal(t.counts.EMAIL ?? 0, 1);
-  assert.equal(t.counts.IPV4 ?? 0, 1);
+  assert.equal((t as LooseDeep).counts.EMAIL ?? 0, 1);
+  assert.equal((t as LooseDeep).counts.IPV4 ?? 0, 1);
 });
 
 // ─── 13. Counts are independent between calls ───────────────────────────────

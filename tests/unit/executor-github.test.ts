@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 
 import { GithubExecutor } from "../../open-sse/executors/github.ts";
 import { PROVIDER_MODELS } from "../../open-sse/config/providerModels.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { wrapLoose } from "../helpers/looseTypes.ts";
 
 function registerModel(provider, model) {
   PROVIDER_MODELS[provider] = [...(PROVIDER_MODELS[provider] || []), model];
@@ -347,7 +349,7 @@ test("GithubExecutor.execute forwards client x-initiator headers without shared 
   const originalFetch = globalThis.fetch;
   const seenInitiators: string[] = [];
 
-  globalThis.fetch = async (_url, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     seenInitiators.push((init.headers as Record<string, string>)["X-Initiator"]);
     return new Response(JSON.stringify({ choices: [] }), {
       status: 200,
@@ -356,7 +358,7 @@ test("GithubExecutor.execute forwards client x-initiator headers without shared 
   };
 
   try {
-    await executor.execute({
+    await wrapLoose(executor).execute({
       model: "gpt-4.1",
       body: { messages: [{ role: "user", content: "hi" }] },
       stream: false,
@@ -366,7 +368,7 @@ test("GithubExecutor.execute forwards client x-initiator headers without shared 
       },
       clientHeaders: { "x-initiator": "agent" },
     });
-    await executor.execute({
+    await wrapLoose(executor).execute({
       model: "gpt-4.1",
       body: { messages: [{ role: "user", content: "hi" }] },
       stream: false,
@@ -420,7 +422,7 @@ test("GithubExecutor.refreshCredentials falls back to GitHub OAuth refresh befor
   const originalFetch = globalThis.fetch;
   const calls = [];
 
-  globalThis.fetch = async (url, options: RequestInit = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     calls.push(String(url));
 
     if (String(url).includes("/copilot_internal/v2/token") && calls.length === 1) {
@@ -520,7 +522,7 @@ test("GithubExecutor.execute preserves complete SSE responses including terminal
     );
 
   try {
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "gpt-4.1",
       body: { messages: [{ role: "user", content: "hi" }] },
       stream: true,

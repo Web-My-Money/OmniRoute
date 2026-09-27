@@ -499,6 +499,7 @@ export function updatePendingRequestStreamChunks(
 export function getPendingRequests(): {
   byModel: Record<string, number>;
   byAccount: Record<string, Record<string, number>>;
+  details: Record<string, Record<string, PendingRequestDetail[]>>;
 } {
   return pendingRequests;
 }

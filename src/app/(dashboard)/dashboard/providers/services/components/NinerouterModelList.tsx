@@ -129,7 +129,7 @@ export function NinerouterModelList() {
             >
               <code className="text-xs font-mono text-text truncate">{model.id}</code>
               {model.available === false && (
-                <span className="ml-2 text-[10px] font-medium text-text-muted bg-bg-subtle px-1.5 py-0.5 rounded shrink-0">
+                <span className="ms-2 text-[10px] font-medium text-text-muted bg-bg-subtle px-1.5 py-0.5 rounded shrink-0">
                   {t("unavailable")}
                 </span>
               )}

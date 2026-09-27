@@ -76,6 +76,8 @@ describe("compression body adapter", () => {
 
     const result = applyCompression(body, "standard", {
       config: {
+        engines: {},
+        activeComboId: null,
         enabled: true,
         defaultMode: "standard",
         autoTriggerTokens: 0,
@@ -243,6 +245,8 @@ describe("compression body adapter", () => {
 
     const result = applyCompression(body, "standard", {
       config: {
+        engines: {},
+        activeComboId: null,
         enabled: true,
         defaultMode: "standard",
         autoTriggerTokens: 0,
@@ -276,6 +280,8 @@ describe("compression body adapter", () => {
 
     const result = applyCompression(body, "lite", {
       config: {
+        engines: {},
+        activeComboId: null,
         enabled: true,
         defaultMode: "lite",
         autoTriggerTokens: 0,
@@ -297,6 +303,8 @@ describe("compression body adapter", () => {
 
     const result = applyCompression(body, "standard", {
       config: {
+        engines: {},
+        activeComboId: null,
         enabled: true,
         defaultMode: "standard",
         autoTriggerTokens: 0,

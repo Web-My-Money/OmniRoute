@@ -12,6 +12,7 @@ import {
 } from "../../open-sse/utils/claudeEffortVariants.ts";
 import { shouldExposeNoThinkingAlias } from "../../open-sse/utils/noThinkingAlias.ts";
 import { appendCcDiscoveryAliases } from "../../open-sse/utils/ccDiscoveryAliases.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const mk = (id: string, extra: Record<string, unknown> = {}) => ({
   id,
@@ -126,7 +127,7 @@ test("appends effort variant ids + names for eligible models only", () => {
   const high = out.find((m) => m.id === "claude/claude-fable-5-high");
   assert.equal(high?.name, "claude-fable-5 (High)");
   // root stays unprefixed — the provider-scoped models route serves it verbatim.
-  assert.equal(high?.root, "claude-fable-5-high");
+  assert.equal((high as LooseDeep)?.root, "claude-fable-5-high");
 });
 
 test("normalizes the provider prefix (cc → claude) when a canonical map is given", () => {

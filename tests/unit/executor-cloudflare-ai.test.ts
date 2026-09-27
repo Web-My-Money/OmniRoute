@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { CloudflareAIExecutor } from "../../open-sse/executors/cloudflare-ai.ts";
+import { wrapLoose } from "../helpers/looseTypes.ts";
 
 test("CloudflareAIExecutor.buildUrl prefers providerSpecificData.accountId", () => {
   const executor = new CloudflareAIExecutor();
@@ -79,7 +80,12 @@ test("CloudflareAIExecutor.transformRequest preserves plain-string content", () 
     model: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
     messages: [{ role: "user", content: "hi" }],
   };
-  const out = executor.transformRequest("@cf/meta/llama-3.3-70b-instruct-fp8-fast", body, true, {} as any);
+  const out = executor.transformRequest(
+    "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+    body,
+    true,
+    {} as any
+  );
   assert.deepEqual((out as any).messages, [{ role: "user", content: "hi" }]);
 });
 
@@ -135,7 +141,7 @@ test("CloudflareAIExecutor.execute uses inherited BaseExecutor flow successfully
       model: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
       messages: [{ role: "user", content: "hello" }],
     };
-    const result = await executor.execute({
+    const result = await wrapLoose(executor).execute({
       model: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
       body,
       stream: false,

@@ -1476,7 +1476,7 @@ export default function APIPageClient({ machineId }: Readonly<APIPageClientProps
               </div>
               {cloudflaredNotice && (
                 <div
-                  className={`mb-2 ml-7 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
+                  className={`mb-2 ms-7 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
                     cloudflaredNotice.type === "success"
                       ? "border-green-500/30 bg-green-500/10 text-green-400"
                       : cloudflaredNotice.type === "info"
@@ -1501,7 +1501,7 @@ export default function APIPageClient({ machineId }: Readonly<APIPageClientProps
                 </div>
               )}
               {cloudflaredStatus?.lastError && (
-                <p className="mb-2 ml-7 text-xs text-red-400">
+                <p className="mb-2 ms-7 text-xs text-red-400">
                   {translateOrFallback("cloudflaredLastError", "Last error: {error}", {
                     error: cloudflaredStatus.lastError,
                   })}
@@ -1516,7 +1516,7 @@ export default function APIPageClient({ machineId }: Readonly<APIPageClientProps
               <div
                 role="button"
                 tabIndex={0}
-                className="w-full flex items-center gap-3 py-3 hover:bg-surface/40 transition-colors rounded -mx-1 px-1 text-left cursor-pointer"
+                className="w-full flex items-center gap-3 py-3 hover:bg-surface/40 transition-colors rounded -mx-1 px-1 text-start cursor-pointer"
                 onClick={() => setExpandedTunnel(expandedTunnel === "ts" ? null : "ts")}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -1588,7 +1588,7 @@ export default function APIPageClient({ machineId }: Readonly<APIPageClientProps
                 </span>
               </div>
               {expandedTunnel === "ts" && (
-                <div className="pb-3 pl-7 pr-1 flex flex-col gap-2">
+                <div className="pb-3 ps-7 pe-1 flex flex-col gap-2">
                   {tailscaleNotice && (
                     <div
                       className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
@@ -1674,7 +1674,7 @@ export default function APIPageClient({ machineId }: Readonly<APIPageClientProps
               <div
                 role="button"
                 tabIndex={0}
-                className="w-full flex items-center gap-3 py-3 hover:bg-surface/40 transition-colors rounded -mx-1 px-1 text-left cursor-pointer"
+                className="w-full flex items-center gap-3 py-3 hover:bg-surface/40 transition-colors rounded -mx-1 px-1 text-start cursor-pointer"
                 onClick={() => setExpandedTunnel(expandedTunnel === "ngrok" ? null : "ngrok")}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -1721,7 +1721,7 @@ export default function APIPageClient({ machineId }: Readonly<APIPageClientProps
                 </span>
               </div>
               {expandedTunnel === "ngrok" && (
-                <div className="pb-3 pl-7 pr-1 flex flex-col gap-2">
+                <div className="pb-3 ps-7 pe-1 flex flex-col gap-2">
                   {ngrokNotice && (
                     <div
                       className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${

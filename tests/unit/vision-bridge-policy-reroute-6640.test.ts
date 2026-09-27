@@ -33,10 +33,18 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { createChatPipelineHarness } from "../integration/_chatPipelineHarness.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const harness = await createChatPipelineHarness("vision-bridge-policy-reroute-6640");
-const { handleChat, buildRequest, buildOpenAIResponse, resetStorage, seedConnection, seedApiKey, settingsDb } =
-  harness;
+const {
+  handleChat,
+  buildRequest,
+  buildOpenAIResponse,
+  resetStorage,
+  seedConnection,
+  seedApiKey,
+  settingsDb,
+} = harness;
 
 function imageBearingBody(model: string) {
   return {
@@ -73,7 +81,7 @@ test("#6640: guardrail reroute to a model outside allowedModels is rejected — 
   const apiKey = await seedApiKey({ allowedModels: ["openai/gpt-3.5-turbo"] });
 
   const fetchCalls: Array<{ body: Record<string, unknown> | null }> = [];
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     fetchCalls.push({ body: init.body ? JSON.parse(String(init.body)) : null });
     return buildOpenAIResponse("described");
   };
@@ -121,7 +129,7 @@ test("#6640: a credentialed original model is never whole-request-rerouted, even
   });
 
   const fetchCalls: Array<{ body: Record<string, unknown> | null }> = [];
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     fetchCalls.push({ body: init.body ? JSON.parse(String(init.body)) : null });
     return buildOpenAIResponse("described");
   };
@@ -152,7 +160,7 @@ test("#6640: settings.visionBridgeModel override does not displace a credentiale
   const apiKey = await seedApiKey();
 
   const fetchCalls: Array<{ body: Record<string, unknown> | null }> = [];
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     fetchCalls.push({ body: init.body ? JSON.parse(String(init.body)) : null });
     return buildOpenAIResponse("described");
   };

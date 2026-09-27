@@ -130,7 +130,7 @@ function tlsRequest(
     );
 
     client.on("data", (chunk) => {
-      chunks.push(chunk);
+      chunks.push(chunk as unknown as Buffer<ArrayBufferLike>);
       const body = Buffer.concat(chunks).toString("utf8");
       if (/decrypted-roundtrip:|502 Bad Gateway/.test(body)) resolveWithChunks();
     });

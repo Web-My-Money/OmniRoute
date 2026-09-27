@@ -256,7 +256,7 @@ export default function ProfilePage() {
                 <button
                   key={badge.id}
                   onClick={() => setSelectedBadge(badge)}
-                  className={`relative p-4 rounded-xl border transition-all text-left ${
+                  className={`relative p-4 rounded-xl border transition-all text-start ${
                     isEarned
                       ? `${rarityColor} bg-surface hover:shadow-md`
                       : "border-border/50 bg-surface/50 opacity-50 grayscale hover:opacity-70"

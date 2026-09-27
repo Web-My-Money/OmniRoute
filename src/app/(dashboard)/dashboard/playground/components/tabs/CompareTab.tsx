@@ -383,7 +383,7 @@ export default function CompareTab({ configState }: CompareTabProps) {
         )}
 
         {/* Add column */}
-        <div className="flex items-center gap-1.5 ml-2">
+        <div className="flex items-center gap-1.5 ms-2">
           <input
             ref={addInputRef}
             type="text"
@@ -410,7 +410,7 @@ export default function CompareTab({ configState }: CompareTabProps) {
         </div>
 
         {/* Column count indicator */}
-        <span className="ml-auto text-[11px] text-text-muted">
+        <span className="ms-auto text-[11px] text-text-muted">
           {t("columnCount", { count: columns.length, max: MAX_COLUMNS })}
         </span>
       </div>

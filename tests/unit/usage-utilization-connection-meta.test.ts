@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // Regression for the phantom `@/lib/db/connections` import shipped in #10939.
 // That module does not exist, so Turbopack failed production builds with
@@ -22,7 +23,7 @@ const { GET } = await import("../../src/app/api/usage/utilization/route.ts");
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("utilization route does not import phantom @/lib/db/connections", () => {
@@ -35,13 +36,13 @@ test("utilization route module resolves", async () => {
 });
 
 test("aggregateBy=connection returns email/name/displayName metadata for a real connection", async () => {
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "testprovider",
     name: "Utilization Meta Seed",
     displayName: "Utilization Meta Seed",
     authType: "apikey",
     apiKey: "sk-test-utilization-meta",
-  });
+  })) as JsonRecord & { id: string };
   const connectionId = (created as { id: string }).id;
 
   const request = new Request(

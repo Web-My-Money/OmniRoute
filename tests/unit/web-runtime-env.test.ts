@@ -24,7 +24,7 @@ function buildEnv(overrides = {}) {
     API_PORT: "21128",
     DASHBOARD_PORT: "22128",
     ...overrides,
-  };
+  } as NodeJS.ProcessEnv;
 }
 
 test("validateWebRuntimeEnv accepts a valid runtime env payload", () => {

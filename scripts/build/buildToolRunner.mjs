@@ -29,7 +29,8 @@
  * build-next-isolated.mjs — so the Windows behaviour is unit-testable from CI's
  * Linux runners.
  */
-import { execFileSync } from "node:child_process";
+import { execFile, execFileSync, spawnSync } from "node:child_process";
+import { promisify } from "node:util";
 import { closeSync, existsSync, openSync, readFileSync, readSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -159,4 +160,71 @@ export function runBuildTool(packageName, binName, args, options = {}) {
     entryIsNative: entryPath ? isNativeExecutable(entryPath) : false,
   });
   execFileSync(plan.file, plan.args, plan.shell ? { ...options, shell: true } : options);
+}
+
+/**
+ * Decide HOW to spawn a HOST tool (`npm`, `npx`, `node-gyp`, …) resolved via
+ * PATH — unlike {@link planBuildToolSpawn}, these are global shims, not local
+ * package bins.
+ *
+ * On Windows `npm`/`npx` are `.cmd` wrappers: `execFileSync("npm", …)` dies
+ * with ENOENT — and even naming the `.cmd` directly hits EINVAL, because since
+ * the CVE-2024-27980 hardening Node refuses to spawn `.cmd` without a shell.
+ * `shell: true` routes through `cmd.exe`, which resolves the shim via PATHEXT —
+ * and in that mode Node does NOT escape arguments, so whitespace-bearing values
+ * (tmp dirs, prefixes, tarball paths) are quoted explicitly here.
+ *
+ * Pure, platform injected — same convention as {@link planBuildToolSpawn}.
+ *
+ * @param {string} cmd Tool name on PATH, e.g. `"npm"`.
+ * @param {readonly string[]} args Arguments for the tool.
+ * @param {string} [platform] `process.platform` value to plan for.
+ * @returns {{ file: string, args: string[], shell: boolean }}
+ */
+export function planHostToolSpawn(cmd, args, platform = process.platform) {
+  return platform === "win32"
+    ? { file: cmd, args: args.map(quoteForShell), shell: true }
+    : { file: cmd, args: [...args], shell: false };
+}
+
+/**
+ * Run a host tool synchronously on any platform. See {@link planHostToolSpawn}.
+ *
+ * @param {string} cmd Tool name on PATH, e.g. `"npm"`.
+ * @param {readonly string[]} args Arguments for the tool.
+ * @param {import("node:child_process").ExecFileSyncOptions} [options]
+ * @returns {string | Buffer} Whatever `execFileSync` returns for `options`.
+ */
+export function execHostTool(cmd, args, options = {}) {
+  const plan = planHostToolSpawn(cmd, args);
+  return execFileSync(plan.file, plan.args, plan.shell ? { ...options, shell: true } : options);
+}
+
+/**
+ * `spawnSync` twin of {@link execHostTool}. Returns the `spawnSync` result object.
+ *
+ * @param {string} cmd
+ * @param {readonly string[]} args
+ * @param {import("node:child_process").SpawnSyncOptions} [options]
+ * @returns {import("node:child_process").SpawnSyncReturns<string | Buffer>}
+ */
+export function spawnHostTool(cmd, args, options = {}) {
+  const plan = planHostToolSpawn(cmd, args);
+  return spawnSync(plan.file, plan.args, plan.shell ? { ...options, shell: true } : options);
+}
+
+const execFileAsync = promisify(execFile);
+
+/**
+ * `execFile` (promisified) twin of {@link execHostTool}, for gates that run
+ * tools concurrently.
+ *
+ * @param {string} cmd
+ * @param {readonly string[]} args
+ * @param {import("node:child_process").ExecFileOptions} [options]
+ * @returns {Promise<{ stdout: string | Buffer, stderr: string | Buffer }>}
+ */
+export function execHostToolAsync(cmd, args, options = {}) {
+  const plan = planHostToolSpawn(cmd, args);
+  return execFileAsync(plan.file, plan.args, plan.shell ? { ...options, shell: true } : options);
 }

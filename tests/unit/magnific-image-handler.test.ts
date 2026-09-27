@@ -11,6 +11,7 @@ import {
 import { APIKEY_PROVIDERS, resolveProviderId } from "../../src/shared/constants/providers.ts";
 import { IMAGE_ONLY_PROVIDER_IDS } from "../../src/shared/constants/providers.ts";
 import { connectionBelongsToProviderPage } from "../../src/app/(dashboard)/dashboard/providers/providerPageUtils.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 // Stub DNS for fetchRemoteImage/direct-fetch DNS-rebinding guards, mirroring
 // tests/unit/nanobanana-image-handler.test.ts.
@@ -103,7 +104,7 @@ test("handleImageGeneration(magnific): async submit+poll returns b64_json payloa
   }) as typeof fetch;
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: {
         model: "magnific/realism",
         prompt: "a red panda astronaut",
@@ -143,7 +144,7 @@ test("handleImageGeneration(magnific): FAILED status returns sanitized 502 error
   }) as typeof fetch;
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: { model: "magnific/realism", prompt: "broken prompt", poll_interval_ms: 1 },
       credentials: { apiKey: "test-key" },
       log: null,
@@ -170,7 +171,7 @@ test("handleImageGeneration(magnific): submit error response is sanitized, not r
   }) as typeof fetch;
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: { model: "magnific/realism", prompt: "x" },
       credentials: { apiKey: "test-key" },
       log: null,
@@ -220,7 +221,7 @@ test("handleImageGeneration(freepik/realism): legacy alias routes to the Magnifi
   }) as typeof fetch;
 
   try {
-    const result = await handleImageGeneration({
+    const result = await looseAsync(handleImageGeneration)({
       body: { model: "freepik/realism", prompt: "alias probe", poll_interval_ms: 1 },
       credentials: { apiKey: "test-key" },
       log: null,

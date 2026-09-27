@@ -1,11 +1,20 @@
 import { describe, it, before, after, mock } from "node:test";
 import assert from "node:assert/strict";
 
-let tlsClient: import("../../open-sse/utils/tlsClient.ts").default;
+type TlsClientWithInternals = Omit<
+  import("../../open-sse/utils/tlsClient.ts").TlsClient,
+  "recordFailure" | "recordSuccess"
+> & {
+  recordFailure(key?: string, sessionHadCookies?: boolean): void;
+  recordSuccess(key?: string): void;
+};
+
+let tlsClient: TlsClientWithInternals;
 
 describe("tlsClient circuit breaker — session recreation", () => {
   before(async () => {
-    tlsClient = (await import("../../open-sse/utils/tlsClient.ts")).default;
+    tlsClient = (await import("../../open-sse/utils/tlsClient.ts"))
+      .default as unknown as TlsClientWithInternals;
     tlsClient.resetCircuit();
   });
 

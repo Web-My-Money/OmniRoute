@@ -16,6 +16,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { getExecutor, hasSpecializedExecutor } from "../../open-sse/executors/index.ts";
 import { SEARCH_PROVIDERS } from "../../open-sse/config/searchRegistry.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const SEARCH_PROVIDER_IDS = Object.keys(SEARCH_PROVIDERS);
 
@@ -43,10 +44,10 @@ test("#10274: a chat-completion request routed to a search provider must not sil
     assert.throws(
       () => getExecutor(id),
       (err) => {
-        assert.match(err.message, /search provider/i);
-        assert.match(err.message, /does not support chat completions/i);
-        assert.match(err.message, /\/v1\/search/i);
-        assert.equal(err.status, 400);
+        assert.match((err as LooseDeep).message, /search provider/i);
+        assert.match((err as LooseDeep).message, /does not support chat completions/i);
+        assert.match((err as LooseDeep).message, /\/v1\/search/i);
+        assert.equal((err as LooseDeep).status, 400);
         return true;
       },
       `search provider '${id}' must raise a clear error instead of inheriting OpenAI's base URL/config`

@@ -28,6 +28,7 @@ import {
   M365_OAUTH_CLIENT_ID,
   M365_REFRESH_LEAD_MS,
 } from "../../open-sse/executors/copilot-m365-connection.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ── Metrics follow-up frame ────────────────────────────────────────────────
 
@@ -48,7 +49,7 @@ test("2026-08-21: buildChatInvocation matches the recaptured arguments[0] key se
     sessionId: "22222222-2222-2222-2222-222222222222",
     requestId: "33333333-3333-3333-3333-333333333333",
     conversationId: "44444444-4444-4444-4444-444444444444",
-  }).arguments[0] as Record<string, unknown>;
+  }).arguments[0] as LooseDeep;
 
   // Exact key set from the 2026-08-21 capture (issue: individual/consumer M365
   // Copilot calls got only SignalR keepalive pings and no type:1 update at all
@@ -111,8 +112,8 @@ test("2026-08-21: the message object carries the recaptured rich shape", () => {
     sessionId: "s",
     requestId: "r",
     conversationId: "c",
-  }).arguments[0] as Record<string, unknown>;
-  const message = arg.message as Record<string, unknown>;
+  }).arguments[0] as LooseDeep;
+  const message = arg.message as LooseDeep;
 
   assert.deepEqual(Object.keys(message).sort(), [
     "adaptiveCards",

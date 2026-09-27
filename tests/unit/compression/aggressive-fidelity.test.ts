@@ -8,6 +8,7 @@ import {
 import { applyAging } from "../../../open-sse/services/compression/progressiveAging.ts";
 import { compressAggressive } from "../../../open-sse/services/compression/aggressive.ts";
 import type { AgingThresholds } from "../../../open-sse/services/compression/types.ts";
+import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
 // ─── ISSUE 1 — B-AGG-TEXTDROP ────────────────────────────────────────────────
 // `replaceTextContent` previously dropped every text block after the first via
@@ -76,7 +77,7 @@ describe("replaceTextContent — multi-text-block fidelity (B-AGG-TEXTDROP)", ()
       msgs.push({ role: i % 2 ? "assistant" : "user", content: `filler ${i} ${"z".repeat(60)}` });
     }
     const result = applyAging(msgs, { fullSummary: 10, moderate: 10, light: 3, verbatim: 1 });
-    const out = extractTextContent(result.messages[0].content as ChatMessageLike["content"]);
+    const out = extractTextContent((result.messages[0] as ChatMessageLike).content);
     // Light tier keeps content; both blocks' text must still be present (joined).
     assert.ok(out.includes("alpha-marker"), "first text block lost during aging");
     assert.ok(out.includes("bravo-marker"), "second text block silently dropped during aging");
@@ -142,7 +143,10 @@ describe("aggressive — Anthropic tool_result compression (B-AGG-ANTHROPIC-TR)"
     );
     assert.ok(tr, "tool_result block must survive");
     assert.equal(tr!.tool_use_id, "toolu_ERR");
-    assert.ok((tr!.content as string).length < errorOutput.length, "string tool_result not compressed");
+    assert.ok(
+      (tr!.content as string).length < errorOutput.length,
+      "string tool_result not compressed"
+    );
   });
 });
 
@@ -160,7 +164,7 @@ describe("progressiveAging — structured-content tag safety (B-AGG-JSONTAG)", (
       { role: "assistant", content: "c" },
     ];
     const result = applyAging(msgs, t);
-    const c = result.messages[0].content;
+    const c = (result.messages[0] as LooseDeep).content;
     return typeof c === "string" ? c : extractTextContent(c as ChatMessageLike["content"]);
   }
 
@@ -176,7 +180,7 @@ describe("progressiveAging — structured-content tag safety (B-AGG-JSONTAG)", (
   });
 
   it("keeps a fenced code block valid after aging (tag outside the fence)", () => {
-    const fenced = "```json\n{\n  \"a\": 1,\n  \"b\": [1, 2, 3]\n}\n```";
+    const fenced = '```json\n{\n  "a": 1,\n  "b": [1, 2, 3]\n}\n```';
     const aged = agedFirstContent(fenced, thresholds);
     // The fenced block must still be present and intact.
     assert.ok(aged.includes("```json"), "opening fence lost");
@@ -194,16 +198,15 @@ describe("progressiveAging — structured-content tag safety (B-AGG-JSONTAG)", (
     ];
     const first = applyAging(msgs, thresholds);
     const second = applyAging(first.messages as ChatMessageLike[], thresholds);
-    const firstContent = JSON.stringify(
-      first.messages.map((m) => (m as ChatMessageLike).content)
-    );
+    const firstContent = JSON.stringify(first.messages.map((m) => (m as ChatMessageLike).content));
     const secondContent = JSON.stringify(
       second.messages.map((m) => (m as ChatMessageLike).content)
     );
     assert.equal(secondContent, firstContent, "second aging pass changed structured content");
     // And it must still be parseable.
     const c0 = (second.messages[0] as ChatMessageLike).content;
-    const text0 = typeof c0 === "string" ? c0 : extractTextContent(c0 as ChatMessageLike["content"]);
+    const text0 =
+      typeof c0 === "string" ? c0 : extractTextContent(c0 as ChatMessageLike["content"]);
     assert.doesNotThrow(() => JSON.parse(text0), "JSON corrupted after two aging passes");
   });
 });

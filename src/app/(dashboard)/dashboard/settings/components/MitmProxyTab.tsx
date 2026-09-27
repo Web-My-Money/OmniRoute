@@ -380,7 +380,7 @@ export default function MitmProxyTab() {
           <div className="p-6 text-center text-sm text-text-muted">{t("noTargets")}</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
+            <table className="w-full min-w-[760px] text-start text-sm">
               <thead className="text-xs uppercase tracking-wider text-text-muted">
                 <tr>
                   <th className="px-4 py-3 font-medium">{t("target")}</th>

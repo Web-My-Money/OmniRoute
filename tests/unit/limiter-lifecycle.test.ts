@@ -50,7 +50,7 @@ await flushBackgroundWork();
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -67,7 +67,7 @@ test.after(async () => {
   await rateLimitManager.__resetRateLimitManagerForTests();
   await flushBackgroundWork();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 /**
@@ -221,7 +221,6 @@ test("request queue refresh treats zero limits as unbounded for existing limiter
   );
 
   await rateLimitManager.applyRequestQueueSettings({
-    enabled: true,
     autoEnableApiKeyProviders: false,
     maxWaitMs: 100,
     requestsPerMinute: 0,

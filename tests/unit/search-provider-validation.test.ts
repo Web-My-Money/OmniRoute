@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { validateProviderApiKey } = await import("../../src/lib/providers/validation.ts");
 
@@ -53,7 +54,7 @@ test("Kimi Code API-key validation uses the messages endpoint for both provider 
   const originalFetch = globalThis.fetch;
   let calls = [];
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({
       url: String(url),
       method: init.method || "GET",

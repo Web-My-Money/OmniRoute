@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-// @ts-expect-error — plain .mjs CLI module, no type declarations by design.
+//
 import {
   isRemoteBaseUrl,
   pushCredentialBlob,

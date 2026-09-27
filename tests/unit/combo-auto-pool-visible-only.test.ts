@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // Regression coverage for the "auto combos must only pick user-visible models"
 // fix (2026-08-15): a provider whose connection only has synced/free models
@@ -24,7 +25,7 @@ const combo = await import("../../open-sse/services/combo.ts");
 
 function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -32,19 +33,19 @@ test.beforeEach(() => resetStorage());
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   if (ORIGINAL_DATA_DIR === undefined) delete process.env.DATA_DIR;
   else process.env.DATA_DIR = ORIGINAL_DATA_DIR;
 });
 
 async function createOpenRouterConnectionWithFreeSync() {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "OpenRouter",
     apiKey: "sk-test-openrouter",
     providerSpecificData: { importFreeModelsOnly: true },
-  });
+  })) as JsonRecord & { id: string };
   const connectionId = (conn as { id?: string }).id;
   assert.ok(connectionId, "created openrouter connection must expose an id");
   await modelsDb.replaceSyncedAvailableModelsForConnection("openrouter", connectionId, [
@@ -98,19 +99,21 @@ test("expandAutoComboCandidatePool excludes catalog-only models (openrouter/auto
   );
 
   assert.ok(
-    expanded.some((t) => t.provider === "openrouter" && t.modelStr === "openrouter/liquid/lfm-2.5-2.6b:free"),
+    expanded.some(
+      (t) => t.provider === "openrouter" && t.modelStr === "openrouter/liquid/lfm-2.5-2.6b:free"
+    ),
     "a synced free model must be expanded into the pool"
   );
 });
 
 test("virtual auto-combo pool falls back to the static catalog when the provider has no synced/custom models", async () => {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "OpenAI",
     apiKey: "sk-test-openai",
     defaultModel: "gpt-4o-mini",
-  });
+  })) as JsonRecord & { id: string };
 
   const prepared = await virtualFactory.prepareVirtualAutoComboInputs();
   const pool = prepared.regularCandidates;
@@ -129,18 +132,18 @@ test("virtual auto-combo pool filters EVERY provider with partial sync, not just
   // catalog but are NOT synced → must be absent). kilocode: 359 synced models,
   // all with the kilocode provider prefix in the static registry → must be the
   // only kilocode candidates.
-  const openaiConn = await providersDb.createProviderConnection({
+  const openaiConn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "OpenAI",
     apiKey: "sk-test-openai",
-  });
-  const kilocodeConn = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const kilocodeConn = (await providersDb.createProviderConnection({
     provider: "kilocode",
     authType: "apikey",
     name: "KiloCode",
     apiKey: "sk-test-kilocode",
-  });
+  })) as JsonRecord & { id: string };
   const openaiId = (openaiConn as { id?: string }).id;
   const kilocodeId = (kilocodeConn as { id?: string }).id;
   await modelsDb.replaceSyncedAvailableModelsForConnection("openai", openaiId, [

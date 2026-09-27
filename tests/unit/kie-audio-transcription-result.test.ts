@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { handleAudioTranscription } = await import("../../open-sse/handlers/audioTranscription.ts");
 
@@ -44,7 +45,7 @@ test("Kie transcription returns text from every supported result envelope", asyn
   try {
     for (const testCase of cases) {
       const calls: string[] = [];
-      globalThis.fetch = async (url, options = {}) => {
+      globalThis.fetch = async (url, options: MockRequestInit = {}) => {
         const requestUrl = String(url);
         calls.push(requestUrl);
 

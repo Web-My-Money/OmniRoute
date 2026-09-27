@@ -54,7 +54,7 @@ function solidColorPng(size: number, rgb: [number, number, number]): Buffer {
       c ^= buf[i];
       for (let k = 0; k < 8; k++) c = c & 1 ? (c >>> 1) ^ 0xedb88320 : c >>> 1;
     }
-    return (~c) >>> 0;
+    return ~c >>> 0;
   };
   const chunk = (type: string, data: Buffer): Buffer => {
     const t = Buffer.from(type, "ascii");
@@ -77,7 +77,12 @@ function solidColorPng(size: number, rgb: [number, number, number]): Buffer {
   ]);
   const raw = Buffer.concat(Array.from({ length: size }, () => row));
   const idat = zlib.deflateSync(raw);
-  return Buffer.concat([sig, chunk("IHDR", ihdr), chunk("IDAT", idat), chunk("IEND", Buffer.alloc(0))]);
+  return Buffer.concat([
+    sig,
+    chunk("IHDR", ihdr),
+    chunk("IDAT", idat),
+    chunk("IEND", Buffer.alloc(0)),
+  ]);
 }
 
 const weatherTools = [
@@ -107,7 +112,7 @@ test(
       stream: false,
       credentials: { accessToken: TOKEN },
       signal: undefined,
-      log: () => {},
+      log: {},
       upstreamExtraHeaders: undefined,
     });
     assert.equal(result.response.status, 200);
@@ -131,7 +136,7 @@ test("[cursor-e2e] system prompt biases the response", { skip: skipReason }, asy
     stream: false,
     credentials: { accessToken: TOKEN },
     signal: undefined,
-    log: () => {},
+    log: {},
     upstreamExtraHeaders: undefined,
   });
   assert.equal(result.response.status, 200);
@@ -164,7 +169,7 @@ test("[cursor-e2e] tool-use single-turn returns tool_calls", { skip: skipReason 
     stream: false,
     credentials: { accessToken: TOKEN },
     signal: undefined,
-    log: () => {},
+    log: {},
     upstreamExtraHeaders: undefined,
   });
   assert.equal(result.response.status, 200);
@@ -188,7 +193,7 @@ test(
       stream: true,
       credentials: { accessToken: TOKEN },
       signal: undefined,
-      log: () => {},
+      log: {},
       upstreamExtraHeaders: undefined,
     });
     assert.equal(result.response.status, 200);
@@ -223,25 +228,29 @@ test(
 // the multi-turn tool round-trip (inline h2 session reuse) and the cold-resume
 // fallback. All were validated end-to-end against the live endpoint.
 
-test("[cursor-e2e] composer-2.5 plain chat returns assistant text", { skip: skipReason }, async () => {
-  const { CursorExecutor } = await import("../../open-sse/executors/cursor.ts");
-  const exec = new CursorExecutor();
-  const result = await exec.execute({
-    model: COMPOSER_MODEL,
-    body: { messages: [{ role: "user", content: "Say only the word PING and nothing else." }] },
-    stream: false,
-    credentials: { accessToken: TOKEN },
-    signal: undefined,
-    log: () => {},
-    upstreamExtraHeaders: undefined,
-  });
-  assert.equal(result.response.status, 200);
-  const json = await result.response.json();
-  assert.equal(json.choices[0].finish_reason, "stop");
-  assert.match(json.choices[0].message.content, /PING/i);
-  // Usage is always present on the success path (OpenAI contract).
-  assert.equal(typeof json.usage?.total_tokens, "number");
-});
+test(
+  "[cursor-e2e] composer-2.5 plain chat returns assistant text",
+  { skip: skipReason },
+  async () => {
+    const { CursorExecutor } = await import("../../open-sse/executors/cursor.ts");
+    const exec = new CursorExecutor();
+    const result = await exec.execute({
+      model: COMPOSER_MODEL,
+      body: { messages: [{ role: "user", content: "Say only the word PING and nothing else." }] },
+      stream: false,
+      credentials: { accessToken: TOKEN },
+      signal: undefined,
+      log: {},
+      upstreamExtraHeaders: undefined,
+    });
+    assert.equal(result.response.status, 200);
+    const json = await result.response.json();
+    assert.equal(json.choices[0].finish_reason, "stop");
+    assert.match(json.choices[0].message.content, /PING/i);
+    // Usage is always present on the success path (OpenAI contract).
+    assert.equal(typeof json.usage?.total_tokens, "number");
+  }
+);
 
 test(
   "[cursor-e2e] composer-2.5 surfaces reasoning as reasoning_content",
@@ -259,7 +268,7 @@ test(
       stream: false,
       credentials: { accessToken: TOKEN },
       signal: undefined,
-      log: () => {},
+      log: {},
       upstreamExtraHeaders: undefined,
     });
     assert.equal(result.response.status, 200);
@@ -277,9 +286,8 @@ test(
   { skip: skipReason },
   async () => {
     const { CursorExecutor } = await import("../../open-sse/executors/cursor.ts");
-    const { cursorSessionManager } = await import(
-      "../../open-sse/services/cursorSessionManager.ts"
-    );
+    const { cursorSessionManager } =
+      await import("../../open-sse/services/cursorSessionManager.ts");
     const exec = new CursorExecutor();
     const conversationId = `e2e-rt-${Date.now()}`;
 
@@ -294,7 +302,7 @@ test(
       stream: false,
       credentials: { accessToken: TOKEN },
       signal: undefined,
-      log: () => {},
+      log: {},
       upstreamExtraHeaders: undefined,
     });
     const j1 = await r1.response.json();
@@ -327,7 +335,7 @@ test(
       stream: false,
       credentials: { accessToken: TOKEN },
       signal: undefined,
-      log: () => {},
+      log: {},
       upstreamExtraHeaders: undefined,
     });
     const j2 = await r2.response.json();
@@ -374,7 +382,7 @@ test(
       stream: false,
       credentials: { accessToken: TOKEN },
       signal: undefined,
-      log: () => {},
+      log: {},
       upstreamExtraHeaders: undefined,
     });
     assert.equal(result.response.status, 200);
@@ -400,7 +408,7 @@ test(
       stream: false,
       credentials: { accessToken: TOKEN },
       signal: undefined,
-      log: () => {},
+      log: {},
       upstreamExtraHeaders: undefined,
     });
     assert.equal(result.response.status, 200);
@@ -425,7 +433,7 @@ test(
       stream: true,
       credentials: { accessToken: TOKEN },
       signal: undefined,
-      log: () => {},
+      log: {},
       upstreamExtraHeaders: undefined,
     });
     assert.equal(result.response.status, 200);
@@ -475,7 +483,7 @@ test(
       stream: false,
       credentials: { accessToken: TOKEN },
       signal: undefined,
-      log: () => {},
+      log: {},
       upstreamExtraHeaders: undefined,
     });
     assert.equal(result.response.status, 200);
@@ -514,7 +522,7 @@ test(
       stream: false,
       credentials: { accessToken: TOKEN },
       signal: undefined,
-      log: () => {},
+      log: {},
       upstreamExtraHeaders: undefined,
     });
     assert.equal(result.response.status, 200);

@@ -83,7 +83,9 @@ export default function AccessTokensTab() {
       setScope("read");
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : L("accessTokensCreateError", "Could not create token."));
+      setError(
+        e instanceof Error ? e.message : L("accessTokensCreateError", "Could not create token.")
+      );
     } finally {
       setCreating(false);
     }
@@ -161,7 +163,9 @@ export default function AccessTokensTab() {
               onChange={(e) => setExpires(e.target.value)}
             />
             <Button onClick={createToken} disabled={creating || !name.trim()}>
-              {creating ? L("accessTokensCreating", "Creating…") : L("accessTokensCreate", "Create")}
+              {creating
+                ? L("accessTokensCreating", "Creating…")
+                : L("accessTokensCreate", "Create")}
             </Button>
           </div>
 
@@ -210,13 +214,21 @@ export default function AccessTokensTab() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border text-left text-text-muted">
-                    <th className="py-2 pr-4 font-medium">{L("accessTokensColName", "Name")}</th>
-                    <th className="py-2 pr-4 font-medium">{L("accessTokensColScope", "Scope")}</th>
-                    <th className="py-2 pr-4 font-medium">{L("accessTokensColPrefix", "Prefix")}</th>
-                    <th className="py-2 pr-4 font-medium">{L("accessTokensColStatus", "Status")}</th>
-                    <th className="py-2 pr-4 font-medium">{L("accessTokensColLastUsed", "Last used")}</th>
-                    <th className="py-2 pr-4 font-medium">{L("accessTokensColExpires", "Expires")}</th>
+                  <tr className="border-b border-border text-start text-text-muted">
+                    <th className="py-2 pe-4 font-medium">{L("accessTokensColName", "Name")}</th>
+                    <th className="py-2 pe-4 font-medium">{L("accessTokensColScope", "Scope")}</th>
+                    <th className="py-2 pe-4 font-medium">
+                      {L("accessTokensColPrefix", "Prefix")}
+                    </th>
+                    <th className="py-2 pe-4 font-medium">
+                      {L("accessTokensColStatus", "Status")}
+                    </th>
+                    <th className="py-2 pe-4 font-medium">
+                      {L("accessTokensColLastUsed", "Last used")}
+                    </th>
+                    <th className="py-2 pe-4 font-medium">
+                      {L("accessTokensColExpires", "Expires")}
+                    </th>
                     <th className="py-2 font-medium" />
                   </tr>
                 </thead>
@@ -225,23 +237,23 @@ export default function AccessTokensTab() {
                     const revoked = Boolean(tk.revokedAt);
                     return (
                       <tr key={tk.id} className="border-b border-border/50">
-                        <td className="py-2 pr-4 text-text">{tk.name}</td>
-                        <td className="py-2 pr-4">
+                        <td className="py-2 pe-4 text-text">{tk.name}</td>
+                        <td className="py-2 pe-4">
                           <Badge variant={SCOPE_VARIANT[tk.scope] || "default"}>{tk.scope}</Badge>
                         </td>
-                        <td className="py-2 pr-4 font-mono text-xs text-text-muted">
+                        <td className="py-2 pe-4 font-mono text-xs text-text-muted">
                           {tk.tokenPrefix}
                         </td>
-                        <td className="py-2 pr-4">
+                        <td className="py-2 pe-4">
                           <Badge variant={revoked ? "default" : "success"}>
                             {revoked
                               ? L("accessTokensStatusRevoked", "revoked")
                               : L("accessTokensStatusActive", "active")}
                           </Badge>
                         </td>
-                        <td className="py-2 pr-4 text-text-muted">{fmt(tk.lastUsedAt)}</td>
-                        <td className="py-2 pr-4 text-text-muted">{fmt(tk.expiresAt)}</td>
-                        <td className="py-2 text-right">
+                        <td className="py-2 pe-4 text-text-muted">{fmt(tk.lastUsedAt)}</td>
+                        <td className="py-2 pe-4 text-text-muted">{fmt(tk.expiresAt)}</td>
+                        <td className="py-2 text-end">
                           {!revoked && (
                             <Button variant="ghost" size="sm" onClick={() => setRevokeTarget(tk)}>
                               {L("accessTokensRevoke", "Revoke")}

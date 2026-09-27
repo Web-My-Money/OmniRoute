@@ -17,15 +17,14 @@ const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-executor-
 process.env.DATA_DIR = TEST_DATA_DIR;
 
 // Dynamic imports AFTER DATA_DIR is set so db/core.ts picks up the temp path.
-const { getExecutor, hasSpecializedExecutor, DefaultExecutor } = await import(
-  "../../open-sse/executors/index.ts"
-);
+const { getExecutor, hasSpecializedExecutor, DefaultExecutor } =
+  await import("../../open-sse/executors/index.ts");
 const { PROVIDERS } = await import("../../open-sse/config/constants.ts");
 const { SEARCH_PROVIDERS } = await import("../../open-sse/config/searchRegistry.ts");
 const { goldenSnapshot } = await import("../helpers/goldenSnapshot.ts");
 
 test.after(() => {
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // The specialized keys are not exported; enumerate them through the public
@@ -34,7 +33,10 @@ test.after(() => {
 // to (or removed from) the hard-coded map cannot hide from the snapshot.
 function readSpecializedKeys(): string[] {
   const src = fs.readFileSync(
-    path.resolve(path.dirname(new URL(import.meta.url).pathname), "../../open-sse/executors/index.ts"),
+    path.resolve(
+      path.dirname(new URL(import.meta.url).pathname),
+      "../../open-sse/executors/index.ts"
+    ),
     "utf8"
   );
   const mapMatch = src.match(/const executors = \{([\s\S]*?)\n\};/);
@@ -67,8 +69,7 @@ function describeExecutor(instance: unknown): {
   return {
     className: inst.constructor.name,
     provider: typeof inst.provider === "string" ? inst.provider : null,
-    configSource:
-      cfg == null ? null : (providerConfigKeyByRef.get(cfg) ?? "<custom-config>"),
+    configSource: cfg == null ? null : (providerConfigKeyByRef.get(cfg) ?? "<custom-config>"),
   };
 }
 

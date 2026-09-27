@@ -132,7 +132,7 @@ if (phase !== "before" && phase !== "after") {
 
 let connectionId: string;
 if (phase === "before") {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: "codex-pool-restart",
@@ -144,7 +144,7 @@ if (phase === "before") {
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
   connectionId = connection.id;
 } else {
   const inventory = await providersDb.getProviderConnections({ provider: "codex" });
@@ -221,3 +221,5 @@ try {
   globalThis.fetch = originalFetch;
   if (server) await closeServer(server);
 }
+
+import type { JsonRecord } from "../../../src/shared/types/json.ts";

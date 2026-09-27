@@ -24,7 +24,7 @@ test("isPaidModelTarget — comma-separated form matches slash form", () => {
 
 test("isPaidModelTarget — empty/non-string input → 'unknown'", () => {
   assert.equal(isPaidModelTarget(""), "unknown");
-  // @ts-expect-error — exercising runtime guard against non-string input
+  //
   assert.equal(isPaidModelTarget(undefined), "unknown");
 });
 

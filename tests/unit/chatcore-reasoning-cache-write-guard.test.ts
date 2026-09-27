@@ -18,6 +18,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(
   path.join(os.tmpdir(), "omniroute-chatcore-reasoning-cache-write-guard-")
@@ -104,7 +105,7 @@ async function invokeChatCoreNonStreaming(provider: string, model: string, toolC
   globalThis.fetch = async () => nonStreamingUpstreamResponse(toolCallId, model);
   try {
     const body = { model, messages: [{ role: "user", content: "call the tool" }], stream: false };
-    await handleChatCore({
+    await looseAsync(handleChatCore)({
       body,
       modelInfo: { provider, model, extendedContext: false },
       credentials: { apiKey: "sk-test", providerSpecificData: {} },
@@ -126,7 +127,7 @@ async function invokeChatCoreStreaming(provider: string, model: string, toolCall
   globalThis.fetch = async () => streamingUpstreamResponse(toolCallId);
   try {
     const body = { model, messages: [{ role: "user", content: "call the tool" }], stream: true };
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body,
       modelInfo: { provider, model, extendedContext: false },
       credentials: { apiKey: "sk-test", providerSpecificData: {} },
@@ -168,7 +169,7 @@ test.after(() => {
   try {
     clearReasoningCacheAll();
   } catch {}
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("non-streaming: a replay provider (xiaomi-mimo) populates the reasoning cache", async () => {

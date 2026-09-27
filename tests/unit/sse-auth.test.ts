@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import { toRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-sse-auth-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -20,7 +22,7 @@ const oauthOccupancy = await import("../../open-sse/services/oauthSessionOccupan
 async function resetStorage() {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -28,8 +30,9 @@ function futureIso(ms = 60_000) {
   return new Date(Date.now() + ms).toISOString();
 }
 
+// reason: overrides is a bag of optional column values forwarded verbatim
 async function seedConnection(provider: string, overrides: any = {}) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: overrides.authType || "apikey",
     name: overrides.name || `${provider}-${Math.random().toString(16).slice(2, 8)}`,
@@ -53,8 +56,27 @@ async function seedConnection(provider: string, overrides: any = {}) {
     providerSpecificData: overrides.providerSpecificData || {},
     lastUsedAt: overrides.lastUsedAt,
     consecutiveUseCount: overrides.consecutiveUseCount,
-  });
+  })) as LooseRow & { id: string };
 }
+
+// Test-local loose accessors: the production credential fns return a wide
+// union (sentinel shapes | env creds | connection rows) — each test asserts
+// the branch it seeded, so a loose record keeps assertions honest without
+// per-site narrowing casts.
+type LooseRow = JsonRecord & { id?: string; connectionId?: string };
+
+const getCreds = async (...args: Parameters<typeof auth.getProviderCredentials>) =>
+  (await auth.getProviderCredentials(...args)) as LooseRow | null;
+
+const getCredsPreflight = async (
+  ...args: Parameters<typeof auth.getProviderCredentialsWithQuotaPreflight>
+) => (await auth.getProviderCredentialsWithQuotaPreflight(...args)) as LooseRow | null;
+
+const getConnById = async (...args: Parameters<typeof providersDb.getProviderConnectionById>) =>
+  (await providersDb.getProviderConnectionById(...args)) as LooseRow | null;
+
+const updateConn = async (...args: Parameters<typeof providersDb.updateProviderConnection>) =>
+  (await providersDb.updateProviderConnection(...args)) as LooseRow | null;
 
 function msUntil(timestamp) {
   return new Date(timestamp).getTime() - Date.now();
@@ -72,7 +94,7 @@ test.beforeEach(async () => {
 test.after(async () => {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("extractApiKey parses bearer headers and isValidApiKey validates persisted keys", async () => {
@@ -118,7 +140,7 @@ test("extractApiKey parses bearer headers and isValidApiKey validates persisted 
 });
 
 test("getProviderCredentials identifies synthetic no-auth credentials", async () => {
-  const credentials = await auth.getProviderCredentials("opencode");
+  const credentials = await getCreds("opencode");
 
   assert.equal(credentials?.connectionId, "noauth");
   assert.equal(credentials?.authType, "none");
@@ -132,7 +154,7 @@ test("getProviderCredentials reports rate limiting when only inactive suppressed
     rateLimitedUntil: retryAfter,
   });
 
-  const result = await auth.getProviderCredentials("openai");
+  const result = await getCreds("openai");
 
   assert.equal(result.allRateLimited, true);
   assert.equal(result.retryAfter, retryAfter);
@@ -145,10 +167,10 @@ test("codex session account affinity is opt-in and honors TTL", async () => {
   await seedConnection("codex", { name: "codex-affinity-a", priority: 1 });
   await seedConnection("codex", { name: "codex-affinity-b", priority: 2 });
 
-  const withoutAffinityA = await auth.getProviderCredentials("codex", null, null, "gpt-5", {
+  const withoutAffinityA = await getCreds("codex", null, null, "gpt-5", {
     sessionKey: "session-without-affinity",
   });
-  const withoutAffinityB = await auth.getProviderCredentials("codex", null, null, "gpt-5", {
+  const withoutAffinityB = await getCreds("codex", null, null, "gpt-5", {
     sessionKey: "session-without-affinity",
   });
 
@@ -161,10 +183,10 @@ test("codex session account affinity is opt-in and honors TTL", async () => {
 
   await settingsDb.updateSettings({ codexSessionAffinityTtlMs: 60_000 });
 
-  const withAffinityA = await auth.getProviderCredentials("codex", null, null, "gpt-5", {
+  const withAffinityA = await getCreds("codex", null, null, "gpt-5", {
     sessionKey: "session-with-affinity",
   });
-  const withAffinityB = await auth.getProviderCredentials("codex", null, null, "gpt-5", {
+  const withAffinityB = await getCreds("codex", null, null, "gpt-5", {
     sessionKey: "session-with-affinity",
   });
 
@@ -201,7 +223,7 @@ test("getProviderCredentials returns last error metadata when active accounts ar
     errorCode: 429,
   });
 
-  const result = await auth.getProviderCredentials("openai");
+  const result = await getCreds("openai");
 
   assert.equal(result.allRateLimited, true);
   assert.equal(result.retryAfter, retryAfter);
@@ -225,14 +247,14 @@ test("getProviderCredentials enforces generic quota policy unless explicitly byp
     daily: { remainingPercentage: 10, resetAt },
   });
 
-  const blocked = await auth.getProviderCredentials("openai");
-  const bypassed = await auth.getProviderCredentials("openai", null, null, null, {
+  const blocked = await getCreds("openai");
+  const bypassed = await getCreds("openai", null, null, null, {
     bypassQuotaPolicy: true,
   });
 
   assert.equal(blocked.allRateLimited, true);
   assert.equal(blocked.lastErrorCode, 429);
-  assert.match(blocked.lastError, /configured quota threshold/i);
+  assert.match(blocked.lastError as string, /configured quota threshold/i);
   assert.equal(blocked.retryAfter, resetAt);
   assert.equal(bypassed.connectionId, connection.id);
 });
@@ -278,32 +300,22 @@ test("getProviderCredentialsWithQuotaPreflight persists exhausted accounts until
     };
   });
 
-  const selected = await auth.getProviderCredentialsWithQuotaPreflight(
-    "openai",
-    null,
-    null,
-    "glm-5.2"
-  );
+  const selected = await getCredsPreflight("openai", null, null, "glm-5.2");
 
   assert.equal((selected as any).connectionId, healthy.id);
-  const blockedAfter = await providersDb.getProviderConnectionById(blocked.id);
+  const blockedAfter = await getConnById(blocked.id);
   assert.equal(blockedAfter?.testStatus, "unavailable");
   assert.equal(blockedAfter?.rateLimitedUntil, resetAt);
   assert.equal(blockedAfter?.lastErrorType, "quota_exhausted");
   assert.equal(blockedAfter?.lastErrorSource, "quota_preflight");
   assert.match(String(blockedAfter?.lastError), /glm-5\.2/);
 
-  const healthyAfter = await providersDb.getProviderConnectionById(healthy.id);
+  const healthyAfter = await getConnById(healthy.id);
   assert.equal(healthyAfter?.testStatus, "active");
   assert.equal(healthyAfter?.rateLimitedUntil ?? null, null);
 
   preflightCalls.length = 0;
-  const selectedAgain = await auth.getProviderCredentialsWithQuotaPreflight(
-    "openai",
-    null,
-    null,
-    "glm-5.2"
-  );
+  const selectedAgain = await getCredsPreflight("openai", null, null, "glm-5.2");
   assert.equal((selectedAgain as any).connectionId, healthy.id);
   assert.deepEqual(
     preflightCalls,
@@ -329,13 +341,13 @@ test("getProviderCredentialsWithQuotaPreflight returns allRateLimited when a for
     resetAt: futureIso(120_000),
   }));
 
-  const selected = await auth.getProviderCredentialsWithQuotaPreflight("openai", null, null, null, {
+  const selected = await getCredsPreflight("openai", null, null, null, {
     forcedConnectionId: (blocked as any).id,
   });
 
   assert.equal(selected.allRateLimited, true);
   assert.equal(selected.lastErrorCode, 429);
-  assert.match(selected.lastError, /quota preflight/i);
+  assert.match(selected.lastError as string, /quota preflight/i);
 });
 
 test("getProviderCredentialsWithQuotaPreflight skips the upstream fetcher when no limits are configured", async () => {
@@ -361,7 +373,7 @@ test("getProviderCredentialsWithQuotaPreflight skips the upstream fetcher when n
     );
   });
 
-  const selected = await auth.getProviderCredentialsWithQuotaPreflight("openai");
+  const selected = await getCredsPreflight("openai");
 
   assert.equal((selected as any).connectionId, conn.id);
   assert.equal(fetcherCalls, 0, "fetcher should not have been invoked");
@@ -392,7 +404,7 @@ test("getProviderCredentialsWithQuotaPreflight invokes the fetcher when the glob
     return null;
   });
 
-  await auth.getProviderCredentialsWithQuotaPreflight("openai");
+  await getCredsPreflight("openai");
   assert.equal(
     fetcherCalls,
     1,
@@ -407,7 +419,7 @@ test("getProviderCredentialsWithQuotaPreflight invokes the fetcher when the glob
     fetcherCalls++;
     throw new Error("must not run with factory global default");
   });
-  await auth.getProviderCredentialsWithQuotaPreflight("openai");
+  await getCredsPreflight("openai");
   assert.equal(fetcherCalls, 0, "fetcher should not run after settings reset to factory default");
 });
 
@@ -418,7 +430,7 @@ test("getProviderCredentialsWithQuotaPreflight invokes the fetcher when an overr
     name: "quota-preflight-with-override",
     apiKey: "sk-with-override",
   });
-  const updated = await providersDb.updateProviderConnection(conn.id, {
+  const updated = await updateConn(conn.id, {
     quotaWindowThresholds: { primary: 50 },
   });
   // Sanity: the override must be readable on the connection row (this is
@@ -428,7 +440,7 @@ test("getProviderCredentialsWithQuotaPreflight invokes the fetcher when an overr
     { primary: 50 },
     "override must be persisted on the connection row"
   );
-  const refetched = await providersDb.getProviderConnectionById(conn.id);
+  const refetched = await getConnById(conn.id);
   assert.deepEqual(
     (refetched as any)?.quotaWindowThresholds,
     { primary: 50 },
@@ -442,7 +454,7 @@ test("getProviderCredentialsWithQuotaPreflight invokes the fetcher when an overr
     return null; // null → preflight proceeds, no skip
   });
 
-  await auth.getProviderCredentialsWithQuotaPreflight("openai");
+  await getCredsPreflight("openai");
   assert.equal(fetcherCalls, 1, "fetcher should have been invoked exactly once");
 });
 
@@ -483,7 +495,7 @@ test("getProviderCredentialsWithQuotaPreflight: explicit quotaPreflightEnabled:f
     return { used: 98, total: 100, percentUsed: 0.98 };
   });
 
-  const selected = await auth.getProviderCredentialsWithQuotaPreflight("github");
+  const selected = await getCredsPreflight("github");
 
   assert.equal(
     fetcherCalls,
@@ -515,16 +527,16 @@ test("getProviderCredentials keeps separate codex affinity per session", async (
     lastUsedAt: new Date(Date.now() - 10_000).toISOString(),
   });
 
-  const sessionA1 = await auth.getProviderCredentials("codex", null, null, "gpt-5.5", {
+  const sessionA1 = await getCreds("codex", null, null, "gpt-5.5", {
     sessionKey: "session-a",
   });
-  const sessionB1 = await auth.getProviderCredentials("codex", null, null, "gpt-5.5", {
+  const sessionB1 = await getCreds("codex", null, null, "gpt-5.5", {
     sessionKey: "session-b",
   });
-  const sessionA2 = await auth.getProviderCredentials("codex", null, null, "gpt-5.5", {
+  const sessionA2 = await getCreds("codex", null, null, "gpt-5.5", {
     sessionKey: "session-a",
   });
-  const sessionB2 = await auth.getProviderCredentials("codex", null, null, "gpt-5.5", {
+  const sessionB2 = await getCreds("codex", null, null, "gpt-5.5", {
     sessionKey: "session-b",
   });
 
@@ -549,14 +561,14 @@ test("concurrent OAuth selections reserve different available accounts atomicall
     name: "codex-occupancy-b",
     priority: 1,
   });
-  assert.ok(second.priority <= first.priority + 1);
+  assert.ok(Number(second.priority) <= Number(first.priority) + 1);
 
   const [sessionA, sessionB] = await Promise.all([
-    auth.getProviderCredentials("codex", null, null, "gpt-5.5", {
+    getCreds("codex", null, null, "gpt-5.5", {
       sessionKey: "occupancy-session-a",
       reserveOAuthSession: true,
     }),
-    auth.getProviderCredentials("codex", null, null, "gpt-5.5", {
+    getCreds("codex", null, null, "gpt-5.5", {
       sessionKey: "occupancy-session-b",
       reserveOAuthSession: true,
     }),
@@ -569,8 +581,8 @@ test("concurrent OAuth selections reserve different available accounts atomicall
     1
   );
   assert.notEqual(sessionA.connectionId, sessionB.connectionId);
-  sessionA.releaseOAuthSession?.();
-  sessionB.releaseOAuthSession?.();
+  (sessionA.releaseOAuthSession as (() => void) | undefined)?.();
+  (sessionB.releaseOAuthSession as (() => void) | undefined)?.();
 });
 
 test("getProviderCredentials rebinds codex session when affinity connection is excluded", async () => {
@@ -588,13 +600,13 @@ test("getProviderCredentials rebinds codex session when affinity connection is e
     lastUsedAt: new Date(Date.now() - 10_000).toISOString(),
   });
 
-  const initial = await auth.getProviderCredentials("codex", null, null, "gpt-5.5", {
+  const initial = await getCreds("codex", null, null, "gpt-5.5", {
     sessionKey: "session-excluded",
   });
-  const rebound = await auth.getProviderCredentials("codex", first.id, null, "gpt-5.5", {
+  const rebound = await getCreds("codex", first.id, null, "gpt-5.5", {
     sessionKey: "session-excluded",
   });
-  const sticky = await auth.getProviderCredentials("codex", null, null, "gpt-5.5", {
+  const sticky = await getCreds("codex", null, null, "gpt-5.5", {
     sessionKey: "session-excluded",
   });
 
@@ -680,17 +692,17 @@ test("getProviderCredentials round-robin stays on the current account while belo
     priority: 2,
   });
 
-  await providersDb.updateProviderConnection(current.id, {
+  await updateConn(current.id, {
     lastUsedAt: new Date().toISOString(),
     consecutiveUseCount: 1,
   });
-  await providersDb.updateProviderConnection(other.id, {
+  await updateConn(other.id, {
     lastUsedAt: new Date(Date.now() - 60_000).toISOString(),
     consecutiveUseCount: 0,
   });
 
-  const selected = await auth.getProviderCredentials("openai");
-  const updated = await providersDb.getProviderConnectionById(current.id);
+  const selected = await getCreds("openai");
+  const updated = await getConnById(current.id);
 
   assert.equal(selected.connectionId, current.id);
   assert.equal(updated.consecutiveUseCount, 2);
@@ -703,7 +715,7 @@ test("getProviderCredentials returns null when only inactive non-rate-limited re
     testStatus: "active",
   });
 
-  const result = await auth.getProviderCredentials("openai");
+  const result = await getCreds("openai");
 
   assert.equal(result, null);
 });
@@ -718,7 +730,7 @@ test("getProviderCredentials honors allowedConnections filters", async () => {
     apiKey: "sk-selected",
   });
 
-  const selected = await auth.getProviderCredentials("openai", null, [(selectedConn as any).id]);
+  const selected = await getCreds("openai", null, [(selectedConn as any).id]);
 
   assert.equal(selected.connectionId, selectedConn.id);
   assert.equal(selected.apiKey, "sk-selected");
@@ -737,7 +749,7 @@ test("getProviderCredentials honors forcedConnectionId even when another account
     apiKey: "sk-forced",
   });
 
-  const selected = await auth.getProviderCredentials("openai", null, null, null, {
+  const selected = await getCreds("openai", null, null, null, {
     forcedConnectionId: (forcedConn as any).id,
   });
 
@@ -755,15 +767,9 @@ test("getProviderCredentials intersects forcedConnectionId with allowedConnectio
     apiKey: "sk-blocked",
   });
 
-  const selected = await auth.getProviderCredentials(
-    "openai",
-    null,
-    [(allowedConn as any).id],
-    null,
-    {
-      forcedConnectionId: (blockedConn as any).id,
-    }
-  );
+  const selected = await getCreds("openai", null, [(allowedConn as any).id], null, {
+    forcedConnectionId: (blockedConn as any).id,
+  });
 
   // #8893: a forced pin outside the eligible pool is DROPPED (not honored) so a
   // stale reset-aware pin cannot brick the request — selection falls back to the
@@ -779,8 +785,8 @@ test("getProviderCredentials retains rate-limited accounts when allowSuppressedC
     rateLimitedUntil: futureIso(),
   });
 
-  const blocked = await auth.getProviderCredentials("openai");
-  const bypassed = await auth.getProviderCredentials("openai", null, null, null, {
+  const blocked = await getCreds("openai");
+  const bypassed = await getCreds("openai", null, null, null, {
     allowSuppressedConnections: true,
   });
 
@@ -794,8 +800,8 @@ test("getProviderCredentials retains rate-limited accounts when allowRateLimited
     rateLimitedUntil: futureIso(),
   });
 
-  const blocked = await auth.getProviderCredentials("openai");
-  const bypassed = await auth.getProviderCredentials("openai", null, null, null, {
+  const blocked = await getCreds("openai");
+  const bypassed = await getCreds("openai", null, null, null, {
     allowRateLimitedConnections: true,
   });
 
@@ -810,11 +816,11 @@ test("getProviderCredentials retains terminal accounts for combo live tests", as
     backoffLevel: 4,
   });
 
-  const blocked = await auth.getProviderCredentials("openai");
-  const bypassed = await auth.getProviderCredentials("openai", null, null, null, {
+  const blocked = await getCreds("openai");
+  const bypassed = await getCreds("openai", null, null, null, {
     allowSuppressedConnections: true,
   });
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   assert.equal(blocked?.allExpired, true);
   assert.equal(bypassed.connectionId, connection.id);
@@ -837,9 +843,9 @@ test("getProviderCredentials skips codex scope-limited accounts unless suppressi
     },
   });
 
-  const blocked = await auth.getProviderCredentials("codex", null, null, "codex-spark-mini");
-  const normalCodex = await auth.getProviderCredentials("codex", null, null, "gpt-5.5");
-  const bypassed = await auth.getProviderCredentials("codex", null, null, "codex-spark-mini", {
+  const blocked = await getCreds("codex", null, null, "codex-spark-mini");
+  const normalCodex = await getCreds("codex", null, null, "gpt-5.5");
+  const bypassed = await getCreds("codex", null, null, "codex-spark-mini", {
     allowSuppressedConnections: true,
   });
 
@@ -866,7 +872,7 @@ test("getProviderCredentials reports allRateLimited when every account is model-
     "gemini-2.5-pro"
   );
 
-  const blocked = await auth.getProviderCredentials("gemini", null, null, "gemini-2.5-pro");
+  const blocked = await getCreds("gemini", null, null, "gemini-2.5-pro");
 
   assert.equal(blocked.allRateLimited, true);
   assert.equal(Number(blocked.lastErrorCode), 429);
@@ -884,9 +890,9 @@ test("getProviderCredentials auto-decays stale backoff metadata for recovered ac
     backoffLevel: 3,
   });
 
-  const selected = await auth.getProviderCredentials("openai");
+  const selected = await getCreds("openai");
   await flushWrites();
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   assert.equal(selected.connectionId, connection.id);
   assert.equal(updated.backoffLevel, 0);
@@ -908,11 +914,11 @@ test("getProviderCredentials falls back to a five-minute retry window when quota
     daily: { remainingPercentage: 0, resetAt: null },
   });
 
-  const result = await auth.getProviderCredentials("openai");
+  const result = await getCreds("openai");
 
   assert.equal(result.allRateLimited, true);
   assert.equal(result.lastErrorCode, 429);
-  assert.match(result.lastError, /configured quota threshold/i);
+  assert.match(result.lastError as string, /configured quota threshold/i);
   assert.ok(msUntil(result.retryAfter) > 240_000);
   assert.ok(msUntil(result.retryAfter) <= 305_000);
 });
@@ -936,7 +942,7 @@ test("getProviderCredentials prioritizes accounts that still have quota availabl
     daily: { remainingPercentage: 65, resetAt: futureIso() },
   });
 
-  const selected = await auth.getProviderCredentials("openai");
+  const selected = await getCreds("openai");
 
   assert.equal(selected.connectionId, available.id);
   assert.equal(selected.apiKey, "sk-available");
@@ -956,17 +962,17 @@ test("getProviderCredentials round-robin switches to the least recently used acc
     priority: 2,
   });
 
-  await providersDb.updateProviderConnection(current.id, {
+  await updateConn(current.id, {
     lastUsedAt: new Date().toISOString(),
     consecutiveUseCount: 2,
   });
-  await providersDb.updateProviderConnection(fallback.id, {
+  await updateConn(fallback.id, {
     lastUsedAt: new Date(Date.now() - 120_000).toISOString(),
     consecutiveUseCount: 0,
   });
 
-  const selected = await auth.getProviderCredentials("openai");
-  const updated = await providersDb.getProviderConnectionById(fallback.id);
+  const selected = await getCreds("openai");
+  const updated = await getConnById(fallback.id);
 
   assert.equal(selected.connectionId, fallback.id);
   assert.equal(updated.consecutiveUseCount, 1);
@@ -986,17 +992,17 @@ test("getProviderCredentials round-robin fallback mode excludes the failed accou
     priority: 2,
   });
 
-  await providersDb.updateProviderConnection(failed.id, {
+  await updateConn(failed.id, {
     lastUsedAt: new Date().toISOString(),
     consecutiveUseCount: 3,
   });
-  await providersDb.updateProviderConnection(fallback.id, {
+  await updateConn(fallback.id, {
     lastUsedAt: new Date(Date.now() - 120_000).toISOString(),
     consecutiveUseCount: 0,
   });
 
-  const selected = await auth.getProviderCredentials("openai", failed.id);
-  const updated = await providersDb.getProviderConnectionById(fallback.id);
+  const selected = await getCreds("openai", failed.id);
+  const updated = await getConnById(fallback.id);
 
   assert.equal(selected.connectionId, fallback.id);
   assert.equal(updated.consecutiveUseCount, 1);
@@ -1010,7 +1016,7 @@ for (const strategy of ["random", "p2c", "least-used", "cost-optimized", "strict
       priority: 7,
     });
 
-    const selected = await auth.getProviderCredentials("openai");
+    const selected = await getCreds("openai");
 
     assert.equal(selected.connectionId, connection.id);
   });
@@ -1026,14 +1032,14 @@ test("getProviderCredentials least-used prefers accounts that were never used", 
     name: "least-used-never",
     priority: 9,
   });
-  await providersDb.updateProviderConnection(recentlyUsed.id, {
+  await updateConn(recentlyUsed.id, {
     lastUsedAt: new Date().toISOString(),
   });
-  await providersDb.updateProviderConnection(neverUsed.id, {
+  await updateConn(neverUsed.id, {
     lastUsedAt: null,
   });
 
-  const selected = await auth.getProviderCredentials("openai");
+  const selected = await getCreds("openai");
 
   assert.equal(selected.connectionId, neverUsed.id);
   assert.notEqual(selected.connectionId, recentlyUsed.id);
@@ -1050,14 +1056,14 @@ test("getProviderCredentials least-used prefers the oldest timestamp when all ac
     priority: 1,
   });
 
-  await providersDb.updateProviderConnection(oldest.id, {
+  await updateConn(oldest.id, {
     lastUsedAt: new Date(Date.now() - 120_000).toISOString(),
   });
-  await providersDb.updateProviderConnection(newest.id, {
+  await updateConn(newest.id, {
     lastUsedAt: new Date().toISOString(),
   });
 
-  const selected = await auth.getProviderCredentials("openai");
+  const selected = await getCreds("openai");
 
   assert.equal(selected.connectionId, oldest.id);
 });
@@ -1073,7 +1079,7 @@ test("getProviderCredentials cost-optimized selects the lowest priority account"
     priority: 8,
   });
 
-  const selected = await auth.getProviderCredentials("openai");
+  const selected = await getCreds("openai");
 
   assert.equal(selected.connectionId, cheapest.id);
 });
@@ -1112,7 +1118,7 @@ test("getProviderCredentials p2c prefers the account with more quota headroom ov
     daily: { remainingPercentage: 78, resetAt: futureIso(180_000) },
   });
 
-  const selected = await auth.getProviderCredentials("openai");
+  const selected = await getCreds("openai");
 
   assert.equal(selected.connectionId, healthy.id);
 });
@@ -1134,7 +1140,7 @@ test("getProviderCredentials p2c deprioritizes accounts with recent rate-limit/b
     apiKey: "sk-p2c-clean",
   });
 
-  const selected = await auth.getProviderCredentials("openai");
+  const selected = await getCreds("openai");
 
   assert.equal(selected.connectionId, healthy.id);
 });
@@ -1144,7 +1150,7 @@ test("getProviderCredentials resolves the nvidia special alias pool", async () =
     name: "nvidia-special-alias",
   });
 
-  const selected = await auth.getProviderCredentials("nvidia");
+  const selected = await getCreds("nvidia");
 
   assert.equal(selected.connectionId, connection.id);
 });
@@ -1154,7 +1160,7 @@ test("getProviderCredentials resolves the antigravity / agy alias pool", async (
     name: "antigravity-alias-connection",
   });
 
-  const selected = await auth.getProviderCredentials("antigravity");
+  const selected = await getCreds("antigravity");
 
   assert.equal(selected.connectionId, connection.id);
 });
@@ -1165,8 +1171,8 @@ test("getProviderCredentials shares one Jina token across foundation, reader, an
     apiKey: "jina-dashboard-key",
   });
 
-  const viaSearch = await auth.getProviderCredentials("jina-search");
-  const viaReader = await auth.getProviderCredentials("jina-reader");
+  const viaSearch = await getCreds("jina-search");
+  const viaReader = await getCreds("jina-reader");
 
   assert.ok(viaSearch && !("allExpired" in viaSearch));
   assert.ok(viaReader && !("allExpired" in viaReader));
@@ -1187,7 +1193,7 @@ test("getProviderCredentials exposes copilotToken when present in providerSpecif
     },
   });
 
-  const selected = await auth.getProviderCredentials("codex");
+  const selected = await getCreds("codex");
 
   assert.equal(selected.connectionId, connection.id);
   assert.equal(selected.copilotToken, "copilot-token-value");
@@ -1228,7 +1234,7 @@ test("markAccountUnavailable uses configured cooldowns for local 404 model locko
     "openai",
     "local-model"
   );
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   assert.equal(result.shouldFallback, true);
   assert.equal(result.cooldownMs, 250);
@@ -1253,7 +1259,7 @@ test("markAccountUnavailable applies a model-only lockout for Gemini 429 respons
     "gemini-2.5-pro"
   );
   await flushWrites();
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   assert.equal(result.shouldFallback, true);
   assert.ok(result.cooldownMs > 0);
@@ -1276,7 +1282,7 @@ test("markAccountUnavailable applies a model-only lockout for compatible provide
     "custom-model-a"
   );
   await flushWrites();
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   assert.equal(result.shouldFallback, true);
   assert.ok(result.cooldownMs > 0);
@@ -1303,7 +1309,7 @@ test("markAccountUnavailable: ollama-cloud per-model subscription 403 locks the 
     "deepseek-v4-pro"
   );
   await flushWrites();
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   // Connection stays eligible — only the paid model is cooled down.
   assert.equal(result.shouldFallback, true);
@@ -1335,11 +1341,11 @@ test("markAccountUnavailable: a whole-key 403 still deactivates the ollama-cloud
     "deepseek-v4-pro"
   );
   await flushWrites();
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   assert.equal(fallback.isModelLocked("ollama-cloud", connection.id, "deepseek-v4-pro"), false);
   assert.ok(
-    ["banned", "expired", "credits_exhausted"].includes(updated.testStatus),
+    ["banned", "expired", "credits_exhausted"].includes(updated.testStatus as string),
     `expected a terminal connection status, got ${updated.testStatus}`
   );
 });
@@ -1363,7 +1369,7 @@ test("markAccountUnavailable: repeated ollama-cloud subscription 403s never esca
     );
     await flushWrites();
   }
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   assert.equal(updated.rateLimitedUntil, undefined);
   assert.notEqual(updated.testStatus, "unavailable");
@@ -1415,13 +1421,8 @@ test("Codex quota policy keeps normal and Spark windows separate", async () => {
     gpt_5_3_codex_spark_session: { remainingPercentage: 0, resetAt: futureIso(300_000) },
   });
 
-  const normalSelected = await auth.getProviderCredentials("codex", null, null, "gpt-5.3-codex");
-  const sparkSelected = await auth.getProviderCredentials(
-    "codex",
-    null,
-    null,
-    "gpt-5.3-codex-spark"
-  );
+  const normalSelected = await getCreds("codex", null, null, "gpt-5.3-codex");
+  const sparkSelected = await getCreds("codex", null, null, "gpt-5.3-codex-spark");
 
   assert.equal(normalSelected.connectionId, normalConnection.id);
   assert.equal(sparkSelected.allRateLimited, true);
@@ -1440,7 +1441,7 @@ test("markAccountUnavailable returns without fallback on bad requests", async ()
     "openai",
     "gpt-4o"
   );
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   assert.deepEqual(result, { shouldFallback: false, cooldownMs: 0 });
   assert.equal(updated.testStatus, "active");
@@ -1455,7 +1456,7 @@ test("markAccountUnavailable preserves terminal statuses without overwriting the
   });
 
   const result = await auth.markAccountUnavailable(connection.id, 503, "upstream error", "openai");
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   assert.equal(result.shouldFallback, true);
   assert.equal(result.cooldownMs, 0);
@@ -1471,7 +1472,7 @@ test("markAccountUnavailable reuses an existing connection-wide cooldown", async
   });
 
   const result = await auth.markAccountUnavailable(connection.id, 503, "upstream error", "openai");
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   assert.equal(result.shouldFallback, true);
   assert.ok(result.cooldownMs > 0);
@@ -1501,12 +1502,15 @@ test("markAccountUnavailable reuses an existing Codex scope cooldown", async () 
     "codex",
     "codex-spark-mini"
   );
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   assert.equal(result.shouldFallback, true);
   assert.ok(result.cooldownMs > 0);
   assert.equal(updated.rateLimitedUntil, undefined);
-  assert.equal(updated.providerSpecificData.codexScopeRateLimitedUntil.spark, retryAfter);
+  assert.equal(
+    toRecord(toRecord(updated?.providerSpecificData).codexScopeRateLimitedUntil).spark,
+    retryAfter
+  );
 });
 
 test("markAccountUnavailable uses a connection-wide cooldown for non-local 404 errors", async () => {
@@ -1524,7 +1528,7 @@ test("markAccountUnavailable uses a connection-wide cooldown for non-local 404 e
     "openai",
     "gpt-missing"
   );
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   assert.equal(result.shouldFallback, true);
   assert.ok(result.cooldownMs > 0);
@@ -1545,7 +1549,7 @@ test("markAccountUnavailable auto-disables permanently banned accounts when the 
     "openai",
     "gpt-4o"
   );
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   assert.equal(result.shouldFallback, true);
   assert.equal(updated.isActive, false);
@@ -1569,7 +1573,7 @@ test("markAccountUnavailable keeps prepaid API keys active when auto-disable sco
     "openai",
     "gpt-4o"
   );
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   assert.equal(result.shouldFallback, true);
   assert.equal(updated.isActive, true);
@@ -1595,7 +1599,7 @@ test("markAccountUnavailable still auto-disables OAuth accounts when scope is su
     "claude",
     "claude-sonnet"
   );
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   assert.equal(result.shouldFallback, true);
   assert.equal(updated.isActive, false);
@@ -1615,7 +1619,7 @@ test("markAccountUnavailable leaves permanently banned accounts active when auto
     "openai",
     "gpt-4o"
   );
-  const updated = await providersDb.getProviderConnectionById(connection.id);
+  const updated = await getConnById(connection.id);
 
   assert.equal(result.shouldFallback, true);
   assert.equal(updated.isActive, true);
@@ -1659,7 +1663,7 @@ test("markAccountUnavailable swallows auto-disable persistence errors", async ()
       "openai",
       "gpt-4o"
     );
-    const updated = await providersDb.getProviderConnectionById(connection.id);
+    const updated = await getConnById(connection.id);
 
     assert.equal(result.shouldFallback, true);
     assert.equal(updated.isActive, true);
@@ -1691,7 +1695,7 @@ test("markAccountUnavailable persists in-memory model lockout for combo transien
   });
   assert.equal(fallback.isModelLocked("openai", otherConn.id as string, model), false);
 
-  const updated = await providersDb.getProviderConnectionById(connId);
+  const updated = await getConnById(connId);
   assert.equal(updated.rateLimitedUntil == null, true);
   assert.notEqual(updated.testStatus, "unavailable");
 });

@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-
 // #10083 — `doctor` only looked for the node-gyp layout
 // (build/Release/better_sqlite3.node), so every install that resolves a
 // prebuilt binary (`npm i -g omniroute`) warned "better-sqlite3 native binary
@@ -31,8 +30,8 @@ async function withTempRoot(fn: (rootDir: string) => Promise<void>) {
   try {
     await fn(rootDir);
   } finally {
-    fs.rmSync(dataDir, { recursive: true, force: true });
-    fs.rmSync(rootDir, { recursive: true, force: true });
+    fs.rmSync(dataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+    fs.rmSync(rootDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     if (ORIGINAL_DATA_DIR === undefined) delete process.env.DATA_DIR;
     else process.env.DATA_DIR = ORIGINAL_DATA_DIR;
   }
@@ -46,11 +45,25 @@ test("prebuiltBinaryName maps platform/arch the way better-sqlite3 ships them", 
 
   // glibc Linux keeps the plain `linux-` prefix …
   const glibcReport = { getReport: () => ({ header: { glibcVersionRuntime: "2.39" } }) };
-  assert.equal(prebuiltBinaryName("linux", "x64", glibcReport), "linux-x64.node");
+  assert.equal(
+    prebuiltBinaryName(
+      "linux",
+      "x64",
+      glibcReport as unknown as Parameters<typeof prebuiltBinaryName>[2]
+    ),
+    "linux-x64.node"
+  );
 
   // … while musl builds (no glibcVersionRuntime) use `linuxmusl-`.
   const muslReport = { getReport: () => ({ header: {} }) };
-  assert.equal(prebuiltBinaryName("linux", "arm64", muslReport), "linuxmusl-arm64.node");
+  assert.equal(
+    prebuiltBinaryName(
+      "linux",
+      "arm64",
+      muslReport as unknown as Parameters<typeof prebuiltBinaryName>[2]
+    ),
+    "linuxmusl-arm64.node"
+  );
 });
 
 test("doctor finds a prebuilt better-sqlite3 binary instead of warning 'not found'", async () => {

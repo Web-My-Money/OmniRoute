@@ -264,7 +264,7 @@ export default function CustomCliCard({
                   </p>
                 </div>
                 <Button variant="outline" size="sm" onClick={handleAddMapping}>
-                  <span className="material-symbols-outlined text-[14px] mr-1">add</span>
+                  <span className="material-symbols-outlined text-[14px] me-1">add</span>
                   {translateOrFallback("customCliAddAlias", "Add alias")}
                 </Button>
               </div>
@@ -342,7 +342,7 @@ export default function CustomCliCard({
                   {translateOrFallback("customCliEnvBlockTitle", "Env / shell snippet")}
                 </h4>
                 <Button variant="outline" size="sm" onClick={() => handleCopy(envScript, "env")}>
-                  <span className="material-symbols-outlined text-[14px] mr-1">
+                  <span className="material-symbols-outlined text-[14px] me-1">
                     {copiedField === "env" ? "check" : "content_copy"}
                   </span>
                   {translateOrFallback("copy", "Copy")}
@@ -357,7 +357,7 @@ export default function CustomCliCard({
                   {translateOrFallback("customCliJsonBlockTitle", "Provider JSON block")}
                 </h4>
                 <Button variant="outline" size="sm" onClick={() => handleCopy(jsonConfig, "json")}>
-                  <span className="material-symbols-outlined text-[14px] mr-1">
+                  <span className="material-symbols-outlined text-[14px] me-1">
                     {copiedField === "json" ? "check" : "content_copy"}
                   </span>
                   {translateOrFallback("copy", "Copy")}

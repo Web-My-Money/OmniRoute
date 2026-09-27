@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { CodexExecutor } from "../../open-sse/executors/codex.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("Codex passthrough preserves image-view custom tool output input parts (#7698)", () => {
   const executor = new CodexExecutor();
@@ -28,7 +29,9 @@ test("Codex passthrough preserves image-view custom tool output input parts (#76
   const result = executor.transformRequest("gpt-5.6", body, false, {
     requestEndpointPath: "/responses",
   });
-  const toolOutput = result.input.find((item) => item.type === "custom_tool_call_output");
+  const toolOutput = (result.input as LooseDeep).find(
+    (item) => item.type === "custom_tool_call_output"
+  );
 
   assert.deepEqual(toolOutput, body.input[1]);
   assert.equal(JSON.stringify(toolOutput).includes('"type":"output_text"'), false);

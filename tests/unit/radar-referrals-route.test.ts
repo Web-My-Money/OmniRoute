@@ -29,6 +29,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { SignJWT } from "jose";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ---------------------------------------------------------------------------
 // Isolate DB + feature flag state
@@ -59,7 +60,7 @@ async function authHeaders(): Promise<Record<string, string>> {
 
 function mockGetRequest(
   url = "http://localhost:20128/api/radar/referrals",
-  headers: Record<string, string> = {},
+  headers: Record<string, string> = {}
 ): Request {
   return new Request(url, { method: "GET", headers });
 }
@@ -68,7 +69,7 @@ function resetStorage() {
   core.resetDbInstance();
   try {
     if (fs.existsSync(TEST_DATA_DIR)) {
-      fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+      fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     }
   } catch {
     // ignore
@@ -149,8 +150,8 @@ test("GET /api/radar/referrals: flag on, authenticated, cached referrals feed =>
       campaigns: [],
     },
   };
-  radarDb.setRadarReferralsCache({
-    generatedAt: feed.generatedAt as string,
+  (radarDb as LooseDeep).setRadarReferralsCache({
+    generatedAt: (feed as LooseDeep).generatedAt as string,
     tier: "live",
     payload: JSON.stringify(feed),
     signature: "test-signature",
@@ -192,8 +193,8 @@ test("GET /api/radar/referrals: stale cached referrals feed still served (sync-o
     },
   };
   const staleFetchedAt = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(); // 2h ago
-  radarDb.setRadarReferralsCache({
-    generatedAt: feed.generatedAt as string,
+  (radarDb as LooseDeep).setRadarReferralsCache({
+    generatedAt: (feed as LooseDeep).generatedAt as string,
     tier: "community",
     payload: JSON.stringify(feed),
     signature: "test-signature",
@@ -217,7 +218,7 @@ test("GET /api/radar/referrals: stale cached referrals feed still served (sync-o
 test("GET /api/radar/referrals: never proxies the private feed server (route source has no upstream fetch)", async () => {
   const routeSrc = fs.readFileSync(
     path.resolve(process.cwd(), "src/app/api/radar/referrals/route.ts"),
-    "utf-8",
+    "utf-8"
   );
   assert.ok(!/fetch\(/.test(routeSrc), "referrals route must never call fetch() upstream");
 });

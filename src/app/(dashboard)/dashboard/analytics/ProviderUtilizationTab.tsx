@@ -218,7 +218,7 @@ export default function ProviderUtilizationTab() {
       >
         {loading && !hasData ? (
           <div className="flex min-h-80 items-center justify-center text-sm text-text-muted">
-            <span className="material-symbols-outlined mr-2 animate-spin text-[18px]">
+            <span className="material-symbols-outlined me-2 animate-spin text-[18px]">
               progress_activity
             </span>
             {t("providerUtilizationLoading")}
@@ -268,7 +268,7 @@ export default function ProviderUtilizationTab() {
               <p className="text-xs font-medium text-text-main">
                 {t("providerUtilizationGettingStarted")}
               </p>
-              <ul className="mt-2 text-left text-xs text-text-muted">
+              <ul className="mt-2 text-start text-xs text-text-muted">
                 <li className="flex items-start gap-2">
                   <span className="material-symbols-outlined text-[14px] text-primary">
                     check_circle
@@ -340,12 +340,8 @@ export default function ProviderUtilizationTab() {
                           <ProviderIcon providerId={providerPart} size={22} />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-text-main">
-                            {cardTitle}
-                          </p>
-                          <p className="text-xs text-text-muted">
-                            {cardSubtitle}
-                          </p>
+                          <p className="text-sm font-semibold text-text-main">{cardTitle}</p>
+                          <p className="text-xs text-text-muted">{cardSubtitle}</p>
                         </div>
                       </div>
                       <span
@@ -374,7 +370,7 @@ export default function ProviderUtilizationTab() {
                           {t("providerUtilizationRemainingCapacity")}
                         </p>
                       </div>
-                      <div className="text-right text-xs text-text-muted">
+                      <div className="text-end text-xs text-text-muted">
                         <p>{formatTooltipTimestamp(point.timestamp, range)}</p>
                         <p className="mt-1 uppercase tracking-[0.14em]">{point.windowKey}</p>
                       </div>

@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-db-settings-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -21,7 +23,7 @@ async function resetStorage() {
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       if (fs.existsSync(TEST_DATA_DIR)) {
-        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       }
       break;
     } catch (error: any) {
@@ -43,7 +45,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 
   if (ORIGINAL_INITIAL_PASSWORD === undefined) {
     delete process.env.INITIAL_PASSWORD;
@@ -444,8 +446,11 @@ test("proxy config migrates legacy strings and supports bulk merge updates", asy
   });
 
   assert.equal(merged.providers.openai, undefined);
-  assert.equal(merged.providers.anthropic.host, "anthropic.local");
-  assert.equal((await settingsDb.getProxyForLevel("key", "key123")).host, "key.local");
+  assert.equal((merged.providers.anthropic as JsonRecord).host, "anthropic.local");
+  assert.equal(
+    ((await settingsDb.getProxyForLevel("key", "key123")) as JsonRecord).host,
+    "key.local"
+  );
 
   await settingsDb.deleteProxyForLevel("key", "key123");
 
@@ -483,7 +488,10 @@ test("proxy config migrates socks5 and host-only entries while preserving plural
     username: "",
     password: "",
   });
-  assert.equal((await settingsDb.getProxyForLevel("providers", "claude")).host, "sockshost");
+  assert.equal(
+    ((await settingsDb.getProxyForLevel("providers", "claude")) as LooseDeep).host,
+    "sockshost"
+  );
 
   const updated = await settingsDb.setProxyConfig({
     global: null,
@@ -495,17 +503,20 @@ test("proxy config migrates socks5 and host-only entries while preserving plural
 
   await settingsDb.deleteProxyForLevel("provider", null);
 
-  assert.equal((await settingsDb.getProxyForLevel("provider", "claude")).host, "sockshost");
+  assert.equal(
+    ((await settingsDb.getProxyForLevel("provider", "claude")) as LooseDeep).host,
+    "sockshost"
+  );
 });
 
 test("proxy helpers resolve key, provider, global, and direct paths while tolerating malformed combo rows", async () => {
   const db = core.getDbInstance();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Proxy Resolution Target",
     apiKey: "sk-proxy-resolution",
-  });
+  })) as JsonRecord & { id: string };
   db.prepare("UPDATE provider_connections SET proxy_enabled = 1 WHERE id = ?").run(
     (connection as any).id
   );
@@ -538,7 +549,7 @@ test("proxy helpers resolve key, provider, global, and direct paths while tolera
   const providerResolved = await settingsDb.resolveProxyForConnection((connection as any).id);
 
   assert.equal(providerResolved.level, "provider");
-  assert.equal(providerResolved.proxy.host, "provider.local");
+  assert.equal((providerResolved.proxy as LooseDeep).host, "provider.local");
   assert.deepEqual(await settingsDb.getProxyForLevel("combo", "combo-broken"), {
     type: "socks5",
     host: "combo.local",
@@ -550,7 +561,7 @@ test("proxy helpers resolve key, provider, global, and direct paths while tolera
   const globalResolved = await settingsDb.resolveProxyForConnection((connection as any).id);
 
   assert.equal(globalResolved.level, "global");
-  assert.equal(globalResolved.proxy.host, "global.local");
+  assert.equal((globalResolved.proxy as LooseDeep).host, "global.local");
 
   await settingsDb.setProxyForLevel("key", (connection as any).id, {
     type: "http",
@@ -561,7 +572,7 @@ test("proxy helpers resolve key, provider, global, and direct paths while tolera
   const keyResolved = await settingsDb.resolveProxyForConnection((connection as any).id);
 
   assert.equal(keyResolved.level, "key");
-  assert.equal(keyResolved.proxy.host, "key.local");
+  assert.equal((keyResolved.proxy as LooseDeep).host, "key.local");
 
   await settingsDb.deleteProxyForLevel("key", (connection as any).id);
   await settingsDb.deleteProxyForLevel("global", null);
@@ -574,12 +585,12 @@ test("proxy helpers resolve key, provider, global, and direct paths while tolera
 
 test("proxy resolution skips combos without serialized data and falls back to provider proxies", async () => {
   const db = core.getDbInstance();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "apikey",
     name: "Proxy Null Combo",
     apiKey: "sk-claude-proxy",
-  });
+  })) as JsonRecord & { id: string };
   db.prepare("UPDATE provider_connections SET proxy_enabled = 1 WHERE id = ?").run(
     (connection as any).id
   );
@@ -605,16 +616,16 @@ test("proxy resolution skips combos without serialized data and falls back to pr
   const resolved = await settingsDb.resolveProxyForConnection((connection as any).id);
 
   assert.equal(resolved.level, "provider");
-  assert.equal(resolved.proxy.host, "provider-claude.local");
+  assert.equal((resolved.proxy as LooseDeep).host, "provider-claude.local");
 });
 
 test("proxy resolution matches combo proxies through aliased model entries", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "apikey",
     name: "Proxy Alias Combo",
     apiKey: "sk-claude-alias",
-  });
+  })) as JsonRecord & { id: string };
   // Enable proxy on this connection so legacy combo/provider proxy checks work
   core
     .getDbInstance()
@@ -636,22 +647,22 @@ test("proxy resolution matches combo proxies through aliased model entries", asy
 
   assert.equal(resolved.level, "combo");
   assert.equal(resolved.levelId, combo.id);
-  assert.equal(resolved.proxy.host, "combo-alias.local");
+  assert.equal((resolved.proxy as LooseDeep).host, "combo-alias.local");
 });
 
 test("proxy resolution prefers legacy key and provider proxies over registry global fallback (#2601)", async () => {
-  const keyConnection = await providersDb.createProviderConnection({
+  const keyConnection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Legacy Key Override",
     apiKey: "sk-key-override",
-  });
-  const providerConnection = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const providerConnection = (await providersDb.createProviderConnection({
     provider: "claude",
     authType: "apikey",
     name: "Legacy Provider Override",
     apiKey: "sk-provider-override",
-  });
+  })) as JsonRecord & { id: string };
 
   const registryGlobal = await proxiesDb.createProxy({
     name: "Registry Global Fallback",
@@ -688,9 +699,9 @@ test("proxy resolution prefers legacy key and provider proxies over registry glo
   );
 
   assert.equal(keyResolved.level, "key");
-  assert.equal(keyResolved.proxy.host, "legacy-key-override.local");
+  assert.equal((keyResolved.proxy as LooseDeep).host, "legacy-key-override.local");
   assert.equal(providerResolved.level, "provider");
-  assert.equal(providerResolved.proxy.host, "legacy-provider-override.local");
+  assert.equal((providerResolved.proxy as LooseDeep).host, "legacy-provider-override.local");
 });
 
 test("proxy readers normalize legacy rows, skip malformed entries, and coerce invalid globals to null", async () => {

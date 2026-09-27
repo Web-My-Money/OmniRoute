@@ -28,6 +28,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-quota-shortcircuit-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -66,7 +67,7 @@ test.after(async () => {
   apiKeysDb.resetApiKeyState();
   core.resetDbInstance();
   try {
-    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   } catch {
     /* ignore */
   }
@@ -76,21 +77,21 @@ await test("chave quota-exclusive não constrói o catálogo completo", async (t
   installFetchCounter();
 
   // Uma conexão OpenRouter ativa: é ela que faz o build completo ir à rede.
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openrouter",
     authType: "apikey",
     name: "shortcircuit-openrouter",
     apiKey: "sk-or-shortcircuit",
-  });
+  })) as JsonRecord & { id: string };
 
   // Pool de cota sobre uma conexão glm (lista estável no registry estático).
   const group = groupsDb.createGroup("Curto");
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "apikey",
     name: "shortcircuit-glm",
     apiKey: "sk-glm-shortcircuit",
-  });
+  })) as JsonRecord & { id: string };
   const pool = poolsDb.createPool({
     connectionId: (conn as Record<string, unknown>).id as string,
     name: "Curto",

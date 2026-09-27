@@ -119,14 +119,14 @@ function SortableSection({
         </button>
         <button
           onClick={() => setExpanded((p) => !p)}
-          className="flex-1 flex items-center gap-2 text-left"
+          className="flex-1 flex items-center gap-2 text-start"
         >
           <span className="text-xs font-semibold uppercase tracking-wider text-text-muted/70">
             {section.title}
           </span>
           <span
             className={cn(
-              "material-symbols-outlined text-[14px] text-text-muted/40 transition-transform ml-auto",
+              "material-symbols-outlined text-[14px] text-text-muted/40 transition-transform ms-auto",
               expanded && "rotate-180"
             )}
           >
@@ -197,7 +197,7 @@ function SortableChildRow({ id, children }: { id: string; children: React.ReactN
       <button
         {...listeners}
         {...attributes}
-        className="mt-3.5 ml-4 text-text-muted/30 hover:text-text-muted/70 cursor-grab active:cursor-grabbing touch-none shrink-0"
+        className="mt-3.5 ms-4 text-text-muted/30 hover:text-text-muted/70 cursor-grab active:cursor-grabbing touch-none shrink-0"
         title={tSidebar("dragReorderItem")}
         aria-label={tSidebar("dragReorderItem")}
       >
@@ -315,7 +315,7 @@ function GroupRow({
       <div className="flex items-center gap-2 px-4 py-2.5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
         <button
           onClick={() => setOpen((p) => !p)}
-          className="flex min-w-0 flex-1 items-center gap-2 text-left"
+          className="flex min-w-0 flex-1 items-center gap-2 text-start"
         >
           <span
             className={cn(
@@ -334,7 +334,7 @@ function GroupRow({
           /{group.items.length}
         </span>
         {canToggleSeparator && (
-          <div className="flex items-center gap-2 border-l border-border/60 pl-3">
+          <div className="flex items-center gap-2 border-l border-border/60 ps-3">
             <span className="text-[10px] font-medium text-text-muted/50">{separatorLabel}</span>
             <Toggle
               size="sm"
@@ -345,7 +345,7 @@ function GroupRow({
         )}
       </div>
       {open && (
-        <div className="divide-y divide-border/50 pl-2">
+        <div className="divide-y divide-border/50 ps-2">
           {group.items.map((item) => (
             <div key={item.id} className="flex items-center justify-between gap-4 px-4 py-2.5">
               <div className="flex items-center gap-2 min-w-0">

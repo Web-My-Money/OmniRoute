@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 /**
  * #11234 — opencode-go quota preflight ignored the dashboard quota snapshots.
@@ -54,15 +55,12 @@ const quotaSnapshotsDb = await import("../../src/lib/db/quotaSnapshots.ts");
 const quotaCache = await import("../../src/domain/quotaCache.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
 const apiKeysDb = await import("../../src/lib/db/apiKeys.ts");
-const { fetchOpencodeQuota, invalidateOpencodeQuotaCache } = await import(
-  "../../open-sse/services/opencodeQuotaFetcher.ts"
-);
-const { evaluateQuotaCutoff, registerQuotaFetcher } = await import(
-  "../../open-sse/services/quotaPreflight.ts"
-);
-const { buildAutoQuotaThresholds } = await import(
-  "../../open-sse/services/combo/quotaExhaustionCutoff.ts"
-);
+const { fetchOpencodeQuota, invalidateOpencodeQuotaCache } =
+  await import("../../open-sse/services/opencodeQuotaFetcher.ts");
+const { evaluateQuotaCutoff, registerQuotaFetcher } =
+  await import("../../open-sse/services/quotaPreflight.ts");
+const { buildAutoQuotaThresholds } =
+  await import("../../open-sse/services/combo/quotaExhaustionCutoff.ts");
 const { resolveResilienceSettings } = await import("../../src/lib/resilience/settings.ts");
 const auth = await import("../../src/sse/services/auth.ts");
 
@@ -112,7 +110,7 @@ test.after(() => {
   globalThis.fetch = originalFetch;
   coreDb.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test.afterEach(() => {
@@ -137,7 +135,10 @@ test("#11234 dashboard snapshots feed the quota cutoff when the live endpoint ha
 
   const quota = await fetchOpencodeQuota(connectionId, dashboardConfiguredConnection("sk-test"));
 
-  assert.ok(quota, "fetcher must synthesize quota from dashboard snapshots when the live endpoint 404s");
+  assert.ok(
+    quota,
+    "fetcher must synthesize quota from dashboard snapshots when the live endpoint 404s"
+  );
   assert.equal(fetchCalls, 1, "snapshot bridge must be read-only — no re-scrape on the hot path");
 
   // Key mapping: weekly → window_weekly (0% remaining = 100% used),
@@ -148,10 +149,7 @@ test("#11234 dashboard snapshots feed the quota cutoff when the live endpoint ha
     `window_5h percentUsed should be ~0.2, got ${quota.windows?.[WINDOW_5H]?.percentUsed}`
   );
 
-  const decision = evaluateQuotaCutoff(
-    quota,
-    buildAutoQuotaThresholds(PROVIDER, undefined, null)
-  );
+  const decision = evaluateQuotaCutoff(quota, buildAutoQuotaThresholds(PROVIDER, undefined, null));
   assert.equal(decision.proceed, false, "weekly at 0% remaining must block the connection");
   assert.equal(decision.reason, "quota_exhausted");
 
@@ -177,10 +175,7 @@ test("#11234 a snapshot whose reset already passed must not count as exhausted",
     "an expired weekly window must be dropped from the synthesized quota"
   );
 
-  const decision = evaluateQuotaCutoff(
-    quota,
-    buildAutoQuotaThresholds(PROVIDER, undefined, null)
-  );
+  const decision = evaluateQuotaCutoff(quota, buildAutoQuotaThresholds(PROVIDER, undefined, null));
   assert.equal(decision.proceed, true, "an expired weekly window must not block the connection");
 
   invalidateOpencodeQuotaCache(connectionId);
@@ -244,7 +239,7 @@ test("#11234 fail-open preserved: configured dashboard with no snapshots still r
 test("#11234 quotaPreflight.enabled arms sibling selection: the exhausted sister is skipped for the healthy one", async () => {
   const tag = Date.now();
 
-  const exhausted = await providersDb.createProviderConnection({
+  const exhausted = (await providersDb.createProviderConnection({
     provider: PROVIDER,
     authType: "apikey",
     name: `oc-11234-exhausted-${tag}`,
@@ -252,8 +247,8 @@ test("#11234 quotaPreflight.enabled arms sibling selection: the exhausted sister
     priority: 1,
     isActive: true,
     testStatus: "active",
-  });
-  const healthy = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const healthy = (await providersDb.createProviderConnection({
     provider: PROVIDER,
     authType: "apikey",
     name: `oc-11234-healthy-${tag}`,
@@ -261,7 +256,7 @@ test("#11234 quotaPreflight.enabled arms sibling selection: the exhausted sister
     priority: 2,
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   // Stub the upstream quota signal: the priority-1 sister is fully drained,
   // the priority-2 sister is healthy. No per-connection overrides, no

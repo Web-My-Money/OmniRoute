@@ -914,7 +914,7 @@ export default function ProviderLimits({
                   key={key}
                   type="button"
                   onClick={() => handleSetStatusFilter(key)}
-                  className="text-left rounded-lg px-3 py-2.5 border transition-colors cursor-pointer"
+                  className="text-start rounded-lg px-3 py-2.5 border transition-colors cursor-pointer"
                   style={{
                     background: active ? tone.bg : "var(--color-surface)",
                     borderColor: active ? tone.ring : "var(--color-border)",
@@ -945,7 +945,7 @@ export default function ProviderLimits({
 
           {/* Purchase Type filter */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[11px] uppercase tracking-wider text-text-muted font-semibold mr-1">
+            <span className="text-[11px] uppercase tracking-wider text-text-muted font-semibold me-1">
               {tr("filterPurchaseTypeLabel", "Type")}
             </span>
             {PURCHASE_TYPES.map((type) => {
@@ -974,7 +974,7 @@ export default function ProviderLimits({
 
           {/* Tier filter */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-[11px] uppercase tracking-wider text-text-muted font-semibold mr-1">
+            <span className="text-[11px] uppercase tracking-wider text-text-muted font-semibold me-1">
               {tr("filterTierLabel", "Tier")}
             </span>
             {TIER_FILTERS.map((tier) => {
@@ -1005,7 +1005,7 @@ export default function ProviderLimits({
               the persisted choice no longer exists in this session. */}
           {providerOptions.length > 1 && (
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] uppercase tracking-wider text-text-muted font-semibold mr-1">
+              <span className="text-[11px] uppercase tracking-wider text-text-muted font-semibold me-1">
                 {tr("filterProviderLabel", "Provider")}
               </span>
               <select
@@ -1031,7 +1031,7 @@ export default function ProviderLimits({
           {/* Env filter — only renders when at least one connection has a tag */}
           {envTags.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[11px] uppercase tracking-wider text-text-muted font-semibold mr-1">
+              <span className="text-[11px] uppercase tracking-wider text-text-muted font-semibold me-1">
                 {tr("filterEnvLabel", "Env")}
               </span>
               {(["all", ...envTags] as string[]).map((tag) => {

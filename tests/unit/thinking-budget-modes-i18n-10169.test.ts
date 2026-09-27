@@ -60,7 +60,7 @@ test("en/vi/pt-BR catalogs define Thinking Budget mode keys with real copy", () 
     ["vi", vi],
     ["pt-BR", ptBR],
   ] as const) {
-    const settings = (catalog as { settings: Record<string, string> }).settings;
+    const settings = (catalog as unknown as { settings: Record<string, string> }).settings;
     for (const key of THINKING_MODE_KEYS) {
       const value = settings[key];
       assert.equal(typeof value, "string", `${locale}.settings.${key} missing`);

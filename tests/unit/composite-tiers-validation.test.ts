@@ -1,9 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const { validateCompositeTiersConfig } = await import("../../src/lib/combos/compositeTiers.ts");
 
-function createComboInput(overrides = {}) {
+function createComboInput(overrides: JsonRecord = {}) {
   return {
     name: "tiered-codex",
     strategy: "priority",

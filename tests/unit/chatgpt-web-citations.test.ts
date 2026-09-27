@@ -9,6 +9,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { ChatGptWebExecutor, __resetChatGptWebCachesForTesting } =
   await import("../../open-sse/executors/chatgpt-web.ts");
@@ -29,7 +30,7 @@ function makeHeaders(map: Record<string, string> = {}) {
 function sseText(events: unknown[]): string {
   const chunks: string[] = [];
   for (const evt of events) {
-    const { __event, ...payload } = evt as Record<string, unknown> & { __event?: string };
+    const { __event, ...payload } = evt as LooseDeep & { __event?: string };
     if (__event) chunks.push(`event: ${__event}\r\n`);
     chunks.push(`data: ${JSON.stringify(payload)}\r\n\r\n`);
   }
@@ -382,7 +383,7 @@ test("GPT-5.6 Sol Pro non-streaming: stream_handoff polls conversation detail fo
     );
     assert.equal(m.calls.conversationDetail, 1);
     const convIdx = m.calls.urls.findIndex((u) => u.endsWith("/backend-api/f/conversation"));
-    const sentBody = JSON.parse(m.calls.bodies[convIdx]);
+    const sentBody = JSON.parse(m.calls.bodies[convIdx] as unknown as string);
     assert.equal(sentBody.history_and_training_disabled, true);
   } finally {
     m.restore();

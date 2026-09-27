@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 // #2743 (gap c — deferred test debt): the Vercel-relay dispatch path had no direct
 // coverage. `tests/unit/proxy-fetch.test.ts` exercises the HTTP/SOCKS/TLS-context
@@ -25,7 +26,7 @@ const realGlobalFetch = globalThis.fetch;
 
 // The spy stands in for the native (pre-patch) fetch that the relay branch calls.
 // It records the call and returns a canned Response so no network I/O happens.
-const relaySink = (async (input: unknown, init: RequestInit = {}) => {
+const relaySink = (async (input: unknown, init: MockRequestInit = {}) => {
   relayCalls.push({ input, init });
   return Response.json({ via: "vercel-relay" });
 }) as unknown as typeof globalThis.fetch;

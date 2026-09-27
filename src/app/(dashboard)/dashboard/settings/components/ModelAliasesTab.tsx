@@ -86,7 +86,7 @@ export default function ModelAliasesTab() {
           <p className="text-sm text-text-muted">{t("modelAliasesDesc")}</p>
         </div>
         {status === "saved" && (
-          <span className="ml-auto text-xs font-medium text-emerald-500 flex items-center gap-1">
+          <span className="ms-auto text-xs font-medium text-emerald-500 flex items-center gap-1">
             <span className="material-symbols-outlined text-[14px]">check_circle</span> {t("saved")}
           </span>
         )}

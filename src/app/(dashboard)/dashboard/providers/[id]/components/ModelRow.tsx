@@ -124,7 +124,7 @@ export function ModelVisibilityToolbar({
   return (
     <div className="mb-3 flex flex-wrap items-center gap-2">
       <div className="relative min-w-[220px] flex-1">
-        <span className="material-symbols-outlined pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-[15px] text-text-muted">
+        <span className="material-symbols-outlined pointer-events-none absolute start-2 top-1/2 -translate-y-1/2 text-[15px] text-text-muted">
           search
         </span>
         <input
@@ -132,7 +132,7 @@ export function ModelVisibilityToolbar({
           value={filterValue}
           onChange={(e) => onFilterChange(e.target.value)}
           placeholder={providerText(t, "filterModels", "Filter models…")}
-          className="w-full rounded-lg border border-border bg-sidebar/50 py-1.5 pl-7 pr-3 text-xs text-text-main placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-full rounded-lg border border-border bg-sidebar/50 py-1.5 ps-7 pe-3 text-xs text-text-main placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-primary"
         />
       </div>
       {visibilityFilter !== undefined && onVisibilityFilterChange && (

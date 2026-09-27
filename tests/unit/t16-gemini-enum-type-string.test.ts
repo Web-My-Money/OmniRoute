@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { cleanJSONSchemaForAntigravity } =
   await import("../../open-sse/translator/helpers/geminiHelper.ts");
@@ -16,8 +17,8 @@ test("T16: enum-only fields gain type:string after Gemini schema cleanup", () =>
   };
 
   const cleaned = cleanJSONSchemaForAntigravity(schema);
-  assert.equal(cleaned.properties.mode.type, "string");
-  assert.deepEqual(cleaned.properties.mode.enum, ["fast", "balanced", "slow"]);
+  assert.equal((cleaned as LooseDeep).properties.mode.type, "string");
+  assert.deepEqual((cleaned as LooseDeep).properties.mode.enum, ["fast", "balanced", "slow"]);
 });
 
 test("T16: existing explicit type:string is preserved", () => {
@@ -32,8 +33,8 @@ test("T16: existing explicit type:string is preserved", () => {
   };
 
   const cleaned = cleanJSONSchemaForAntigravity(schema);
-  assert.equal(cleaned.properties.mode.type, "string");
-  assert.deepEqual(cleaned.properties.mode.enum, ["auto", "manual"]);
+  assert.equal((cleaned as LooseDeep).properties.mode.type, "string");
+  assert.deepEqual((cleaned as LooseDeep).properties.mode.enum, ["auto", "manual"]);
 });
 
 test("T16: schemas without enum are not forced to string", () => {
@@ -48,6 +49,6 @@ test("T16: schemas without enum are not forced to string", () => {
   };
 
   const cleaned = cleanJSONSchemaForAntigravity(schema);
-  assert.equal(cleaned.properties.retries.type, "number");
-  assert.equal(cleaned.properties.retries.enum, undefined);
+  assert.equal((cleaned as LooseDeep).properties.retries.type, "number");
+  assert.equal((cleaned as LooseDeep).properties.retries.enum, undefined);
 });

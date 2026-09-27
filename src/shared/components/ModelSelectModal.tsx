@@ -835,7 +835,7 @@ export default function ModelSelectModal({
       {/* Search - compact */}
       <div className="mb-3">
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted text-[16px]">
+          <span className="material-symbols-outlined absolute start-2.5 top-1/2 -translate-y-1/2 text-text-muted text-[16px]">
             search
           </span>
           <input
@@ -843,7 +843,7 @@ export default function ModelSelectModal({
             placeholder={t("search")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 bg-surface border border-border rounded text-xs focus:outline-none focus:ring-1 focus:ring-primary/50"
+            className="w-full ps-8 pe-3 py-1.5 bg-surface border border-border rounded text-xs focus:outline-none focus:ring-1 focus:ring-primary/50"
           />
         </div>
       </div>
@@ -870,7 +870,7 @@ export default function ModelSelectModal({
               {allVisibleSelected
                 ? labelOrFallback("unselectAll", "Unselect all")
                 : labelOrFallback("selectAll", "Select all")}
-              <span className="ml-1 text-[10px] text-text-muted font-normal">
+              <span className="ms-1 text-[10px] text-text-muted font-normal">
                 ({visibleModels.length})
               </span>
             </button>
@@ -956,7 +956,7 @@ export default function ModelSelectModal({
                       ? labelOrFallback("unselectWorkingModels", "Unselect working")
                       : labelOrFallback("selectWorkingModels", "Add working")}
                     <span
-                      className={`ml-1 text-[10px] font-normal ${
+                      className={`ms-1 text-[10px] font-normal ${
                         canRemoveWorking ? "opacity-80" : "text-text-muted"
                       }`}
                     >
@@ -1076,20 +1076,20 @@ export default function ModelSelectModal({
                       }
                     `}
                     >
-                      {isAdded && <span className="mr-0.5 opacity-70">✓</span>}
+                      {isAdded && <span className="me-0.5 opacity-70">✓</span>}
                       {model.name}
                       {model.source && (
-                        <span className="ml-1 text-[10px] uppercase opacity-70">
+                        <span className="ms-1 text-[10px] uppercase opacity-70">
                           {getModelCatalogSourceLabel(model.source)}
                         </span>
                       )}
                       {testStatus === "ok" && (
-                        <span className="ml-1 rounded px-1 py-px text-[9px] font-semibold uppercase tracking-wide bg-emerald-500/20 text-emerald-700 dark:text-emerald-400">
+                        <span className="ms-1 rounded px-1 py-px text-[9px] font-semibold uppercase tracking-wide bg-emerald-500/20 text-emerald-700 dark:text-emerald-400">
                           ok
                         </span>
                       )}
                       {testStatus === "error" && (
-                        <span className="ml-1 rounded px-1 py-px text-[9px] font-semibold uppercase tracking-wide bg-red-500/20 text-red-600 dark:text-red-400">
+                        <span className="ms-1 rounded px-1 py-px text-[9px] font-semibold uppercase tracking-wide bg-red-500/20 text-red-600 dark:text-red-400">
                           fail
                         </span>
                       )}

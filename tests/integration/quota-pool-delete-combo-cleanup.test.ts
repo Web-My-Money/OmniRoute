@@ -36,7 +36,7 @@ type Db = {
 function resetDb() {
   core.resetDbInstance();
   apiKeysDb.resetApiKeyState();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -52,12 +52,12 @@ function quotaNamesFor(combos: Combo[], groupName: string, provider: string): st
 }
 
 async function createConnection(provider: "openrouter" | "baidu", name: string) {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name,
     apiKey: `test-only-${name}`,
-  });
+  })) as JsonRecord & { id: string };
   const id = (connection as Record<string, unknown>).id;
   assert.equal(typeof id, "string", `${provider} connection should have an id`);
   return id as string;
@@ -95,7 +95,7 @@ test.beforeEach(() => {
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("DELETE pool waits for scoped quota-combo cleanup before returning 204", async () => {
@@ -425,3 +425,5 @@ test("DELETE keeps relational cleanup non-fatal when quota-combo listing fails",
   );
   assert.deepEqual(getAllowedQuotas(apiKey.id), []);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

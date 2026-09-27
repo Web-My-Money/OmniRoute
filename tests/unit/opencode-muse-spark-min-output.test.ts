@@ -15,6 +15,7 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
+import { wrapLoose } from "../helpers/looseTypes.ts";
 
 const { applyMuseSparkMinOutputTokens, MUSE_SPARK_MIN_OUTPUT_TOKENS } =
   await import("../../open-sse/executors/opencode.ts");
@@ -123,7 +124,7 @@ test("closes the Muse Responses stream at response.completed before post-complet
         { status: 200, headers: { "Content-Type": "text/event-stream" } }
       )) as typeof fetch;
 
-    const result = await new OpencodeExecutor("opencode").execute({
+    const result = await wrapLoose(new OpencodeExecutor("opencode")).execute({
       model: "muse-spark-1.2-contributor-free",
       body: {
         model: "muse-spark-1.2-contributor-free",

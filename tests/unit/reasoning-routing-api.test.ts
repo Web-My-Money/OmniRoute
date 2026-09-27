@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { ReasoningRoutingRule } from "../../src/lib/db/reasoningRoutingRules.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-reasoning-api-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -17,11 +18,11 @@ const simulateRoute =
   await import("../../src/app/api/settings/reasoning-routing-rules/simulate/route.ts");
 
 type RuleResponse = {
-  rule: rulesDb.ReasoningRoutingRule;
+  rule: ReasoningRoutingRule;
 };
 
 type RuleListResponse = {
-  rules: rulesDb.ReasoningRoutingRule[];
+  rules: ReasoningRoutingRule[];
 };
 
 type SimulationResponse = {
@@ -37,7 +38,7 @@ type SimulationResponse = {
 async function resetStorage() {
   apiKeysDb.resetApiKeyState();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   rulesDb.invalidateReasoningRoutingRuleCache();
 }
@@ -72,7 +73,7 @@ test.beforeEach(resetStorage);
 
 test.after(async () => {
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("management API CRUD validates and persists reasoning routing rules", async () => {

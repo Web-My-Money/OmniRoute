@@ -23,7 +23,7 @@ test("Cursor Agent uses each connection's server-assigned endpoint", async () =>
       serverConfig(
         `https://agent.${region}.api5.cursor.sh`,
         `https://agentn.${region}.api5.cursor.sh`
-      ),
+      ) as unknown as BodyInit,
       { status: 200, headers: { "Content-Type": "application/proto" } }
     );
   };
@@ -67,7 +67,7 @@ test("Cursor Agent uses the token with the connection cache key", async () => {
       serverConfig(
         `https://agent.${region}.api5.cursor.sh`,
         `https://agentn.${region}.api5.cursor.sh`
-      ),
+      ) as unknown as BodyInit,
       { status: 200, headers: { "Content-Type": "application/proto" } }
     );
   };
@@ -91,7 +91,9 @@ test("Cursor Agent rejects an endpoint outside Cursor's API domain", async () =>
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () =>
     new Response(
-      serverConfig("https://attacker.example/agent", "https://attacker.example/agentn"),
+      new Uint8Array(
+        serverConfig("https://attacker.example/agent", "https://attacker.example/agentn")
+      ),
       { status: 200, headers: { "Content-Type": "application/proto" } }
     );
 

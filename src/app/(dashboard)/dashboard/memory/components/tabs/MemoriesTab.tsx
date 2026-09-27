@@ -190,9 +190,7 @@ export default function MemoriesTab() {
         else skipped++;
       }
       fetchMemories();
-      setImportStatus(
-        t("importResult", { imported, skipped }),
-      );
+      setImportStatus(t("importResult", { imported, skipped }));
     } catch {
       setImportStatus(t("importError"));
     } finally {
@@ -260,8 +258,9 @@ export default function MemoriesTab() {
         body: JSON.stringify({ dryRun: true, olderThanDays: 30 }),
       });
       const data = await res.json().catch(() => null);
-      const candidates: string[] =
-        Array.isArray(data?.candidates) ? data.candidates.map((c: { key?: string }) => c?.key ?? String(c)) : [];
+      const candidates: string[] = Array.isArray(data?.candidates)
+        ? data.candidates.map((c: { key?: string }) => c?.key ?? String(c))
+        : [];
       setSummarizeCandidates(candidates);
       setSummarizeDialogOpen(true);
     } catch {
@@ -289,8 +288,7 @@ export default function MemoriesTab() {
     }
   };
 
-  const showHitRate =
-    (stats.cacheStats?.hits ?? 0) + (stats.cacheStats?.misses ?? 0) > 0;
+  const showHitRate = (stats.cacheStats?.hits ?? 0) + (stats.cacheStats?.misses ?? 0) > 0;
 
   if (isLoading) {
     return (
@@ -401,9 +399,7 @@ export default function MemoriesTab() {
                   info
                 </span>
               </div>
-              <div className="text-2xl font-bold">
-                {((stats.hitRate ?? 0) * 100).toFixed(1)}%
-              </div>
+              <div className="text-2xl font-bold">{((stats.hitRate ?? 0) * 100).toFixed(1)}%</div>
             </div>
           </Card>
         )}
@@ -448,12 +444,8 @@ export default function MemoriesTab() {
               <span className="material-symbols-outlined text-[40px] text-text-muted mb-3">
                 psychology
               </span>
-              <p className="text-sm font-medium text-text-main mb-1">
-                {t("emptyState.title")}
-              </p>
-              <p className="text-xs text-text-muted max-w-xs">
-                {t("emptyState.description")}
-              </p>
+              <p className="text-sm font-medium text-text-main mb-1">{t("emptyState.title")}</p>
+              <p className="text-xs text-text-muted max-w-xs">{t("emptyState.description")}</p>
               <Button className="mt-4" size="sm" onClick={() => setAddDialogOpen(true)}>
                 {t("addMemory")}
               </Button>
@@ -464,11 +456,11 @@ export default function MemoriesTab() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-2 px-4">{t("type")}</th>
-                      <th className="text-left py-2 px-4">{t("key")}</th>
-                      <th className="text-left py-2 px-4">{t("content")}</th>
-                      <th className="text-left py-2 px-4">{t("created")}</th>
-                      <th className="text-left py-2 px-4">{t("actions")}</th>
+                      <th className="text-start py-2 px-4">{t("type")}</th>
+                      <th className="text-start py-2 px-4">{t("key")}</th>
+                      <th className="text-start py-2 px-4">{t("content")}</th>
+                      <th className="text-start py-2 px-4">{t("created")}</th>
+                      <th className="text-start py-2 px-4">{t("actions")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -477,7 +469,9 @@ export default function MemoriesTab() {
                         <td className="py-2 px-4">
                           <Badge
                             variant={getTypeColor(memory.type)}
-                            title={t(TYPE_TOOLTIPS[memory.type]?.replace("memory.", "") ?? memory.type)}
+                            title={t(
+                              TYPE_TOOLTIPS[memory.type]?.replace("memory.", "") ?? memory.type
+                            )}
                           >
                             {t(memory.type)}
                           </Badge>
@@ -665,7 +659,10 @@ export default function MemoriesTab() {
               </p>
               <ul className="space-y-1 max-h-48 overflow-y-auto">
                 {summarizeCandidates.map((key, i) => (
-                  <li key={i} className="text-xs font-mono text-text-main truncate px-2 py-1 bg-surface/30 rounded">
+                  <li
+                    key={i}
+                    className="text-xs font-mono text-text-main truncate px-2 py-1 bg-surface/30 rounded"
+                  >
                     {key}
                   </li>
                 ))}

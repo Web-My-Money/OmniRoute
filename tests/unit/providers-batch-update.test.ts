@@ -3,15 +3,15 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-batch-update-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
 
 const core = await import("../../src/lib/db/core.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
-const { batchUpdateProviderConnectionsSchema, providersBatchTestSchema } = await import(
-  "../../src/shared/validation/schemas.ts"
-);
+const { batchUpdateProviderConnectionsSchema, providersBatchTestSchema } =
+  await import("../../src/shared/validation/schemas.ts");
 
 type Connection = Awaited<ReturnType<typeof providersDb.createProviderConnection>>;
 
@@ -23,20 +23,20 @@ function getConnectionId(connection: Connection): string {
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 async function createConnection(isActive: boolean): Promise<Connection> {
   // Distinct apiKey per connection — createProviderConnection dedupes by key value (#3023)
   const suffix = Math.random().toString(16).slice(2, 10);
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: `openai-${suffix}`,
     apiKey: `sk-test-${suffix}`,
     isActive,
-  });
+  })) as JsonRecord & { id: string };
 }
 
 beforeEach(async () => {
@@ -45,7 +45,7 @@ beforeEach(async () => {
 
 after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 describe("batchUpdateProviderConnectionsSchema", () => {

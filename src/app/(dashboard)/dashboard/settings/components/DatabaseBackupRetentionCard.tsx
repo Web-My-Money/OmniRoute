@@ -143,7 +143,7 @@ export default function DatabaseBackupRetentionCard({
           onClick={onSaveRetention}
           loading={saveBackupRetentionLoading}
         >
-          <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+          <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
             save
           </span>
           {t("storageBackupSaveRetention")}
@@ -154,7 +154,7 @@ export default function DatabaseBackupRetentionCard({
           onClick={onCleanupBackups}
           loading={cleanupBackupsLoading}
         >
-          <span className="material-symbols-outlined text-[14px] mr-1" aria-hidden="true">
+          <span className="material-symbols-outlined text-[14px] me-1" aria-hidden="true">
             auto_delete
           </span>
           {t("storageBackupCleanOld")}

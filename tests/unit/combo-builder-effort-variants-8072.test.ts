@@ -22,6 +22,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-effort-8072-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -34,18 +35,18 @@ const { getComboBuilderOptions } = await import("../../src/lib/combos/builderOpt
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#8072 buildModelOptions: synced <model>-<tier> effort variants appear in the Combo Builder picker and inherit the base model's metadata", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "huggingface",
     authType: "apikey",
     name: "huggingface-8072-effort",
     apiKey: "huggingface-key-8072",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   const BASE_MODEL_ID = "some-org/reasoning-model-8072";
 
@@ -100,14 +101,14 @@ test("#8072 buildModelOptions: synced <model>-<tier> effort variants appear in t
 });
 
 test("#9485 static DeepSeek effort aliases appear when synced rows omit supportedThinkingEfforts", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "deepseek",
     authType: "apikey",
     name: "deepseek-9485-effort",
     apiKey: "deepseek-key-9485",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
 
   const flashId = "deepseek-v4-flash";
   const proId = "deepseek-v4-pro";
@@ -169,14 +170,14 @@ test("#9485 static DeepSeek effort aliases appear when synced rows omit supporte
   }
 });
 test("#9485 Crof synced effort aliases appear exactly in the Combo Builder picker", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "crof",
     authType: "apikey",
     name: "crof-9485-effort",
     apiKey: "crof-key-9485",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   const modelId = "crof-combo-reasoning-model";
 
   await modelDiscovery.persistDiscoveredModels("crof", connection.id, [
@@ -201,14 +202,14 @@ test("#9485 Crof synced effort aliases appear exactly in the Combo Builder picke
 });
 
 test("Command Code static reasoning models expose all documented effort suffixes", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "command-code",
     authType: "apikey",
     name: "command-code-efforts",
     apiKey: "command-code-key",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   assert.ok(connection);
 
   const payload = await getComboBuilderOptions();

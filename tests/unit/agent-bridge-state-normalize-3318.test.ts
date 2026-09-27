@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
-const { normalizeAgentBridgeState, DEFAULT_AGENT_BRIDGE_STATE } = await import(
-  "../../src/app/(dashboard)/dashboard/tools/agent-bridge/normalizeState.ts"
-);
+const { normalizeAgentBridgeState, DEFAULT_AGENT_BRIDGE_STATE } =
+  await import("../../src/app/(dashboard)/dashboard/tools/agent-bridge/normalizeState.ts");
 
 // #3318: the /api/tools/agent-bridge/state route returns `{ server, agents }`,
 // but the page/components read `{ serverState, agentStates, bypassPatterns,
@@ -19,7 +19,7 @@ test("the raw /state route shape lacks the keys the page reads (documents the bu
     agents: [{ id: "claude-code", name: "Claude Code", hosts: [], viability: "ok" }],
   };
   // This is exactly what the old code assigned straight into initialData.
-  assert.equal(routeShape.serverState, undefined);
+  assert.equal((routeShape as LooseDeep).serverState, undefined);
 });
 
 test("normalizeAgentBridgeState maps the route shape and never leaves serverState undefined (#3318)", () => {
@@ -56,7 +56,11 @@ test("normalizeAgentBridgeState maps orphanedStateDetected + dnsConfigured from 
     agents: [],
   };
   const result = normalizeAgentBridgeState(routeShape);
-  assert.equal(result.serverState.orphanedStateDetected, true, "orphanedStateDetected maps through");
+  assert.equal(
+    result.serverState.orphanedStateDetected,
+    true,
+    "orphanedStateDetected maps through"
+  );
   assert.equal(result.serverState.dnsConfigured, true, "dnsConfigured maps through");
 });
 

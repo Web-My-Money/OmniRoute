@@ -5,6 +5,7 @@ import {
   resolveOcrCredentials,
   resolveVertexOcrAccessToken,
 } from "../../src/app/api/v1/ocr/route.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // ── resolveOcrCredentials — vertex-deepseek-ocr project/location resolution ─
 // Mirrors the Azure DI pattern (providerSpecificData.baseUrl → top-level
@@ -20,7 +21,7 @@ test("resolveOcrCredentials builds the Vertex endpoint URL from explicit provide
   };
   const resolved = resolveOcrCredentials(credentials, "vertex-deepseek-ocr");
   assert.equal(
-    resolved.baseUrl,
+    (resolved as LooseDeep).baseUrl,
     "https://aiplatform.googleapis.com/v1/projects/proj-explicit/locations/europe-west4/endpoints/openapi/chat/completions"
   );
 });
@@ -29,7 +30,7 @@ test("resolveOcrCredentials defaults the Vertex region to us-central1 when unset
   const credentials = { apiKey: "ya29.tok", providerSpecificData: { project: "proj-1" } };
   const resolved = resolveOcrCredentials(credentials, "vertex-deepseek-ocr");
   assert.equal(
-    resolved.baseUrl,
+    (resolved as LooseDeep).baseUrl,
     "https://aiplatform.googleapis.com/v1/projects/proj-1/locations/us-central1/endpoints/openapi/chat/completions"
   );
 });
@@ -44,13 +45,13 @@ test("resolveOcrCredentials derives the Vertex project from a Service Account JS
   };
   const resolved = resolveOcrCredentials(credentials, "vertex-deepseek-ocr");
   assert.equal(
-    resolved.baseUrl,
+    (resolved as LooseDeep).baseUrl,
     "https://aiplatform.googleapis.com/v1/projects/proj-from-sa/locations/us-central1/endpoints/openapi/chat/completions"
   );
 });
 
 test("resolveOcrCredentials leaves baseUrl unset when the Vertex project cannot be resolved (raw token, no providerSpecificData.project)", () => {
-  const credentials = { apiKey: "ya29.raw-token-no-project" };
+  const credentials: { apiKey: string; baseUrl?: string } = { apiKey: "ya29.raw-token-no-project" };
   const resolved = resolveOcrCredentials(credentials, "vertex-deepseek-ocr");
   assert.equal(resolved.baseUrl, undefined);
 });
@@ -73,7 +74,7 @@ test("resolveOcrCredentials is unaffected for non-vertex providers (mistral, azu
     providerSpecificData: { baseUrl: "https://r.cognitiveservices.azure.com" },
   };
   assert.equal(
-    resolveOcrCredentials(azure, "azure-document-intelligence").baseUrl,
+    (resolveOcrCredentials(azure, "azure-document-intelligence") as LooseDeep).baseUrl,
     "https://r.cognitiveservices.azure.com"
   );
 });
@@ -130,7 +131,7 @@ test("resolveVertexOcrAccessToken exchanges a Service Account JSON apiKey for a 
   };
 
   try {
-    const credentials = { apiKey: saJson };
+    const credentials: { apiKey: string; accessToken?: string } = { apiKey: saJson };
     const resolved = await resolveVertexOcrAccessToken("vertex-deepseek-ocr", credentials);
     assert.equal(resolved.accessToken, "ya29.minted-for-ocr");
     // apiKey is preserved (resolveOcrCredentials may still need it to derive the project).

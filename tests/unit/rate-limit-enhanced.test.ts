@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const {
   checkFallbackError,
@@ -254,10 +255,10 @@ test("resetAccountState: clears all error state", () => {
 
 test("applyErrorState: applies cooldown and reason", () => {
   const result = applyErrorState({ backoffLevel: 0 }, 429, "rate limit hit");
-  assert.ok(result.rateLimitedUntil);
+  assert.ok((result as LooseDeep).rateLimitedUntil);
   assert.equal(result.backoffLevel, 1);
-  assert.equal(result.status, "error");
-  assert.ok(result.lastError.reason);
+  assert.equal((result as LooseDeep).status, "error");
+  assert.ok((result as LooseDeep).lastError.reason);
 });
 
 // ─── Utility Tests ──────────────────────────────────────────────────────────

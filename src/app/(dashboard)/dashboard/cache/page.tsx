@@ -575,7 +575,7 @@ export default function CachePage() {
                     <div className="mt-3 overflow-x-auto rounded-2xl border border-border/20 bg-surface">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-border/20 text-left text-[11px] uppercase tracking-[0.12em] text-text-muted">
+                          <tr className="border-b border-border/20 text-start text-[11px] uppercase tracking-[0.12em] text-text-muted">
                             <th className="px-4 py-3">{t("provider")}</th>
                             <th className="px-4 py-3">{t("inputTokens")}</th>
                             <th className="px-4 py-3">{t("cachedTokensCol")}</th>
@@ -750,7 +750,7 @@ export default function CachePage() {
                       {t("autoRefresh", { seconds: REFRESH_INTERVAL_SECONDS })}
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <div className="text-3xl font-semibold tabular-nums text-emerald-500">
                       {semanticHitRate.toFixed(1)}%
                     </div>

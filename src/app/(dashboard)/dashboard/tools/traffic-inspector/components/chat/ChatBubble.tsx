@@ -20,7 +20,7 @@ interface ChatBubbleProps {
 
 const ROLE_STYLES: Record<NormalizedTurn["role"], string> = {
   system: "border border-red-500/40 bg-red-900/20 text-red-200",
-  user: "ml-auto bg-blue-600/30 border border-blue-500/30 text-blue-100",
+  user: "ms-auto bg-blue-600/30 border border-blue-500/30 text-blue-100",
   assistant: "bg-purple-900/30 border border-purple-500/30 text-purple-100",
   tool: "bg-gray-800 border border-gray-600/30 text-gray-200",
 };
@@ -44,7 +44,7 @@ export function ChatBubble({ turn, onClick, isCurrent }: ChatBubbleProps) {
     <div
       className={cn(
         "max-w-[85%] rounded-lg px-3 py-2",
-        isUser ? "ml-auto" : "mr-auto",
+        isUser ? "ms-auto" : "me-auto",
         ROLE_STYLES[turn.role],
         clickable && "cursor-pointer hover:brightness-110 transition-[filter]",
         isCurrent && "ring-2 ring-primary/60"

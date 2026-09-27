@@ -48,7 +48,7 @@ export function IntegrationCard({
       type="button"
       onClick={!disabled && onSelect ? () => onSelect(kind as WebhookKind) : undefined}
       disabled={disabled}
-      className={`relative flex w-full flex-col items-start gap-2 rounded-xl border p-4 text-left transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
+      className={`relative flex w-full flex-col items-start gap-2 rounded-xl border p-4 text-start transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
         disabled
           ? "border-border bg-surface"
           : selected
@@ -57,7 +57,7 @@ export function IntegrationCard({
       }`}
     >
       {comingSoonLabel && (
-        <span className="absolute right-2 top-2 rounded-full bg-surface px-1.5 py-0.5 text-[10px] font-medium text-text-muted ring-1 ring-border">
+        <span className="absolute end-2 top-2 rounded-full bg-surface px-1.5 py-0.5 text-[10px] font-medium text-text-muted ring-1 ring-border">
           {comingSoonLabel}
         </span>
       )}
@@ -69,7 +69,7 @@ export function IntegrationCard({
         <p className="mt-0.5 text-xs text-text-muted">{description}</p>
       </div>
       {selected && !disabled && (
-        <span className="ml-auto mt-auto flex size-5 items-center justify-center rounded-full bg-primary">
+        <span className="ms-auto mt-auto flex size-5 items-center justify-center rounded-full bg-primary">
           <span className="material-symbols-outlined text-[14px] text-white">check</span>
         </span>
       )}

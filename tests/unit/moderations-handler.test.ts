@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { handleModeration } = await import("../../open-sse/handlers/moderations.ts");
-const { MODERATION_PROVIDERS, getModerationProvider, parseModerationModel } = await import(
-  "../../open-sse/config/moderationRegistry.ts"
-);
+const { MODERATION_PROVIDERS, getModerationProvider, parseModerationModel } =
+  await import("../../open-sse/config/moderationRegistry.ts");
 
 const originalFetch = globalThis.fetch;
 
@@ -84,7 +84,7 @@ test("handleModeration requires credentials for the resolved provider", async ()
 test("handleModeration proxies successful requests with default model and accessToken fallback", async () => {
   let captured;
 
-  globalThis.fetch = async (url, options = {}) => {
+  globalThis.fetch = async (url, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: options.headers,

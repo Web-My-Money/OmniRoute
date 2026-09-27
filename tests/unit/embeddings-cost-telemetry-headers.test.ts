@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // Isolate the DB to a temp dir BEFORE importing any module that opens it.
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-embed-telemetry-"));
@@ -15,18 +16,18 @@ const { OMNIROUTE_RESPONSE_HEADERS } = await import("../../src/shared/constants/
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("createEmbeddingResponse emits X-OmniRoute-* cost telemetry headers on success", async () => {
   // Seed a credentialed apikey connection so getProviderCredentials resolves and
   // the success path runs (no real upstream is hit — fetch is mocked below).
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "mistral",
     authType: "apikey",
     name: "Test Mistral",
     apiKey: "mistral-test-key",
-  });
+  })) as JsonRecord & { id: string };
 
   const PROMPT_TOKENS = 7;
   const originalFetch = globalThis.fetch;

@@ -10,6 +10,7 @@ import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
+import { resolveLocalBinEntry } from "../build/buildToolRunner.mjs";
 
 const ROOT = process.cwd();
 const BASELINE_PATH = path.resolve(
@@ -20,7 +21,7 @@ const BASELINE_PATH = path.resolve(
 const UPDATE = process.argv.includes("--update");
 const EPS = 0.05; // tolerância de ruído de float (jscpd é determinístico; isto é margem)
 // Use local binary (pinned in package.json devDependencies — no registry download at CI time)
-const JSCPD_BIN = path.join(ROOT, "node_modules", ".bin", "jscpd");
+const JSCPD_BIN = resolveLocalBinEntry("jscpd", "jscpd", ROOT);
 const JSCPD_FIXED_ARGS = [
   "src",
   "open-sse",
@@ -43,7 +44,10 @@ export function evaluateDuplication(current, baseline, eps = EPS) {
 
 function measureDuplicationPct() {
   const out = fs.mkdtempSync(path.join(os.tmpdir(), "jscpd-"));
-  execFileSync(JSCPD_BIN, [...JSCPD_FIXED_ARGS, "--output", out], { stdio: "ignore" });
+  if (!JSCPD_BIN) throw new Error("jscpd binary not found in node_modules");
+  execFileSync(process.execPath, [JSCPD_BIN, ...JSCPD_FIXED_ARGS, "--output", out], {
+    stdio: "ignore",
+  });
   const report = JSON.parse(fs.readFileSync(path.join(out, "jscpd-report.json"), "utf8"));
   return report.statistics.total.percentage;
 }

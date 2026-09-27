@@ -25,7 +25,9 @@ const RESTRICTED_CONNECTION_UUID = "00000000-0000-4000-8000-000000000001";
 
 test.after(() => {
   coreDb.resetDbInstance();
-  try { fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true }); } catch {}
+  try {
+    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  } catch {}
 });
 
 test("#9057 LAYER1: restricted key gets NO synthetic credentials for noauth provider felo", async () => {
@@ -38,15 +40,18 @@ test("#9057 LAYER1: restricted key gets NO synthetic credentials for noauth prov
     [RESTRICTED_CONNECTION_UUID], // allowedConnections restricts to a real UUID
     "felo-chat"
   );
-  assert.equal(creds, null,
-    "noauth provider felo must not leak synthetic credentials for a connection-restricted key");
+  assert.equal(
+    creds,
+    null,
+    "noauth provider felo must not leak synthetic credentials for a connection-restricted key"
+  );
 });
 
 test("#9057 LAYER1: unrestricted key still gets synthetic credentials for felo", async () => {
   const creds = await getProviderCredentials(
     "felo",
     null,
-    null,   // allowedConnections=null means unrestricted
+    null, // allowedConnections=null means unrestricted
     "felo-chat"
   );
   assert(creds, "unrestricted key must receive synthetic credentials for felo");

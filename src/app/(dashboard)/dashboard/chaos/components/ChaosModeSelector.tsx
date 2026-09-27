@@ -35,7 +35,7 @@ export function ChaosModeSelector({
               : "bg-black/5 dark:bg-white/5 text-text-muted hover:bg-black/10 dark:hover:bg-white/10"
           }`}
         >
-          <span className="material-symbols-outlined text-[16px] align-middle mr-1">
+          <span className="material-symbols-outlined text-[16px] align-middle me-1">
             call_split
           </span>
           {parallelLabel}
@@ -50,7 +50,7 @@ export function ChaosModeSelector({
               : "bg-black/5 dark:bg-white/5 text-text-muted hover:bg-black/10 dark:hover:bg-white/10"
           }`}
         >
-          <span className="material-symbols-outlined text-[16px] align-middle mr-1">merge</span>
+          <span className="material-symbols-outlined text-[16px] align-middle me-1">merge</span>
           {collaborativeLabel}
           <p className="text-[10px] opacity-70 mt-0.5">{collaborativeDesc}</p>
         </button>

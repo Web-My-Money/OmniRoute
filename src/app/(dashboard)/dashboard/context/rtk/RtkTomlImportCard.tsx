@@ -72,7 +72,7 @@ function RtkTomlEditor({
             accept=".toml,text/plain,application/toml"
             onChange={(event) => onFileChange(event.target.files?.[0])}
             data-testid="rtk-toml-file"
-            className="mt-1 block w-full text-xs text-text-muted file:mr-3 file:rounded file:border file:border-border file:bg-bg file:px-2.5 file:py-1 file:text-xs file:text-text-main"
+            className="mt-1 block w-full text-xs text-text-muted file:me-3 file:rounded file:border file:border-border file:bg-bg file:px-2.5 file:py-1 file:text-xs file:text-text-main"
           />
         </label>
         <textarea

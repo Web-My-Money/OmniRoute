@@ -13,17 +13,15 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { cleanupTestDataDir } from "../../helpers/cleanupTempDir.ts";
+import type { VisionModelConfig } from "../../../src/lib/guardrails/visionBridgeHelpers.ts";
 
-const TEST_DATA_DIR = fs.mkdtempSync(
-  path.join(os.tmpdir(), "omniroute-vision-bridge-")
-);
+const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-vision-bridge-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
 // Prevent vision bridge from routing through a real API
 process.env.VISION_BRIDGE_ENABLED = "false";
 
-const { callVisionModel } = await import(
-  "../../../src/lib/guardrails/visionBridgeHelpers.ts"
-);
+const { callVisionModel } = await import("../../../src/lib/guardrails/visionBridgeHelpers.ts");
 const { createProviderConnection } = await import("../../../src/lib/db/providers.ts");
 
 // PR #8433 taught getFallbackModels() to exclude any candidate without a
@@ -43,9 +41,9 @@ await createProviderConnection({
 
 const originalFetch = globalThis.fetch;
 
-test.after(() => {
+test.after(async () => {
   globalThis.fetch = originalFetch;
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  await cleanupTestDataDir(TEST_DATA_DIR);
 });
 
 test.afterEach(() => {
@@ -53,7 +51,8 @@ test.afterEach(() => {
 });
 
 // Helper: build a minimal OpenAI-compat image data URI
-const TINY_PNG = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+const TINY_PNG =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
 
 test("callVisionModel falls through to next model when primary fails", async () => {
   let fetchCallCount = 0;
@@ -86,21 +85,13 @@ test("callVisionModel falls through to next model when primary fails", async () 
 
   const result = await callVisionModel(
     TINY_PNG,
-    { model: "openai/gpt-4o-mini", prompt: "Describe this image." },
+    { model: "openai/gpt-4o-mini", prompt: "Describe this image." } as unknown as VisionModelConfig,
     "sk-test-key",
     { fixedModel: "openai/gpt-4o-mini", maxFallbackAttempts: 2 }
   );
 
-  assert.equal(
-    fetchCallCount,
-    2,
-    "must have attempted exactly 2 models (primary + 1 fallback)"
-  );
-  assert.equal(
-    result,
-    FALLBACK_TEXT,
-    "must return the fallback model's response"
-  );
+  assert.equal(fetchCallCount, 2, "must have attempted exactly 2 models (primary + 1 fallback)");
+  assert.equal(result, FALLBACK_TEXT, "must return the fallback model's response");
 });
 
 test("callVisionModel throws when ALL models fail", async () => {
@@ -115,7 +106,10 @@ test("callVisionModel throws when ALL models fail", async () => {
     () =>
       callVisionModel(
         TINY_PNG,
-        { model: "openai/gpt-4o-mini", prompt: "Describe this image." },
+        {
+          model: "openai/gpt-4o-mini",
+          prompt: "Describe this image.",
+        } as unknown as VisionModelConfig,
         "sk-test-key",
         { fixedModel: "openai/gpt-4o-mini", maxFallbackAttempts: 2 }
       ),

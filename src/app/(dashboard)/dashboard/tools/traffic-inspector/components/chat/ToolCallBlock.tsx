@@ -17,13 +17,13 @@ export function ToolCallBlock({ id, name, input }: ToolCallBlockProps) {
       <button
         type="button"
         onClick={() => setExpanded((e) => !e)}
-        className="flex w-full items-center gap-2 text-left focus-ring rounded"
+        className="flex w-full items-center gap-2 text-start focus-ring rounded"
       >
         <span className="material-symbols-outlined text-[14px] text-amber-400" aria-hidden="true">
           {expanded ? "expand_less" : "expand_more"}
         </span>
         <span className="text-amber-300 font-mono font-medium">{name}</span>
-        <span className="text-text-muted text-xs font-mono ml-auto">{id.slice(0, 8)}</span>
+        <span className="text-text-muted text-xs font-mono ms-auto">{id.slice(0, 8)}</span>
       </button>
       {expanded && (
         <div className="mt-2 border-t border-amber-500/20 pt-2">

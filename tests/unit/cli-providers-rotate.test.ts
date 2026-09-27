@@ -30,7 +30,7 @@ async function withEnv(fn: (dataDir: string) => Promise<void>) {
   try {
     await fn(dataDir);
   } finally {
-    fs.rmSync(dataDir, { recursive: true, force: true });
+    fs.rmSync(dataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     globalThis.fetch = ORIGINAL_FETCH;
     if (ORIGINAL_DATA_DIR === undefined) delete process.env.DATA_DIR;
     else process.env.DATA_DIR = ORIGINAL_DATA_DIR;
@@ -178,11 +178,11 @@ test("providers status returns json when server returns expiration list", async 
       json: async () => ({ list: mockList, summary: {} }),
       text: async () => "",
     });
-    globalThis.fetch = mockFetch;
+    globalThis.fetch = mockFetch as unknown as typeof fetch;
     const { runProvidersStatusCommand } = await import("../../bin/cli/commands/providers.mjs");
     // Run with our fetch in place
     const savedFetch = globalThis.fetch;
-    globalThis.fetch = mockFetch;
+    globalThis.fetch = mockFetch as unknown as typeof fetch;
     const exitCode = await runProvidersStatusCommand({ json: true });
     globalThis.fetch = savedFetch;
     assert.equal(exitCode, 0);

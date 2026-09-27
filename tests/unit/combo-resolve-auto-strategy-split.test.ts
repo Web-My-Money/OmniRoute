@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import { resolveAutoStrategyOrder } from "@omniroute/open-sse/services/combo/resolveAutoStrategy.ts";
 import { resetDbInstance } from "@/lib/db/core.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // resolveAutoStrategyOrder loads the LKGP via the DB singleton (dynamic import);
 // release the handle so the node:test runner does not hang on teardown (learning #3).
@@ -123,9 +124,9 @@ test("cache affinity scores expanded auto account candidates directly", async ()
     },
   ];
   const deps = baseDeps((async () => candidates) as never);
-  deps.orderedTargets = [target("openai", "gpt-4o")];
-  deps.body = { prompt_cache_key: "expanded-account-key", messages: [] };
-  deps.combo.autoConfig = {
+  (deps as LooseDeep).orderedTargets = [target("openai", "gpt-4o")];
+  (deps as LooseDeep).body = { prompt_cache_key: "expanded-account-key", messages: [] };
+  (deps as LooseDeep).combo.autoConfig = {
     candidatePool: ["openai"],
     explorationRate: 0,
     weights: { cacheAffinity: 1 },
@@ -133,7 +134,10 @@ test("cache affinity scores expanded auto account candidates directly", async ()
 
   await resolveAutoStrategyOrder(deps);
 
-  assert.deepEqual(candidates.map((candidate) => candidate.cacheAffinity).sort(), [0, 1]);
+  assert.deepEqual(
+    candidates.map((candidate) => (candidate as LooseDeep).cacheAffinity).sort(),
+    [0, 1]
+  );
 });
 
 // #7008 follow-up: parseAutoConfig() (see combo-auto-config-split.test.ts) already

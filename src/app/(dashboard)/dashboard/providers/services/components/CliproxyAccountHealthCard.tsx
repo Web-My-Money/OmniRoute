@@ -18,7 +18,11 @@ const STATE_LABELS: Record<CliproxyAccountHealthResult["state"], string> = {
 };
 
 function AccountRow({ account }: { account: CliproxyAccountHealth }) {
-  const state = account.disabled ? "Disabled" : account.unavailable ? "Unavailable" : account.status;
+  const state = account.disabled
+    ? "Disabled"
+    : account.unavailable
+      ? "Unavailable"
+      : account.status;
   return (
     <li className="flex flex-wrap items-center justify-between gap-3 border-t border-border py-3 first:border-t-0">
       <div className="min-w-0">
@@ -36,7 +40,7 @@ function AccountRow({ account }: { account: CliproxyAccountHealth }) {
             .join(" · ")}
         </p>
       </div>
-      <div className="text-right text-xs text-text-muted">
+      <div className="text-end text-xs text-text-muted">
         <div>{account.success.toLocaleString()} succeeded</div>
         <div>{account.failed.toLocaleString()} failed</div>
       </div>
@@ -87,7 +91,9 @@ export function CliproxyAccountHealthCard() {
         )
       ) : (
         <p className="text-sm text-text-muted">
-          {loading && !result ? "Loading account health…" : STATE_LABELS[result?.state ?? "unreachable"]}
+          {loading && !result
+            ? "Loading account health…"
+            : STATE_LABELS[result?.state ?? "unreachable"]}
         </p>
       )}
     </Card>

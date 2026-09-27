@@ -21,13 +21,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-// @ts-expect-error — plain .mjs release script, no type declarations by design
+//
 import {
   hasArchSuffix,
   mergeManifests,
   parseManifest,
   renderManifest,
 } from "../../scripts/release/merge-mac-update-manifest.mjs";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Verbatim shape of what the two jobs produced for v3.8.49.
 const INTEL = `version: 3.8.49
@@ -94,8 +95,8 @@ test("the legacy top-level fields agree with the first entry", () => {
 test("checksums and sizes travel untouched", () => {
   const merged = mergeManifests([parseManifest(INTEL), parseManifest(ARM)]);
   const byUrl = Object.fromEntries(merged.files.map((f: { url: string }) => [f.url, f]));
-  assert.equal(byUrl["OmniRoute-3.8.49.dmg"].sha512, "FSRnh09fSyOSeB7VXXe==");
-  assert.equal(byUrl["OmniRoute-3.8.49-arm64.dmg"].size, "390627465");
+  assert.equal((byUrl["OmniRoute-3.8.49.dmg"] as LooseDeep).sha512, "FSRnh09fSyOSeB7VXXe==");
+  assert.equal((byUrl["OmniRoute-3.8.49-arm64.dmg"] as LooseDeep).size, "390627465");
 });
 
 test("the newest releaseDate wins", () => {
@@ -112,7 +113,10 @@ test("mixed-version inputs are refused, not merged", () => {
   // Artifacts from two different builds in one release-assets dir means something is wrong
   // upstream; a manifest stitched from both would point at files that were never published
   // together.
-  const merged = mergeManifests([parseManifest(INTEL), parseManifest(ARM.replace("3.8.49", "3.8.48"))]);
+  const merged = mergeManifests([
+    parseManifest(INTEL),
+    parseManifest(ARM.replace("3.8.49", "3.8.48")),
+  ]);
   assert.ok(merged.versionConflict, "the caller must be able to refuse");
   assert.deepEqual(merged.versionConflict.sort(), ["3.8.48", "3.8.49"]);
 });

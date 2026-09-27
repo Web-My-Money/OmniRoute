@@ -29,7 +29,7 @@ export function EncoderComparisonTable({ comparison }: { comparison: EncoderComp
       </header>
       <table className="w-full font-mono">
         <thead>
-          <tr className="text-left text-muted-foreground">
+          <tr className="text-start text-muted-foreground">
             <th>{t("encoder")}</th>
             <th>{t("bytes")}</th>
             <th>{t("tokensCl100k")}</th>

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // #6939 — model-list fetch for a LAN-local OpenAI-compatible provider (e.g. LM Studio on
 // 192.168.x.x) was rejected by the SSRF guard even though the connection test for the same
@@ -38,12 +39,12 @@ async function resetStorage() {
     process.env.OMNIROUTE_ALLOW_LOCAL_PROVIDER_URLS = originalAllowLocalProviderUrls;
   }
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 async function seedConnection(provider: string, overrides: Record<string, unknown> = {}) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: (overrides.authType as string) || "apikey",
     name: (overrides.name as string) || `${provider}-${Math.random().toString(16).slice(2, 8)}`,
@@ -52,7 +53,7 @@ async function seedConnection(provider: string, overrides: Record<string, unknow
     isActive: (overrides.isActive as boolean) ?? true,
     testStatus: (overrides.testStatus as string) || "active",
     providerSpecificData: (overrides.providerSpecificData as Record<string, unknown>) || {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 async function callRoute(connectionId: string, search = "") {
@@ -69,7 +70,7 @@ test.beforeEach(async () => {
 test.after(async () => {
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#6939: getProviderOutboundGuard() and getProviderValidationGuard() agree for LAN hosts under the default local-first setting", () => {

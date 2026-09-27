@@ -194,7 +194,7 @@ export function CompressionCockpit({ run: runProp }: CompressionCockpitProps) {
             rulesApplied: run.steps.flatMap((s) => s.rulesApplied ?? []),
           }}
         />
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ms-auto flex items-center gap-2">
           {/* View toggle: ReactFlow canvas (A2) ↔ waterfall list (A1) */}
           <div className="flex items-center gap-1" role="group" aria-label={t("cockpitView")}>
             <ViewButton
@@ -258,13 +258,13 @@ export function CompressionCockpit({ run: runProp }: CompressionCockpitProps) {
           >
             ⟳
           </button>
-          <div className="flex items-center gap-1 ml-2">
+          <div className="flex items-center gap-1 ms-2">
             {SPEEDS.map((s) => (
               <SpeedButton key={s} s={s} active={speed === s} onClick={() => setSpeed(s)} />
             ))}
           </div>
           {displayRun && currentFrame && (
-            <span className="ml-auto text-[11px] text-muted">
+            <span className="ms-auto text-[11px] text-muted">
               {t("stepProgress", {
                 current: displayRun?.steps.length ?? 0,
                 total: run.steps.length,

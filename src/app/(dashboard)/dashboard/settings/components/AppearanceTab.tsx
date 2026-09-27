@@ -338,7 +338,7 @@ export default function AppearanceTab() {
                   disabled={loading}
                   onClick={() => updateSetting(COMBO_CONFIG_MODE_SETTING_KEY, option.id)}
                   className={cn(
-                    "flex items-start gap-3 rounded-lg border p-3 text-left transition-colors disabled:opacity-60",
+                    "flex items-start gap-3 rounded-lg border p-3 text-start transition-colors disabled:opacity-60",
                     active
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border bg-surface/40 text-text-main hover:border-primary/40"

@@ -54,9 +54,7 @@ const AddCompatibleProviderModal = dynamic(
 import { CategoryDot } from "./components/CategoryDot";
 const ImportProvidersFromFileModal = dynamic(
   () =>
-    import("./components/ImportProvidersFromFileModal").then(
-      (m) => m.ImportProvidersFromFileModal
-    ),
+    import("./components/ImportProvidersFromFileModal").then((m) => m.ImportProvidersFromFileModal),
   { ssr: false }
 );
 import NoAuthProvidersSection from "./components/NoAuthProvidersSection";
@@ -1932,7 +1930,7 @@ function ProviderTestResultsView({ results }: { results: ProviderBatchTestResult
               {t("failedCount", { count: summary.failed })}
             </span>
           )}
-          <span className="text-text-muted ml-auto">
+          <span className="text-text-muted ms-auto">
             {t("testedCount", { count: summary.total })}
           </span>
         </div>
@@ -1955,7 +1953,7 @@ function ProviderTestResultsView({ results }: { results: ProviderBatchTestResult
             <span className="font-medium">
               {pickDisplayValue([r.connectionName], emailsVisible, r.connectionName)}
             </span>
-            <span className="text-text-muted ml-1.5">({r.provider})</span>
+            <span className="text-text-muted ms-1.5">({r.provider})</span>
           </div>
           {r.latencyMs !== undefined && (
             <span className="text-text-muted font-mono tabular-nums">

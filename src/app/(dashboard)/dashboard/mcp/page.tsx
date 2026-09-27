@@ -140,7 +140,7 @@ function TransportSelector({
             key={opt.value}
             onClick={() => onChange(opt.value)}
             disabled={disabled}
-            className="flex flex-col items-start px-4 py-2.5 rounded-lg border transition-all duration-200 text-left"
+            className="flex flex-col items-start px-4 py-2.5 rounded-lg border transition-all duration-200 text-start"
             style={{
               borderColor: value === opt.value ? "var(--color-primary)" : "var(--color-border)",
               background:
@@ -181,7 +181,7 @@ function TransportSelector({
         </code>
         {value !== "stdio" && (
           <button
-            className="ml-auto text-xs px-2 py-0.5 rounded border hover:opacity-80 transition-opacity"
+            className="ms-auto text-xs px-2 py-0.5 rounded border hover:opacity-80 transition-opacity"
             style={{ borderColor: "var(--color-border)", color: "var(--color-text-muted)" }}
             onClick={() => void copyToClipboard(urlMap[value])}
             title={t("mcpDashboardCopyUrl")}
@@ -209,7 +209,7 @@ function DisabledPanel() {
             style={{ borderColor: "var(--color-text-muted)" }}
           >
             <span
-              className="absolute left-1/2 top-[-3px] h-3 w-0.5 -translate-x-1/2 rounded-full"
+              className="absolute start-1/2 top-[-3px] h-3 w-0.5 -translate-x-1/2 rounded-full"
               style={{ background: "var(--color-text-muted)" }}
             />
           </span>

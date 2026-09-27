@@ -198,7 +198,7 @@ export function SkillInspectorPane({
             ) : (
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="text-left text-text-muted border-b border-border">
+                  <tr className="text-start text-text-muted border-b border-border">
                     <th className="pb-2 font-medium">{t("status")}</th>
                     <th className="pb-2 font-medium">{t("duration")}</th>
                     <th className="pb-2 font-medium">{t("time")}</th>

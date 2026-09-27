@@ -390,7 +390,7 @@ export default function RadarPage() {
                 <div className="text-4xl">📡</div>
                 <h2 className="text-xl font-semibold">{t("activateTitle")}</h2>
                 <p className="text-text-muted">{t("activateDescription")}</p>
-                <div className="flex flex-col gap-2 text-sm text-text-muted text-left w-full">
+                <div className="flex flex-col gap-2 text-sm text-text-muted text-start w-full">
                   <div className="flex items-start gap-2">
                     <span className="text-green-400 mt-0.5">✓</span>
                     <span>{t("privacyNoUpload")}</span>
@@ -410,7 +410,7 @@ export default function RadarPage() {
                     The raw key is NEVER displayed — once set, only the masked
                     form (supporterKeyMasked) is shown, with a "change key" escape
                     hatch to paste a new one. */}
-                <div className="w-full flex flex-col gap-3 text-left">
+                <div className="w-full flex flex-col gap-3 text-start">
                   <p className="text-sm font-medium">{t("keySectionTitle")}</p>
                   {hasSupporterKey && !showKeyForm ? (
                     <div className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border">
@@ -481,8 +481,8 @@ export default function RadarPage() {
                         {t("supporterButton")}
                       </a>
                     </div>
-                    <p className="text-xs text-text-muted text-left">{t("contributorHint")}</p>
-                    <p className="text-xs text-text-muted text-left">{t("supporterHint")}</p>
+                    <p className="text-xs text-text-muted text-start">{t("contributorHint")}</p>
+                    <p className="text-xs text-text-muted text-start">{t("supporterHint")}</p>
                   </div>
                 )}
               </div>

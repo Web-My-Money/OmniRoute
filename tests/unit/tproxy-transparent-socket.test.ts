@@ -40,7 +40,7 @@ test("loadTransparentAddon returns null when the prebuilt addon is absent (requi
 
 test("loadTransparentAddon returns the addon when present and well-shaped", () => {
   const fake = {
-    createTransparentListener: () => 42,
+    createTransparentListener: (_ip: string, _port: number) => 42,
     setSocketMark: () => {},
     connectMarked: () => 7,
   };

@@ -14,6 +14,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import Database from "better-sqlite3";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const serial = { concurrency: false };
 
@@ -139,7 +140,7 @@ function withNonTestEnvironment(fn) {
   const originalArgv = [...process.argv];
   const originalExecArgv = [...process.execArgv];
 
-  delete process.env.NODE_ENV;
+  delete (process.env as Record<string, string | undefined>).NODE_ENV;
   delete process.env.VITEST;
   delete process.env.DISABLE_SQLITE_AUTO_BACKUP;
   process.argv = process.argv.filter((arg) => !arg.includes("test"));
@@ -156,8 +157,9 @@ function withNonTestEnvironment(fn) {
     process.argv = originalArgv;
     process.execArgv = originalExecArgv;
 
-    if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
-    else process.env.NODE_ENV = originalNodeEnv;
+    if (originalNodeEnv === undefined)
+      delete (process.env as Record<string, string | undefined>).NODE_ENV;
+    else (process.env as Record<string, string | undefined>).NODE_ENV = originalNodeEnv;
 
     if (originalVitest === undefined) delete process.env.VITEST;
     else process.env.VITEST = originalVitest;
@@ -685,9 +687,13 @@ test(
         [{ version: "021" }, { version: "024" }]
       );
       assert.equal(
-        db
-          .prepare("SELECT COUNT(*) AS count FROM sqlite_master WHERE type = 'table' AND name = ?")
-          .get("memory_fts").count,
+        (
+          db
+            .prepare(
+              "SELECT COUNT(*) AS count FROM sqlite_master WHERE type = 'table' AND name = ?"
+            )
+            .get("memory_fts") as LooseDeep
+        ).count,
         0
       );
     } finally {
@@ -1011,11 +1017,19 @@ test(
 
       assert.equal(count, 3);
       assert.equal(
-        db.prepare("SELECT name FROM _omniroute_migrations WHERE version = ?").get("041")?.name,
+        (
+          db
+            .prepare("SELECT name FROM _omniroute_migrations WHERE version = ?")
+            .get("041") as LooseDeep | null
+        )?.name,
         "compression_receipts"
       );
       assert.equal(
-        db.prepare("SELECT name FROM _omniroute_migrations WHERE version = ?").get("050")?.name,
+        (
+          db
+            .prepare("SELECT name FROM _omniroute_migrations WHERE version = ?")
+            .get("050") as LooseDeep | null
+        )?.name,
         "session_account_affinity"
       );
       assert.deepEqual(
@@ -1085,11 +1099,19 @@ test(
 
         assert.equal(count, 1);
         assert.equal(
-          db.prepare("SELECT name FROM _omniroute_migrations WHERE version = ?").get("041")?.name,
+          (
+            db
+              .prepare("SELECT name FROM _omniroute_migrations WHERE version = ?")
+              .get("041") as LooseDeep | null
+          )?.name,
           "compression_receipts"
         );
         assert.equal(
-          db.prepare("SELECT name FROM _omniroute_migrations WHERE version = ?").get("050")?.name,
+          (
+            db
+              .prepare("SELECT name FROM _omniroute_migrations WHERE version = ?")
+              .get("050") as LooseDeep | null
+          )?.name,
           "session_account_affinity"
         );
 
@@ -1148,11 +1170,19 @@ test(
         );
 
         assert.equal(
-          db.prepare("SELECT name FROM _omniroute_migrations WHERE version = ?").get("056")?.name,
+          (
+            db
+              .prepare("SELECT name FROM _omniroute_migrations WHERE version = ?")
+              .get("056") as LooseDeep | null
+          )?.name,
           "mcp_accessibility_compression"
         );
         assert.equal(
-          db.prepare("SELECT name FROM _omniroute_migrations WHERE version = ?").get("059")?.name,
+          (
+            db
+              .prepare("SELECT name FROM _omniroute_migrations WHERE version = ?")
+              .get("059") as LooseDeep | null
+          )?.name,
           "manifest_routing"
         );
 
@@ -1218,11 +1248,19 @@ test(
         );
 
         assert.equal(
-          db.prepare("SELECT name FROM _omniroute_migrations WHERE version = ?").get("051")?.name,
+          (
+            db
+              .prepare("SELECT name FROM _omniroute_migrations WHERE version = ?")
+              .get("051") as LooseDeep | null
+          )?.name,
           "hot_path_db_indexes"
         );
         assert.equal(
-          db.prepare("SELECT name FROM _omniroute_migrations WHERE version = ?").get("054")?.name,
+          (
+            db
+              .prepare("SELECT name FROM _omniroute_migrations WHERE version = ?")
+              .get("054") as LooseDeep | null
+          )?.name,
           "usage_history_service_tier"
         );
 

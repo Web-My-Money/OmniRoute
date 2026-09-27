@@ -13,6 +13,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { BaseExecutor } from "../../open-sse/executors/base.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 // Minimal claude executor: passthrough transformRequest, no refresh — exercises
 // exactly base.ts's claude-OAuth wire-image path (same harness as #4307).
@@ -38,7 +39,7 @@ async function captureUpstreamBody(
   const executor = new ClaudeLikeExecutor();
   const originalFetch = globalThis.fetch;
   let upstreamBody: Record<string, unknown> | null = null;
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     upstreamBody = JSON.parse(String(init.body));
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,

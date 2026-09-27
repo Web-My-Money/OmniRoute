@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // #5873 regression guard: custom OpenAI-/Anthropic-compatible providers have
 // dynamic connection IDs (`*-compatible-*`) that are never keys of the static
@@ -24,7 +25,7 @@ type VirtualComboResult = Awaited<ReturnType<typeof virtualFactory.createVirtual
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -34,7 +35,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 
   if (ORIGINAL_DATA_DIR === undefined) {
     delete process.env.DATA_DIR;
@@ -45,13 +46,13 @@ test.after(async () => {
 
 test("createVirtualAutoCombo includes custom openai-compatible providers via defaultModel (#5873)", async () => {
   const customProvider = "openai-compatible-chat-02669115-2545-4896-b003-cb4dac09d441";
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: customProvider,
     authType: "apikey",
     name: "My Custom LLM",
     apiKey: "sk-custom-key",
     defaultModel: "my-custom-model",
-  });
+  })) as JsonRecord & { id: string };
 
   const combo: VirtualComboResult = await virtualFactory.createVirtualAutoCombo("fast");
 

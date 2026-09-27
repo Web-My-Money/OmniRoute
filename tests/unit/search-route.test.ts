@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-search-route-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -13,7 +14,7 @@ const searchRoute = await import("../../src/app/api/v1/search/route.ts");
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -25,7 +26,7 @@ async function seedConnection(
     providerSpecificData?: Record<string, unknown>;
   } = {}
 ) {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: overrides.authType || "apikey",
     name: `${provider}-${Math.random().toString(16).slice(2, 8)}`,
@@ -33,7 +34,7 @@ async function seedConnection(
     isActive: true,
     testStatus: "active",
     providerSpecificData: overrides.providerSpecificData || {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {
@@ -42,7 +43,7 @@ test.beforeEach(async () => {
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("v1 search GET lists all search providers", async () => {
@@ -81,7 +82,7 @@ test("v1 search POST uses stored Linkup credentials and returns normalized resul
   let capturedUrl = "";
   let capturedInit: RequestInit | undefined;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     capturedUrl = String(url);
     capturedInit = init;
 
@@ -141,7 +142,7 @@ test("v1 search POST uses firecrawl credentials for unified firecrawl search", a
   let capturedUrl = "";
   let capturedInit: RequestInit | undefined;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     capturedUrl = String(url);
     capturedInit = init;
     return new Response(
@@ -207,7 +208,7 @@ test("v1 search POST uses stored You.com credentials and returns unified news re
   let capturedUrl = "";
   let capturedInit: RequestInit | undefined;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     capturedUrl = String(url);
     capturedInit = init;
 
@@ -466,3 +467,5 @@ test("v1 search POST falls back to duckduckgo-free when no provider is configure
     globalThis.fetch = originalFetch;
   }
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

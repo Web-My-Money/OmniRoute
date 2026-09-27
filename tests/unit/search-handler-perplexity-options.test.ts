@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-perplexity-search-"));
 
@@ -12,7 +13,7 @@ test("Perplexity Search forwards validated provider options and locale filters",
   const originalFetch = globalThis.fetch;
   let captured;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: init.headers,

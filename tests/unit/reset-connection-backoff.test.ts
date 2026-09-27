@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // resetConnectionBackoff (open-sse perf PR #7893) is a lightweight-UPDATE variant
 // of the CAS-based clearConnectionErrorIfUnchanged pattern: it resets the backoff
@@ -18,16 +19,16 @@ const providersDb = await import("../../src/lib/db/providers.ts");
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 async function createBackedOffConnection() {
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "apikey",
     name: `GLM Backoff ${Date.now()}-${Math.random()}`,
     apiKey: "glm-test-key",
-  });
+  })) as JsonRecord & { id: string };
   const connectionId = (created as { id: string }).id;
   // backoffLevel/error fields aren't accepted at creation time — set them via
   // updateProviderConnection to reach the "backed off" state under test, mirroring
@@ -68,12 +69,12 @@ test("resetConnectionBackoff clears backoff/error columns and re-activates the c
 });
 
 test("resetConnectionBackoff does not clear a terminal status (e.g. banned)", async () => {
-  const created = await providersDb.createProviderConnection({
+  const created = (await providersDb.createProviderConnection({
     provider: "glm",
     authType: "apikey",
     name: `GLM Banned ${Date.now()}-${Math.random()}`,
     apiKey: "glm-test-key",
-  });
+  })) as JsonRecord & { id: string };
   const connectionId = (created as { id: string }).id;
   await providersDb.updateProviderConnection(connectionId, {
     testStatus: "banned",

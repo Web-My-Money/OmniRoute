@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { wrapLoose } from "../helpers/looseTypes.ts";
 
 const usageService = await import("../../open-sse/services/usage.ts");
 const providerLimitUtils =
@@ -31,7 +32,7 @@ test("github copilot business seats infer business plan and hide unlimited bucke
     );
 
   try {
-    const usage = await usageService.getUsageForProvider({
+    const usage = await wrapLoose(usageService).getUsageForProvider({
       provider: "github",
       accessToken: "gho_test",
       providerSpecificData: {},
@@ -78,7 +79,7 @@ test("github copilot individual paid plans no longer normalize as free", async (
     );
 
   try {
-    const usage = await usageService.getUsageForProvider({
+    const usage = await wrapLoose(usageService).getUsageForProvider({
       provider: "github",
       accessToken: "gho_test",
       providerSpecificData: {},

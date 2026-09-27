@@ -1,7 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
-import { IMAGE_PROVIDERS, parseImageModel, getImageProvider } from "../../open-sse/config/imageRegistry.ts";
+import {
+  IMAGE_PROVIDERS,
+  parseImageModel,
+  getImageProvider,
+} from "../../open-sse/config/imageRegistry.ts";
 import {
   buildCursorAgentAuthEnv,
   buildCursorAgentImagePrompt,
@@ -13,6 +17,7 @@ import {
   resolveCursorImageTimeoutMs,
   __resetCursorAgentImageConcurrencyForTests,
 } from "../../open-sse/handlers/imageGeneration/providers/cursorAgentImage.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 test("cursor is registered in IMAGE_PROVIDERS with cursor-agent-image format", () => {
   const entry = IMAGE_PROVIDERS.cursor;
@@ -65,7 +70,7 @@ test("isRasterImageBuffer accepts PNG and JPEG magics", () => {
 
 test("handleCursorAgentImageGeneration rejects empty prompt and missing credentials", async () => {
   __resetCursorAgentImageConcurrencyForTests();
-  const noPrompt = await handleCursorAgentImageGeneration({
+  const noPrompt = await looseAsync(handleCursorAgentImageGeneration)({
     model: "auto",
     provider: "cursor",
     providerConfig: { baseUrl: "agent://cursor-agent" },
@@ -76,7 +81,7 @@ test("handleCursorAgentImageGeneration rejects empty prompt and missing credenti
   assert.equal(noPrompt.success, false);
   assert.equal(noPrompt.status, 400);
 
-  const noCreds = await handleCursorAgentImageGeneration({
+  const noCreds = await looseAsync(handleCursorAgentImageGeneration)({
     model: "auto",
     provider: "cursor",
     providerConfig: { baseUrl: "agent://cursor-agent" },
@@ -90,7 +95,7 @@ test("handleCursorAgentImageGeneration rejects empty prompt and missing credenti
 
 test("handleCursorAgentImageGeneration returns 501 when agentBin path is missing", async () => {
   __resetCursorAgentImageConcurrencyForTests();
-  const result = await handleCursorAgentImageGeneration({
+  const result = await looseAsync(handleCursorAgentImageGeneration)({
     model: "auto",
     provider: "cursor",
     providerConfig: { baseUrl: "agent://cursor-agent" },
@@ -116,7 +121,7 @@ test("handleCursorAgentImageGeneration rejects a non-loopback/non-LAN caller BEF
     throw new Error("spawn must never be invoked for a remote caller");
   }) as unknown as typeof import("node:child_process").spawn;
 
-  const result = await handleCursorAgentImageGeneration({
+  const result = await looseAsync(handleCursorAgentImageGeneration)({
     model: "auto",
     provider: "cursor",
     providerConfig: { baseUrl: "agent://cursor-agent" },
@@ -137,7 +142,7 @@ test("handleCursorAgentImageGeneration rejects a non-loopback/non-LAN caller BEF
 
 test("handleCursorAgentImageGeneration rejects when peerLocality is missing (fail closed)", async () => {
   __resetCursorAgentImageConcurrencyForTests();
-  const result = await handleCursorAgentImageGeneration({
+  const result = await looseAsync(handleCursorAgentImageGeneration)({
     model: "auto",
     provider: "cursor",
     providerConfig: { baseUrl: "agent://cursor-agent" },
@@ -188,7 +193,7 @@ test("handleCursorAgentImageGeneration returns b64_json via injectable spawn", a
   }) as unknown as typeof import("node:child_process").spawn;
 
   // Use an existing path so the preflight existsSync check passes; spawn is faked.
-  const result = await handleCursorAgentImageGeneration({
+  const result = await looseAsync(handleCursorAgentImageGeneration)({
     model: "auto",
     provider: "cursor",
     providerConfig: { baseUrl: "agent://cursor-agent" },
@@ -258,7 +263,7 @@ test("handleCursorAgentImageGeneration never forwards a flag-shaped model into C
     return child;
   }) as unknown as typeof import("node:child_process").spawn;
 
-  const result = await handleCursorAgentImageGeneration({
+  const result = await looseAsync(handleCursorAgentImageGeneration)({
     model: "--dangerously-allow-shell", // untrusted, flag-shaped
     provider: "cursor",
     providerConfig: { baseUrl: "agent://cursor-agent" },

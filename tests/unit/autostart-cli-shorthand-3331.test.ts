@@ -11,6 +11,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { Command } from "commander";
 import { registerAutostart } from "../../bin/cli/commands/autostart.mjs";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 function buildAutostartCommand() {
   const program = new Command();
@@ -42,6 +43,6 @@ test("disable accepts the off/false shorthand aliases", () => {
 test("status is the default action (bare `omniroute autostart` is a safe read-only)", () => {
   const status = buildAutostartCommand().commands.find((c) => c.name() === "status");
   // Commander marks the default subcommand with `_defaultCommandName`.
-  assert.equal(buildAutostartCommand()._defaultCommandName, "status");
+  assert.equal((buildAutostartCommand() as LooseDeep)._defaultCommandName, "status");
   assert.ok(status, "status subcommand exists");
 });

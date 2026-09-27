@@ -15,6 +15,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "omniroute-gweb-image-"));
 
@@ -161,7 +162,7 @@ const baseArgs = {
 };
 
 test("success: returns image URLs in OpenAI image response shape", async () => {
-  const res = await handleGeminiWebImageGeneration({
+  const res = await looseAsync(handleGeminiWebImageGeneration)({
     ...baseArgs,
     executorFactory: () =>
       fakeExecutor({
@@ -177,7 +178,7 @@ test("success: returns image URLs in OpenAI image response shape", async () => {
 
 test("success: b64_json downloads the image via injected fetcher", async () => {
   const bytes = Buffer.from("fake-png-bytes");
-  const res = await handleGeminiWebImageGeneration({
+  const res = await looseAsync(handleGeminiWebImageGeneration)({
     ...baseArgs,
     body: { prompt: "a red panda", response_format: "b64_json" },
     executorFactory: () =>
@@ -196,7 +197,7 @@ test("success: b64_json downloads the image via injected fetcher", async () => {
 });
 
 test("b64_json download failure surfaces a specific 502", async () => {
-  const res = await handleGeminiWebImageGeneration({
+  const res = await looseAsync(handleGeminiWebImageGeneration)({
     ...baseArgs,
     body: { prompt: "a red panda", response_format: "b64_json" },
     executorFactory: () =>
@@ -214,7 +215,7 @@ test("b64_json download failure surfaces a specific 502", async () => {
 });
 
 test("no images generated: 502 includes assistant text (refusal visibility)", async () => {
-  const res = await handleGeminiWebImageGeneration({
+  const res = await looseAsync(handleGeminiWebImageGeneration)({
     ...baseArgs,
     executorFactory: () =>
       fakeExecutor({
@@ -229,7 +230,7 @@ test("no images generated: 502 includes assistant text (refusal visibility)", as
 });
 
 test("missing prompt → 400", async () => {
-  const res = await handleGeminiWebImageGeneration({
+  const res = await looseAsync(handleGeminiWebImageGeneration)({
     ...baseArgs,
     body: { prompt: "   " },
   });
@@ -238,7 +239,7 @@ test("missing prompt → 400", async () => {
 });
 
 test("missing cookie → 401", async () => {
-  const res = await handleGeminiWebImageGeneration({
+  const res = await looseAsync(handleGeminiWebImageGeneration)({
     ...baseArgs,
     credentials: {},
   });
@@ -247,7 +248,7 @@ test("missing cookie → 401", async () => {
 });
 
 test("n above the cap → 400 with the cap named", async () => {
-  const res = await handleGeminiWebImageGeneration({
+  const res = await looseAsync(handleGeminiWebImageGeneration)({
     ...baseArgs,
     body: { prompt: "a red panda", n: 5 },
   });
@@ -257,7 +258,7 @@ test("n above the cap → 400 with the cap named", async () => {
 });
 
 test("executor error status passes through", async () => {
-  const res = await handleGeminiWebImageGeneration({
+  const res = await looseAsync(handleGeminiWebImageGeneration)({
     ...baseArgs,
     executorFactory: () => fakeExecutor({ error: "Missing Gemini cookies" }, 401),
   });
@@ -267,7 +268,7 @@ test("executor error status passes through", async () => {
 
 test("n=2 runs sequentially and collects both turns' images", async () => {
   let calls = 0;
-  const res = await handleGeminiWebImageGeneration({
+  const res = await looseAsync(handleGeminiWebImageGeneration)({
     ...baseArgs,
     body: { prompt: "a red panda", n: 2 },
     executorFactory: () => ({

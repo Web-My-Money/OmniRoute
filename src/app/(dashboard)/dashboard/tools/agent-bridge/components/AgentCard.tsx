@@ -121,7 +121,7 @@ export function AgentCard({
         {/* Card header */}
         <button
           type="button"
-          className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left hover:bg-surface/30 transition-colors"
+          className="w-full flex items-center justify-between gap-3 px-4 py-3 text-start hover:bg-surface/30 transition-colors"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
         >

@@ -12,6 +12,7 @@ import {
   isLastMessageFromUser,
   normalizeThinkingConfig,
 } from "../../open-sse/services/provider.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("OpenAI-compatible providers resolve responses URLs and formats", () => {
   const config = getProviderConfig("openai-compatible-responses-demo");
@@ -47,7 +48,7 @@ test("Anthropic-compatible Claude Code providers use the Claude Code URL and hea
   const url = buildProviderUrl("anthropic-compatible-cc-demo", "claude-sonnet-4-6", false, {
     baseUrl: "https://proxy.example.com/v1/messages?beta=true",
   });
-  const headers = buildProviderHeaders(
+  const headers: LooseDeep = buildProviderHeaders(
     "anthropic-compatible-cc-demo",
     {
       apiKey: "anthropic-token",
@@ -66,7 +67,7 @@ test("Anthropic-compatible Claude Code providers use the Claude Code URL and hea
 });
 
 test("GitHub provider headers include request IDs and JSON accept for non-streaming requests", () => {
-  const headers = buildProviderHeaders(
+  const headers: LooseDeep = buildProviderHeaders(
     "github",
     {
       copilotToken: "copilot-token",
@@ -97,12 +98,12 @@ test("Registry-driven headers support x-goog-api-key and bearer fallback", () =>
   );
 
   assert.equal(apiKeyHeaders["x-goog-api-key"], "gemini-api-key");
-  assert.equal(apiKeyHeaders.Accept, "text/event-stream");
-  assert.equal(accessTokenHeaders.Authorization, "Bearer gemini-access-token");
+  assert.equal((apiKeyHeaders as LooseDeep).Accept, "text/event-stream");
+  assert.equal((accessTokenHeaders as LooseDeep).Authorization, "Bearer gemini-access-token");
 });
 
 test("Registry-driven headers support Key auth", () => {
-  const headers = buildProviderHeaders(
+  const headers: LooseDeep = buildProviderHeaders(
     "maritalk",
     {
       apiKey: "maritalk-key",
@@ -115,7 +116,7 @@ test("Registry-driven headers support Key auth", () => {
 });
 
 test("Unknown providers fall back to bearer auth and OpenAI format", () => {
-  const headers = buildProviderHeaders(
+  const headers: LooseDeep = buildProviderHeaders(
     "custom-provider",
     {
       apiKey: "custom-key",

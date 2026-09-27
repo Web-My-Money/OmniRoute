@@ -36,7 +36,7 @@ export default function SiliconFlowEndpointModal({
             key={endpoint.id}
             type="button"
             onClick={() => onSelect(endpoint.baseUrl)}
-            className="w-full p-4 text-left border border-border rounded-lg hover:bg-sidebar transition-colors"
+            className="w-full p-4 text-start border border-border rounded-lg hover:bg-sidebar transition-colors"
           >
             <div className="flex items-start gap-3">
               <span className="material-symbols-outlined text-primary mt-0.5">public</span>

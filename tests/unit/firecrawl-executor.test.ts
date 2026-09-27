@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { firecrawlFetch } = await import("../../open-sse/executors/firecrawl-fetch.ts");
 
@@ -13,7 +14,7 @@ test("firecrawlFetch calls api.firecrawl.dev/v1/scrape with Bearer auth", async 
     body: {},
   };
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: (init as RequestInit).headers as Record<string, string>,
@@ -90,7 +91,7 @@ test("firecrawlFetch maps 'html' format correctly", async () => {
   const originalFetch = globalThis.fetch;
   let capturedFormats: unknown;
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     const body = JSON.parse(String((init as RequestInit).body ?? "{}"));
     capturedFormats = body.formats;
     return new Response(JSON.stringify({ data: { html: "<html>test</html>", links: [] } }), {
@@ -159,7 +160,7 @@ test("firecrawlFetch forwards depth and wait_for_selector", async () => {
   const originalFetch = globalThis.fetch;
   let capturedBody: Record<string, unknown> = {};
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     capturedBody = JSON.parse(String((init as RequestInit).body ?? "{}"));
     return new Response(JSON.stringify({ data: { markdown: "" } }), {
       status: 200,
@@ -193,7 +194,7 @@ test("firecrawlFetch with includeMetadata=true does not send includeTags (4692)"
   const originalFetch = globalThis.fetch;
   let capturedBody: Record<string, unknown> = {};
 
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     capturedBody = JSON.parse(String((init as RequestInit).body ?? "{}"));
     return new Response(
       JSON.stringify({

@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
-const { normalizeSpeechResponseFormat, handleAudioSpeech } = await import(
-  "../../open-sse/handlers/audioSpeech.ts"
-);
+const { normalizeSpeechResponseFormat, handleAudioSpeech } =
+  await import("../../open-sse/handlers/audioSpeech.ts");
 
 test("normalizeSpeechResponseFormat aliases ogg to opus (#10587)", () => {
   assert.equal(normalizeSpeechResponseFormat("ogg"), "opus");
@@ -16,7 +16,7 @@ test("normalizeSpeechResponseFormat aliases ogg to opus (#10587)", () => {
 test("OpenAI-compat speech path remaps ogg to opus before upstream", async () => {
   const originalFetch = globalThis.fetch;
   let captured;
-  globalThis.fetch = async (_url, options = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     captured = JSON.parse(String(options.body || "{}"));
     return new Response(new Uint8Array([1, 2, 3]), {
       status: 200,

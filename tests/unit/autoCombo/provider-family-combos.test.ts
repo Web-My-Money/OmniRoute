@@ -19,6 +19,7 @@ import {
   isValidModelFamily,
   AUTO_FAMILY_IDS,
 } from "../../../open-sse/services/autoCombo/modelFamily";
+import type { JsonRecord } from "../../../src/shared/types/json.ts";
 
 // First-touch DB migrations run once per worker and can exceed vitest's 5s
 // default in a cold thread; the DB-backed materialization tests below need it.
@@ -34,7 +35,7 @@ const builtinCatalog = await import("../../../open-sse/services/autoCombo/builti
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -44,7 +45,7 @@ beforeEach(async () => {
 
 afterAll(async () => {
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   if (ORIGINAL_DATA_DIR === undefined) {
     delete process.env.DATA_DIR;
   } else {
@@ -101,27 +102,27 @@ describe("detectModelFamily (pure)", () => {
 
 describe("auto/<family> materialization (#6453)", () => {
   it("resolves auto/glm to a virtual combo spanning every connected GLM backend", async () => {
-    await providersDb.createProviderConnection({
+    (await providersDb.createProviderConnection({
       provider: "glm",
       authType: "apikey",
       name: "GLM direct",
       apiKey: "sk-test-glm",
       defaultModel: "glm-5.2",
-    });
-    await providersDb.createProviderConnection({
+    })) as JsonRecord & { id: string };
+    (await providersDb.createProviderConnection({
       provider: "zai",
       authType: "apikey",
       name: "z.ai",
       apiKey: "sk-test-zai",
       defaultModel: "glm-5.2",
-    });
-    await providersDb.createProviderConnection({
+    })) as JsonRecord & { id: string };
+    (await providersDb.createProviderConnection({
       provider: "openai",
       authType: "apikey",
       name: "OpenAI",
       apiKey: "sk-test-openai",
       defaultModel: "gpt-4o-mini",
-    });
+    })) as JsonRecord & { id: string };
 
     const combo = await builtinCatalog.createBuiltinAutoCombo("auto/glm", "glm");
 
@@ -166,20 +167,20 @@ describe("auto/<family> materialization (#6453)", () => {
   });
 
   it("resolves auto/zai to ONLY the zai-provider connection (provider-override family)", async () => {
-    await providersDb.createProviderConnection({
+    (await providersDb.createProviderConnection({
       provider: "glm",
       authType: "apikey",
       name: "GLM direct",
       apiKey: "sk-test-glm",
       defaultModel: "glm-5.2",
-    });
-    await providersDb.createProviderConnection({
+    })) as JsonRecord & { id: string };
+    (await providersDb.createProviderConnection({
       provider: "zai",
       authType: "apikey",
       name: "z.ai",
       apiKey: "sk-test-zai",
       defaultModel: "glm-5.2",
-    });
+    })) as JsonRecord & { id: string };
 
     const combo = await builtinCatalog.createBuiltinAutoCombo("auto/zai", "zai");
 
@@ -201,13 +202,13 @@ describe("auto/<family> materialization (#6453)", () => {
     // minimax under its own catalog) — the family combo is expected to include
     // those, but MUST exclude a connected provider whose model is a different
     // family entirely. This is the "subset available" degrade path (#6453).
-    await providersDb.createProviderConnection({
+    (await providersDb.createProviderConnection({
       provider: "openai",
       authType: "apikey",
       name: "OpenAI",
       apiKey: "sk-test-openai",
       defaultModel: "gpt-4o-mini",
-    });
+    })) as JsonRecord & { id: string };
 
     const combo = await builtinCatalog.createBuiltinAutoCombo("auto/minimax", "minimax");
 

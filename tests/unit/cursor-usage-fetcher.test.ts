@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { wrapLoose } from "../helpers/looseTypes.ts";
 
 const usageService = await import("../../open-sse/services/usage.ts");
 
@@ -47,7 +49,7 @@ function installFetchMock(
 ): { restore: () => void; calls: CapturedRequest[] } {
   const calls: CapturedRequest[] = [];
   const original = globalThis.fetch;
-  globalThis.fetch = (async (input: any, init: RequestInit = {}) => {
+  globalThis.fetch = (async (input: any, init: MockRequestInit = {}) => {
     const url = typeof input === "string" ? input : (input as Request).url;
     calls.push({ url, init });
     return await responder(url, init);
@@ -111,7 +113,7 @@ test("cursor usage: Bearer period-usage happy path returns three windows", async
   });
 
   try {
-    const usage = await usageService.getUsageForProvider({
+    const usage = await wrapLoose(usageService).getUsageForProvider({
       provider: "cursor",
       accessToken,
       providerSpecificData: {},
@@ -149,7 +151,7 @@ test("cursor usage: falls back to summary when period-usage fails", async () => 
   });
 
   try {
-    const usage = await usageService.getUsageForProvider({
+    const usage = await wrapLoose(usageService).getUsageForProvider({
       provider: "cursor",
       accessToken,
     });
@@ -188,7 +190,7 @@ test("cursor usage: falls back to auth/usage when period and summary fail", asyn
   });
 
   try {
-    const usage = await usageService.getUsageForProvider({
+    const usage = await wrapLoose(usageService).getUsageForProvider({
       provider: "cursor",
       accessToken,
     });
@@ -220,7 +222,7 @@ test("cursor usage: cookie dashboard is last fallback after Bearer APIs fail", a
   });
 
   try {
-    const usage = await usageService.getUsageForProvider({
+    const usage = await wrapLoose(usageService).getUsageForProvider({
       provider: "cursor",
       accessToken,
       providerSpecificData: { userId },
@@ -254,7 +256,7 @@ test("cursor usage: JWT sub used for cookie fallback when providerSpecificData.u
   });
 
   try {
-    const usage = await usageService.getUsageForProvider({
+    const usage = await wrapLoose(usageService).getUsageForProvider({
       provider: "cursor",
       accessToken,
       providerSpecificData: {},
@@ -283,7 +285,7 @@ test("cursor usage: Bearer-only token without userId still works via period API"
   });
 
   try {
-    const usage = await usageService.getUsageForProvider({
+    const usage = await wrapLoose(usageService).getUsageForProvider({
       provider: "cursor",
       accessToken,
       providerSpecificData: {},
@@ -299,7 +301,7 @@ test("cursor usage: all Bearer fail and no userId returns reauth message without
   const mock = installFetchMock(async () => new Response("fail", { status: 401 }));
 
   try {
-    const usage = await usageService.getUsageForProvider({
+    const usage = await wrapLoose(usageService).getUsageForProvider({
       provider: "cursor",
       accessToken: "not-a-jwt",
       providerSpecificData: {},
@@ -326,7 +328,7 @@ test("cursor usage: cookie 307 redirect surfaces expired session with PKCE hint"
   });
 
   try {
-    const usage = await usageService.getUsageForProvider({
+    const usage = await wrapLoose(usageService).getUsageForProvider({
       provider: "cursor",
       accessToken,
       providerSpecificData: { userId: "user_01EXPIRED" },
@@ -361,7 +363,7 @@ test("cursor usage: empty planUsage on period falls through to cookie empty mess
   });
 
   try {
-    const usage = await usageService.getUsageForProvider({
+    const usage = await wrapLoose(usageService).getUsageForProvider({
       provider: "cursor",
       accessToken,
       providerSpecificData: { userId: "user_01EMPTY" },

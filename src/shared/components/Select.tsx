@@ -50,7 +50,7 @@ export default function Select({
         <label htmlFor={selectId} className="text-sm font-medium text-text-main">
           {label}
           {required && (
-            <span className="text-red-500 ml-1" aria-hidden="true">
+            <span className="text-red-500 ms-1" aria-hidden="true">
               *
             </span>
           )}

@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-chatcore-translation-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
 const core = await import("../../src/lib/db/core.ts");
@@ -322,7 +323,7 @@ async function resetStorage() {
   resetBackgroundStats();
   globalThis.setTimeout = originalSetTimeout;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -375,7 +376,7 @@ async function invokeChatCore({
 }: any = {}) {
   const calls: any[] = [];
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     const headers = toPlainHeaders(init.headers);
     const captured = {
       url: String(url),
@@ -399,7 +400,7 @@ async function invokeChatCore({
 
   try {
     const requestBody = structuredClone(body);
-    const result = await handleChatCore({
+    const result = await looseAsync(handleChatCore)({
       body: requestBody,
       modelInfo: { provider, model, extendedContext: false },
       credentials: credentials || {
@@ -448,7 +449,7 @@ test.after(async () => {
   resetAccountSemaphores();
   await flushAsyncSideEffects();
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 test("chatCore times out upstream execution before provider response headers", async () => {
   // This test asserts pendingDetail.providerRequest — only attached when the
@@ -468,7 +469,7 @@ test("chatCore times out upstream execution before provider response headers", a
   };
   const fetchSignals: AbortSignal[] = [];
   const upstreamBodies: any[] = [];
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     if (init.signal instanceof AbortSignal) fetchSignals.push(init.signal);
     if (init.body) upstreamBodies.push(JSON.parse(String(init.body)));
     return new Promise(() => {});
@@ -2490,14 +2491,14 @@ test("chatCore redirects background utility tasks to a cheaper mapped model", as
   assert.equal(call.body.model, "gpt-4o-mini");
 });
 test("chatCore preserves Codex dual-window scope cooldowns on 429 responses", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "codex@example.com",
     accessToken: "codex-token",
     isActive: true,
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 
   const resetAt5h = new Date(Date.now() + 60_000).toISOString();
   const resetAt7d = new Date(Date.now() + 3_600_000).toISOString();
@@ -2555,14 +2556,14 @@ test("chatCore 429 lets account fallback apply the configured resilience cooldow
     },
   });
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "resilience-429",
     apiKey: "sk-resilience-429",
     isActive: true,
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 
   const { result } = await invokeChatCore({
     provider: "openai",
@@ -3215,14 +3216,14 @@ test("chatCore releases account semaphore slots when upstream execution throws",
 });
 test("chatCore locks per-model quota failures without dropping quota helper references", async () => {
   const model = "gemini-1.5-pro";
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "gemini",
     authType: "apikey",
     name: "gemini-quota-lock",
     apiKey: "gemini-key",
     isActive: true,
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 
   try {
     const { result } = await invokeChatCore({
@@ -3443,3 +3444,6 @@ test("chatCore returns cache HIT as SSE when the client requests streaming", asy
   assert.match(sse, /^data:/m, "cache HIT should be SSE-framed");
   assert.match(sse, /cached-json/, "SSE cache HIT should carry the cached content");
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";

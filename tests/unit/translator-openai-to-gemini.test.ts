@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { looseSync } from "../helpers/looseTypes.ts";
 
 const { openaiToAntigravityRequest, openaiToCloudCodeGeminiRequest, openaiToGeminiRequest } =
   await import("../../open-sse/translator/request/openai-to-gemini.ts");
@@ -101,7 +102,7 @@ test("OpenAI -> Gemini does not inject default maxOutputTokens for unknown caps"
 });
 
 test("OpenAI -> Gemini helper cleans complex JSON Schema structures for Gemini compatibility", () => {
-  const cleaned = cleanJSONSchemaForAntigravity({
+  const cleaned = looseSync(cleanJSONSchemaForAntigravity)({
     type: "object",
     title: "Root schema",
     properties: {
@@ -157,7 +158,7 @@ test("OpenAI -> Gemini helper cleans complex JSON Schema structures for Gemini c
 });
 
 test("OpenAI -> Gemini helper inlines local refs and preserves only additionalProperties=true", () => {
-  const cleaned = cleanJSONSchemaForAntigravity({
+  const cleaned = looseSync(cleanJSONSchemaForAntigravity)({
     type: "object",
     $defs: {
       Address: {
@@ -866,7 +867,11 @@ test("OpenAI -> Antigravity maps Claude-family models to Gemini-compatible schem
   assert.match(result.requestId, /^agent\/\d+\/[0-9a-f]{8}$/);
   assert.equal(result.enabledCreditTypes, undefined);
   assert.equal(result.request.systemInstruction.parts[0].text, ANTIGRAVITY_DEFAULT_SYSTEM);
-  assert.equal(result.request.systemInstruction.parts.length, 1, "systemInstruction must contain only ANTIGRAVITY_DEFAULT_SYSTEM (#9030)");
+  assert.equal(
+    result.request.systemInstruction.parts.length,
+    1,
+    "systemInstruction must contain only ANTIGRAVITY_DEFAULT_SYSTEM (#9030)"
+  );
   // #9030 — Client system content moved to first user message to avoid upstream 429s
   assert.equal(result.request.contents[0].parts[0].text, "Project rules");
   assert.equal(result.request.contents[0].parts[1].text, "Read a file");

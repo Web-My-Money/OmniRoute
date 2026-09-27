@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { openaiResponsesToOpenAIRequest } =
   await import("../../open-sse/translator/request/openai-responses.ts");
@@ -10,8 +11,8 @@ const { FORMATS } = await import("../../open-sse/translator/formats.ts");
 
 function collectEvents(chunks, customToolNames = new Set(), toolSchemas = null) {
   const state = initState(FORMATS.OPENAI_RESPONSES);
-  state.customToolNames = customToolNames;
-  if (toolSchemas) state.toolSchemas = toolSchemas;
+  (state as LooseDeep).customToolNames = customToolNames;
+  if (toolSchemas) (state as LooseDeep).toolSchemas = toolSchemas;
   const events = [];
   for (const chunk of chunks) {
     const result = openaiToOpenAIResponsesResponse(chunk, state);
@@ -40,8 +41,8 @@ test("Responses -> Chat: custom tool is normalized to a { input: string } functi
     {}
   );
 
-  assert.equal(Array.isArray(result.tools), true);
-  const tool = result.tools[0];
+  assert.equal(Array.isArray((result as LooseDeep).tools), true);
+  const tool = (result as LooseDeep).tools[0];
   assert.equal(tool.type, "function");
   assert.equal(tool.function.name, "apply_patch");
   // The regression: without normalization, parameters is undefined / empty and the model
@@ -78,7 +79,7 @@ test("Responses -> Chat: custom_tool_call + output items map to tool_calls and t
     {}
   );
 
-  const assistant = result.messages.find(
+  const assistant = (result as LooseDeep).messages.find(
     (m) => m.role === "assistant" && Array.isArray(m.tool_calls)
   );
   assert.ok(assistant, "expected an assistant message carrying the custom tool call");
@@ -90,7 +91,7 @@ test("Responses -> Chat: custom_tool_call + output items map to tool_calls and t
     input: "*** Begin Patch\n*** End Patch",
   });
 
-  const toolMsg = result.messages.find((m) => m.role === "tool");
+  const toolMsg = (result as LooseDeep).messages.find((m) => m.role === "tool");
   assert.ok(toolMsg, "expected a tool result message");
   assert.equal(toolMsg.tool_call_id, "call_patch_1");
   // JSON-wrapped {"output":...} is unwrapped to the plain string.

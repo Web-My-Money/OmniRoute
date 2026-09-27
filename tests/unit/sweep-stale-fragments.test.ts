@@ -14,7 +14,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-// @ts-expect-error — plain .mjs release script, no type declarations by design
+//
 import {
   classifyFragments,
   normalizeBullet,
@@ -41,7 +41,13 @@ const CHANGELOG = `# Changelog
 test("a fragment already folded into the changelog is stale", () => {
   const { stale, keep } = classifyFragments({
     changelog: CHANGELOG,
-    fragments: [{ name: "8100-retry.md", rel: "changelog.d/fixes/8100-retry.md", body: "- **fix(sse):** stop the retry loop double-counting attempts ([#8100](https://x/y/pull/8100))" }],
+    fragments: [
+      {
+        name: "8100-retry.md",
+        rel: "changelog.d/fixes/8100-retry.md",
+        body: "- **fix(sse):** stop the retry loop double-counting attempts ([#8100](https://x/y/pull/8100))",
+      },
+    ],
   });
   assert.equal(stale.length, 1);
   assert.equal(keep.length, 0);
@@ -53,7 +59,13 @@ test("a fragment for THIS cycle, not yet in the changelog, is kept", () => {
   // The whole point: the sweep must not eat the fragments the current cycle is accumulating.
   const { stale, keep } = classifyFragments({
     changelog: CHANGELOG,
-    fragments: [{ name: "8966-iflow.md", rel: "changelog.d/maintenance/8966-iflow.md", body: "- **chore(sse):** dropped the leftover iflow entry ([#8966](https://x/y/pull/8966))" }],
+    fragments: [
+      {
+        name: "8966-iflow.md",
+        rel: "changelog.d/maintenance/8966-iflow.md",
+        body: "- **chore(sse):** dropped the leftover iflow entry ([#8966](https://x/y/pull/8966))",
+      },
+    ],
   });
   assert.equal(stale.length, 0);
   assert.equal(keep.length, 1);
@@ -82,7 +94,11 @@ test("the filename's PR number being present IS enough to sweep", () => {
   const { stale } = classifyFragments({
     changelog: CHANGELOG,
     fragments: [
-      { name: "8101-migration.md", rel: "changelog.d/fixes/8101-migration.md", body: "- whatever the text says" },
+      {
+        name: "8101-migration.md",
+        rel: "changelog.d/fixes/8101-migration.md",
+        body: "- whatever the text says",
+      },
     ],
   });
   assert.equal(stale.length, 1);
@@ -110,7 +126,13 @@ test("a ref-less fragment already present is caught by normalized text", () => {
 test("a ref-less fragment that is NOT present is kept", () => {
   const { stale, keep } = classifyFragments({
     changelog: CHANGELOG,
-    fragments: [{ name: "new.md", rel: "changelog.d/features/new.md", body: "- feat(api): brand new endpoint nobody has shipped yet" }],
+    fragments: [
+      {
+        name: "new.md",
+        rel: "changelog.d/features/new.md",
+        body: "- feat(api): brand new endpoint nobody has shipped yet",
+      },
+    ],
   });
   assert.equal(stale.length, 0);
   assert.equal(keep.length, 1);
@@ -142,7 +164,9 @@ test("no fragments and no changelog does not throw", () => {
 });
 
 test("normalizeBullet folds markdown, links and refs away", () => {
-  const a = normalizeBullet("- **fix(sse):** stop the *retry* loop ([#8100](https://x/y/pull/8100))");
+  const a = normalizeBullet(
+    "- **fix(sse):** stop the *retry* loop ([#8100](https://x/y/pull/8100))"
+  );
   const b = normalizeBullet("fix(sse): stop the retry loop #8100");
   assert.equal(a, b, "the same sentence in two markdown dialects must compare equal");
 });
@@ -159,11 +183,7 @@ test("refsIn finds every number and nothing else", () => {
 // pr-number bucket was permanently 0 and every filename-matched fragment was mis-tallied
 // as a text match. summarizeStale is the pure counter the report line uses.
 test("summarizeStale tallies pr-number and text matches under their real categories", () => {
-  const stale = [
-    { matchedBy: "pr-number" },
-    { matchedBy: "pr-number" },
-    { matchedBy: "text" },
-  ];
+  const stale = [{ matchedBy: "pr-number" }, { matchedBy: "pr-number" }, { matchedBy: "text" }];
   assert.deepEqual(summarizeStale(stale), { byPrNumber: 2, byText: 1 });
 });
 

@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 // #4401: Firecrawl and Jina Reader were added as webFetch providers in #2645 with
 // their own executors, but no API-key validator was registered — so adding an account
@@ -22,7 +23,7 @@ function headerValue(init: RequestInit | undefined, name: string): string | unde
 
 test("#4401 firecrawl validator probes the scrape endpoint with Bearer auth and accepts a 200", async () => {
   const calls: { url: string; init: RequestInit }[] = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({ url: String(url), init });
     return new Response(JSON.stringify({ success: true, data: {} }), { status: 200 });
   };
@@ -39,7 +40,7 @@ test("#4401 firecrawl validator probes the scrape endpoint with Bearer auth and 
 
 test("#4401 jina-reader validator probes r.jina.ai with Bearer auth and accepts a 200", async () => {
   const calls: { url: string; init: RequestInit }[] = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({ url: String(url), init });
     return new Response("# Example\n", { status: 200 });
   };

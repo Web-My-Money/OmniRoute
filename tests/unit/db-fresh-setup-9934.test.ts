@@ -16,6 +16,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import Database from "better-sqlite3";
 import { resetDbInstance } from "../../src/lib/db/core.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Regression guard for #9934 — init asymmetry breaks a fresh install.
 //
@@ -51,7 +52,7 @@ function withNonTestEnvironment<R>(fn: () => R): R {
   const originalArgv = [...process.argv];
   const originalExecArgv = [...process.execArgv];
 
-  delete process.env.NODE_ENV;
+  delete (process.env as Record<string, string | undefined>).NODE_ENV;
   delete process.env.VITEST;
   delete process.env.DISABLE_SQLITE_AUTO_BACKUP;
   process.argv = process.argv.filter((arg) => !arg.includes("test"));
@@ -62,8 +63,9 @@ function withNonTestEnvironment<R>(fn: () => R): R {
   } finally {
     process.argv = originalArgv;
     process.execArgv = originalExecArgv;
-    if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
-    else process.env.NODE_ENV = originalNodeEnv;
+    if (originalNodeEnv === undefined)
+      delete (process.env as Record<string, string | undefined>).NODE_ENV;
+    else (process.env as Record<string, string | undefined>).NODE_ENV = originalNodeEnv;
     if (originalVitest === undefined) delete process.env.VITEST;
     else process.env.VITEST = originalVitest;
     if (originalDisableAutoBackup === undefined) delete process.env.DISABLE_SQLITE_AUTO_BACKUP;
@@ -73,12 +75,12 @@ function withNonTestEnvironment<R>(fn: () => R): R {
 
 function cleanupGlobalDb() {
   try {
-    const g = globalThis as Record<string, { open?: boolean; close?: () => void }>;
+    const g = globalThis as unknown as Record<string, { open?: boolean; close?: () => void }>;
     if (g.__omnirouteDb?.open) g.__omnirouteDb.close?.();
   } catch {
     /* ignore */
   }
-  delete (globalThis as Record<string, unknown>).__omnirouteDb;
+  delete (globalThis as LooseDeep).__omnirouteDb;
 }
 
 test.after(() => {
@@ -93,6 +95,7 @@ test(
     const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-9934-"));
     const originalDataDir = process.env.DATA_DIR;
     process.env.DATA_DIR = dataDir;
+    let core: Awaited<ReturnType<typeof importFresh>> | undefined;
 
     try {
       // Step 1 — mimic `omniroute setup`: the CLI opens the DB, writes the
@@ -120,7 +123,7 @@ test(
       // Step 2 — mimic the first `omniroute serve`: the real server opens the
       // same DB, auto-seeds only the 001 marker and runs migrations. Under a
       // live (non-test) safety gate this must NOT throw.
-      const core = await importFresh("src/lib/db/core.ts");
+      core = await importFresh("src/lib/db/core.ts");
       cleanupGlobalDb();
       resetDbInstance();
 
@@ -132,9 +135,9 @@ test(
       }, "first serve must not abort on a fresh setup DB that only has the 001 seed (#9934)");
 
       // Prove the fresh DB actually got migrated past 001 to the latest version.
-      const maxRow = db.prepare(
-        "SELECT MAX(CAST(version AS INTEGER)) AS maxV FROM _omniroute_migrations"
-      ).get();
+      const maxRow = db
+        .prepare("SELECT MAX(CAST(version AS INTEGER)) AS maxV FROM _omniroute_migrations")
+        .get();
       assert.ok(
         (maxRow?.maxV ?? 0) > 1,
         `expected migrations beyond 001 to run, got max=${maxRow?.maxV}`
@@ -142,7 +145,8 @@ test(
     } finally {
       if (originalDataDir === undefined) delete process.env.DATA_DIR;
       else process.env.DATA_DIR = originalDataDir;
-      fs.rmSync(dataDir, { recursive: true, force: true });
+      (core as LooseDeep)?.resetDbInstance?.();
+      fs.rmSync(dataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     }
   }
 );

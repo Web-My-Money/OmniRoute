@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-quota-token-limit-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -23,17 +24,17 @@ test.after(() => {
   else process.env.DATA_DIR = ORIGINAL_DATA_DIR;
   if (ORIGINAL_QUOTA_ROUTING === undefined) delete process.env.OMNIROUTE_QUOTA_AWARE_ROUTING;
   else process.env.OMNIROUTE_QUOTA_AWARE_ROUTING = ORIGINAL_QUOTA_ROUTING;
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("round-robin quota reservation keeps the connection token limit", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "quota token limit test",
     apiKey: "sk-quota-token-limit-test",
     rateLimitOverrides: { tpm: 5000 },
-  });
+  })) as JsonRecord & { id: string };
   assert.ok(connection?.id);
 
   const model = "openai/gpt-4o";

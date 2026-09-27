@@ -33,7 +33,7 @@ export function AnnotationField({ requestId, initialValue = "" }: AnnotationFiel
         className="w-full rounded border border-border bg-bg-subtle px-3 py-2 text-sm text-text-main resize-none focus:outline-none focus:ring-1 focus:ring-blue-500"
       />
       {saving && (
-        <span className="absolute right-2 bottom-2 text-xs text-text-muted animate-pulse">
+        <span className="absolute end-2 bottom-2 text-xs text-text-muted animate-pulse">
           {t("saving")}
         </span>
       )}

@@ -163,7 +163,7 @@ export default function IntelligentComboPanel({
                   )}
                 </p>
               </div>
-              <div className="rounded-lg bg-black/5 dark:bg-white/5 px-3 py-2 text-right">
+              <div className="rounded-lg bg-black/5 dark:bg-white/5 px-3 py-2 text-end">
                 <p className="text-[10px] uppercase tracking-wide text-text-muted">
                   {getI18nOrFallback(t, "candidatePoolLabel", "Candidate Pool")}
                 </p>

@@ -155,7 +155,7 @@ export default function AgentsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex justify-end">
         <Button variant="secondary" onClick={handleRefresh} loading={refreshing}>
-          <span className="material-symbols-outlined text-[16px] mr-1">refresh</span>
+          <span className="material-symbols-outlined text-[16px] me-1">refresh</span>
           {t("refresh")}
         </Button>
       </div>
@@ -366,7 +366,7 @@ export default function AgentsPage() {
             </div>
             <div className="flex justify-end">
               <Button type="submit" variant="primary" loading={addLoading}>
-                <span className="material-symbols-outlined text-[16px] mr-1">add</span>
+                <span className="material-symbols-outlined text-[16px] me-1">add</span>
                 {t("addAgent")}
               </Button>
             </div>

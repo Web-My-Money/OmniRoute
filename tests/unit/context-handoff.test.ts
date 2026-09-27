@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MessageLike } from "../../open-sse/services/contextHandoff.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-context-handoff-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -13,7 +14,7 @@ const contextHandoff = await import("../../open-sse/services/contextHandoff.ts")
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -33,7 +34,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("buildHandoffSystemMessage and injectHandoffIntoBody preserve existing history", () => {
@@ -370,7 +371,7 @@ test("context handoff DB module upserts and deletes active handoffs", () => {
 });
 
 test("selectMessagesForSummary filters falsy values and preserves system/developer messages", () => {
-  const messages: (contextHandoff.MessageLike | null | undefined | false)[] = [
+  const messages: (MessageLike | null | undefined | false)[] = [
     null,
     undefined,
     { role: "system", content: "System 1" },
@@ -381,10 +382,7 @@ test("selectMessagesForSummary filters falsy values and preserves system/develop
     { role: "user", content: "User 2" },
   ];
 
-  const selected = contextHandoff.selectMessagesForSummary(
-    messages as contextHandoff.MessageLike[],
-    2
-  );
+  const selected = contextHandoff.selectMessagesForSummary(messages as MessageLike[], 2);
 
   assert.equal(selected.length, 4);
   assert.equal(selected[0].role, "system");
@@ -398,7 +396,7 @@ test("selectMessagesForSummary with no system messages and oversized single rema
   // Build a single very large non-system message that exceeds MAX_HISTORY_TOKENS_FOR_SUMMARY
   // (token estimator is ~4 chars/token, so 8000 tokens ≈ 32000 chars).
   const hugeContent = "x".repeat(40000);
-  const messages: contextHandoff.MessageLike[] = [
+  const messages: MessageLike[] = [
     { role: "user", content: "first message" },
     { role: "assistant", content: hugeContent },
   ];

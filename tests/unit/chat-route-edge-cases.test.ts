@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { createChatPipelineHarness } from "../integration/_chatPipelineHarness.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const harness = await createChatPipelineHarness("chat-route-edges");
 const {
@@ -45,7 +46,7 @@ test("handleChat resolves model alias before routing", async () => {
   await setModelAlias("alias-model", "openai/gpt-4.1");
 
   const seenModels = [];
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     try {
       const body = JSON.parse(String(init.body));
       seenModels.push(body.model);
@@ -75,7 +76,7 @@ test("handleChat strips client context-window tags before combo routing and disp
   });
 
   const seenModels = [];
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     const body = JSON.parse(String(init.body));
     seenModels.push(body.model);
     return buildOpenAIResponse("Context tag response");
@@ -103,7 +104,7 @@ test("handleChat preserves a literal context-tagged combo name", async () => {
   });
 
   const seenModels = [];
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     seenModels.push(JSON.parse(String(init.body)).model);
     return buildOpenAIResponse("Literal combo response");
   };

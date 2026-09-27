@@ -5,6 +5,7 @@ import {
   sanitizeAntigravityToolPayload,
   stripEnumDescriptions,
 } from "../../open-sse/config/toolCloaking.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 type ToolDeclaration = {
   name: string;
@@ -14,7 +15,7 @@ type ToolDeclaration = {
 function hasKeyDeep(value: unknown, key: string): boolean {
   if (!value || typeof value !== "object") return false;
   if (Array.isArray(value)) return value.some((entry) => hasKeyDeep(entry, key));
-  const record = value as Record<string, unknown>;
+  const record = value as LooseDeep;
   return (
     Object.hasOwn(record, key) || Object.values(record).some((entry) => hasKeyDeep(entry, key))
   );
@@ -61,12 +62,12 @@ test("Antigravity tool sanitization preserves declared and historical tool names
     "only client-declared tools should remain, in their original order"
   );
   assert.equal(
-    result.request.contents[0].parts[0].functionCall.name,
+    (result.request.contents[0].parts[0] as LooseDeep).functionCall.name,
     "workspace_read",
     "functionCall names must remain aligned with declarations"
   );
   assert.equal(
-    result.request.contents[1].parts[0].functionResponse.name,
+    (result.request.contents[1].parts[0] as LooseDeep).functionResponse.name,
     "workspace_read",
     "functionResponse names must remain aligned with declarations"
   );
@@ -116,13 +117,10 @@ test("stripEnumDescriptions removes enumDescriptions at every nesting level", ()
     },
   };
 
-  const stripped = stripEnumDescriptions(schema) as Record<string, unknown>;
+  const stripped = stripEnumDescriptions(schema) as LooseDeep;
 
   assert.equal(hasKeyDeep(stripped, "enumDescriptions"), false);
-  assert.deepEqual(
-    ((stripped.properties as Record<string, unknown>).mode as Record<string, unknown>).enum,
-    ["a", "b"]
-  );
+  assert.deepEqual(((stripped.properties as LooseDeep).mode as LooseDeep).enum, ["a", "b"]);
   assert.ok(Array.isArray(schema.properties.mode.enumDescriptions), "input must not be mutated");
 });
 

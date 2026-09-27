@@ -285,6 +285,12 @@ export async function stopApp(
   }
 }
 
+/**
+ * @param {object} [options]
+ * @param {string} options.dataDir
+ * @param {NodeJS.ProcessEnv} [options.parentEnv]
+ * @param {NodeJS.Platform} [options.currentPlatform]
+ */
 export function buildSmokeEnv({
   dataDir,
   parentEnv = process.env,
@@ -506,7 +512,14 @@ async function waitForReady({ logs, smokeUrl, timeoutMs, settleMs, exitState }) 
  * by the single-launch path and the cold-restart (two-launch) path so both
  * exercise identical spawn/readiness/shutdown behavior.
  */
-async function launchAndCollectLogs({ appExecutable, smokeUrl, dataDir, timeoutMs, settleMs, streamLogs }) {
+async function launchAndCollectLogs({
+  appExecutable,
+  smokeUrl,
+  dataDir,
+  timeoutMs,
+  settleMs,
+  streamLogs,
+}) {
   const smokeEnv = buildSmokeEnv({ dataDir });
   await assertPortIsFree(smokeUrl);
   await ensureSmokeEnvDirs(smokeEnv, dataDir);
@@ -568,7 +581,14 @@ async function main() {
     !process.env.ELECTRON_SMOKE_DATA_DIR && process.env.ELECTRON_SMOKE_KEEP_DATA !== "1";
 
   try {
-    await launchAndCollectLogs({ appExecutable, smokeUrl, dataDir, timeoutMs, settleMs, streamLogs });
+    await launchAndCollectLogs({
+      appExecutable,
+      smokeUrl,
+      dataDir,
+      timeoutMs,
+      settleMs,
+      streamLogs,
+    });
 
     if (!coldRestart) return;
 

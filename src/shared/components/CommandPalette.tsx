@@ -333,8 +333,8 @@ function CommandPaletteDialog({ onClose }: { onClose: () => void }) {
                           >
                             <button
                               className={`w-full flex items-center gap-3 ${
-                                subgroup.subgroupLabel ? "pl-10 pr-6" : "px-6"
-                              } py-2.5 text-left transition-colors ${
+                                subgroup.subgroupLabel ? "ps-10 pe-6" : "px-6"
+                              } py-2.5 text-start transition-colors ${
                                 flatIndex === selectedIndex
                                   ? "bg-accent/10 text-accent ring-1 ring-inset ring-accent/20"
                                   : "text-text hover:bg-black/5 dark:hover:bg-white/5"

@@ -100,7 +100,7 @@ export function FreeProviderOnboardingCard() {
         <p className="mt-1 text-xs leading-relaxed text-text-muted">{t("description")}</p>
       </div>
 
-      <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
+      <div className="max-h-48 space-y-2 overflow-y-auto pe-1">
         {providers.map((provider) => (
           <label
             key={provider.id}

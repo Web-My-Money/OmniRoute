@@ -33,7 +33,7 @@ test.after(async () => {
 });
 
 test("Antigravity missing-project 422 stays fail-closed without account cooldown or retry", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "antigravity-missing-project",
@@ -44,7 +44,7 @@ test("Antigravity missing-project 422 stays fail-closed without account cooldown
     providerSpecificData: {},
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   assert(connection && typeof connection.id === "string");
 
   let bootstrapCalls = 0;
@@ -90,7 +90,7 @@ test("Antigravity missing-project 422 stays fail-closed without account cooldown
 });
 
 test("Antigravity BYOP account (onboardUser done, no project) returns fast 422 GCP_PROJECT_REQUIRED", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "antigravity-byop",
@@ -101,7 +101,7 @@ test("Antigravity BYOP account (onboardUser done, no project) returns fast 422 G
     providerSpecificData: {},
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   assert(connection && typeof connection.id === "string");
 
   let onboardCalls = 0;
@@ -156,3 +156,5 @@ test("Antigravity BYOP account (onboardUser done, no project) returns fast 422 G
   assert.match(String(payload.error?.message), /console\.cloud\.google\.com/);
   assert.equal(onboardCalls, 1, "onboardUser must be attempted exactly once (BYOP is cached)");
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

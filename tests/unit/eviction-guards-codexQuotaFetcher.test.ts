@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 const codex = await import("../../open-sse/services/codexQuotaFetcher.ts");
-const { registerCodexConnection, unregisterCodexConnection, getCodexConnectionMeta } = codex;
+const { registerCodexConnection, unregisterCodexConnection } = codex;
 
 // getCodexConnectionMeta is not exported — use registerCodexConnection + internal verify
 // Let's check what is exported

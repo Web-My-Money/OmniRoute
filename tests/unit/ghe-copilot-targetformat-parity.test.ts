@@ -15,7 +15,7 @@ const { getModelsByProviderId } = await import("../../open-sse/config/providerMo
 type ModelEntry = { id: string; targetFormat?: string; [k: string]: unknown };
 
 function gheModel(id: string): ModelEntry | undefined {
-  return gheCopilotProvider.models.find((m) => m.id === id);
+  return gheCopilotProvider.models.find((m) => m.id === id) as unknown as ModelEntry | undefined;
 }
 
 // Claude/Gemini models that must NOT route through the Responses API.
@@ -73,7 +73,7 @@ for (const id of MUST_BE_RESPONSES) {
 
 // Lookup-by-id helper resolves the same entries.
 test("getModelsByProviderId(ghe-copilot) reflects the targetFormat settings", () => {
-  const models = getModelsByProviderId("ghe-copilot") as ModelEntry[];
+  const models = getModelsByProviderId("ghe-copilot") as unknown as ModelEntry[];
   const gpt54mini = models.find((m) => m.id === "gpt-5.4-mini");
   assert.ok(gpt54mini, "gpt-5.4-mini resolvable via getModelsByProviderId");
   assert.equal(gpt54mini.targetFormat, "openai-responses");

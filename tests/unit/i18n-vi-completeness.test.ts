@@ -51,7 +51,12 @@ test("Vietnamese locale has no internal missing markers or empty fallbacks", () 
 });
 
 test("Vietnamese locale preserves every ICU placeholder name", () => {
-  const mismatches = englishMessages.flatMap(({ key, value }) => {
+  const mismatches = englishMessages.flatMap<{
+    key: string;
+    reason?: string;
+    sourceNames?: string[];
+    targetNames?: string[];
+  }>(({ key, value }) => {
     const translated = vietnameseByKey.get(key);
     if (translated === undefined) return [{ key, reason: "missing" }];
     const sourceNames = placeholderNames(value);

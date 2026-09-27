@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 import { resolvePublicCred } from "../../open-sse/utils/publicCreds.ts";
 import {
   ADOBE_FIREFLY_IMAGE_MODELS,
@@ -54,11 +55,12 @@ import { WEB_COOKIE_PROVIDERS } from "../../src/shared/constants/providers/web-c
 import { IMAGE_PROVIDERS } from "../../open-sse/config/imageRegistry.ts";
 import { VIDEO_PROVIDERS } from "../../open-sse/config/videoRegistry.ts";
 import { getExecutor } from "../../open-sse/executors/index.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 // --- Registry --------------------------------------------------------------
 
 test("adobe-firefly is registered in WEB_COOKIE_PROVIDERS with a webCookie risk notice", () => {
-  const entry = (WEB_COOKIE_PROVIDERS as Record<string, unknown>)["adobe-firefly"];
+  const entry = (WEB_COOKIE_PROVIDERS as LooseDeep)["adobe-firefly"] as LooseDeep;
   assert.ok(entry, "adobe-firefly must exist in WEB_COOKIE_PROVIDERS");
   assert.equal(entry.id, "adobe-firefly");
   assert.equal(entry.alias, "firefly");
@@ -68,7 +70,7 @@ test("adobe-firefly is registered in WEB_COOKIE_PROVIDERS with a webCookie risk 
 });
 
 test("adobe-firefly is registered in IMAGE_PROVIDERS with adobe-firefly-image format", () => {
-  const entry = (IMAGE_PROVIDERS as Record<string, unknown>)["adobe-firefly"];
+  const entry = (IMAGE_PROVIDERS as LooseDeep)["adobe-firefly"];
   assert.ok(entry);
   assert.equal(entry.format, "adobe-firefly-image");
   assert.match(entry.baseUrl, /firefly-3p\.ff\.adobe\.io/);
@@ -76,7 +78,7 @@ test("adobe-firefly is registered in IMAGE_PROVIDERS with adobe-firefly-image fo
 });
 
 test("adobe-firefly is registered in VIDEO_PROVIDERS with adobe-firefly-video format", () => {
-  const entry = (VIDEO_PROVIDERS as Record<string, unknown>)["adobe-firefly"];
+  const entry = (VIDEO_PROVIDERS as LooseDeep)["adobe-firefly"];
   assert.ok(entry);
   assert.equal(entry.format, "adobe-firefly-video");
   assert.match(entry.baseUrl, /3p-videos/);
@@ -178,7 +180,7 @@ test("buildAdobeImagePayload produces nano and gpt-image shapes", () => {
   assert.equal(nano.modelId, "gemini-flash");
   assert.equal(nano.modelVersion, "nano-banana-2");
   assert.deepEqual(nano.size, { width: 2752, height: 1536 });
-  assert.equal((nano.modelSpecificPayload as Record<string, unknown>).aspectRatio, "16:9");
+  assert.equal((nano.modelSpecificPayload as LooseDeep).aspectRatio, "16:9");
 
   const gpt = buildAdobeImagePayload({
     prompt: "a dog",
@@ -188,9 +190,9 @@ test("buildAdobeImagePayload produces nano and gpt-image shapes", () => {
     quality: "high",
   });
   assert.equal(gpt.modelId, "gpt-image");
-  assert.equal((gpt.generationSettings as Record<string, unknown>).detailLevel, 5);
+  assert.equal((gpt.generationSettings as LooseDeep).detailLevel, 5);
   // Live browser body uses size:"auto" and no top-level size/outputResolution
-  assert.equal((gpt.modelSpecificPayload as Record<string, unknown>).size, "auto");
+  assert.equal((gpt.modelSpecificPayload as LooseDeep).size, "auto");
   assert.equal(gpt.size, undefined);
   assert.equal(gpt.outputResolution, undefined);
 });
@@ -211,7 +213,7 @@ test("buildAdobeImagePayload attaches referenceBlobs like live adobe_atach_image
     { id: "2a4f1025-e0dc-4671-a11a-7dfd3c07bd94", usage: "general" },
     { id: "84c11d1a-e798-4300-a63e-c06504ca2068", usage: "general" },
   ]);
-  assert.equal((nano.generationMetadata as Record<string, unknown>).module, "text2image");
+  assert.equal((nano.generationMetadata as LooseDeep).module, "text2image");
 
   const gpt = buildAdobeImagePayload({
     prompt: "edit me",
@@ -223,7 +225,7 @@ test("buildAdobeImagePayload attaches referenceBlobs like live adobe_atach_image
   assert.deepEqual(gpt.referenceBlobs, [
     { id: "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee", usage: "subject" },
   ]);
-  assert.equal((gpt.generationMetadata as Record<string, unknown>).module, "image2image");
+  assert.equal((gpt.generationMetadata as LooseDeep).module, "image2image");
 });
 
 test("extractAdobeSourceImageSources reads Media page image fields", () => {
@@ -562,7 +564,7 @@ function jsonResponse(status: number, body: unknown, headerMap: Record<string, s
 }
 
 test("handleAdobeFireflyImageGeneration returns 400 when prompt is missing", async () => {
-  const result = await handleAdobeFireflyImageGeneration({
+  const result = await looseAsync(handleAdobeFireflyImageGeneration)({
     model: "nano-banana-pro",
     provider: "adobe-firefly",
     body: {},
@@ -608,7 +610,7 @@ test("handleAdobeFireflyImageGeneration submit+poll happy path (mocked)", async 
     throw new Error(`unexpected fetch ${u}`);
   };
 
-  const result = await handleAdobeFireflyImageGeneration({
+  const result = await looseAsync(handleAdobeFireflyImageGeneration)({
     model: "nano-banana-pro",
     provider: "adobe-firefly",
     body: { prompt: "sunset mountains", size: "16:9", quality: "2k" },
@@ -650,7 +652,7 @@ test("handleAdobeFireflyImageGeneration uploads refs and submits referenceBlobs"
     throw new Error(`unexpected fetch ${u}`);
   };
 
-  const result = await handleAdobeFireflyImageGeneration({
+  const result = await looseAsync(handleAdobeFireflyImageGeneration)({
     model: "nano-banana",
     provider: "adobe-firefly",
     body: { prompt: "teest", image_url: tinyPng },
@@ -687,7 +689,7 @@ test("adobeFireflyGenerateVideo submit+poll happy path (mocked)", async () => {
     throw new Error(`unexpected fetch ${u}`);
   };
 
-  const result = await adobeFireflyGenerateVideo({
+  const result = await looseAsync(adobeFireflyGenerateVideo)({
     accessToken: "tok",
     prompt: "drone over forest",
     model: "sora-2",
@@ -700,7 +702,7 @@ test("adobeFireflyGenerateVideo submit+poll happy path (mocked)", async () => {
 });
 
 test("handleAdobeFireflyVideoGeneration returns 400 without prompt", async () => {
-  const result = await handleAdobeFireflyVideoGeneration({
+  const result = await looseAsync(handleAdobeFireflyVideoGeneration)({
     model: "sora-2",
     provider: "adobe-firefly",
     body: {},
@@ -714,7 +716,7 @@ test("handleAdobeFireflyImageGeneration maps quota exhausted", async () => {
   const fetchImpl = async () =>
     jsonResponse(403, { error: "nope" }, { "x-access-error": "taste_exhausted" });
 
-  const result = await handleAdobeFireflyImageGeneration({
+  const result = await looseAsync(handleAdobeFireflyImageGeneration)({
     model: "nano-banana-pro",
     provider: "adobe-firefly",
     body: { prompt: "test" },
@@ -968,7 +970,7 @@ test("image submit retries on 408 then succeeds", async () => {
     throw new Error(`unexpected ${u}`);
   };
 
-  const result = await adobeFireflyGenerateImage({
+  const result = await looseAsync(adobeFireflyGenerateImage)({
     accessToken: userTok,
     prompt: "retry me",
     model: "gpt-image",
@@ -1121,7 +1123,7 @@ test("adobeFireflyGenerateImage cookie path exchanges IMS token first", async ()
   };
 
   // Use the image handler which resolves credentials (cookie → IMS).
-  const result = await handleAdobeFireflyImageGeneration({
+  const result = await looseAsync(handleAdobeFireflyImageGeneration)({
     model: "nano-banana-pro",
     provider: "adobe-firefly",
     body: { prompt: "cookie path" },

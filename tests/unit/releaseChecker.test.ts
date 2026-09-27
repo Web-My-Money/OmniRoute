@@ -4,11 +4,19 @@ import assert from "node:assert/strict";
 const originalFetch = globalThis.fetch;
 
 function mockFetchJson(data, status = 200) {
-  globalThis.fetch = async () => ({ ok: status === 200, status, json: async () => data });
+  globalThis.fetch = (async () => ({
+    ok: status === 200,
+    status,
+    json: async () => data,
+  })) as unknown as typeof fetch;
 }
 
 function mockFetchText(text, status = 200) {
-  globalThis.fetch = async () => ({ ok: status === 200, status, text: async () => text });
+  globalThis.fetch = (async () => ({
+    ok: status === 200,
+    status,
+    text: async () => text,
+  })) as unknown as typeof fetch;
 }
 
 afterEach(() => {
@@ -176,14 +184,14 @@ describe("releaseChecker", () => {
     it("should cache responses within TTL", async () => {
       mod.clearCache();
       let callCount = 0;
-      globalThis.fetch = async () => {
+      globalThis.fetch = (async () => {
         callCount++;
         return {
           ok: true,
           status: 200,
           json: async () => ({ tag_name: "v6.9.7", published_at: "", body: "", assets: [] }),
         };
-      };
+      }) as unknown as typeof fetch;
       await mod.getLatestRelease();
       assert.equal(callCount, 1);
       await mod.getLatestRelease();

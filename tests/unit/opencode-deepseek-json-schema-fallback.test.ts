@@ -52,9 +52,9 @@ describe("OpenCode DeepSeek json_schema fallback", () => {
     assert.ok(system);
     assert.equal(typeof system.content, "string");
 
-    assert.match(system.content, /strictly follows this JSON schema/i);
+    assert.match(system.content as unknown as string, /strictly follows this JSON schema/i);
 
-    assert.match(system.content, /"ok"/);
+    assert.match(system.content as unknown as string, /"ok"/);
 
     assert.equal(
       result.messages.some(

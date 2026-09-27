@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 // Isolate the DB to a temp dir BEFORE importing any module that opens it.
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-embed-lan-"));
@@ -14,7 +15,7 @@ const { createEmbeddingResponse } = await import("../../src/lib/embeddings/servi
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // #6925: a keyless LAN OpenAI-compatible embeddings provider (e.g. Ollama at
@@ -32,7 +33,7 @@ test("#6925: 10.x LAN embeddings provider is treated as no-auth (no Authorizatio
 
   const originalFetch = globalThis.fetch;
   let captured: { url: string; headers: Record<string, string> } | null = null;
-  globalThis.fetch = async (url: RequestInfo | URL, options: RequestInit = {}) => {
+  globalThis.fetch = async (url: RequestInfo | URL, options: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: (options.headers as Record<string, string>) || {},
@@ -80,7 +81,7 @@ test("#6925: 192.168.x LAN embeddings provider is also treated as no-auth", asyn
 
   const originalFetch = globalThis.fetch;
   let captured: { headers: Record<string, string> } | null = null;
-  globalThis.fetch = async (_url: RequestInfo | URL, options: RequestInit = {}) => {
+  globalThis.fetch = async (_url: RequestInfo | URL, options: MockRequestInit = {}) => {
     captured = { headers: (options.headers as Record<string, string>) || {} };
     return new Response(
       JSON.stringify({

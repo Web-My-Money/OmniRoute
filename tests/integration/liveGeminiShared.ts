@@ -5,6 +5,7 @@
  * Import from here to reuse payload generators without duplicating code.
  */
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 export const API_KEY = process.env.OMNIROUTE_API_KEY;
 export const BASE_URL = process.env.OMNIROUTE_URL || "http://localhost:3000";
@@ -38,7 +39,7 @@ const DEFAULT_COMBO_CONFIG = {
   },
 };
 
-async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
+async function apiFetch(path: string, options: MockRequestInit = {}): Promise<Response> {
   return fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {

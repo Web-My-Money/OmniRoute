@@ -391,12 +391,12 @@ export default function ClineToolCard({
                       disabled={!selectedModel}
                       loading={applying}
                     >
-                      <span className="material-symbols-outlined text-[14px] mr-1">save</span>
+                      <span className="material-symbols-outlined text-[14px] me-1">save</span>
                       {configStatus === "configured" ? t("updateConfig") : t("applyConfig")}
                     </Button>
                     {configStatus === "configured" && (
                       <Button variant="outline" size="sm" onClick={handleReset} loading={restoring}>
-                        <span className="material-symbols-outlined text-[14px] mr-1">
+                        <span className="material-symbols-outlined text-[14px] me-1">
                           restart_alt
                         </span>
                         {t("reset")}
@@ -431,7 +431,7 @@ export default function ClineToolCard({
                       {t("backups")} {backups.length > 0 && `(${backups.length})`}
                     </button>
                     {showBackups && backups.length > 0 && (
-                      <div className="mt-2 flex flex-col gap-1.5 pl-6">
+                      <div className="mt-2 flex flex-col gap-1.5 ps-6">
                         {backups.map((b) => (
                           <div
                             key={b.id}
@@ -456,7 +456,7 @@ export default function ClineToolCard({
                       </div>
                     )}
                     {showBackups && backups.length === 0 && (
-                      <p className="mt-2 pl-6 text-xs text-text-muted">{t("noBackupsAvailable")}</p>
+                      <p className="mt-2 ps-6 text-xs text-text-muted">{t("noBackupsAvailable")}</p>
                     )}
                   </div>
                 </>

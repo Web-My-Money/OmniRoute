@@ -2,6 +2,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import type { BreakerWithHistory, ConnectionState } from "../../../src/types/resilience.ts";
 
 // next-intl: return the key so we can assert on stable strings. When options are
 // passed, append their JSON so interpolated values (e.g. the degraded banner's
@@ -38,7 +39,7 @@ function makeResponse(
   };
 }
 
-function makeConnection(overrides: Record<string, unknown> = {}) {
+function makeConnection(overrides: Record<string, unknown> = {}): ConnectionState {
   return {
     id: "conn-1234567890",
     provider: "openai",
@@ -59,7 +60,7 @@ function makeConnection(overrides: Record<string, unknown> = {}) {
     breaker: { state: "CLOSED", failureCount: 0, retryAfterMs: 0, lastFailureKind: null },
     lockouts: [],
     ...overrides,
-  };
+  } as ConnectionState;
 }
 
 const containers: Array<{ root: ReturnType<typeof createRoot>; el: HTMLDivElement }> = [];
@@ -98,6 +99,9 @@ describe("ResilienceConnectionsClient", () => {
   let fetchMock: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
+    (
+      globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT = true;
     vi.useFakeTimers();
     fetchMock = vi.spyOn(globalThis, "fetch");
   });
@@ -234,6 +238,9 @@ describe("ConnectionsTable", () => {
   let fetchMock: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
+    (
+      globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT = true;
     fetchMock = vi.spyOn(globalThis, "fetch");
   });
 
@@ -367,6 +374,9 @@ describe("BreakerTimeline", () => {
   let fetchMock: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
+    (
+      globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
+    ).IS_REACT_ACT_ENVIRONMENT = true;
     fetchMock = vi.spyOn(globalThis, "fetch");
   });
 
@@ -384,7 +394,7 @@ describe("BreakerTimeline", () => {
   it("renders transitions from props, window selector calls onWindowChange (NO self-fetch)", async () => {
     const { default: Timeline } =
       await import("../../../src/app/(dashboard)/dashboard/resilience/connections/components/BreakerTimeline");
-    const breakers = [
+    const breakers: BreakerWithHistory[] = [
       {
         name: "openai",
         state: "CLOSED",
@@ -397,6 +407,7 @@ describe("BreakerTimeline", () => {
             from: "CLOSED",
             to: "OPEN",
             reason: "timeout-elapsed",
+            failureCount: 1,
           },
         ],
       },

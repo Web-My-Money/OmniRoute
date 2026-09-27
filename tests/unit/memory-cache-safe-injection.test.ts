@@ -12,16 +12,22 @@ import assert from "node:assert/strict";
 import { injectMemory } from "../../src/lib/memory/injection.ts";
 import type { ChatRequest } from "../../src/lib/memory/injection.ts";
 import type { Memory } from "../../src/lib/memory/types.ts";
+import { MemoryType } from "../../src/lib/memory/types.ts";
 
 function mem(content: string): Memory {
   return {
     id: `mem-${content}`,
     content,
-    type: "factual" as any,
+    type: MemoryType.FACTUAL,
     apiKeyId: "k",
-    createdAt: "2026-01-01T00:00:00.000Z",
-    updatedAt: "2026-01-01T00:00:00.000Z",
-    importance: 0.5,
+    sessionId: "s",
+    key: "k",
+    metadata: {},
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+    expiresAt: null,
+    accessCount: 0,
+    lastAccessedAt: null,
   };
 }
 
@@ -160,9 +166,14 @@ describe("injectMemory cache-safe positioning — Claude-family server-tool-resu
   });
 
   it("applies the same fallback to a Claude-Code-compatible passthrough provider id", () => {
-    const out = injectMemory(multiTurn(), [mem("dark mode")], "anthropic-compatible-cc-github-copilot", {
-      cacheSafe: true,
-    });
+    const out = injectMemory(
+      multiTurn(),
+      [mem("dark mode")],
+      "anthropic-compatible-cc-github-copilot",
+      {
+        cacheSafe: true,
+      }
+    );
 
     assert.equal(out.messages.length, 4);
     assert.equal(out.messages[0].role, "system");

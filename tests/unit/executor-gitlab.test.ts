@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 
 import { GitlabExecutor } from "../../open-sse/executors/gitlab.ts";
 import { getExecutor, hasSpecializedExecutor } from "../../open-sse/executors/index.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 /** Shape the GitLab executor tests read back off the translated response. */
 type GitLabResponseBody = {
@@ -35,7 +37,7 @@ test("GitlabExecutor posts PAT-backed code suggestion requests to the configured
   }> = [];
   const originalFetch = globalThis.fetch;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({
       url: String(url),
       body: JSON.parse(String(init.body || "{}")),
@@ -75,10 +77,13 @@ test("GitlabExecutor posts PAT-backed code suggestion requests to the configured
     assert.equal(calls[0].url, "https://gitlab.example.com/api/v4/code_suggestions/completions");
     assert.equal(calls[0].headers.Authorization, "Bearer glpat-test");
     assert.equal(calls[0].body.project_path, "group/project");
-    assert.equal(calls[0].body.current_file.file_name, "app.py");
+    assert.equal((calls[0].body.current_file as LooseDeep).file_name, "app.py");
     assert.equal(calls[0].body.intent, "generation");
     assert.match(String(calls[0].body.user_instruction), /Write a hello world function/);
-    assert.match(String(calls[0].body.current_file.content_above_cursor), /System instructions:/);
+    assert.match(
+      String((calls[0].body.current_file as LooseDeep).content_above_cursor),
+      /System instructions:/
+    );
 
     const body = (await result.response.json()) as GitLabResponseBody;
     assert.equal(body.object, "chat.completion");
@@ -152,7 +157,7 @@ test("GitlabExecutor uses GitLab direct_access for gitlab-duo and persists the c
   const calls: Array<{ url: string; headers: Record<string, string> }> = [];
   const refreshedPatches: Array<Record<string, unknown>> = [];
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({
       url: String(url),
       headers: (init.headers || {}) as Record<string, string>,
@@ -194,7 +199,7 @@ test("GitlabExecutor uses GitLab direct_access for gitlab-duo and persists the c
         },
       },
       onCredentialsRefreshed: async (patch) => {
-        refreshedPatches.push(patch as Record<string, unknown>);
+        refreshedPatches.push(patch as LooseDeep);
       },
       signal: AbortSignal.timeout(10_000),
       log: null,
@@ -207,10 +212,8 @@ test("GitlabExecutor uses GitLab direct_access for gitlab-duo and persists the c
     assert.equal(calls[1].headers["x-gitlab-feature-enabled"], "true");
     assert.equal(refreshedPatches.length, 1);
     assert.equal(
-      (
-        (refreshedPatches[0].providerSpecificData as Record<string, unknown>)
-          ?.gitlabDirectAccess as Record<string, unknown>
-      )?.token,
+      ((refreshedPatches[0].providerSpecificData as LooseDeep)?.gitlabDirectAccess as LooseDeep)
+        ?.token,
       "direct-token"
     );
 

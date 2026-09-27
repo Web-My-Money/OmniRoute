@@ -8,6 +8,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { makeManagementSessionRequest } from "../helpers/managementSession.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
+import type { SettingsRevisionConflictError } from "../../src/lib/db/settings.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-settings-cas-7784-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -22,13 +24,13 @@ const settingsRoute = await import("../../src/app/api/settings/route.ts");
 
 beforeEach(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 });
 
 after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 describe("#7784 settings optimistic concurrency", () => {
@@ -36,7 +38,7 @@ describe("#7784 settings optimistic concurrency", () => {
     const response = await settingsRoute.GET(
       await makeManagementSessionRequest("http://localhost/api/settings", { method: "GET" })
     );
-    const body = (await response.json()) as Record<string, unknown>;
+    const body = (await response.json()) as LooseDeep;
 
     assert.equal(response.status, 200);
     assert.equal(typeof body.settingsRevision, "number");
@@ -57,14 +59,14 @@ describe("#7784 settings optimistic concurrency", () => {
           },
         })
       );
-      const ownerBody = (await ownerResponse.json()) as Record<string, unknown>;
+      const ownerBody = (await ownerResponse.json()) as LooseDeep;
       assert.equal(ownerResponse.status, 200);
       assert.equal(ownerBody.radarAdminUrl, "https://radar-admin.example.test/ops");
 
       const anonymousResponse = await settingsRoute.GET(
         new Request("http://localhost/api/settings", { method: "GET" })
       );
-      const anonymousBody = (await anonymousResponse.json()) as Record<string, unknown>;
+      const anonymousBody = (await anonymousResponse.json()) as LooseDeep;
       assert.equal(anonymousResponse.status, 200);
       assert.equal(anonymousBody.radarAdminUrl, null);
 
@@ -144,7 +146,7 @@ describe("#7784 settings optimistic concurrency", () => {
     assert.equal(conflictBody.error.code, "SETTINGS_REVISION_CONFLICT");
 
     const settings = await settingsDb.getSettings();
-    const strategies = settings.providerStrategies as Record<string, unknown>;
+    const strategies = settings.providerStrategies as LooseDeep;
     assert.ok(strategies.codex, "codex override from client A must survive");
     assert.equal(strategies.antigravity, undefined, "stale client B write must not apply");
   });
@@ -198,7 +200,7 @@ describe("#7784 settings optimistic concurrency", () => {
 
     assert.equal(response.status, 200);
     const settings = await settingsDb.getSettings();
-    const strategies = settings.providerStrategies as Record<string, unknown>;
+    const strategies = settings.providerStrategies as LooseDeep;
     assert.equal(strategies.codex, undefined, "legacy unconditional replace still overwrites");
     assert.ok(strategies.antigravity);
   });
@@ -212,10 +214,7 @@ describe("#7784 settings optimistic concurrency", () => {
       () => settingsDb.updateSettings({ debugMode: false }, { expectedRevision: revision }),
       (err: unknown) => {
         assert.ok(err instanceof settingsDb.SettingsRevisionConflictError);
-        assert.equal(
-          (err as settingsDb.SettingsRevisionConflictError).currentRevision,
-          revision + 1
-        );
+        assert.equal((err as SettingsRevisionConflictError).currentRevision, revision + 1);
         return true;
       }
     );

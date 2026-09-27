@@ -14,7 +14,7 @@ test("rate limiter uses in-memory fallback when REDIS_URL is unset", async () =>
   const previousDisableBackup = process.env.DISABLE_SQLITE_AUTO_BACKUP;
 
   delete process.env.REDIS_URL;
-  process.env.NODE_ENV = "production";
+  (process.env as Record<string, string | undefined>).NODE_ENV = "production";
   delete process.env.DISABLE_SQLITE_AUTO_BACKUP;
 
   try {
@@ -32,8 +32,9 @@ test("rate limiter uses in-memory fallback when REDIS_URL is unset", async () =>
     if (previousRedisUrl === undefined) delete process.env.REDIS_URL;
     else process.env.REDIS_URL = previousRedisUrl;
 
-    if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
-    else process.env.NODE_ENV = previousNodeEnv;
+    if (previousNodeEnv === undefined)
+      delete (process.env as Record<string, string | undefined>).NODE_ENV;
+    else (process.env as Record<string, string | undefined>).NODE_ENV = previousNodeEnv;
 
     if (previousDisableBackup === undefined) delete process.env.DISABLE_SQLITE_AUTO_BACKUP;
     else process.env.DISABLE_SQLITE_AUTO_BACKUP = previousDisableBackup;

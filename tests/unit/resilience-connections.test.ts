@@ -28,8 +28,10 @@ import * as routeGuard from "../../src/server/authz/routeGuard.ts";
 const { GET } = await import("../../src/app/api/resilience/connections/route.ts");
 import type { ResilienceConnectionsResponse, ConnectionState } from "../../src/types/resilience.ts";
 
-function makeReq(query = ""): Request {
-  return new Request(`http://localhost/api/resilience/connections${query}`);
+import { NextRequest } from "next/server";
+
+function makeReq(query = ""): NextRequest {
+  return new NextRequest(`http://localhost/api/resilience/connections${query}`);
 }
 
 // createProviderConnection always generates its own UUID id (ignores data.id),

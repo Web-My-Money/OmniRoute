@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { pipeWithDisconnect } from "../../open-sse/utils/streamHandler.ts";
+import { createStreamController, pipeWithDisconnect } from "../../open-sse/utils/streamHandler.ts";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -35,13 +35,9 @@ test("pipeWithDisconnect stall watchdog logs instead of silently swallowing a th
     cancel() {},
   });
 
-  const streamController = {
-    isConnected: () => true,
-    handleError() {
-      throw new Error("handleError callback exploded");
-    },
-    handleComplete() {},
-    abort() {},
+  const streamController = createStreamController();
+  streamController.handleError = () => {
+    throw new Error("handleError callback exploded");
   };
 
   const debugCalls = [];
@@ -51,9 +47,14 @@ test("pipeWithDisconnect stall watchdog logs instead of silently swallowing a th
   };
 
   try {
-    const stream = pipeWithDisconnect(new Response(source), new TransformStream(), streamController, {
-      stallTimeoutMs: 40,
-    });
+    const stream = pipeWithDisconnect(
+      new Response(source),
+      new TransformStream(),
+      streamController,
+      {
+        stallTimeoutMs: 40,
+      }
+    );
     await readStreamText(stream);
   } finally {
     console.debug = originalDebug;

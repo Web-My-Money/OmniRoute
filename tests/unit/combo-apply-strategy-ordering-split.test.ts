@@ -84,7 +84,7 @@ test("cost-optimized manifest routing logs through the canonical strategy path",
   const input = [target("openai", "gpt-4o"), target("anthropic", "claude-3")];
 
   const out = await applyStrategyOrdering("cost-optimized", input, {
-    ...deps(),
+    ...(deps() as Record<string, unknown>),
     config: { manifestRouting: true },
     body: { messages: [{ role: "user", content: "hello" }] },
     log,

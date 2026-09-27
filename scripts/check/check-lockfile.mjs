@@ -16,6 +16,7 @@
 // Tool: lockfile-lint v5 (node_modules/.bin/lockfile-lint).
 
 import { execFileSync } from "node:child_process";
+import { resolveLocalBinEntry } from "../build/buildToolRunner.mjs";
 import path from "node:path";
 import fs from "node:fs";
 import { pathToFileURL } from "node:url";
@@ -57,10 +58,7 @@ export function getLockfileLintConfig() {
  * @returns {string[]}
  */
 export function buildLockfileLintArgs(cfg) {
-  const args = [
-    "--path", cfg.lockfilePath,
-    "--type", cfg.type,
-  ];
+  const args = ["--path", cfg.lockfilePath, "--type", cfg.type];
   if (cfg.validateHttps) args.push("--validate-https");
   if (cfg.validateIntegrity) args.push("--validate-integrity");
   if (cfg.allowedHosts.length) {
@@ -80,8 +78,8 @@ function main() {
     process.exit(1);
   }
 
-  const bin = path.join(ROOT, "node_modules", ".bin", "lockfile-lint");
-  if (!fs.existsSync(bin)) {
+  const bin = resolveLocalBinEntry("lockfile-lint", "lockfile-lint", ROOT);
+  if (!bin) {
     console.error(
       `[check-lockfile] FAIL — lockfile-lint binary not found at:\n  ${bin}\n` +
         "  → Run `npm install` to install dev dependencies"
@@ -92,7 +90,7 @@ function main() {
   const args = buildLockfileLintArgs(cfg);
 
   try {
-    const output = execFileSync(bin, args, { encoding: "utf8" });
+    const output = execFileSync(process.execPath, [bin, ...args], { encoding: "utf8" });
     // lockfile-lint outputs a green ✔ message on success
     console.log("[check-lockfile] OK —", output.trim());
   } catch (err) {

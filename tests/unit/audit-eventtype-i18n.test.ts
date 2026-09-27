@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { normalizeComplianceEventTypes } from "../../src/i18n/request";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const root = join(import.meta.dirname, "../..");
 const read = (p: string) => readFileSync(join(root, p), "utf8");
@@ -14,7 +15,7 @@ const pt = normalizeComplianceEventTypes(rawPt);
 function getNestedValue(record: Record<string, unknown>, dottedKey: string): unknown {
   return dottedKey.split(".").reduce<unknown>((cursor, segment) => {
     if (!cursor || typeof cursor !== "object" || Array.isArray(cursor)) return undefined;
-    return (cursor as Record<string, unknown>)[segment];
+    return (cursor as LooseDeep)[segment];
   }, record);
 }
 
@@ -23,9 +24,20 @@ test("audit: compliance.eventTypes exists with en/pt-BR parity and key coverage"
   const rawPtKeys = Object.keys(rawPt.compliance?.eventTypes ?? {});
   assert.ok(rawEnKeys.length >= 30, `expected >=30 event-type labels, got ${rawEnKeys.length}`);
   assert.deepEqual(rawEnKeys.sort(), rawPtKeys.sort(), "en/pt-BR eventTypes keys must match");
-  for (const k of ["provider.credentials.created", "auth.login.success", "quota.pool.created", "sync.token.revoked"]) {
-    assert.ok(getNestedValue(en.compliance.eventTypes as Record<string, unknown>, k), `en missing eventTypes.${k}`);
-    assert.ok(getNestedValue(pt.compliance.eventTypes as Record<string, unknown>, k), `pt-BR missing eventTypes.${k}`);
+  for (const k of [
+    "provider.credentials.created",
+    "auth.login.success",
+    "quota.pool.created",
+    "sync.token.revoked",
+  ]) {
+    assert.ok(
+      getNestedValue((en.compliance as LooseDeep).eventTypes as LooseDeep, k),
+      `en missing eventTypes.${k}`
+    );
+    assert.ok(
+      getNestedValue((pt.compliance as LooseDeep).eventTypes as LooseDeep, k),
+      `pt-BR missing eventTypes.${k}`
+    );
   }
 });
 

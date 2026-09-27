@@ -5,6 +5,7 @@ import type { BrowserBackedChatRequest } from "../../open-sse/services/browserBa
 
 const mod = await import("../../open-sse/executors/zai-web.ts");
 const browserChat = await import("../../open-sse/services/browserBackedChat.ts");
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const ZAI_HOME_URL = "https://chat.z.ai/";
 const ZAI_NEW_CHAT_URL = "https://chat.z.ai/api/v1/chats/new";
@@ -289,7 +290,7 @@ describe("ZaiWebExecutor", () => {
 
   it("returns a credential error when no session credential is provided", async () => {
     const executor = new mod.ZaiWebExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       model: "GLM-5.1",
       body: { messages: [{ role: "user", content: "hi" }] },
       stream: false,
@@ -312,7 +313,7 @@ describe("ZaiWebExecutor", () => {
 
     try {
       const executor = new mod.ZaiWebExecutor();
-      const result = await executor.execute({
+      const result: LooseDeep = await executor.execute({
         model: "glm-5.2",
         body: { messages: [{ role: "user", content: "hi" }] },
         stream: false,
@@ -351,7 +352,7 @@ describe("ZaiWebExecutor", () => {
 
     try {
       const executor = new mod.ZaiWebExecutor();
-      const result = await executor.execute({
+      const result: LooseDeep = await executor.execute({
         model: "GLM-5v-Turbo",
         body: { messages: [{ role: "user", content: "use the model tools" }] },
         stream: false,
@@ -382,7 +383,7 @@ describe("ZaiWebExecutor", () => {
 
     try {
       const executor = new mod.ZaiWebExecutor();
-      const result = await executor.execute({
+      const result: LooseDeep = await executor.execute({
         model: "GLM-5v-Turbo",
         body: {
           messages: [
@@ -422,7 +423,7 @@ describe("ZaiWebExecutor", () => {
 
   it("rejects image input on Z.ai text-only models", async () => {
     const executor = new mod.ZaiWebExecutor();
-    const result = await executor.execute({
+    const result: LooseDeep = await executor.execute({
       model: "glm-5.2",
       body: {
         messages: [
@@ -460,7 +461,7 @@ describe("ZaiWebExecutor", () => {
 
     try {
       const executor = new mod.ZaiWebExecutor();
-      const result = await executor.execute({
+      const result: LooseDeep = await executor.execute({
         model: "GLM-5.1",
         body: {
           model: "GLM-5.1",
@@ -618,7 +619,7 @@ describe("ZaiWebExecutor", () => {
 
     try {
       const executor = new mod.ZaiWebExecutor();
-      const result = await executor.execute({
+      const result: LooseDeep = await executor.execute({
         model: "GLM-5.1",
         body: { messages: [{ role: "user", content: "hi" }] },
         stream: false,
@@ -650,7 +651,7 @@ describe("ZaiWebExecutor", () => {
 
     try {
       const executor = new mod.ZaiWebExecutor();
-      const result = await executor.execute({
+      const result: LooseDeep = await executor.execute({
         model: "GLM-5.1",
         body: { messages: [{ role: "user", content: "hi" }] },
         stream: true,
@@ -672,7 +673,7 @@ describe("ZaiWebExecutor", () => {
 
     try {
       const executor = new mod.ZaiWebExecutor();
-      const result = await executor.execute({
+      const result: LooseDeep = await executor.execute({
         model: "GLM-5.1",
         body: { messages: [{ role: "user", content: "hi" }] },
         stream: false,

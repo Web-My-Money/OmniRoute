@@ -82,6 +82,8 @@ function mockResponse(body: Buffer, headers: Record<string, string> = {}, status
 const feedSchema = await import("../../src/lib/radar/feedSchema.ts");
 const pinnedKeys = await import("../../src/lib/radar/pinnedKeys.ts");
 const verify = await import("../../src/lib/radar/verify.ts");
+import type { RadarCacheEntry } from "../../src/lib/radar/sync.ts";
+
 const syncMod = await import("../../src/lib/radar/sync.ts");
 
 // ===========================================================================
@@ -333,7 +335,7 @@ test("syncRadar: opt-in false => opt_out, no fetch call", async () => {
 
 test("syncRadar: valid signature => cache updated, payload byte-identical to fixture", async () => {
   const sig = signBytes(FIXTURE_BYTES);
-  const cacheStore: syncMod.RadarCacheEntry[] = [];
+  const cacheStore: RadarCacheEntry[] = [];
 
   const result = await syncMod.syncRadar({
     getFlag: () => true,
@@ -435,7 +437,7 @@ test("syncRadar: version floor — same version => stale, cache untouched", asyn
 test("syncRadar: same version upgrades a validated v1 cache to the negotiated v2 artifact", async () => {
   const v2Bytes = v2FixtureBytes();
   const sig = signBytes(v2Bytes);
-  const cacheStore: syncMod.RadarCacheEntry[] = [];
+  const cacheStore: RadarCacheEntry[] = [];
 
   const result = await syncMod.syncRadar({
     getFlag: () => true,
@@ -523,7 +525,7 @@ test("syncRadar: version floor — incoming older => stale", async () => {
 
 test("syncRadar: an entitlement downgrade replaces a newer live cache with community", async () => {
   const sig = signBytes(FIXTURE_BYTES);
-  const cacheStore: syncMod.RadarCacheEntry[] = [];
+  const cacheStore: RadarCacheEntry[] = [];
 
   const result = await syncMod.syncRadar({
     getFlag: () => true,
@@ -556,7 +558,7 @@ test("syncRadar: version floor — incoming newer => updated", async () => {
   fixtureObj.version = "2026.08.02.1";
   const newerBytes = Buffer.from(JSON.stringify(fixtureObj));
   const sig = signBytes(newerBytes);
-  const cacheStore: syncMod.RadarCacheEntry[] = [];
+  const cacheStore: RadarCacheEntry[] = [];
 
   const result = await syncMod.syncRadar({
     getFlag: () => true,
@@ -588,7 +590,7 @@ test("syncRadar: numeric version compare (2026.08.02.9 vs 2026.08.02.10)", async
   fixtureObj.version = "2026.08.02.10";
   const newerBytes = Buffer.from(JSON.stringify(fixtureObj));
   const sig = signBytes(newerBytes);
-  const cacheStore: syncMod.RadarCacheEntry[] = [];
+  const cacheStore: RadarCacheEntry[] = [];
 
   const result = await syncMod.syncRadar({
     getFlag: () => true,
@@ -780,7 +782,7 @@ test("syncRadar: header 'community' overrides body tier:'live' — cache + resul
   fixtureObj.tier = "live"; // signed body always says "live"
   const bytes = Buffer.from(JSON.stringify(fixtureObj));
   const sig = signBytes(bytes);
-  const cacheStore: syncMod.RadarCacheEntry[] = [];
+  const cacheStore: RadarCacheEntry[] = [];
 
   const result = await syncMod.syncRadar({
     getFlag: () => true,
@@ -820,7 +822,7 @@ test("syncRadar: header 'live' => cache + result use live", async () => {
   fixtureObj.tier = "live";
   const bytes = Buffer.from(JSON.stringify(fixtureObj));
   const sig = signBytes(bytes);
-  const cacheStore: syncMod.RadarCacheEntry[] = [];
+  const cacheStore: RadarCacheEntry[] = [];
 
   const result = await syncMod.syncRadar({
     getFlag: () => true,
@@ -851,7 +853,7 @@ test("syncRadar: header absent => falls back to body tier (older server)", async
   fixtureObj.tier = "community";
   const bytes = Buffer.from(JSON.stringify(fixtureObj));
   const sig = signBytes(bytes);
-  const cacheStore: syncMod.RadarCacheEntry[] = [];
+  const cacheStore: RadarCacheEntry[] = [];
 
   const result = await syncMod.syncRadar({
     getFlag: () => true,
@@ -883,7 +885,7 @@ test("syncRadar: header holds a garbage value => falls back to body tier, garbag
   fixtureObj.tier = "live";
   const bytes = Buffer.from(JSON.stringify(fixtureObj));
   const sig = signBytes(bytes);
-  const cacheStore: syncMod.RadarCacheEntry[] = [];
+  const cacheStore: RadarCacheEntry[] = [];
 
   const result = await syncMod.syncRadar({
     getFlag: () => true,
@@ -920,7 +922,7 @@ test("syncRadar: header holds an empty string => falls back to body tier", async
   fixtureObj.tier = "community";
   const bytes = Buffer.from(JSON.stringify(fixtureObj));
   const sig = signBytes(bytes);
-  const cacheStore: syncMod.RadarCacheEntry[] = [];
+  const cacheStore: RadarCacheEntry[] = [];
 
   const result = await syncMod.syncRadar({
     getFlag: () => true,
@@ -948,7 +950,7 @@ test("syncRadar: header holds an empty string => falls back to body tier", async
 
 test("syncRadar: first sync (no cache) with valid data => updated", async () => {
   const sig = signBytes(FIXTURE_BYTES);
-  const cacheStore: syncMod.RadarCacheEntry[] = [];
+  const cacheStore: RadarCacheEntry[] = [];
 
   const result = await syncMod.syncRadar({
     getFlag: () => true,

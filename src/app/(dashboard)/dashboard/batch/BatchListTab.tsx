@@ -399,31 +399,31 @@ export default function BatchListTab({
         <table className="w-full text-sm" role="table" aria-label={t("batchListBatchesTable")}>
           <thead>
             <tr className="bg-[var(--color-bg-alt)] border-b border-[var(--color-border)]">
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 {t("batchListTableStatus")}
               </th>
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 {t("batchListTableId")}
               </th>
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 {t("batchListProviderColumn")}
               </th>
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 {t("batchListTableEndpoint")}
               </th>
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 {t("batchListTableModel")}
               </th>
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 {t("batchListTableProgress")}
               </th>
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 {t("batchListCostColumn")}
               </th>
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 {t("batchListTableCreated")}
               </th>
-              <th className="text-left px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
+              <th className="text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider">
                 {t("batchListTableExpires")}
               </th>
               <th className="px-4 py-3" />
@@ -457,9 +457,7 @@ export default function BatchListTab({
                   if (!batch.model || total === 0) return "—";
                   // Prefer real usage data when available (completed batches)
                   const usage = batch.usage as
-                    | { input_tokens?: number; output_tokens?: number }
-                    | null
-                    | undefined;
+                    { input_tokens?: number; output_tokens?: number } | null | undefined;
                   if (usage?.input_tokens != null && usage?.output_tokens != null) {
                     // batch rate ≈ $0.005/1K tokens (blended, already -50%)
                     const cost = ((usage.input_tokens + usage.output_tokens) * 0.005) / 1000;
@@ -529,7 +527,7 @@ export default function BatchListTab({
                     <td className="px-4 py-3 text-xs whitespace-nowrap">
                       <span className="text-[var(--color-text-muted)]">{estimatedCost}</span>
                       {estimatedCost !== "—" && (
-                        <span className="ml-1 text-[10px] text-emerald-500/90 bg-emerald-500/10 rounded px-1 py-0.5 align-middle">
+                        <span className="ms-1 text-[10px] text-emerald-500/90 bg-emerald-500/10 rounded px-1 py-0.5 align-middle">
                           -50%
                         </span>
                       )}

@@ -12,11 +12,21 @@ import {
 
 const require = createRequire(import.meta.url);
 const upstreamFixtureDir = path.resolve("_references/_outros/caveman/tests/caveman-compress");
-const upstream = require(
-  path.resolve("_references/_outros/caveman/mcp-servers/caveman-shrink/compress.js")
-) as {
+const upstreamModulePath = path.resolve(
+  "_references/_outros/caveman/mcp-servers/caveman-shrink/compress.js"
+);
+
+type UpstreamCompressor = {
   compress(text: string): { compressed: string; before: number; after: number };
 };
+
+function loadUpstream(): UpstreamCompressor | null {
+  try {
+    return require(upstreamModulePath) as UpstreamCompressor;
+  } catch {
+    return null;
+  }
+}
 
 function omnirouteCompress(text: string): string {
   return omniroutePromptCompression(text).text;
@@ -48,7 +58,12 @@ const parityCases = [
 ];
 
 describe("upstream Caveman parity benchmark", () => {
-  it("matches core upstream shrink protections and savings direction", () => {
+  it("matches core upstream shrink protections and savings direction", (t) => {
+    const upstream = loadUpstream();
+    if (!upstream) {
+      t.skip("upstream caveman-shrink reference not vendored (_references/ is gitignored)");
+      return;
+    }
     for (const input of parityCases) {
       const ours = omnirouteCompress(input);
       const theirs = upstream.compress(input).compressed;
@@ -68,7 +83,12 @@ describe("upstream Caveman parity benchmark", () => {
     }
   });
 
-  it("stays within upstream token budget on representative prose", () => {
+  it("stays within upstream token budget on representative prose", (t) => {
+    const upstream = loadUpstream();
+    if (!upstream) {
+      t.skip("upstream caveman-shrink reference not vendored (_references/ is gitignored)");
+      return;
+    }
     const input =
       "Sure, I will make sure to return the current weather for a given location and the temperature in Fahrenheit.";
     const ours = omnirouteCompress(input);
@@ -99,7 +119,12 @@ describe("upstream Caveman parity benchmark", () => {
     assert.ok(stats.estimatedTokensSaved > 0);
   });
 
-  it("runs offline parity against upstream Caveman fixture files", () => {
+  it("runs offline parity against upstream Caveman fixture files", (t) => {
+    const upstream = loadUpstream();
+    if (!upstream) {
+      t.skip("upstream caveman-shrink reference not vendored (_references/ is gitignored)");
+      return;
+    }
     const fixturePairs = readdirSync(upstreamFixtureDir)
       .filter((entry) => entry.endsWith(".original.md"))
       .map((originalName) => ({

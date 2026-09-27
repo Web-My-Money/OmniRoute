@@ -5,6 +5,7 @@
 // multisets of: relative file | TS code | normalized message.
 
 import { spawnSync } from "node:child_process";
+import { spawnHostTool } from "../build/buildToolRunner.mjs";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -172,7 +173,7 @@ function linkDependencies(baseRoot) {
 }
 
 function installBaseDependencies(baseRoot) {
-  const npm = process.platform === "win32" ? "npm.cmd" : "npm";
+  const npm = "npm";
   const result = run(
     npm,
     ["ci", "--ignore-scripts", "--prefer-offline", "--no-audit", "--no-fund"],
@@ -182,7 +183,7 @@ function installBaseDependencies(baseRoot) {
 }
 
 function runTypeScript(root, tsconfig, compilerVersion) {
-  const npm = process.platform === "win32" ? "npm.cmd" : "npm";
+  const npm = "npm";
   const result = run(
     npm,
     [

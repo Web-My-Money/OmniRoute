@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { looseAsync } from "../helpers/looseTypes.ts";
 
 const { mapImageSize } = await import("../../open-sse/translator/image/sizeMapper.ts");
 const { handleImageGeneration } = await import("../../open-sse/handlers/imageGeneration.ts");
@@ -29,7 +31,7 @@ test("T42: Imagen3 requests send mapped aspect_ratio and normalize to OpenAI res
     supportedSizes: ["1024x1024", "1792x1024", "16:9"],
   };
 
-  globalThis.fetch = async (_url, options = {}) => {
+  globalThis.fetch = async (_url, options: MockRequestInit = {}) => {
     capturedRequestBody = JSON.parse(String(options.body || "{}"));
     return new Response(
       JSON.stringify({
@@ -43,7 +45,7 @@ test("T42: Imagen3 requests send mapped aspect_ratio and normalize to OpenAI res
   };
 
   try {
-    const resultLandscape = await handleImageGeneration({
+    const resultLandscape = await looseAsync(handleImageGeneration)({
       body: {
         model: `${testProviderId}/test-model`,
         prompt: "a mountain at sunrise",
@@ -60,7 +62,7 @@ test("T42: Imagen3 requests send mapped aspect_ratio and normalize to OpenAI res
     assert.ok(Array.isArray(resultLandscape.data.data));
     assert.equal(resultLandscape.data.data[0].b64_json, "ZmFrZS1pbWFnZS1iYXNlNjQ=");
 
-    const resultDirectRatio = await handleImageGeneration({
+    const resultDirectRatio = await looseAsync(handleImageGeneration)({
       body: {
         model: `${testProviderId}/test-model`,
         prompt: "portrait photo",
@@ -73,7 +75,7 @@ test("T42: Imagen3 requests send mapped aspect_ratio and normalize to OpenAI res
     assert.equal(capturedRequestBody.aspect_ratio, "16:9");
     assert.equal(resultDirectRatio.success, true);
 
-    const resultFallback = await handleImageGeneration({
+    const resultFallback = await looseAsync(handleImageGeneration)({
       body: {
         model: `${testProviderId}/test-model`,
         prompt: "abstract art",

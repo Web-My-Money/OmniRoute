@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // OpenCode `subagent.sessionID` is an optional plain string. Absence means "spawn a
 // new child". Responses/Codex strict mode forces every declared property into
@@ -163,7 +164,7 @@ test("characterization: required string stays non-nullable; unmarked required nu
     properties: { sessionID: { type: "string" } },
     required: ["sessionID"],
   });
-  assert.equal(requiredOnly.properties.sessionID.type, "string");
+  assert.equal((requiredOnly as LooseDeep).properties.sessionID.type, "string");
 
   const requiredNull = stripEmptyOptionalToolArgs(
     { sessionID: null, agent: "explore" },
@@ -303,23 +304,29 @@ test("characterization: empty sessionID is stripped; nested optional strings are
     },
     required: [],
   });
-  assert.equal(nested.properties.items.items.properties.sessionID.type, "string");
-  assert.equal(nested.properties.wrapper.anyOf[0].properties.sessionID.type, "string");
-  assert.equal(nested.properties.$defs.child.properties.sessionID.type, "string");
+  assert.equal((nested as LooseDeep).properties.items.items.properties.sessionID.type, "string");
+  assert.equal(
+    (nested as LooseDeep).properties.wrapper.anyOf[0].properties.sessionID.type,
+    "string"
+  );
+  assert.equal((nested as LooseDeep).properties.$defs.child.properties.sessionID.type, "string");
 
   const mixedUnion = injectOptionalStringOmissionSentinel({
     type: "object",
     properties: { value: { type: ["string", "number"] } },
     required: [],
   });
-  assert.deepEqual(mixedUnion.properties.value.type, ["string", "number"]);
+  assert.deepEqual((mixedUnion as LooseDeep).properties.value.type, ["string", "number"]);
 });
 
 test("characterization: string omission injection is idempotent", () => {
   const once = injectOptionalStringOmissionSentinel(structuredClone(OPENCODE_SUBAGENT_SCHEMA));
   const twice = injectOptionalStringOmissionSentinel(once);
   assertOmissionSentinel(sessionIdSchema(twice));
-  assert.equal(twice.properties.sessionID.description.split(OMISSION_MARKER).length - 1, 1);
+  assert.equal(
+    (twice as LooseDeep).properties.sessionID.description.split(OMISSION_MARKER).length - 1,
+    1
+  );
   const toolsOnce = injectOptionalStringOmissionForTools([
     structuredClone(SUBAGENT_TOOL_RESPONSES),
   ]);
@@ -511,5 +518,5 @@ test("characterization: non-streaming keeps a real sessionID and legacy empty cl
 test("characterization: extractToolSchemaMap still keys OpenCode subagent by lowercase name", () => {
   const map = extractToolSchemaMap({ tools: [structuredClone(SUBAGENT_TOOL_RESPONSES)] });
   assert.ok(map?.has("subagent"));
-  assert.equal(map.get("subagent").properties.sessionID.type, "string");
+  assert.equal((map.get("subagent").properties as LooseDeep).sessionID.type, "string");
 });

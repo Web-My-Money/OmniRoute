@@ -178,13 +178,13 @@ describe("G-07 — /api/version-manager/* delegates to ServiceSupervisor", () =>
   describe("check-update tool alias handling", () => {
     it("normalizes 'cliproxyapi' to cliproxy toolchain without error", () => {
       // The old default was ?tool=cliproxyapi — verify alias acceptance logic
-      const toolParam = "cliproxyapi";
+      const toolParam: string = "cliproxyapi";
       const isKnown = toolParam === "cliproxy" || toolParam === "cliproxyapi";
       assert.ok(isKnown, "Legacy 'cliproxyapi' tool param must be accepted");
     });
 
     it("rejects unknown tool names", () => {
-      const toolParam = "unknown-tool";
+      const toolParam: string = "unknown-tool";
       const isKnown = toolParam === "cliproxy" || toolParam === "cliproxyapi";
       assert.ok(!isKnown, "Unknown tool names must be rejected");
     });

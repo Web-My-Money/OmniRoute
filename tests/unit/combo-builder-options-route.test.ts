@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-builder-options-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -16,11 +18,11 @@ const route = await import("../../src/app/api/combos/builder/options/route.ts");
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
-async function seedConnection(provider, overrides = {}) {
+async function seedConnection(provider, overrides: JsonRecord = {}) {
   const payload = {
     provider,
     authType: overrides.authType || "apikey",
@@ -37,9 +39,9 @@ async function seedConnection(provider, overrides = {}) {
   };
 
   if (overrides.name !== undefined) {
-    payload.name = overrides.name;
+    (payload as LooseDeep).name = overrides.name;
   } else if ((overrides.authType || "apikey") !== "oauth") {
-    payload.name = `${provider}-${Math.random().toString(16).slice(2, 8)}`;
+    (payload as LooseDeep).name = `${provider}-${Math.random().toString(16).slice(2, 8)}`;
   }
 
   return providersDb.createProviderConnection(payload);
@@ -51,7 +53,7 @@ test.beforeEach(async () => {
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("combo builder options route aggregates providers, connections, models and combo refs", async () => {
@@ -128,7 +130,7 @@ test("combo builder options route aggregates providers, connections, models and 
     isHidden: true,
   });
 
-  const response = await route.GET();
+  const response = await route.GET(new Request("http://localhost/api/combos/builder/options"));
   const body = (await response.json()) as any;
 
   assert.equal(response.status, 200);
@@ -203,7 +205,7 @@ test("combo builder options route aggregates providers, connections, models and 
 
 test("combo builder options route includes no-auth provider (opencode) even without provider_connections rows", async () => {
   // No connections seeded — opencode has noAuth: true and never gets a provider_connections row.
-  const response = await route.GET();
+  const response = await route.GET(new Request("http://localhost/api/combos/builder/options"));
   const body = (await response.json()) as any;
 
   assert.equal(response.status, 200);
@@ -243,7 +245,7 @@ test("combo builder options route exposes compatible provider nodes with node me
   });
   await modelsDb.addCustomModel("openai-compatible-demo", "gpt-custom", "GPT Custom");
 
-  const response = await route.GET();
+  const response = await route.GET(new Request("http://localhost/api/combos/builder/options"));
   const body = (await response.json()) as any;
   const provider = body.providers.find((entry) => entry.providerId === "openai-compatible-demo");
 

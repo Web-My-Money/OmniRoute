@@ -230,8 +230,8 @@ test("handleChat does not wait when the cooldown exceeds maxRetryIntervalSec", a
   const body = (await response.json()) as any;
 
   assert.equal(fetchCalls, 0);
-  assert.equal(response.status, 503);
-  assert.match(body.error.message, /unavailable/i);
+  assert.equal(response.status, 429);
+  assert.match(body.error.message, /cooldown too long/i);
   assert.match(body.error.message, /reset after/i);
 });
 

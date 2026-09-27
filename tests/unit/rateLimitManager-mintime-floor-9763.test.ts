@@ -22,7 +22,8 @@ test("headroom relaxation respects operator minTimeBetweenRequestsMs floor (#976
     concurrentRequests: 0,
     requestsPerMinute: 0,
     maxWaitMs: 30000,
-    autoEnableApiKeyProvider: false,
+    maxQueueDepth: 0,
+    autoEnableApiKeyProviders: false,
   });
 
   let capturedMinTime: number | undefined;
@@ -31,7 +32,7 @@ test("headroom relaxation respects operator minTimeBetweenRequestsMs floor (#976
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const noop = (): any => undefined;
 
-  __setLimiterFactoryForTests(() => {
+  __setLimiterFactoryForTests((() => {
     const listeners: Record<string, Array<(...args: unknown[]) => void>> = {};
     const fake = {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -64,7 +65,7 @@ test("headroom relaxation respects operator minTimeBetweenRequestsMs floor (#976
       },
     };
     return fake;
-  });
+  }) as unknown as Parameters<typeof __setLimiterFactoryForTests>[0]);
 
   enableRateLimitProtection("test-mintime-floor");
 

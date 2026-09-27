@@ -15,47 +15,64 @@ import { deriveLiveWsPath, resolveLiveWsPublicUrl } from "../../src/shared/utils
 
 test("#11331 the runtime name is honoured", () => {
   assert.equal(
-    resolveLiveWsPublicUrl({ LIVE_WS_PUBLIC_URL: "wss://omniroute.example.tld/live-ws" }),
+    resolveLiveWsPublicUrl({
+      LIVE_WS_PUBLIC_URL: "wss://omniroute.example.tld/live-ws",
+    } as NodeJS.ProcessEnv),
     "wss://omniroute.example.tld/live-ws"
   );
 });
 
 test("#11331 the build-time name still works, and the runtime name wins", () => {
   assert.equal(
-    resolveLiveWsPublicUrl({ NEXT_PUBLIC_LIVE_WS_PUBLIC_URL: "ws://built-in:20132/live-ws" }),
+    resolveLiveWsPublicUrl({
+      NEXT_PUBLIC_LIVE_WS_PUBLIC_URL: "ws://built-in:20132/live-ws",
+    } as NodeJS.ProcessEnv),
     "ws://built-in:20132/live-ws"
   );
   assert.equal(
     resolveLiveWsPublicUrl({
       LIVE_WS_PUBLIC_URL: "wss://proxy.example.tld/live-ws",
       NEXT_PUBLIC_LIVE_WS_PUBLIC_URL: "ws://built-in:20132/live-ws",
-    }),
+    } as NodeJS.ProcessEnv),
     "wss://proxy.example.tld/live-ws"
   );
 });
 
 test("#11331 only ws:// and wss:// are accepted", () => {
-  assert.equal(resolveLiveWsPublicUrl({ LIVE_WS_PUBLIC_URL: "https://proxy.example.tld" }), null);
-  assert.equal(resolveLiveWsPublicUrl({ LIVE_WS_PUBLIC_URL: "javascript:alert(1)" }), null);
-  assert.equal(resolveLiveWsPublicUrl({ LIVE_WS_PUBLIC_URL: "proxy.example.tld:443" }), null);
+  assert.equal(
+    resolveLiveWsPublicUrl({
+      LIVE_WS_PUBLIC_URL: "https://proxy.example.tld",
+    } as NodeJS.ProcessEnv),
+    null
+  );
+  assert.equal(
+    resolveLiveWsPublicUrl({ LIVE_WS_PUBLIC_URL: "javascript:alert(1)" } as NodeJS.ProcessEnv),
+    null
+  );
+  assert.equal(
+    resolveLiveWsPublicUrl({ LIVE_WS_PUBLIC_URL: "proxy.example.tld:443" } as NodeJS.ProcessEnv),
+    null
+  );
 });
 
 test("#11331 blank and missing values fall through", () => {
-  assert.equal(resolveLiveWsPublicUrl({}), null);
-  assert.equal(resolveLiveWsPublicUrl({ LIVE_WS_PUBLIC_URL: "" }), null);
-  assert.equal(resolveLiveWsPublicUrl({ LIVE_WS_PUBLIC_URL: "   " }), null);
+  assert.equal(resolveLiveWsPublicUrl({} as NodeJS.ProcessEnv), null);
+  assert.equal(resolveLiveWsPublicUrl({ LIVE_WS_PUBLIC_URL: "" } as NodeJS.ProcessEnv), null);
+  assert.equal(resolveLiveWsPublicUrl({ LIVE_WS_PUBLIC_URL: "   " } as NodeJS.ProcessEnv), null);
   assert.equal(
     resolveLiveWsPublicUrl({
       LIVE_WS_PUBLIC_URL: "  ",
       NEXT_PUBLIC_LIVE_WS_PUBLIC_URL: "wss://b/live-ws",
-    }),
+    } as NodeJS.ProcessEnv),
     "wss://b/live-ws"
   );
 });
 
 test("#11331 a surrounding-whitespace value is trimmed, not rejected", () => {
   assert.equal(
-    resolveLiveWsPublicUrl({ LIVE_WS_PUBLIC_URL: "  wss://proxy.example.tld/live-ws  " }),
+    resolveLiveWsPublicUrl({
+      LIVE_WS_PUBLIC_URL: "  wss://proxy.example.tld/live-ws  ",
+    } as NodeJS.ProcessEnv),
     "wss://proxy.example.tld/live-ws"
   );
 });

@@ -68,16 +68,16 @@ export default function SessionsTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border/30">
-                <th className="text-left py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                <th className="text-start py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">
                   {t("session")}
                 </th>
-                <th className="text-left py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                <th className="text-start py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">
                   {t("age")}
                 </th>
-                <th className="text-right py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                <th className="text-end py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">
                   {t("requests")}
                 </th>
-                <th className="text-left py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                <th className="text-start py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider">
                   {t("connection")}
                 </th>
               </tr>
@@ -94,7 +94,7 @@ export default function SessionsTab() {
                     </span>
                   </td>
                   <td className="py-2.5 px-3 text-text-muted tabular-nums">{formatAge(s.ageMs)}</td>
-                  <td className="py-2.5 px-3 text-right">
+                  <td className="py-2.5 px-3 text-end">
                     <span className="font-semibold tabular-nums">{s.requestCount}</span>
                   </td>
                   <td className="py-2.5 px-3">

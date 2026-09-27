@@ -977,7 +977,7 @@ export default function ComboHealthTab() {
             </div>
             <div className="rounded-lg border border-black/5 bg-black/[0.02] p-4 dark:border-white/5 dark:bg-white/[0.02]">
               <p className="text-xs font-medium text-text-main">{t("comboHealthGettingStarted")}</p>
-              <ul className="mt-2 text-left text-xs text-text-muted">
+              <ul className="mt-2 text-start text-xs text-text-muted">
                 <li className="flex items-start gap-2">
                   <span className="material-symbols-outlined text-[14px] text-primary">
                     check_circle

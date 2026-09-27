@@ -220,7 +220,7 @@ test("chat completions streams Codex Responses reasoning through real route HTTP
   let routeServer: http.Server | undefined;
 
   try {
-    await providersDb.createProviderConnection({
+    (await providersDb.createProviderConnection({
       provider: "codex",
       authType: "oauth",
       name: "codex-http-reasoning",
@@ -232,7 +232,7 @@ test("chat completions streams Codex Responses reasoning through real route HTTP
       isActive: true,
       testStatus: "active",
       providerSpecificData: {},
-    });
+    })) as JsonRecord & { id: string };
 
     const routeHarness = await startRouteServer();
     routeServer = routeHarness.server;
@@ -305,6 +305,8 @@ test("chat completions streams Codex Responses reasoning through real route HTTP
     globalThis.fetch = originalFetch;
     if (routeServer) await closeServer(routeServer);
     core.closeDbInstance({ checkpointMode: null });
-    await fsp.rm(TEST_DATA_DIR, { recursive: true, force: true });
+    await fsp.rm(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

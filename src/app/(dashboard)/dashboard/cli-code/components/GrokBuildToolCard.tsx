@@ -353,7 +353,7 @@ export default function GrokBuildToolCard({
       : "not_installed"
     : (batchStatus?.config.status ?? null);
   const rowClass = "flex items-center gap-2";
-  const labelClass = "w-32 shrink-0 text-right text-sm font-semibold text-text-main";
+  const labelClass = "w-32 shrink-0 text-end text-sm font-semibold text-text-main";
   const inputClass =
     "min-w-0 flex-1 rounded border border-border bg-surface px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary/50";
 
@@ -513,12 +513,12 @@ export default function GrokBuildToolCard({
           </div>
 
           <div className="my-2 h-px bg-border/50" />
-          <div className="mb-2 text-right text-[11px] font-medium uppercase tracking-wider text-text-muted">
+          <div className="mb-2 text-end text-[11px] font-medium uppercase tracking-wider text-text-muted">
             Subagent model overrides
           </div>
           {SUBAGENTS.map((type) => (
             <div className={`${rowClass} group`} key={type}>
-              <span className="w-32 shrink-0 truncate text-right text-[11px] font-mono text-text-main opacity-70 transition-opacity group-hover:opacity-100">
+              <span className="w-32 shrink-0 truncate text-end text-[11px] font-mono text-text-main opacity-70 transition-opacity group-hover:opacity-100">
                 {modelLabel(type)}
               </span>
               <span className="material-symbols-outlined text-[14px] text-border transition-colors group-hover:text-primary">
@@ -573,7 +573,7 @@ export default function GrokBuildToolCard({
               disabled={!cliReady || !model || !baseUrl}
               onClick={apply}
             >
-              <span className="material-symbols-outlined mr-1 text-[14px]">save</span>
+              <span className="material-symbols-outlined me-1 text-[14px]">save</span>
               {t("apply")}
             </Button>
             <Button
@@ -583,11 +583,11 @@ export default function GrokBuildToolCard({
               disabled={!configured}
               onClick={reset}
             >
-              <span className="material-symbols-outlined mr-1 text-[14px]">restore</span>
+              <span className="material-symbols-outlined me-1 text-[14px]">restore</span>
               {t("reset")}
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setShowManual(true)}>
-              <span className="material-symbols-outlined mr-1 text-[14px]">content_copy</span>
+              <span className="material-symbols-outlined me-1 text-[14px]">content_copy</span>
               {t("manualConfig")}
             </Button>
             <div className="flex-1" />
@@ -599,7 +599,7 @@ export default function GrokBuildToolCard({
                 if (!showBackups) void refreshBackups();
               }}
             >
-              <span className="material-symbols-outlined mr-1 text-[14px]">history</span>
+              <span className="material-symbols-outlined me-1 text-[14px]">history</span>
               {t("backups")}
               {backups.length > 0 && ` (${backups.length})`}
             </Button>

@@ -85,7 +85,7 @@ describe("connectionRecovery — credits_exhausted reprobe", () => {
         lastErrorAt: new Date(nowMs - thirtyMinMs - 1000).toISOString(),
       },
     ]);
-    const clearConnectionError = mock.fn(async () => undefined);
+    const clearConnectionError = mock.fn(async (_id?: string, _extra?: unknown) => undefined);
 
     const res = await runConnectionRecoveryTick({
       nowMs,

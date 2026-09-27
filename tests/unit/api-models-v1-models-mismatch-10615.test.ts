@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-10615-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -16,18 +17,18 @@ const v1ModelsCatalog = await import("../../src/app/api/v1/models/catalog.ts");
 test.after(() => {
   core.resetDbInstance();
   try {
-    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   } catch {}
 });
 
 test("#10615: /api/models must agree with /v1/models on exclusive synced-listing coverage", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "cursor",
     authType: "oauth",
     name: "cursor-main",
     accessToken: "cursor-access-token",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const apiModelsRes = await modelsRoute.GET(new Request("http://localhost/api/models"));
   const apiModelsBody = (await apiModelsRes.json()) as {

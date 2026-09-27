@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import { KiroExecutor } from "../../open-sse/executors/kiro.ts";
 import { hasStreamReadinessSignal } from "../../open-sse/utils/streamReadiness.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const textEncoder = new TextEncoder();
 
@@ -141,7 +142,7 @@ test("KiroExecutor.buildHeaders includes Kiro-specific auth and metadata", () =>
   const executor = new KiroExecutor();
   const headers = executor.buildHeaders({ accessToken: "kiro-token" }, true);
 
-  assert.equal(headers.Authorization, "Bearer kiro-token");
+  assert.equal((headers as LooseDeep).Authorization, "Bearer kiro-token");
   assert.equal(headers["anthropic-beta"], "prompt-caching-2024-07-31");
   assert.equal(headers["x-amzn-bedrock-cache-control"], "enable");
   assert.ok(headers["Amz-Sdk-Invocation-Id"]);
@@ -154,8 +155,8 @@ test("KiroExecutor.buildHeaders marks long-lived Kiro API keys", () => {
     true
   );
 
-  assert.equal(headers.Authorization, "Bearer kiro-api-key");
-  assert.equal(headers.tokentype, "API_KEY");
+  assert.equal((headers as LooseDeep).Authorization, "Bearer kiro-api-key");
+  assert.equal((headers as LooseDeep).tokentype, "API_KEY");
 });
 
 test("KiroExecutor.transformRequest removes the top-level model field", () => {
@@ -172,7 +173,7 @@ test("KiroExecutor.transformRequest removes the top-level model field", () => {
   };
 
   const result = executor.transformRequest("kiro-model", body, true, {});
-  assert.equal("model" in result, false);
+  assert.equal("model" in (result as unknown as object), false);
   const kiroResult = result as unknown as {
     conversationState: { currentMessage: { userInputMessage: { modelId: string } } };
   };

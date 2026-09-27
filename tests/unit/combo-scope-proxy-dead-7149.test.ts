@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-proxy-7149-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -22,13 +23,13 @@ type ProxyResolutionLike = {
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#7149: a proxy assigned to a Combo via the dashboard (registry scope='combo') is honored when resolving the proxy for a request routed through that combo", async () => {
@@ -64,12 +65,12 @@ test("#7149: a proxy assigned to a Combo via the dashboard (registry scope='comb
   );
   assert.equal(directRegistryLookup?.proxy?.host, "10.20.30.40");
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     apiKey: "sk-test-1234",
     name: "openai-account-1",
-  });
+  })) as JsonRecord & { id: string };
   const connectionRecord = connection as Record<string, unknown> | null;
   const connectionId = connectionRecord?.id as string;
   assert.ok(connectionId, "test setup requires a real connection id");

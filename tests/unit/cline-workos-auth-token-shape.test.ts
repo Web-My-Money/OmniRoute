@@ -11,6 +11,7 @@ import {
 } from "../../src/shared/utils/clineAuth.ts";
 import { buildProviderHeaders } from "../../open-sse/services/provider.ts";
 import { DefaultExecutor } from "../../open-sse/executors/default.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("getClineAccessToken prefixes the token with workos:", () => {
   assert.equal(getClineAccessToken("abc123"), "workos:abc123");
@@ -101,14 +102,14 @@ test("ClinePass BYOK and OAuth auth modes both carry the full protocol headers",
 
 test("buildProviderHeaders uses the cline workos auth token shape", () => {
   const headers = buildProviderHeaders("cline", { apiKey: "tok-abc" }, true);
-  assert.equal(headers.Authorization, "Bearer workos:tok-abc");
+  assert.equal((headers as LooseDeep).Authorization, "Bearer workos:tok-abc");
   assert.equal(headers["HTTP-Referer"], "https://cline.bot");
   assert.equal(headers["X-CLIENT-TYPE"], "omniroute");
 });
 
 test("buildProviderHeaders honors an accessToken for cline", () => {
   const headers = buildProviderHeaders("cline", { accessToken: "acc-xyz" }, false);
-  assert.equal(headers.Authorization, "Bearer workos:acc-xyz");
+  assert.equal((headers as LooseDeep).Authorization, "Bearer workos:acc-xyz");
 });
 
 test("DefaultExecutor.buildHeaders uses the cline workos auth token shape", () => {

@@ -59,7 +59,7 @@ async function cleanupTestDataDir() {
   for (let attempt = 0; attempt < 5; attempt += 1) {
     try {
       core.resetDbInstance();
-      fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+      fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       return;
     } catch (error: unknown) {
       lastError = error;
@@ -86,7 +86,7 @@ test("returns 400 when combo is not found", async () => {
     { model: "nonexistent-combo", prompt: "a red cube" },
     createMockAuth(),
     Date.now(),
-    log
+    log as unknown as typeof import("D:/WMM_DEV_HUB/APPS_WORKSPACE/wmm-omniroute/src/sse/utils/logger")
   );
   assert.equal(response.status, 400);
   const bodyStr = JSON.stringify(await response.json());
@@ -106,7 +106,7 @@ test("returns 400 when combo has no video-capable targets", async () => {
     { model: "chat-only-combo", prompt: "a red cube" },
     createMockAuth(),
     Date.now(),
-    log
+    log as unknown as typeof import("D:/WMM_DEV_HUB/APPS_WORKSPACE/wmm-omniroute/src/sse/utils/logger")
   );
   assert.equal(response.status, 400);
   const bodyStr = JSON.stringify(await response.json());
@@ -123,7 +123,7 @@ test("returns 400 when combo has no usable targets", async () => {
     { model: "empty-combo", prompt: "a red cube" },
     createMockAuth(),
     Date.now(),
-    log
+    log as unknown as typeof import("D:/WMM_DEV_HUB/APPS_WORKSPACE/wmm-omniroute/src/sse/utils/logger")
   );
   assert.equal(response.status, 400);
 });
@@ -141,7 +141,7 @@ test("fails cleanly when video targets exist but no provider connection does", a
     { model: "vid-no-conn", prompt: "a red cube" },
     createMockAuth(),
     Date.now(),
-    log
+    log as unknown as typeof import("D:/WMM_DEV_HUB/APPS_WORKSPACE/wmm-omniroute/src/sse/utils/logger")
   );
   assert.ok(response.status >= 400, "Surfaces a failure rather than a fake success");
   const bodyStr = JSON.stringify(await response.json());

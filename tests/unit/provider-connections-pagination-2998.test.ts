@@ -17,24 +17,24 @@ const providersRoute = await import("../../src/app/api/providers/route.ts");
 
 function resetDb() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 async function createConnection(provider: string, name: string) {
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider,
     name,
     authType: "apikey",
     apiKey: `${provider}-${name}-key`,
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(resetDb);
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("GET /api/providers filters and counts before applying limit/offset", async () => {
@@ -77,3 +77,5 @@ test("GET /api/providers keeps the unfiltered contract when provider is absent",
     new Set(["synthetic", "poe"])
   );
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

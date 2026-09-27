@@ -426,12 +426,12 @@ export default function A2ADashboardPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="text-left py-2 pr-2">{t("tableTask")}</th>
-                  <th className="text-left py-2 pr-2">{t("tableSkill")}</th>
-                  <th className="text-left py-2 pr-2">{t("tableState")}</th>
-                  <th className="text-left py-2 pr-2">{t("tablePhase")}</th>
-                  <th className="text-left py-2 pr-2">{t("tableUpdated")}</th>
-                  <th className="text-left py-2">{t("tableActions")}</th>
+                  <th className="text-start py-2 pe-2">{t("tableTask")}</th>
+                  <th className="text-start py-2 pe-2">{t("tableSkill")}</th>
+                  <th className="text-start py-2 pe-2">{t("tableState")}</th>
+                  <th className="text-start py-2 pe-2">{t("tablePhase")}</th>
+                  <th className="text-start py-2 pe-2">{t("tableUpdated")}</th>
+                  <th className="text-start py-2">{t("tableActions")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -453,16 +453,16 @@ export default function A2ADashboardPage() {
 
                   return (
                     <tr key={task.id} className="border-b border-border/40">
-                      <td className="py-2 pr-2 font-mono text-xs">{task.id}</td>
-                      <td className="py-2 pr-2">{task.skill}</td>
-                      <td className="py-2 pr-2">
+                      <td className="py-2 pe-2 font-mono text-xs">{task.id}</td>
+                      <td className="py-2 pe-2">{task.skill}</td>
+                      <td className="py-2 pe-2">
                         <span
                           className={`text-xs px-2 py-1 rounded-full ${stateClass(task.state)}`}
                         >
                           {t(`state.${task.state}`)}
                         </span>
                       </td>
-                      <td className="py-2 pr-2">
+                      <td className="py-2 pe-2">
                         {fsmPhase ? (
                           <span
                             className={`text-xs px-2 py-1 rounded border border-current/20 font-medium ${fsmBadgeColor}`}
@@ -473,7 +473,7 @@ export default function A2ADashboardPage() {
                           <span className="text-xs text-text-muted">—</span>
                         )}
                       </td>
-                      <td className="py-2 pr-2 text-xs">
+                      <td className="py-2 pe-2 text-xs">
                         {new Date(task.updatedAt).toLocaleString()}
                       </td>
                       <td className="py-2 flex gap-2">

@@ -7,6 +7,7 @@ import {
   clearInFlightOnComplete,
 } from "../../../src/app/(dashboard)/dashboard/compression/studio/compressionFlowModel.ts";
 import { applyStackedCompression } from "../../../open-sse/services/compression/strategySelector.ts";
+import type { CompressionEngineId } from "../../../open-sse/services/compression/types.ts";
 import { registerCompressionEngine } from "../../../open-sse/services/compression/index.ts";
 import type { CompressionEngine } from "../../../open-sse/services/compression/engines/types.ts";
 import type { CompressionStepPayload } from "../../../src/lib/events/types.ts";
@@ -31,8 +32,22 @@ function step(over: Partial<CompressionStepPayload>): CompressionStepPayload {
 describe("stepEventsToRunModel", () => {
   it("builds a run model from accumulated step events (run-level totals span first→last)", () => {
     const model = stepEventsToRunModel([
-      step({ engine: "a", stepIndex: 0, originalTokens: 1000, compressedTokens: 900, savingsPercent: 10, timestamp: 1 }),
-      step({ engine: "b", stepIndex: 1, originalTokens: 900, compressedTokens: 700, savingsPercent: 22, timestamp: 2 }),
+      step({
+        engine: "a",
+        stepIndex: 0,
+        originalTokens: 1000,
+        compressedTokens: 900,
+        savingsPercent: 10,
+        timestamp: 1,
+      }),
+      step({
+        engine: "b",
+        stepIndex: 1,
+        originalTokens: 900,
+        compressedTokens: 700,
+        savingsPercent: 22,
+        timestamp: 2,
+      }),
     ]);
     assert.equal(model.requestId, "r1");
     assert.equal(model.mode, "stacked");
@@ -66,7 +81,12 @@ describe("in-flight step reducer", () => {
 });
 
 // ── Integration: applyStackedCompression emits a step per engine ───────────────
-function fakeEngine(id: string, compressed: boolean, orig: number, comp: number): CompressionEngine {
+function fakeEngine(
+  id: string,
+  compressed: boolean,
+  orig: number,
+  comp: number
+): CompressionEngine {
   return {
     id,
     name: id,
@@ -116,10 +136,15 @@ describe("applyStackedCompression — onEngineStep emission", () => {
     registerCompressionEngine(fakeEngine("step-e1", true, 1000, 900));
     registerCompressionEngine(fakeEngine("step-e2", false, 900, 900));
 
-    const captured: Array<{ stepIndex: number; totalSteps: number; engine: string; state: string }> = [];
+    const captured: Array<{
+      stepIndex: number;
+      totalSteps: number;
+      engine: string;
+      state: string;
+    }> = [];
     applyStackedCompression(
       { messages: [{ role: "user", content: "hello" }] },
-      [{ engine: "step-e1" }, { engine: "step-e2" }],
+      [{ engine: "step-e1" as CompressionEngineId }, { engine: "step-e2" as CompressionEngineId }],
       { onEngineStep: (s) => captured.push(s) }
     );
 

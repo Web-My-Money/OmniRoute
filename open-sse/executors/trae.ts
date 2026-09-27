@@ -214,7 +214,14 @@ export class TraeExecutor extends BaseExecutor {
     }
   }
 
-  async execute({ model, body, stream, credentials, signal, upstreamExtraHeaders }) {
+  async execute({
+    model,
+    body,
+    stream,
+    credentials,
+    signal = undefined,
+    upstreamExtraHeaders = undefined,
+  }) {
     const headers = this.buildHeaders(credentials as JsonRecord);
     mergeUpstreamExtraHeaders(headers, upstreamExtraHeaders as Record<string, string> | null);
     const psd = ((credentials as JsonRecord).providerSpecificData as JsonRecord) || {};

@@ -17,6 +17,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-reasoning-probe-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -32,7 +33,7 @@ const {
 } = await import("../../open-sse/services/reasoningTokenBuffer.ts");
 const { isEmptyContentResponse } = await import("../../open-sse/services/errorClassifier.ts");
 
-function capabilityEntry(limitContext: unknown, overrides: Record<string, unknown> = {}) {
+function capabilityEntry(limitContext: number, overrides: Record<string, unknown> = {}) {
   return {
     tool_call: true,
     reasoning: false,
@@ -69,7 +70,7 @@ test.before(() => {
 test.after(() => {
   clearModelsDevCapabilities();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#10281 isTinyBudgetReasoningProbe detects tiny explicit budgets on reasoning models", () => {
@@ -156,12 +157,12 @@ test("#10281 buildReasoningProbeTruncatedResponse yields a valid truncated 200",
   assert.equal(res.status, 200);
   assert.match(res.headers.get("content-type") || "", /application\/json/);
 
-  const body = (await res.json()) as Record<string, unknown>;
+  const body = (await res.json()) as LooseDeep;
   const choice = (body.choices as Array<Record<string, unknown>>)[0];
   assert.equal(body.object, "chat.completion");
   assert.equal(body.model, "zhipu/glm-5.2");
   assert.equal(choice.finish_reason, "length");
-  assert.equal((choice.message as Record<string, unknown>).content, "");
+  assert.equal((choice.message as LooseDeep).content, "");
   assert.equal((body.usage as Record<string, number>).completion_tokens, 1);
 
   // The synthetic body must pass the empty-content guard (finish_reason "length"

@@ -698,7 +698,7 @@ export default function RouteExplainabilityTab({
                     className="flex items-start justify-between gap-4 border-b border-black/5 pb-2 last:border-b-0 last:pb-0 dark:border-white/5"
                   >
                     <span className="text-text-muted">{label}</span>
-                    <span className="max-w-[65%] truncate text-right font-medium text-text-main">
+                    <span className="max-w-[65%] truncate text-end font-medium text-text-main">
                       {value}
                     </span>
                   </div>

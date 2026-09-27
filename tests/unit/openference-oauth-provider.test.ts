@@ -17,6 +17,7 @@ import { supportsTokenRefresh } from "../../open-sse/services/tokenRefresh.ts";
 import { NAMED_OPENAI_STYLE_PROVIDERS } from "../../src/app/api/providers/[id]/models/discovery/providerSets.ts";
 import { OAUTH_PROVIDERS } from "../../src/shared/constants/providers/oauth.ts";
 import PROVIDERS from "../../src/lib/oauth/providers/index.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const originalFetch = globalThis.fetch;
 
@@ -138,8 +139,8 @@ test("Openference is classified for live OpenAI-style model discovery", () => {
 });
 
 test("OAUTH_TEST_CONFIG covers openference and alias of", () => {
-  assert.ok((OAUTH_TEST_CONFIG as Record<string, unknown>).openference);
-  assert.ok((OAUTH_TEST_CONFIG as Record<string, unknown>).of);
+  assert.ok((OAUTH_TEST_CONFIG as LooseDeep).openference);
+  assert.ok((OAUTH_TEST_CONFIG as LooseDeep).of);
 });
 
 test("Openference Test Connection probes /v1/models instead of reporting unsupported", async () => {

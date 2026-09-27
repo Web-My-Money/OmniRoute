@@ -203,7 +203,7 @@ export default function FallbackChainsEditor() {
                 </div>
                 <button
                   onClick={() => handleDelete(model)}
-                  className="text-text-muted hover:text-red-400 transition-colors ml-2"
+                  className="text-text-muted hover:text-red-400 transition-colors ms-2"
                   title={t("deleteChain")}
                 >
                   <span className="material-symbols-outlined text-[16px]">close</span>

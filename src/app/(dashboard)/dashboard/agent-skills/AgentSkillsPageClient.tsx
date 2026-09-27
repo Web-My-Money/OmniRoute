@@ -239,7 +239,7 @@ export function AgentSkillsPageClient(): ReactElement {
       {/* Search + filters */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[16px] text-text-muted pointer-events-none">
+          <span className="absolute start-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[16px] text-text-muted pointer-events-none">
             search
           </span>
           <input
@@ -247,7 +247,7 @@ export function AgentSkillsPageClient(): ReactElement {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder={t("filters.searchPlaceholder")}
-            className="w-full rounded-lg border border-border bg-bg py-2 pl-9 pr-3 text-sm text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/40"
+            className="w-full rounded-lg border border-border bg-bg py-2 ps-9 pe-3 text-sm text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/40"
             data-testid="search-input"
           />
         </div>

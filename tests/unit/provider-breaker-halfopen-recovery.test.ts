@@ -107,7 +107,7 @@ test("recordProviderSuccess on CLOSED breaker decays failureCount (gradual recov
   // Get a breaker in CLOSED state (no failures)
   const breaker = getCircuitBreaker(provider, {
     failureThreshold: 3,
-    resetTimeoutMs: 30_000,
+    resetTimeout: 30_000,
   });
   assert.equal(breaker.state, "CLOSED");
 
@@ -167,7 +167,7 @@ test("full lifecycle: CLOSED -> OPEN -> HALF_OPEN -> CLOSED via success", async 
   // Start CLOSED
   const breaker = getCircuitBreaker(provider, {
     failureThreshold: 1,
-    resetTimeoutMs: 100,
+    resetTimeout: 100,
   });
   assert.equal(breaker.state, "CLOSED");
 

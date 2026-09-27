@@ -13,7 +13,7 @@ export default function MaintenancePage() {
         <h1 className="text-2xl font-semibold">{t("maintenance.title")}</h1>
         <p className="mt-3 text-text-muted leading-relaxed">{t("maintenance.description")}</p>
 
-        <ul className="mt-6 text-sm text-text-muted text-left rounded-xl border border-border bg-bg-alt p-4 space-y-2">
+        <ul className="mt-6 text-sm text-text-muted text-start rounded-xl border border-border bg-bg-alt p-4 space-y-2">
           <li className="flex items-start gap-2">
             <span
               className="material-symbols-outlined text-base text-primary mt-0.5"

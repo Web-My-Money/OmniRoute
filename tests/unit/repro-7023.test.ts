@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // #7023 — deferred 3rd op from #6951/#6992. Codex Responses API strict mode forces
 // every tool property into `required`, so a model that intends to OMIT an optional
@@ -38,9 +39,12 @@ test("7023: injectOptionalEnumOmissionSentinel widens a no-default enum property
     required: [],
   };
   const result = injectOptionalEnumOmissionSentinel(schema);
-  assert.deepEqual(result.properties.isolation.enum, ["worktree", "remote", null]);
-  assert.deepEqual(result.properties.isolation.type, ["string", "null"]);
-  assert.match(result.properties.isolation.description, /null = omit this parameter/);
+  assert.deepEqual((result as LooseDeep).properties.isolation.enum, ["worktree", "remote", null]);
+  assert.deepEqual((result as LooseDeep).properties.isolation.type, ["string", "null"]);
+  assert.match(
+    (result as LooseDeep).properties.isolation.description,
+    /null = omit this parameter/
+  );
 });
 
 test("7023: injectOptionalEnumOmissionSentinel leaves a required enum property untouched", () => {
@@ -50,8 +54,8 @@ test("7023: injectOptionalEnumOmissionSentinel leaves a required enum property u
     required: ["isolation"],
   };
   const result = injectOptionalEnumOmissionSentinel(schema);
-  assert.deepEqual(result.properties.isolation.enum, ["worktree", "remote"]);
-  assert.equal(result.properties.isolation.type, "string");
+  assert.deepEqual((result as LooseDeep).properties.isolation.enum, ["worktree", "remote"]);
+  assert.equal((result as LooseDeep).properties.isolation.type, "string");
 });
 
 test("7023: injectOptionalEnumOmissionSentinel leaves an enum property with a default untouched", () => {
@@ -63,7 +67,7 @@ test("7023: injectOptionalEnumOmissionSentinel leaves an enum property with a de
     required: [],
   };
   const result = injectOptionalEnumOmissionSentinel(schema);
-  assert.deepEqual(result.properties.isolation.enum, ["worktree", "remote"]);
+  assert.deepEqual((result as LooseDeep).properties.isolation.enum, ["worktree", "remote"]);
 });
 
 test("7023: injectOptionalEnumOmissionSentinel leaves a non-enum property untouched", () => {

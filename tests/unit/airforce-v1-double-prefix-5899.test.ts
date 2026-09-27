@@ -13,6 +13,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-5899-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -23,17 +24,17 @@ const modelsRoute = await import("../../src/app/api/providers/[id]/models/route.
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#5899 openai gateway baseUrl ending in /v1/chat/completions never probes /v1/v1/models", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "airforce-gateway",
     apiKey: "sk-airforce",
     providerSpecificData: { baseUrl: "https://api.airforce/v1/chat/completions" },
-  });
+  })) as JsonRecord & { id: string };
 
   const requestedUrls: string[] = [];
   const originalFetch = globalThis.fetch;

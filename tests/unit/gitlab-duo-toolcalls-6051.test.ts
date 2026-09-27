@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { GitlabExecutor } from "../../open-sse/executors/gitlab.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -30,7 +31,7 @@ test("GitlabExecutor emulates OpenAI tool_calls when body.tools is present (#605
 
   // Upstream (GitLab code_suggestions) replies with the tool invocation as raw
   // text, exactly how a web/completion model would when handed the tool contract.
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({ url: String(url), body: JSON.parse(String(init.body || "{}")) });
     return jsonResponse({
       model: { name: "code-gecko" },

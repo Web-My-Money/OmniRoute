@@ -15,8 +15,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-// @ts-expect-error — plain .mjs gate script, no type declarations by design
-import { findStaleTranslations, isCosmeticRewrite } from "../../scripts/i18n/check-ui-value-drift.mjs";
+//
+import {
+  findStaleTranslations,
+  isCosmeticRewrite,
+} from "../../scripts/i18n/check-ui-value-drift.mjs";
 
 test("case-only changes are cosmetic — the reported case", () => {
   assert.equal(isCosmeticRewrite("Reset Defaults", "Reset defaults"), true);
@@ -72,10 +75,20 @@ test("end to end: a cosmetic English edit leaves every locale alone", () => {
   const stale = findStaleTranslations({
     baseEn: { ui: { reset: "Reset Defaults" } },
     headEn: { ui: { reset: "Reset defaults" } },
-    baseLocales: { vi: { ui: { reset: "Đặt lại mặc định" } }, de: { ui: { reset: "Standardwerte" } } },
-    headLocales: { vi: { ui: { reset: "Đặt lại mặc định" } }, de: { ui: { reset: "Standardwerte" } } },
+    baseLocales: {
+      vi: { ui: { reset: "Đặt lại mặc định" } },
+      de: { ui: { reset: "Standardwerte" } },
+    },
+    headLocales: {
+      vi: { ui: { reset: "Đặt lại mặc định" } },
+      de: { ui: { reset: "Standardwerte" } },
+    },
   });
-  assert.deepEqual(stale, [], "41 correct translations must not be invalidated by a capital letter");
+  assert.deepEqual(
+    stale,
+    [],
+    "41 correct translations must not be invalidated by a capital letter"
+  );
 });
 
 test("end to end: a REAL English rewrite still flags every untranslated locale", () => {
@@ -84,12 +97,15 @@ test("end to end: a REAL English rewrite still flags every untranslated locale",
   const stale = findStaleTranslations({
     baseEn: { ui: { reset: "Reset defaults" } },
     headEn: { ui: { reset: "Restore factory settings" } },
-    baseLocales: { vi: { ui: { reset: "Đặt lại mặc định" } }, de: { ui: { reset: "Standardwerte" } } },
-    headLocales: { vi: { ui: { reset: "Đặt lại mặc định" } }, de: { ui: { reset: "Standardwerte" } } },
+    baseLocales: {
+      vi: { ui: { reset: "Đặt lại mặc định" } },
+      de: { ui: { reset: "Standardwerte" } },
+    },
+    headLocales: {
+      vi: { ui: { reset: "Đặt lại mặc định" } },
+      de: { ui: { reset: "Standardwerte" } },
+    },
   });
   assert.equal(stale.length, 2, "both locales still carry the old translation");
-  assert.deepEqual(
-    stale.map((s: { locale: string }) => s.locale).sort(),
-    ["de", "vi"]
-  );
+  assert.deepEqual(stale.map((s: { locale: string }) => s.locale).sort(), ["de", "vi"]);
 });

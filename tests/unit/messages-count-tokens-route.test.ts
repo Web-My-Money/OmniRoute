@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-count-tokens-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -20,12 +21,12 @@ type CountTokensResponse = {
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
-async function seedConnection(provider, overrides = {}) {
-  return providersDb.createProviderConnection({
+async function seedConnection(provider, overrides: JsonRecord = {}) {
+  return (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name: overrides.name || `${provider}-count-${Math.random().toString(16).slice(2, 8)}`,
@@ -33,7 +34,7 @@ async function seedConnection(provider, overrides = {}) {
     isActive: overrides.isActive ?? true,
     testStatus: overrides.testStatus || "active",
     providerSpecificData: overrides.providerSpecificData || {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.beforeEach(async () => {
@@ -42,7 +43,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("messages/count_tokens uses real provider count when Claude-compatible upstream supports it", async () => {
@@ -50,7 +51,7 @@ test("messages/count_tokens uses real provider count when Claude-compatible upst
 
   const originalFetch = globalThis.fetch;
   let captured = null;
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       body: JSON.parse(String(init.body)),
       headers: init.headers,
@@ -248,3 +249,5 @@ test("messages/count_tokens rejects an impossible provider count and uses the lo
     globalThis.fetch = originalFetch;
   }
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

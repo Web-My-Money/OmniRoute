@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import { getModelInfoCore } from "../../open-sse/services/model.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("cross-proxy aliases normalize to canonical model ids without bypassing local aliases", async () => {
   const localAliasWins = await getModelInfoCore("gpt-oss:120b", {
@@ -15,7 +16,7 @@ test("cross-proxy aliases normalize to canonical model ids without bypassing loc
 
   const crossProxyAlias = await getModelInfoCore("gpt-oss:120b", {});
   assert.equal(crossProxyAlias.model, "gpt-oss-120b");
-  if (crossProxyAlias.errorType === "ambiguous_model") {
+  if ((crossProxyAlias as LooseDeep).errorType === "ambiguous_model") {
     assert.equal(crossProxyAlias.provider, null);
   } else {
     // If an active connection exists, it dynamically resolves the provider
@@ -26,7 +27,7 @@ test("cross-proxy aliases normalize to canonical model ids without bypassing loc
 test("slashful canonical model ids are treated as exact model ids when provider pairing is invalid", async () => {
   const slashfulCanonical = await getModelInfoCore("openai/gpt-oss-120b", {});
   assert.equal(slashfulCanonical.model, "openai/gpt-oss-120b");
-  if (slashfulCanonical.errorType === "ambiguous_model") {
+  if ((slashfulCanonical as LooseDeep).errorType === "ambiguous_model") {
     assert.equal(slashfulCanonical.provider, null);
   } else {
     assert.ok(typeof slashfulCanonical.provider === "string");

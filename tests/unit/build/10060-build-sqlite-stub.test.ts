@@ -21,12 +21,15 @@ import { resolveNextBuildEnv } from "../../../scripts/build/build-next-isolated.
 
 describe("#10060 build env carries OMNIROUTE_BUILDING", () => {
   it("resolveNextBuildEnv sets OMNIROUTE_BUILDING=1", () => {
-    const env = resolveNextBuildEnv({}, "linux");
+    const env = resolveNextBuildEnv({} as NodeJS.ProcessEnv, "linux");
     assert.equal(env.OMNIROUTE_BUILDING, "1");
   });
 
   it("preserves provided env keys and does not clobber the build-worker flag", () => {
-    const env = resolveNextBuildEnv({ NEXT_PRIVATE_BUILD_WORKER: "1" }, "linux");
+    const env = resolveNextBuildEnv(
+      { NEXT_PRIVATE_BUILD_WORKER: "1" } as NodeJS.ProcessEnv,
+      "linux"
+    );
     assert.equal(env.NEXT_PRIVATE_BUILD_WORKER, "1");
     assert.equal(env.OMNIROUTE_BUILDING, "1");
   });

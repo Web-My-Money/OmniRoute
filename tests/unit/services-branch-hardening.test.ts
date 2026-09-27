@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { looseAsync } from "../helpers/looseTypes.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-services-hardening-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -19,7 +21,7 @@ test.after(() => {
     process.env.DATA_DIR = ORIGINAL_DATA_DIR;
   }
   try {
-    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   } catch {
     // Best effort cleanup
   }
@@ -90,9 +92,9 @@ test("gemini thought signature store handles invalid input, memory TTL and max-s
 test("model capability helpers cover denylist, empty input and default-safe paths", () => {
   providerModels.PROVIDER_ID_TO_ALIAS.synthetic = "synthetic";
   providerModels.PROVIDER_MODELS.synthetic = [
-    { id: "tool-safe", toolCalling: true, supportsReasoning: true },
-    { id: "tool-blocked", toolCalling: false, supportsReasoning: false },
-    { id: "tool-unknown" },
+    { id: "tool-safe", name: "tool-safe", toolCalling: true, supportsReasoning: true },
+    { id: "tool-blocked", name: "tool-blocked", toolCalling: false, supportsReasoning: false },
+    { id: "tool-unknown", name: "tool-unknown" },
   ];
 
   assert.equal(modelCapabilities.supportsToolCalling("synthetic/tool-safe"), true);
@@ -387,40 +389,43 @@ test("model helpers cover malformed input, alias maps, wildcard aliases, ambigui
   assert.equal(modelService.resolveModelAliasFromMap("missing", { other: "x/y" }), null);
   assert.equal(modelService.resolveModelAliasFromMap("broken", { broken: "no-slash" }), null);
 
-  const exactAlias = await modelService.getModelInfoCore("alias-exact[1m]", async () => ({
-    "alias-exact": "gh/gemini-3-pro",
-  }));
+  const exactAlias = await looseAsync(modelService.getModelInfoCore)(
+    "alias-exact[1m]",
+    async () => ({
+      "alias-exact": "gh/gemini-3-pro",
+    })
+  );
   assert.deepEqual(exactAlias, {
     provider: "github",
     model: "gemini-3.1-pro-preview",
     extendedContext: true,
   });
 
-  const wildcardAlias = await modelService.getModelInfoCore("claude-sonnet-special", {
+  const wildcardAlias = await looseAsync(modelService.getModelInfoCore)("claude-sonnet-special", {
     "claude-sonnet-*": "anthropic/claude-sonnet-4-5-20250929",
   });
   assert.equal(wildcardAlias.provider, "anthropic");
   assert.equal(wildcardAlias.model, "claude-sonnet-4-5-20250929");
   assert.equal(wildcardAlias.wildcardPattern, "claude-sonnet-*");
 
-  const ambiguous = await modelService.getModelInfoCore("claude-haiku-4.5", {});
+  const ambiguous = await looseAsync(modelService.getModelInfoCore)("claude-haiku-4.5", {});
   assert.equal(ambiguous.provider, null);
   assert.equal(ambiguous.errorType, "ambiguous_model");
   assert.ok(ambiguous.errorMessage.includes("provider/model"));
   assert.ok(Array.isArray(ambiguous.candidateProviders));
   assert.ok(ambiguous.candidateProviders.length >= 2);
 
-  const unknownClaude = await modelService.getModelInfoCore("claude-unknown", {});
+  const unknownClaude = await looseAsync(modelService.getModelInfoCore)("claude-unknown", {});
   assert.equal(unknownClaude.provider, null);
   assert.equal(unknownClaude.errorType, "model_not_found");
   assert.ok(unknownClaude.errorMessage.includes("claude-unknown"));
   assert.ok(unknownClaude.errorMessage.includes("provider/model prefix"));
-  const unknownGemini = await modelService.getModelInfoCore("gemini-custom", {});
+  const unknownGemini = await looseAsync(modelService.getModelInfoCore)("gemini-custom", {});
   assert.equal(unknownGemini.provider, null);
   assert.equal(unknownGemini.errorType, "model_not_found");
   assert.ok(unknownGemini.errorMessage.includes("gemini-custom"));
   assert.ok(unknownGemini.errorMessage.includes("provider/model prefix"));
-  const unknownModel = await modelService.getModelInfoCore("made-up-model", {});
+  const unknownModel = await looseAsync(modelService.getModelInfoCore)("made-up-model", {});
   assert.equal(unknownModel.provider, null);
   assert.equal(unknownModel.errorType, "model_not_found");
   assert.ok(unknownModel.errorMessage.includes("made-up-model"));
@@ -475,6 +480,6 @@ test("error classifier covers empty-content helpers, context overflow and remain
   );
 
   const circular = {};
-  circular.self = circular;
+  (circular as LooseDeep).self = circular;
   assert.equal(errorClassifier.classifyProviderError(418, circular), null);
 });

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import vm from "node:vm";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 // Port of upstream decolua/9router PR #1360: Cloudflare Workers as proxy relay.
 //
@@ -27,7 +28,7 @@ type FetchCall = { input: unknown; init: RequestInit & { headers?: HeadersInit }
 const relayCalls: FetchCall[] = [];
 const realGlobalFetch = globalThis.fetch;
 
-const relaySink = (async (input: unknown, init: RequestInit = {}) => {
+const relaySink = (async (input: unknown, init: MockRequestInit = {}) => {
   relayCalls.push({ input, init });
   return Response.json({ via: "cloudflare-relay" });
 }) as unknown as typeof globalThis.fetch;

@@ -229,7 +229,7 @@ export default function FileDetailModal({
                     </span>
                     <span className="font-mono text-[var(--color-text-main)] truncate">{b.id}</span>
                     <span
-                      className={`ml-auto px-1.5 py-0.5 rounded text-[10px] font-medium border ${
+                      className={`ms-auto px-1.5 py-0.5 rounded text-[10px] font-medium border ${
                         b.status === "completed"
                           ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/25"
                           : b.status === "failed"

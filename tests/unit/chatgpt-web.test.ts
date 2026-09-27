@@ -133,7 +133,7 @@ function installMockFetch({
     bodies: [],
   };
 
-  __setTlsFetchOverrideForTesting(async (url, opts = {}) => {
+  __setTlsFetchOverrideForTesting((async (url: string | URL, opts: TlsFetchOptions = {}) => {
     const u = String(url);
     calls.urls.push(u);
     calls.headers.push(opts.headers || {});
@@ -152,7 +152,7 @@ function installMockFetch({
       return {
         status: cfg.status,
         headers: makeHeaders({ "Content-Type": "text/html" }),
-        text: cfg.body,
+        text: cfg.body as string,
         body: null,
       };
     }
@@ -354,7 +354,7 @@ function installMockFetch({
       text: "not mocked",
       body: null,
     };
-  });
+  }) as unknown as Parameters<typeof __setTlsFetchOverrideForTesting>[0]);
 
   return {
     calls,

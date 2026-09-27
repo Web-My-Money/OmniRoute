@@ -17,6 +17,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-embed-402-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -27,17 +28,19 @@ const { handleEmbedding } = await import("../../open-sse/handlers/embeddings.ts"
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 function readConnectionRow(connId: string) {
   const db = core.getDbInstance() as unknown as {
     prepare: (sql: string) => {
-      get: (id: string) => {
-        test_status: unknown;
-        rate_limited_until: unknown;
-        last_error_type: unknown;
-      } | undefined;
+      get: (id: string) =>
+        | {
+            test_status: unknown;
+            rate_limited_until: unknown;
+            last_error_type: unknown;
+          }
+        | undefined;
     };
   };
   return db
@@ -48,11 +51,11 @@ function readConnectionRow(connId: string) {
 }
 
 test("embed 402 marks the connection terminal credits_exhausted (stops re-selection)", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "mistral",
     authType: "apikey",
     name: "embed 402 cooldown",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as { id: string }).id;
 
   const originalFetch = globalThis.fetch;

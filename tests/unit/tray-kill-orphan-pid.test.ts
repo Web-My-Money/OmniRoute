@@ -1,10 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import {
-  getSystrayChildPid,
-  killSystrayUnix,
-} from "../../bin/cli/tray/traySystray.mjs";
+import { getSystrayChildPid, killSystrayUnix } from "../../bin/cli/tray/traySystray.mjs";
 
 // Regression guard for the macOS orphan-NSStatusItem bug: systray2.kill(false)
 // only closes the IPC channel and leaves the Go tray binary subprocess running.
@@ -33,7 +30,7 @@ test("killSystrayUnix SIGKILLs the child PID BEFORE closing IPC", () => {
   let killedPid: number | undefined;
   let killedSignal: string | number | undefined;
 
-  // @ts-expect-error - patching process.kill for the test
+  //
   process.kill = (pid: number, signal?: string | number) => {
     killedPid = pid;
     killedSignal = signal;
@@ -64,7 +61,7 @@ test("killSystrayUnix still closes IPC when no child PID is available", () => {
   const calls: string[] = [];
   const origKill = process.kill;
 
-  // @ts-expect-error - patching process.kill for the test
+  //
   process.kill = () => {
     calls.push("process.kill");
     return true;

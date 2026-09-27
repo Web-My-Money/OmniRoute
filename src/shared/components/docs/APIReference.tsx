@@ -42,7 +42,7 @@ export default function APIReference({
         <div className="mb-6">
           <h4 className="text-sm font-semibold text-text-primary mb-3">{t("parameters")}</h4>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left border-collapse">
+            <table className="w-full text-sm text-start border-collapse">
               <thead className="text-xs text-text-muted uppercase bg-border/50">
                 <tr>
                   <th className="px-4 py-2 border-b border-border" scope="col">

@@ -19,7 +19,10 @@ test("trackConnectionExtraKeys: inserting into a full map does not evict existin
 
   // Now update an existing key — this should NOT evict it
   trackConnectionExtraKeys("conn-0", ["key-0", "key-new"]);
-  assert.ok(connectionHasExtraKeys("conn-0", ["key-0"]), "Existing key should not be evicted on update");
+  assert.ok(
+    connectionHasExtraKeys("conn-0", ["key-0"]),
+    "Existing key should not be evicted on update"
+  );
 });
 
 test("trackConnectionExtraKeys: evicts oldest when inserting NEW key at capacity", () => {
@@ -38,8 +41,22 @@ test("syncHealthFromDB: does not evict when updating existing scopedKey", () => 
 
   // Sync health for existing entries — should not evict them
   const health = {
-    "key-0": { status: "active" as const, failures: 0, lastFailure: 0 },
-    "key-1": { status: "active" as const, failures: 0, lastFailure: 0 },
+    "key-0": {
+      status: "active" as const,
+      failures: 0,
+      lastFailure: "2020-01-01T00:00:00.000Z",
+      lastSuccess: null,
+      totalRequests: 0,
+      totalFailures: 0,
+    },
+    "key-1": {
+      status: "active" as const,
+      failures: 0,
+      lastFailure: "2020-01-01T00:00:00.000Z",
+      lastSuccess: null,
+      totalRequests: 0,
+      totalFailures: 0,
+    },
   };
   syncHealthFromDB("test-conn", health);
 
@@ -52,12 +69,26 @@ test("syncHealthFromDB: evicts oldest when inserting NEW scopedKey at capacity",
   // Fill the map by syncing many unique entries
   for (let i = 0; i < 505; i++) {
     syncHealthFromDB(`bulk-conn-${i}`, {
-      [`bulk-key-${i}`]: { status: "active" as const, failures: 0, lastFailure: 0 },
+      [`bulk-key-${i}`]: {
+        status: "active" as const,
+        failures: 0,
+        lastFailure: "2020-01-01T00:00:00.000Z",
+        lastSuccess: null,
+        totalRequests: 0,
+        totalFailures: 0,
+      },
     });
   }
   // Insert one more brand new entry — should trigger eviction of oldest
   syncHealthFromDB("bulk-conn-NEW", {
-    "bulk-key-NEW": { status: "active" as const, failures: 0, lastFailure: 0 },
+    "bulk-key-NEW": {
+      status: "active" as const,
+      failures: 0,
+      lastFailure: "2020-01-01T00:00:00.000Z",
+      lastSuccess: null,
+      totalRequests: 0,
+      totalFailures: 0,
+    },
   });
   const all = getAllKeyHealth();
   assert.ok(all["bulk-conn-NEW:bulk-key-NEW"], "New entry should exist");

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omr-rl-queue-timeout-lockout-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -24,7 +25,7 @@ function createLog() {
 }
 
 async function seedConnection(provider: string, overrides: any = {}): Promise<any> {
-  return providersDb.createProviderConnection({
+  return (await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name: overrides.name || `${provider}-${Math.random().toString(16).slice(2, 8)}`,
@@ -34,7 +35,7 @@ async function seedConnection(provider: string, overrides: any = {}): Promise<an
     rateLimitedUntil: null,
     backoffLevel: overrides.backoffLevel || 0,
     providerSpecificData: overrides.providerSpecificData || {},
-  });
+  })) as JsonRecord & { id: string };
 }
 
 function errorResponseWithoutConnectionId(status: number) {
@@ -56,7 +57,7 @@ function errorResponseWithConnectionId(status: number, connectionId: string) {
 
 test.afterEach(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("RATE_LIMIT_QUEUE_TIMEOUT lockout behaves correctly depending on connection ID header", async () => {

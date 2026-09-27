@@ -18,9 +18,13 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { resolveLocalBinEntry } from "../build/buildToolRunner.mjs";
 
 const ROOT = process.cwd();
-const KNIP_BIN = path.join(ROOT, "node_modules", ".bin", "knip");
+// Invoke knip's JS entry through node directly: the .bin/knip shim is a POSIX
+// script that cannot be spawned on Windows (ENOENT), so the gate never ran
+// locally on Windows hosts.
+const KNIP_BIN = resolveLocalBinEntry("knip", "knip", ROOT);
 const QUIET = process.argv.includes("--quiet");
 const PRINT_JSON = process.argv.includes("--json");
 const UPDATE = process.argv.includes("--update");
@@ -117,7 +121,10 @@ function runKnip() {
 
   let stdout;
   try {
-    stdout = execFileSync(KNIP_BIN, args, {
+    if (!KNIP_BIN) {
+      throw new Error(`knip binary not found under ${path.join(ROOT, "node_modules")}`);
+    }
+    stdout = execFileSync(process.execPath, [KNIP_BIN, ...args], {
       cwd: ROOT,
       encoding: "utf8",
       maxBuffer: 128 * 1024 * 1024,

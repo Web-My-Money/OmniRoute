@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-codex-revalidation-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -25,7 +26,7 @@ const originalEnv = {
 async function resetStorage() {
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -43,7 +44,7 @@ test.beforeEach(async () => {
 test.after(() => {
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   for (const [key, value] of Object.entries(originalEnv)) {
     if (value === undefined) delete process.env[key];
     else process.env[key] = value;
@@ -51,14 +52,14 @@ test.after(() => {
 });
 
 test("live Codex revalidation sends its internal header only to the dashboard loopback origin", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: "Codex Runtime Safety",
     accessToken: "test-token",
     isActive: true,
     providerSpecificData: { workspaceId: "runtime-safety" },
-  });
+  })) as JsonRecord & { id: string };
   const calls: Array<{ url: string; hasInternalAuth: boolean; redirect?: RequestRedirect }> = [];
   globalThis.fetch = async (input, init) => {
     const headers = new Headers(init?.headers);

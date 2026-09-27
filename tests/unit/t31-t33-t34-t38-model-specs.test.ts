@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { REGISTRY } = await import("../../open-sse/config/providerRegistry.ts");
 const { getStaticModelsForProvider } = await import("../../src/lib/providers/staticModels.ts");
@@ -45,8 +46,8 @@ test("T33: thinkingLevel string is converted into numeric thinkingBudget", () =>
     },
   });
 
-  assert.equal(converted.generationConfig.thinkingConfig.thinkingBudget, 24576);
-  assert.equal(converted.generationConfig.thinkingConfig.thinkingLevel, undefined);
+  assert.equal((converted as LooseDeep).generationConfig.thinkingConfig.thinkingBudget, 24576);
+  assert.equal((converted as LooseDeep).generationConfig.thinkingConfig.thinkingLevel, undefined);
 });
 
 test("T34: max output tokens are capped by model spec", () => {

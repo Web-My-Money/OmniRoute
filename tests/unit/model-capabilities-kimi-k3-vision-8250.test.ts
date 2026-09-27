@@ -18,6 +18,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-kimi-k3-vision-8250-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -28,7 +29,7 @@ const { transformModelsDevToCapabilities } =
   await import("../../src/lib/modelsDevSync/transform.ts");
 const modelCapabilities = await import("../../src/lib/modelCapabilities.ts");
 
-function buildCapability(overrides = {}) {
+function buildCapability(overrides: JsonRecord = {}) {
   return {
     tool_call: null,
     reasoning: null,
@@ -53,7 +54,7 @@ function buildCapability(overrides = {}) {
 
 function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -113,7 +114,7 @@ test.beforeEach(() => {
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#8250 kimi-coding-apikey/k3: attachment=false + image modalities → vision=true and fields agree", () => {

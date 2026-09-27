@@ -378,7 +378,7 @@ export default function BatchDetailModal({
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+                    <div className="flex items-center gap-3 flex-shrink-0 ms-4">
                       {record && (
                         <span className="text-xs text-[var(--color-text-muted)]">
                           {(record.bytes / 1024).toFixed(1)} KB
@@ -512,7 +512,7 @@ export default function BatchDetailModal({
                   }
                 }}
                 disabled={cancelling}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg bg-orange-500/10 border border-orange-500/25 text-orange-400 hover:text-orange-300 transition-colors disabled:opacity-50 ml-auto"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg bg-orange-500/10 border border-orange-500/25 text-orange-400 hover:text-orange-300 transition-colors disabled:opacity-50 ms-auto"
               >
                 <span className="material-symbols-outlined text-[16px]">
                   {cancelling ? "hourglass_empty" : "close"}

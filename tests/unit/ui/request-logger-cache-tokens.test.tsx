@@ -139,6 +139,9 @@ describe("request log cache token metrics (#9620)", () => {
         debugEnabled={false}
         onClose={noop}
         onCopy={async () => true}
+        onPrevious={noop}
+        onNext={noop}
+        onSelectRelated={noop}
       />
     );
 
@@ -167,6 +170,9 @@ describe("request log cache token metrics (#9620)", () => {
         debugEnabled={false}
         onClose={noop}
         onCopy={async () => true}
+        onPrevious={noop}
+        onNext={noop}
+        onSelectRelated={noop}
       />
     );
 

@@ -270,7 +270,7 @@ export function createAntigravityOAuthProvider(
     exchangeToken: (runtimeConfig, code, redirectUri) =>
       exchangeAntigravityToken(runtimeConfig, clientProfile, code, redirectUri),
     postExchange: (tokens) => postExchangeAntigravity(config, clientProfile, tokens),
-    mapTokens: (tokens, extra) => mapAntigravityTokens(clientProfile, tokens, extra),
+    mapTokens: (tokens, extra = undefined) => mapAntigravityTokens(clientProfile, tokens, extra),
   };
 }
 

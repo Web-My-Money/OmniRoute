@@ -125,11 +125,11 @@ describe("LMArena split-cookie credential storage keys (#4271)", () => {
     const req = getWebSessionCredentialRequirement("lmarena");
     assert.ok(req, "should have a credential requirement");
     assert.ok(
-      req!.storageKeys.includes("arena-auth-prod-v1.0"),
+      req!.storageKeys.includes("arena-auth-prod-v1.0" as unknown as never),
       "storageKeys should include arena-auth-prod-v1.0"
     );
     assert.ok(
-      req!.storageKeys.includes("arena-auth-prod-v1.1"),
+      req!.storageKeys.includes("arena-auth-prod-v1.1" as unknown as never),
       "storageKeys should include arena-auth-prod-v1.1"
     );
   });

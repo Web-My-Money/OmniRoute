@@ -24,8 +24,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-hc-cursor-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -40,7 +41,7 @@ async function resetStorage() {
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       if (fs.existsSync(TEST_DATA_DIR)) {
-        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       }
       break;
     } catch (error: unknown) {
@@ -60,7 +61,7 @@ async function resetStorage() {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 function getId(connection: { id?: unknown }): string {
@@ -172,7 +173,7 @@ async function withCursorEnv<T>(fn: (env: CursorEnv) => Promise<T>): Promise<T> 
       else delete process.env.USERPROFILE;
       delete process.env.FAKE_CURSOR_AGENT_LOG;
       delete process.env.FAKE_CURSOR_AGENT_STATUS_MODE;
-      fs.rmSync(tmpHome, { recursive: true, force: true });
+      fs.rmSync(tmpHome, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     },
   };
 
@@ -188,7 +189,7 @@ const PAST_EXPIRY_ISO = new Date(Date.now() - 60 * 60 * 1000).toISOString(); // 
 const FAR_FUTURE_ISO = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
 async function createCursorConnection(overrides: Record<string, unknown> = {}) {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "cursor",
     authType: "oauth",
     email: "cursor-healthcheck@example.com",
@@ -197,7 +198,7 @@ async function createCursorConnection(overrides: Record<string, unknown> = {}) {
     isActive: true,
     testStatus: "active",
     ...overrides,
-  });
+  })) as JsonRecord & { id: string };
   return getId(connection);
 }
 
@@ -538,7 +539,7 @@ test("checkConnection: a Cursor connection with no known expiry at all is treate
 
 test("checkConnection: a refresh-capable non-Cursor provider missing its refresh token is still marked expired/no_refresh_token (#5326 unaffected)", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "Antigravity No-Refresh Account (Cursor-plan regression)",
@@ -547,7 +548,7 @@ test("checkConnection: a refresh-capable non-Cursor provider missing its refresh
     refreshToken: null,
     testStatus: "active",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   await tokenHealthCheck.checkConnection(connection);
 
@@ -558,7 +559,7 @@ test("checkConnection: a refresh-capable non-Cursor provider missing its refresh
 
 test("checkConnection: a banned non-Cursor connection is still skipped (terminal-status guard unaffected by the Cursor carve-out)", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "oauth",
     email: "openai-banned-regression@example.com",
@@ -566,7 +567,7 @@ test("checkConnection: a banned non-Cursor connection is still skipped (terminal
     refreshToken: "refresh-token",
     testStatus: "banned",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
   const before = await providersDb.getProviderConnectionById(getId(connection));
 
   await tokenHealthCheck.checkConnection(before);

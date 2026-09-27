@@ -1,16 +1,14 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import {
-  BudgetExceededError,
-  selectProvider,
-} from "../../open-sse/services/autoCombo/engine.ts";
+import { BudgetExceededError, selectProvider } from "../../open-sse/services/autoCombo/engine.ts";
 import {
   parseRequestBudgetFallback,
   resolveRequestAutoControls,
 } from "../../open-sse/services/autoCombo/requestControls.ts";
 import { getSelfHealingManager } from "../../open-sse/services/autoCombo/selfHealing.ts";
 import { DEFAULT_WEIGHTS } from "../../open-sse/services/autoCombo/scoring.ts";
+import type { ProviderCandidate } from "../../open-sse/services/autoCombo/scoring.ts";
 
 // #3470 — Auto-combo transparency + budget controls: `budgetFallback: "strict"`
 // must refuse to select (instead of silently overspending) when EVERY candidate
@@ -20,8 +18,8 @@ const healer = getSelfHealingManager();
 const originalRandom = Math.random;
 
 function resetHealer() {
-  healer.exclusions.clear();
-  healer.incidentMode = false;
+  healer["exclusions"].clear();
+  healer["incidentMode"] = false;
 }
 
 const baseConfig = {
@@ -77,7 +75,7 @@ test("selectProvider throws BudgetExceededError when budgetFallback='strict' and
     () =>
       selectProvider(
         { ...baseConfig, budgetCap: 0.001, budgetFallback: "strict" },
-        overBudgetCandidates,
+        overBudgetCandidates as unknown as ProviderCandidate[],
         "default"
       ),
     BudgetExceededError
@@ -88,7 +86,7 @@ test("BudgetExceededError message reports the cap and the cheapest candidate's c
   try {
     selectProvider(
       { ...baseConfig, budgetCap: 0.001, budgetFallback: "strict" },
-      overBudgetCandidates,
+      overBudgetCandidates as unknown as ProviderCandidate[],
       "default"
     );
     assert.fail("expected selectProvider to throw");
@@ -102,21 +100,25 @@ test("BudgetExceededError message reports the cap and the cheapest candidate's c
 test("selectProvider still falls back to cheapest when budgetFallback is 'cheapest' (default/legacy)", () => {
   const result = selectProvider(
     { ...baseConfig, budgetCap: 0.001, budgetFallback: "cheapest" },
-    overBudgetCandidates,
+    overBudgetCandidates as unknown as ProviderCandidate[],
     "default"
   );
   assert.equal(result.provider, "cheap");
 });
 
 test("selectProvider defaults to cheapest fallback when budgetFallback is unset (backward compatible)", () => {
-  const result = selectProvider({ ...baseConfig, budgetCap: 0.001 }, overBudgetCandidates, "default");
+  const result = selectProvider(
+    { ...baseConfig, budgetCap: 0.001 },
+    overBudgetCandidates as unknown as ProviderCandidate[],
+    "default"
+  );
   assert.equal(result.provider, "cheap");
 });
 
 test("selectProvider with strict fallback still picks a within-budget candidate normally", () => {
   const result = selectProvider(
     { ...baseConfig, budgetCap: 1, budgetFallback: "strict" },
-    overBudgetCandidates,
+    overBudgetCandidates as unknown as ProviderCandidate[],
     "default"
   );
   assert.equal(result.provider, "cheap");

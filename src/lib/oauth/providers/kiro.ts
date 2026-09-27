@@ -147,7 +147,7 @@ export const kiro = {
     const arn = await discoverKiroProfileArnAcrossRegions(accessToken, storedRegion);
     return arn ? { profileArn: arn } : null;
   },
-  mapTokens: (tokens, extra) => ({
+  mapTokens: (tokens, extra = undefined) => ({
     accessToken: tokens.access_token,
     refreshToken: tokens.refresh_token,
     expiresIn: tokens.expires_in,

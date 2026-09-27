@@ -4,6 +4,7 @@ import fs from "node:fs";
 import http from "node:http";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-9201-search-proxy-"));
 process.env.DATA_DIR = dataDir;
@@ -45,14 +46,14 @@ test.before(async () => {
   proxyServer = http.createServer();
   proxyPort = await listen(proxyServer);
 
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "serper-search",
     authType: "apikey",
     name: "serper-proxy-probe",
     apiKey: "probe-serper-key",
     isActive: true,
     testStatus: "active",
-  });
+  })) as JsonRecord & { id: string };
   connectionId = String(connection.id);
   await proxiesDb.createProxyAndAssign(
     { name: "search-probe-proxy", type: "http", host: "127.0.0.1", port: proxyPort },
@@ -66,7 +67,7 @@ test.after(async () => {
   searchRegistry.SEARCH_PROVIDERS["serper-search"].baseUrl = originalSerperBaseUrl;
   await new Promise<void>((resolve) => proxyServer.close(() => resolve()));
   core.resetDbInstance();
-  fs.rmSync(dataDir, { recursive: true, force: true });
+  fs.rmSync(dataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 function installProxyResponseCounter() {

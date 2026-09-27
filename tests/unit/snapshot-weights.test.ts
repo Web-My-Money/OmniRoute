@@ -6,6 +6,8 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
+import type { ScoringWeights } from "../../open-sse/services/autoCombo/scoring.ts";
 
 const { computeSnapshotWeights } =
   await import("@omniroute/open-sse/services/autoCombo/virtualFactory");
@@ -22,7 +24,7 @@ function makeCandidate(
 ) {
   return {
     provider: opts.provider ?? "test-provider",
-    connectionId: null as const,
+    connectionId: null,
     model: opts.model ?? modelStr.split("/")[1] ?? modelStr,
     modelStr,
     costPer1MTokens: 0,
@@ -36,7 +38,7 @@ function makeCandidate(
 
 test("computeSnapshotWeights returns a Map with one entry per candidate", () => {
   const candidates = [makeCandidate("p/m1"), makeCandidate("p/m2")];
-  const weights = {
+  const weights: LooseDeep = {
     taskFit: 0,
     stability: 0,
     tierPriority: 0,
@@ -44,9 +46,12 @@ test("computeSnapshotWeights returns a Map with one entry per candidate", () => 
     latencyInv: 0,
     health: 0.5,
     quota: 0.5,
+    tierAffinity: 0,
+    specificityMatch: 0,
+    contextAffinity: 0,
   };
 
-  const scores = computeSnapshotWeights(candidates, weights);
+  const scores = computeSnapshotWeights(candidates, weights as unknown as ScoringWeights);
 
   assert.equal(scores.size, 2);
   assert.ok(scores.has("p/m1"));
@@ -60,7 +65,7 @@ test("computeSnapshotWeights gives higher scores to reasoning-capable models whe
     makeCandidate("p/reasoning-model", { reasoning: true }),
     makeCandidate("p/plain-model"),
   ];
-  const weights = {
+  const weights: LooseDeep = {
     taskFit: 1,
     stability: 0,
     tierPriority: 0,
@@ -70,7 +75,7 @@ test("computeSnapshotWeights gives higher scores to reasoning-capable models whe
     quota: 0.5,
   };
 
-  const scores = computeSnapshotWeights(candidates, weights);
+  const scores = computeSnapshotWeights(candidates, weights as unknown as ScoringWeights);
 
   assert.ok(
     scores.get("p/reasoning-model") > scores.get("p/plain-model"),
@@ -83,7 +88,7 @@ test("computeSnapshotWeights gives higher scores to vision-capable models when t
     makeCandidate("p/vision-model", { vision: true }),
     makeCandidate("p/plain-model"),
   ];
-  const weights = {
+  const weights: LooseDeep = {
     taskFit: 1,
     stability: 0,
     tierPriority: 0,
@@ -93,7 +98,7 @@ test("computeSnapshotWeights gives higher scores to vision-capable models when t
     quota: 0.5,
   };
 
-  const scores = computeSnapshotWeights(candidates, weights);
+  const scores = computeSnapshotWeights(candidates, weights as unknown as ScoringWeights);
 
   assert.ok(
     scores.get("p/vision-model") > scores.get("p/plain-model"),
@@ -109,7 +114,7 @@ test("computeSnapshotWeights gives highest scores to models with both reasoning 
     makeCandidate("p/plain"),
   ];
   // Low baseline so taskFit differentiation survives clamping
-  const weights = {
+  const weights: LooseDeep = {
     taskFit: 1,
     stability: 0,
     tierPriority: 0,
@@ -119,7 +124,7 @@ test("computeSnapshotWeights gives highest scores to models with both reasoning 
     quota: 0.1,
   };
 
-  const scores = computeSnapshotWeights(candidates, weights);
+  const scores = computeSnapshotWeights(candidates, weights as unknown as ScoringWeights);
 
   assert.ok(
     scores.get("p/full-capable") > scores.get("p/reasoning-only"),
@@ -140,7 +145,7 @@ test("computeSnapshotWeights gives higher stability score to models with more ca
     makeCandidate("p/plain"),
   ];
   // Low baseline so stability differentiation isn't masked by clamping at 1
-  const weights = {
+  const weights: LooseDeep = {
     taskFit: 0,
     stability: 0.8,
     tierPriority: 0,
@@ -150,7 +155,7 @@ test("computeSnapshotWeights gives higher stability score to models with more ca
     quota: 0.1,
   };
 
-  const scores = computeSnapshotWeights(candidates, weights);
+  const scores = computeSnapshotWeights(candidates, weights as unknown as ScoringWeights);
 
   assert.ok(
     scores.get("p/rich-model") > scores.get("p/one-cap"),
@@ -163,7 +168,7 @@ test("computeSnapshotWeights gives higher stability score to models with more ca
 test("computeSnapshotWeights gives equal latencyInv baseline when no runtime data", () => {
   const candidates = [makeCandidate("p/m1"), makeCandidate("p/m2")];
   // Zero out health+quota so the latencyInv contribution is visible without clamping
-  const weights = {
+  const weights: LooseDeep = {
     taskFit: 0,
     stability: 0,
     tierPriority: 0,
@@ -173,7 +178,7 @@ test("computeSnapshotWeights gives equal latencyInv baseline when no runtime dat
     quota: 0,
   };
 
-  const scores = computeSnapshotWeights(candidates, weights);
+  const scores = computeSnapshotWeights(candidates, weights as unknown as ScoringWeights);
 
   assert.equal(
     scores.get("p/m1"),
@@ -186,7 +191,7 @@ test("computeSnapshotWeights gives equal latencyInv baseline when no runtime dat
 
 test("computeSnapshotWeights clamps scores to max 1", () => {
   const candidates = [makeCandidate("p/m1", { reasoning: true, vision: true })];
-  const weights = {
+  const weights: LooseDeep = {
     taskFit: 10,
     stability: 10,
     tierPriority: 10,
@@ -196,7 +201,7 @@ test("computeSnapshotWeights clamps scores to max 1", () => {
     quota: 10,
   };
 
-  const scores = computeSnapshotWeights(candidates, weights);
+  const scores = computeSnapshotWeights(candidates, weights as unknown as ScoringWeights);
 
   assert.ok(scores.get("p/m1") <= 1, `score should be clamped to ≤1, got ${scores.get("p/m1")}`);
 });
@@ -219,7 +224,7 @@ test("computeSnapshotWeights produces different relative weights for quality-fir
     health: 0.15,
     quota: 0.1,
   };
-  const scoresQ = computeSnapshotWeights(candidates, weightsQuality);
+  const scoresQ = computeSnapshotWeights(candidates, weightsQuality as unknown as ScoringWeights);
 
   // ship-fast: taskFit and stability are lower → gap is smaller
   const weightsFast = {
@@ -231,7 +236,7 @@ test("computeSnapshotWeights produces different relative weights for quality-fir
     health: 0.2,
     quota: 0.2,
   };
-  const scoresF = computeSnapshotWeights(candidates, weightsFast);
+  const scoresF = computeSnapshotWeights(candidates, weightsFast as unknown as ScoringWeights);
 
   const gapQ = (scoresQ.get("p/full-capable") ?? 0) - (scoresQ.get("p/plain") ?? 0);
   const gapF = (scoresF.get("p/full-capable") ?? 0) - (scoresF.get("p/plain") ?? 0);

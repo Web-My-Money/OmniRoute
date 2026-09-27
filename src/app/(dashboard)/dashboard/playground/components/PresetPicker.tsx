@@ -142,11 +142,11 @@ export default function PresetPicker({ configState, setConfigState }: PresetPick
               >
                 <button
                   onClick={() => handleLoad(preset.id)}
-                  className="truncate text-left flex-1 hover:text-primary transition-colors"
+                  className="truncate text-start flex-1 hover:text-primary transition-colors"
                   aria-label={`Load preset "${preset.name}"`}
                 >
                   {preset.name}
-                  <span className="ml-1.5 opacity-60">{preset.model}</span>
+                  <span className="ms-1.5 opacity-60">{preset.model}</span>
                 </button>
                 <button
                   onClick={() => void remove(preset.id)}

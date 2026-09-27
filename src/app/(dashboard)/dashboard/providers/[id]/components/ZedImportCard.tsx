@@ -104,7 +104,7 @@ export default function ZedImportCard({ fetchConnections, notify }: ZedImportCar
       <Card>
         <div className="flex flex-col gap-3">
           <button
-            className="flex items-center justify-between w-full text-left"
+            className="flex items-center justify-between w-full text-start"
             onClick={() => setShowZedManual((v) => !v)}
           >
             <h2 className="text-lg font-semibold flex items-center gap-2">

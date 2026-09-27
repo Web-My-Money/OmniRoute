@@ -397,7 +397,7 @@ function ImageResults({ data }: { data: any }) {
             <a
               href={src}
               download={`image-${i + 1}.png`}
-              className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"
+              className="absolute bottom-2 end-2 bg-black/60 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"
             >
               <span className="material-symbols-outlined text-[13px]">download</span>
               {t("save")}
@@ -824,7 +824,7 @@ export default function MediaPageClient() {
                 }
                 setAudioFile(file);
               }}
-              className="w-full px-3 py-2 rounded-lg bg-surface border border-black/10 dark:border-white/10 text-text-main text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-primary/10 file:text-primary file:text-sm"
+              className="w-full px-3 py-2 rounded-lg bg-surface border border-black/10 dark:border-white/10 text-text-main text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 file:me-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-primary/10 file:text-primary file:text-sm"
             />
             {fileSizeError && (
               <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
@@ -851,7 +851,7 @@ export default function MediaPageClient() {
                     type="file"
                     accept="image/*"
                     onChange={(e) => setImageInputFile(e.target.files?.[0] ?? null)}
-                    className="w-full px-3 py-2 rounded-lg bg-surface border border-black/10 dark:border-white/10 text-text-main text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-primary/10 file:text-primary file:text-sm"
+                    className="w-full px-3 py-2 rounded-lg bg-surface border border-black/10 dark:border-white/10 text-text-main text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 file:me-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-primary/10 file:text-primary file:text-sm"
                   />
                   {imageInputFile && (
                     <p className="text-xs text-text-muted mt-1">
@@ -868,7 +868,7 @@ export default function MediaPageClient() {
                     type="file"
                     accept="image/*"
                     onChange={(e) => setImageMaskFile(e.target.files?.[0] ?? null)}
-                    className="w-full px-3 py-2 rounded-lg bg-surface border border-black/10 dark:border-white/10 text-text-main text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-primary/10 file:text-primary file:text-sm"
+                    className="w-full px-3 py-2 rounded-lg bg-surface border border-black/10 dark:border-white/10 text-text-main text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 file:me-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-primary/10 file:text-primary file:text-sm"
                   />
                   {imageMaskFile && (
                     <p className="text-xs text-text-muted mt-1">
@@ -986,7 +986,7 @@ export default function MediaPageClient() {
               {config.icon}
             </span>
             <h3 className="text-sm font-medium text-text-main">{t("result")}</h3>
-            <span className="text-xs text-text-muted ml-auto">
+            <span className="text-xs text-text-muted ms-auto">
               {new Date(result.timestamp).toLocaleTimeString()}
             </span>
           </div>

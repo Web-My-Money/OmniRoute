@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type BottleneckType from "bottleneck";
+type BottleneckConstructorOptions = ConstructorParameters<typeof BottleneckType>[0];
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-rate-limit-manager-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -91,7 +94,7 @@ async function flushBackgroundWork() {
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -108,7 +111,7 @@ test.after(async () => {
   await rateLimitManager.__resetRateLimitManagerForTests();
   await flushBackgroundWork();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("rate limit manager bypasses disabled connections and exposes inactive status", async () => {
@@ -209,7 +212,7 @@ test("wedge eviction rejects every queued caller and preserves learned state for
     maxQueueDepth: 0,
   });
 
-  const createdOptions: Bottleneck.ConstructorOptions[] = [];
+  const createdOptions: BottleneckConstructorOptions[] = [];
   const createdLimiters: InstanceType<typeof Bottleneck>[] = [];
   rateLimitManager.__setLimiterFactoryForTests((options) => {
     createdOptions.push({ ...options });
@@ -289,14 +292,14 @@ test("wedge eviction rejects every queued caller and preserves learned state for
 });
 
 test("global settings changed after eviction replace stale pending configuration", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "wedge-global-settings",
     apiKey: "sk-wedge-global-settings",
     isActive: true,
     rateLimitProtection: true,
-  });
+  })) as JsonRecord & { id: string };
   await rateLimitManager.applyRequestQueueSettings({
     ...resilienceSettings.DEFAULT_RESILIENCE_SETTINGS.requestQueue,
     autoEnableApiKeyProviders: false,
@@ -306,7 +309,7 @@ test("global settings changed after eviction replace stale pending configuration
     minTimeBetweenRequestsMs: 0,
   });
 
-  const createdOptions: Bottleneck.ConstructorOptions[] = [];
+  const createdOptions: BottleneckConstructorOptions[] = [];
   rateLimitManager.__setLimiterFactoryForTests((options) => {
     createdOptions.push({ ...options });
     const limiter = new Bottleneck(options);
@@ -361,7 +364,7 @@ test("connection overrides changed after eviction replace stale pending configur
     concurrentRequests: 6,
     minTimeBetweenRequestsMs: 0,
   });
-  const createdOptions: Bottleneck.ConstructorOptions[] = [];
+  const createdOptions: BottleneckConstructorOptions[] = [];
   rateLimitManager.__setLimiterFactoryForTests((options) => {
     createdOptions.push({ ...options });
     const limiter = new Bottleneck(options);
@@ -415,7 +418,7 @@ test("disable and re-enable discard learned state preserved by an earlier wedge"
     concurrentRequests: 6,
     minTimeBetweenRequestsMs: 0,
   });
-  const createdOptions: Bottleneck.ConstructorOptions[] = [];
+  const createdOptions: BottleneckConstructorOptions[] = [];
   rateLimitManager.__setLimiterFactoryForTests((options) => {
     createdOptions.push({ ...options });
     const limiter = new Bottleneck(options);
@@ -858,13 +861,13 @@ test("rate limit manager parses retry hints from response bodies and locks model
 });
 
 test("RATE_LIMIT_AUTO_ENABLE env var overrides dashboard auto-enable setting", async () => {
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Env Override",
     apiKey: "sk-env",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   // Dashboard says auto-enable on, but env says off → off wins
   const original = process.env.RATE_LIMIT_AUTO_ENABLE;
@@ -893,21 +896,21 @@ test("RATE_LIMIT_AUTO_ENABLE env var overrides dashboard auto-enable setting", a
 });
 
 test("rate limit manager recomputes auto-enabled API key connections when queue settings change", async () => {
-  const autoConnection = await providersDb.createProviderConnection({
+  const autoConnection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Auto OpenAI",
     apiKey: "sk-auto",
     isActive: true,
-  });
-  const explicitConnection = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const explicitConnection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Explicit OpenAI",
     apiKey: "sk-explicit",
     isActive: true,
     rateLimitProtection: true,
-  });
+  })) as JsonRecord & { id: string };
 
   await rateLimitManager.initializeRateLimits();
 
@@ -942,13 +945,13 @@ test("withRateLimit rejects cleanly when the caller aborts with the default DOME
   // `TypeError: Cannot set property name of [object DOMException] which has
   // only a getter` instead of rejecting with a clean AbortError — surfacing
   // as an unhandled rejection rather than the intended timeout/slow result.
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "abort-reason-regression",
     apiKey: "sk-abort-reason-regression",
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
   rateLimitManager.enableRateLimitProtection(String(connection.id));
   const controller = new AbortController();
   const pending = rateLimitManager.withRateLimit(

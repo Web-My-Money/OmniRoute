@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 
 import { readFileSync } from "node:fs";
 import { validateAiHordeProvider } from "../../src/lib/providers/validation/aihorde.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -19,7 +20,7 @@ test("empty Horde key is valid because the provider is optional", async () => {
     },
   });
   assert.equal(result.valid, true);
-  assert.equal(result.method, "aihorde_anonymous");
+  assert.equal((result as LooseDeep).method, "aihorde_anonymous");
 });
 
 test("junk Horde key is rejected by find_user 404", async () => {
@@ -57,7 +58,7 @@ test("registered Horde key is accepted when find_user returns a username", async
     },
   });
   assert.equal(result.valid, true);
-  assert.equal(result.method, "aihorde_find_user");
+  assert.equal((result as LooseDeep).method, "aihorde_find_user");
   assert.equal(sentKey, "horde-registered-key-123");
   assert.match(sentUrl, /\/v2\/find_user$/);
 });

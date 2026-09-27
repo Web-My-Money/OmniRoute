@@ -1,4 +1,5 @@
 import test from "node:test";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -21,7 +22,7 @@ const providersDb = await import("../../src/lib/db/providers.ts");
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -88,7 +89,7 @@ test.beforeEach(async () => {
 test.after(() => {
   restorePipelineEnv();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("saveCallLog stores only summary metadata in SQLite and writes detailed artifact", async () => {
@@ -132,7 +133,7 @@ test("saveCallLog stores only summary metadata in SQLite and writes detailed art
   assert.equal(detail?.comboName, "combo-a");
   assert.equal(detail?.comboStepId, "step-openai-a");
   assert.equal(detail?.comboExecutionKey, "combo-a:0:step-openai-a");
-  assert.equal(detail?.pipelinePayloads?.clientRawRequest?.body?.raw, true);
+  assert.equal((detail?.pipelinePayloads as LooseDeep)?.clientRawRequest?.body?.raw, true);
   assert.equal((detail?.pipelinePayloads?.providerRequest as any).body?.translated, true);
   assert.equal((detail?.pipelinePayloads as any).providerResponse?.body?.upstream, true);
   assert.equal((detail?.pipelinePayloads as any).clientResponse?.body?.final, true);
@@ -176,13 +177,13 @@ test("saveCallLog stores only summary metadata in SQLite and writes detailed art
 });
 
 test("getCallLogs resolves raw account labels from provider connections", async () => {
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: "logs.user@example.com",
     email: "logs.user@example.com",
     accessToken: "token",
-  });
+  })) as JsonRecord & { id: string };
 
   insertCallLog({
     id: "masked-account-log",
@@ -422,7 +423,7 @@ test("getCallLogById falls back to legacy inline rows and request_detail_logs", 
   assert.deepEqual(detail?.requestBody, { recovered: "request" });
   assert.deepEqual(detail?.responseBody, { recovered: "response" });
   assert.deepEqual(detail?.error, { message: "legacy-error" });
-  assert.equal(detail?.pipelinePayloads?.clientRequest?.body?.from, "detail-client");
+  assert.equal((detail?.pipelinePayloads as LooseDeep)?.clientRequest?.body?.from, "detail-client");
   assert.equal(
     (detail?.pipelinePayloads?.providerRequest as any).body?.from,
     "detail-provider-request"
@@ -776,3 +777,5 @@ test("getCallLogs and getCallLogById expose combo target identifiers", async () 
   assert.equal(detail?.comboStepId, "step-openai-secondary");
   assert.equal(detail?.comboExecutionKey, "router-fixed-accounts:1:step-openai-secondary");
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

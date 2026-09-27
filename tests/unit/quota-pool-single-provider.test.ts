@@ -15,6 +15,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // ── DB harness (same pattern as quota-pool-connections.test.ts) ─────────────
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-pool-single-prov-"));
@@ -29,7 +30,7 @@ async function resetStorage() {
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       if (fs.existsSync(TEST_DATA_DIR)) {
-        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       }
       break;
     } catch (err: any) {
@@ -49,24 +50,24 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 // ── T3.1: createPool with mixed providers → throws ──────────────────────────
 
 test("createPool with two different-provider connections throws /single provider/i", async () => {
-  const a = await providersDb.createProviderConnection({
+  const a = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "a",
     apiKey: "sk-a",
-  });
-  const b = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const b = (await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "apikey",
     name: "b",
     apiKey: "sk-b",
-  });
+  })) as JsonRecord & { id: string };
 
   const idA = (a as any).id as string;
   const idB = (b as any).id as string;
@@ -85,18 +86,18 @@ test("createPool with two different-provider connections throws /single provider
 // ── T3.2: createPool with same-provider connections → succeeds ──────────────
 
 test("createPool with two same-provider connections succeeds with connectionIds.length === 2", async () => {
-  const a = await providersDb.createProviderConnection({
+  const a = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "a",
     apiKey: "sk-a",
-  });
-  const c = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const c = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "c",
     apiKey: "sk-c",
-  });
+  })) as JsonRecord & { id: string };
 
   const idA = (a as any).id as string;
   const idC = (c as any).id as string;
@@ -115,18 +116,18 @@ test("createPool with two same-provider connections succeeds with connectionIds.
 // ── T3.3: updatePool with mixed-provider connectionIds → throws ──────────────
 
 test("updatePool replacing connectionIds with mixed providers throws /single provider/i", async () => {
-  const a = await providersDb.createProviderConnection({
+  const a = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "a",
     apiKey: "sk-a",
-  });
-  const b = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const b = (await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "apikey",
     name: "b",
     apiKey: "sk-b",
-  });
+  })) as JsonRecord & { id: string };
 
   const idA = (a as any).id as string;
   const idB = (b as any).id as string;
@@ -147,18 +148,18 @@ test("updatePool replacing connectionIds with mixed providers throws /single pro
 // ── T3.4: updatePool with same-provider connectionIds → succeeds ─────────────
 
 test("updatePool replacing connectionIds with same-provider connections succeeds", async () => {
-  const a = await providersDb.createProviderConnection({
+  const a = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "a",
     apiKey: "sk-a",
-  });
-  const c = await providersDb.createProviderConnection({
+  })) as JsonRecord & { id: string };
+  const c = (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "c",
     apiKey: "sk-c",
-  });
+  })) as JsonRecord & { id: string };
 
   const idA = (a as any).id as string;
   const idC = (c as any).id as string;

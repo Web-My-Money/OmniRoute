@@ -24,7 +24,7 @@ test("sibling main-server-timeouts.mjs stays in parity with runtimeTimeouts.ts",
     assert.deepStrictEqual(
       mjsImpl(env),
       tsImpl(env),
-      `divergence for env ${JSON.stringify(env)}`
+      `divergence for env $({JSON.stringify(env)} as NodeJS.ProcessEnv)`
     );
   }
 });
@@ -32,7 +32,7 @@ test("sibling main-server-timeouts.mjs stays in parity with runtimeTimeouts.ts",
 test("invalid values log through the provided logger in both implementations", () => {
   const logsA: string[] = [];
   const logsB: string[] = [];
-  mjsImpl({ MAIN_SERVER_KEEPALIVE_TIMEOUT_MS: "bogus" }, (m) => logsA.push(m));
+  mjsImpl({ MAIN_SERVER_KEEPALIVE_TIMEOUT_MS: "bogus" } as NodeJS.ProcessEnv, (m) => logsA.push(m));
   tsImpl({ MAIN_SERVER_KEEPALIVE_TIMEOUT_MS: "bogus" }, (m) => logsB.push(m));
   assert.strictEqual(logsA.length, 1);
   assert.deepStrictEqual(logsA, logsB);

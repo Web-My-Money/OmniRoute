@@ -425,7 +425,9 @@ export default function McpDashboardPage() {
               <p>
                 {t("scopesEnforced")}:{" "}
                 <span className="font-semibold">
-                  {(status?.scopesEnforced ?? status?.heartbeat?.scopesEnforced) ? t("yes") : t("no")}
+                  {(status?.scopesEnforced ?? status?.heartbeat?.scopesEnforced)
+                    ? t("yes")
+                    : t("no")}
                 </span>
               </p>
               <p>
@@ -517,18 +519,18 @@ export default function McpDashboardPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left py-2 pr-2">{t("tableTool")}</th>
-                <th className="text-left py-2 pr-2">{t("tableScopes")}</th>
-                <th className="text-left py-2 pr-2">{t("tablePhase")}</th>
-                <th className="text-left py-2">{t("tableAudit")}</th>
+                <th className="text-start py-2 pe-2">{t("tableTool")}</th>
+                <th className="text-start py-2 pe-2">{t("tableScopes")}</th>
+                <th className="text-start py-2 pe-2">{t("tablePhase")}</th>
+                <th className="text-start py-2">{t("tableAudit")}</th>
               </tr>
             </thead>
             <tbody>
               {tools.map((tool) => (
                 <tr key={tool.name} className="border-b border-border/40">
-                  <td className="py-2 pr-2 font-mono text-xs">{tool.name}</td>
-                  <td className="py-2 pr-2 text-xs">{tool.scopes.join(", ") || "—"}</td>
-                  <td className="py-2 pr-2">{tool.phase}</td>
+                  <td className="py-2 pe-2 font-mono text-xs">{tool.name}</td>
+                  <td className="py-2 pe-2 text-xs">{tool.scopes.join(", ") || "—"}</td>
+                  <td className="py-2 pe-2">{tool.phase}</td>
                   <td className="py-2">{tool.auditLevel}</td>
                 </tr>
               ))}
@@ -594,22 +596,22 @@ export default function McpDashboardPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="text-left py-2 pr-2">{t("tableTimestamp")}</th>
-                  <th className="text-left py-2 pr-2">{t("tableTool")}</th>
-                  <th className="text-left py-2 pr-2">{t("tableDuration")}</th>
-                  <th className="text-left py-2 pr-2">{t("tableResult")}</th>
-                  <th className="text-left py-2">{t("tableApiKey")}</th>
+                  <th className="text-start py-2 pe-2">{t("tableTimestamp")}</th>
+                  <th className="text-start py-2 pe-2">{t("tableTool")}</th>
+                  <th className="text-start py-2 pe-2">{t("tableDuration")}</th>
+                  <th className="text-start py-2 pe-2">{t("tableResult")}</th>
+                  <th className="text-start py-2">{t("tableApiKey")}</th>
                 </tr>
               </thead>
               <tbody>
                 {auditData.entries.map((entry) => (
                   <tr key={entry.id} className="border-b border-border/40">
-                    <td className="py-2 pr-2 text-xs">
+                    <td className="py-2 pe-2 text-xs">
                       {new Date(entry.createdAt).toLocaleString()}
                     </td>
-                    <td className="py-2 pr-2 font-mono text-xs">{entry.toolName}</td>
-                    <td className="py-2 pr-2">{entry.durationMs}ms</td>
-                    <td className="py-2 pr-2">
+                    <td className="py-2 pe-2 font-mono text-xs">{entry.toolName}</td>
+                    <td className="py-2 pe-2">{entry.durationMs}ms</td>
+                    <td className="py-2 pe-2">
                       <span className={entry.success ? "text-green-500" : "text-red-500"}>
                         {entry.success ? t("success") : entry.errorCode || t("failed")}
                       </span>

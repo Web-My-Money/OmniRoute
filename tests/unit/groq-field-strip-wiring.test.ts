@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DefaultExecutor } from "../../open-sse/executors/default.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Task 2.3: Groq field-strip wiring in base.ts
@@ -14,7 +15,7 @@ test("Groq executor strips logprobs, logit_bias, top_logprobs from outgoing requ
   const originalFetch = globalThis.fetch;
   let capturedBody: Record<string, unknown> | null = null;
 
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     capturedBody = JSON.parse(String(init.body));
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
@@ -49,7 +50,7 @@ test("Groq executor strips messages[].name from outgoing request", async () => {
   const originalFetch = globalThis.fetch;
   let capturedBody: Record<string, unknown> | null = null;
 
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     capturedBody = JSON.parse(String(init.body));
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,
@@ -88,7 +89,7 @@ test("Non-Groq executor does NOT strip logprobs or messages[].name", async () =>
   const originalFetch = globalThis.fetch;
   let capturedBody: Record<string, unknown> | null = null;
 
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     capturedBody = JSON.parse(String(init.body));
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,

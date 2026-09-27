@@ -10,7 +10,7 @@ const FAKE_BIN_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-fake-bin-"
 const MOCK_NINEROUTER_VERSION = "0.5.30";
 
 process.env.DATA_DIR = TEST_DATA_DIR;
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 process.env.DISABLE_SQLITE_AUTO_BACKUP = "true";
 
 // Prepend fake bin dir to PATH so our fake `npm` is found by runNpm
@@ -72,8 +72,8 @@ const {
 test.after(() => {
   process.env.PATH = originalPath;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
-  fs.rmSync(FAKE_BIN_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  fs.rmSync(FAKE_BIN_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("install creates package.json structure", async () => {
@@ -157,7 +157,7 @@ test("EACCES error returns friendly InstallError", async () => {
   process.env.DATA_DIR = path.join(TEST_DATA_DIR, "locked-services");
 
   try {
-    await import("../../../../src/lib/services/installers/ninerouter.ts?locked=1");
+    await import("../../../../src/lib/services/installers/ninerouter.ts" + "?locked=1");
   } catch {
     // Re-import after DATA_DIR change fails due to caching — that's fine
   }

@@ -105,7 +105,7 @@ export default function SystemPromptTab() {
                            transition-colors"
                 disabled={loading}
               />
-              <div className="absolute bottom-2 right-3 text-xs text-text-muted/60 tabular-nums">
+              <div className="absolute bottom-2 end-3 text-xs text-text-muted/60 tabular-nums">
                 {t("chars", { count: config.prefixPrompt.length })}
               </div>
             </div>
@@ -130,7 +130,7 @@ export default function SystemPromptTab() {
                            transition-colors"
                 disabled={loading}
               />
-              <div className="absolute bottom-2 right-3 text-xs text-text-muted/60 tabular-nums">
+              <div className="absolute bottom-2 end-3 text-xs text-text-muted/60 tabular-nums">
                 {t("chars", { count: config.suffixPrompt.length })}
               </div>
             </div>

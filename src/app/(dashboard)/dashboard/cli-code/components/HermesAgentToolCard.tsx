@@ -387,7 +387,7 @@ export default function HermesAgentToolCard({
               disabled={isLoading}
               loading={isLoading}
             >
-              <span className="material-symbols-outlined text-[14px] mr-1">refresh</span>
+              <span className="material-symbols-outlined text-[14px] me-1">refresh</span>
               {t("refreshAll")}
             </Button>
           </div>
@@ -457,7 +457,7 @@ export default function HermesAgentToolCard({
               return (
                 <div key={role.id} className="flex items-start justify-between gap-3 py-1">
                   {/* Left: role label + subtitle (now has room so long descriptions stay on one line) */}
-                  <div className="min-w-0 pr-3">
+                  <div className="min-w-0 pe-3">
                     <div className="font-medium text-sm text-text-main">{t(role.labelKey)}</div>
                     <div className="text-[10px] leading-tight text-text-muted">
                       {t(role.descriptionKey)}
@@ -539,7 +539,7 @@ export default function HermesAgentToolCard({
               size="sm"
               loading={isSaving}
             >
-              <span className="material-symbols-outlined text-[14px] mr-1">save</span>
+              <span className="material-symbols-outlined text-[14px] me-1">save</span>
               {t("hermesApply")}
             </Button>
 
@@ -554,19 +554,19 @@ export default function HermesAgentToolCard({
               }
               loading={isPreviewLoading}
             >
-              <span className="material-symbols-outlined text-[14px] mr-1">visibility</span>
+              <span className="material-symbols-outlined text-[14px] me-1">visibility</span>
               {t("preview")}
             </Button>
 
             {Object.keys(selections).length > 0 && (
-              <span className="text-xs text-text-muted ml-1">
+              <span className="text-xs text-text-muted ms-1">
                 {t("hermesRolesWillUpdate", { count: Object.keys(selections).length })}
               </span>
             )}
 
             <div className="flex-1" />
 
-            {/* Optional future: Reset or Manual config could go here, right-aligned */}
+            {/* Optional future: Reset or Manual config could go here, end-aligned */}
           </div>
 
           {/* Inline YAML preview — toggled by the Preview button, styled like other config previews on the CLI tools page */}

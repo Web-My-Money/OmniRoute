@@ -70,7 +70,7 @@ export const qoder = {
     const userInfo = result.success ? result.data : {};
     return { userInfo };
   },
-  mapTokens: (tokens, extra) => ({
+  mapTokens: (tokens, extra = undefined) => ({
     accessToken: tokens.access_token,
     refreshToken: tokens.refresh_token,
     expiresIn: tokens.expires_in,

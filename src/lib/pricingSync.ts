@@ -38,7 +38,7 @@ type PricingEntry = {
 };
 
 type PricingModels = Record<string, PricingEntry>;
-type PricingByProvider = Record<string, PricingModels>;
+export type PricingByProvider = Record<string, PricingModels>;
 
 interface LiteLLMModelInfo {
   input_cost_per_token?: number;

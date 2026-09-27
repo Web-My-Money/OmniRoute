@@ -24,7 +24,7 @@ async function resetStorage() {
   core.resetDbInstance();
   delete process.env.INITIAL_PASSWORD;
   delete process.env.REQUIRE_API_KEY;
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -51,7 +51,7 @@ test.afterEach(() => {
 test.after(async () => {
   globalThis.fetch = originalFetch;
   await resetStorage();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 
   if (ORIGINAL_DATA_DIR === undefined) {
     delete process.env.DATA_DIR;
@@ -100,7 +100,7 @@ test("model test route requires management auth when login protection is enabled
 
 test("model test route ignores forwarded hosts and works in strict API-key mode", async () => {
   process.env.REQUIRE_API_KEY = "true";
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "openai-model-test",
@@ -108,7 +108,7 @@ test("model test route ignores forwarded hosts and works in strict API-key mode"
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  });
+  })) as JsonRecord & { id: string };
 
   const fetchCalls: string[] = [];
   globalThis.fetch = async (url) => {
@@ -146,3 +146,5 @@ test("model test route ignores forwarded hosts and works in strict API-key mode"
   assert.equal(fetchCalls.length, 1);
   assert.match(fetchCalls[0], /\/chat\/completions$/);
 });
+
+import type { JsonRecord } from "../../src/shared/types/json.ts";

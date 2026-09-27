@@ -37,3 +37,4 @@ async function main() {
 
 const result = await main(); // top-level await
 console.log("TSX_TRANSFORM_OK " + JSON.stringify(result));
+export {};

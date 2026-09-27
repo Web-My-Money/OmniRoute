@@ -350,13 +350,13 @@ export default function TokensPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="text-left text-sm text-text-muted border-b border-border">
+                <tr className="text-start text-sm text-text-muted border-b border-border">
                   <th className="pb-3 font-medium">{t("type")}</th>
                   <th className="pb-3 font-medium">{t("tokensFrom")}</th>
                   <th className="pb-3 font-medium">{t("tokensTo")}</th>
-                  <th className="pb-3 font-medium text-right">{t("tokensAmount")}</th>
+                  <th className="pb-3 font-medium text-end">{t("tokensAmount")}</th>
                   <th className="pb-3 font-medium">{t("tokensReason")}</th>
-                  <th className="pb-3 font-medium text-right">{t("tokensDate")}</th>
+                  <th className="pb-3 font-medium text-end">{t("tokensDate")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -380,13 +380,13 @@ export default function TokensPage() {
                       </td>
                       <td className="py-3 text-sm font-mono">{entry.toApiKeyId.slice(0, 8)}...</td>
                       <td
-                        className={`py-3 text-right font-mono ${isSent ? "text-red-400" : "text-emerald-400"}`}
+                        className={`py-3 text-end font-mono ${isSent ? "text-red-400" : "text-emerald-400"}`}
                       >
                         {isSent ? "-" : "+"}
                         {entry.amount.toLocaleString(locale)}
                       </td>
                       <td className="py-3 text-sm text-text-muted">{entry.reason || "-"}</td>
-                      <td className="py-3 text-right text-sm text-text-muted">
+                      <td className="py-3 text-end text-sm text-text-muted">
                         {new Date(entry.createdAt).toLocaleDateString(locale)}
                       </td>
                     </tr>
@@ -481,11 +481,11 @@ export default function TokensPage() {
                   >
                     <div>
                       <span className="font-mono font-bold">{inv.code}</span>
-                      <span className="text-xs text-text-muted ml-3">
+                      <span className="text-xs text-text-muted ms-3">
                         {t("tokensInviteUses", { used: inv.useCount, max: inv.maxUses })}
                       </span>
                       {inv.revokedAt && (
-                        <span className="text-xs text-red-400 ml-2">{t("tokensRevoked")}</span>
+                        <span className="text-xs text-red-400 ms-2">{t("tokensRevoked")}</span>
                       )}
                     </div>
                     {!inv.revokedAt && (
@@ -589,7 +589,7 @@ export default function TokensPage() {
                   </div>
                   <button
                     onClick={() => handleDisconnectServer(server.id)}
-                    className="text-xs px-3 py-1.5 rounded text-red-400 hover:bg-red-500/10 transition-colors ml-4"
+                    className="text-xs px-3 py-1.5 rounded text-red-400 hover:bg-red-500/10 transition-colors ms-4"
                   >
                     {t("tokensDisconnect")}
                   </button>

@@ -160,14 +160,14 @@ export default function RadarIntelPage() {
               <p className="py-6 text-center text-text-muted">{t("noRankings")}</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
+                <table className="w-full text-start text-sm">
                   <thead className="text-text-muted">
                     <tr>
                       <th className="pb-3">#</th>
                       <th className="pb-3">{t("model")}</th>
                       <th className="pb-3">{t("category")}</th>
-                      <th className="pb-3 text-right">{t("rating")}</th>
-                      <th className="pb-3 text-right">{t("matches")}</th>
+                      <th className="pb-3 text-end">{t("rating")}</th>
+                      <th className="pb-3 text-end">{t("matches")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -181,8 +181,8 @@ export default function RadarIntelPage() {
                           {ranking.provider}/{ranking.modelId}
                         </td>
                         <td className="py-3">{ranking.category}</td>
-                        <td className="py-3 text-right">{ranking.rating}</td>
-                        <td className="py-3 text-right">{ranking.matches}</td>
+                        <td className="py-3 text-end">{ranking.rating}</td>
+                        <td className="py-3 text-end">{ranking.matches}</td>
                       </tr>
                     ))}
                   </tbody>

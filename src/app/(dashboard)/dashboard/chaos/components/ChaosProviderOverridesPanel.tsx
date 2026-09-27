@@ -92,7 +92,7 @@ function ChaosAvailableProvidersHint({
         {availableProviders.map((p) => (
           <span key={p.id} className="px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/5">
             {p.provider}
-            {p.defaultModel && <span className="opacity-60 ml-1">({p.defaultModel})</span>}
+            {p.defaultModel && <span className="opacity-60 ms-1">({p.defaultModel})</span>}
           </span>
         ))}
       </div>

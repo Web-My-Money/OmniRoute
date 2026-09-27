@@ -102,9 +102,15 @@
       "_rebaseline_2026_07_13_v3847_release": "76.8 -> 75.5 (-1.3, beyond the 0.5 eps). v3.8.47 cycle drift: merged UI features added EN strings (relay repair UI #6909, combo builder #6907/#6991, capability override UI #6727) ahead of the 42-locale mirrors; same class as the v3.8.39/v3.8.44 rebaselines.",
       "_rebaseline_2026_07_28_v3849_release": "75.5 -> 99 (+23.5). Aperto EXIGIDO pelo modo --require-tighten do ratchet: a métrica melhorou de verdade no ciclo v3.8.49. A causa é o workflow assíncrono de tradução, que finalmente alcançou o denominador em EN — as rebaselines anteriores (v3.8.39/.44/.47) foram todas afrouxamentos registrando o atraso das traduções, e agora ele foi pago. O coletor SUBTRAI os placeholders (present - placeholder em scripts/quality/collect-metrics.mjs), então os 317 marcadores __MISSING__ que esta release introduziu para o drift de valor já estão descontados dos 99 — o número é honesto, não inflado por placeholder. Medido pelo collect-metrics do CI no run 30404226939."
     },
-    "deadExports": {
-      "value": 416,
+    "circularDeps": {
+      "value": 194,
       "direction": "down",
+      "_baseline_2026_08_30_devin": "194 = measured by `node scripts/check/check-circular-deps.mjs` (dpdm, 4 entrypoints: chatCore/combo/mcp-server/db-core) on this branch — the first green run after the checker was fixed to spawn dpdm's JS bin via process.execPath (the .bin POSIX shim was unspawnable on Windows). The checker now reads this key and exits 1 on a measured regression; the CI step stays continue-on-error advisory per its external-binary rationale, so the signal is visible without blocking."
+    },
+    "deadExports": {
+      "value": 409,
+      "direction": "down",
+      "_rebaseline_2026_08_30_devin_drain": "416 -> 409. Measured by `node scripts/check/check-dead-code.mjs` on this branch after the checker's Windows fix (it now invokes node_modules/knip/bin/knip.js via process.execPath instead of the unspawnable .bin POSIX shim — the gate never ran locally on Windows before). The -7 vs baseline reflects real removals from the recent quality waves (dead localDb-mock path, orphaned test helpers, unused exports cleaned during the typecheck/test-discovery drains). Tightening to the true measured value; structural cleanup stays tracked in #3501.",
       "_rebaseline_2026_08_19_v3850_basereds_9985": "415 -> 416. Measured on release/v3.8.50 tip 14a480453 during the #9985 base-red drain. Removed the 2 genuinely-dead symbols traced to a specific recent change (PR #10148, 2026-08-18): the unused src/lib/quota/providerCapabilities.ts file and the unused ProviderQuotaMonitor interface in providerQuotaTelemetry.ts (418 -> 416). The remaining +1 could not be attributed to a single recent commit after checking every dead-list entry touched since the 2026-08-14 baseline measurement (most are pre-existing debt on files edited for unrelated reasons); rebaselining the residual 1 rather than guessing at removals. Structural cleanup stays tracked in #3501.",
       "_rebaseline_2026_08_09_v3850_post_sweep": "227 -> 230. Measured by npm run check:dead-code on the unmodified release/v3.8.50 tip 382449d593 during the mandatory --full-ci pre-flight. The +3 is inherited cycle drift from the authorized merge sweep; this repair adds no production exports. Rebaseline records the actual tip so ci.yml quality-gate can run, while structural cleanup remains separate debt.",
       "_rebaseline_2026_07_01_v3843_release": "225->227 (+2). v3.8.43 cycle drift, surfaced in the Quality Ratchet job after eslintWarnings was rebaselined (check:dead-code runs there). 227 = measured by check:dead-code (knip) on the release tip 4635076eb. The 5 CI fixes add 0 dead exports: safeHttpHref in linkify.ts is module-local AND used (called by linkifyText); no new exports; test files are not scanned. Tighten via --update next cycle.",
@@ -118,7 +124,7 @@
       "_rebaseline_2026_08_20_pr_10798": "415 -> 418. Inherited cycle drift from parallel merges into release/v3.8.50 since the 2026-08-14 OCR-series rebaseline (3 more dead exports surfaced by knip 6.32). This PR (#10798, omniroute-plugin log-level fix) adds 0 production exports: it touches @omniroute/opencode-plugin (separate workspace, not scanned), changelog.d/, and scripts/check/check-env-doc-sync.mjs (array entries, not exports). The +3 is NOT from this PR; rebaselined so the gate runs while structural cleanup of the newly-surfaced dead exports remains separate debt."
     },
     "cognitiveComplexity": {
-      "value": 1223,
+      "value": 1200,
       "_rebaseline_2026_07_25_dario_upstream_proxy_selector": "951->957 (+6). Same cycle-drift + own-growth split as the complexity-baseline.json note dated 2026-07-25 (PR #8523, Dario embedded service): cognitive-complexity does not run on PR->release fast-gates, so drift accrues unratcheted. Base upstream/release/v3.8.49 tip measures 956 locally with this PR's commits removed; this branch measures 957 both locally and on the CI runner. This PR's own genuine contribution is +1: the new mode-selector conditional rendering (Native/CLIProxyAPI/Dario/Fallback branches plus the fallback-backend picker) in ConnectionRow.tsx. Structural shrink stays tracked in #3501. Tighten via --update next cycle.",
       "_rebaseline_2026_07_25_8470_hyperagent_sticky_thread": "951->957 (+6). PR #8470 (artickc, fix/hyperagent-tool-loop-thread-sticky) pre-green validation. Trust-but-verify: origin/release/v3.8.49 tip alone (pristine, no PR changes) already measures 956 with node scripts/check/check-cognitive-complexity.mjs — i.e. +5 is inherited cycle drift unrelated to this PR (cognitive-complexity does not run on PR->release fast-gates). This PR's OWN growth adds exactly +1: per-file eslint scoped scan (eslint --config eslint.complexity-ratchets.config.mjs open-sse/executors/hyperagent.ts) on base vs PR shows extractMessageText() crossing the threshold for the first time (new sonarjs/cognitive-complexity violation, 26 > 15) from the new Anthropic tool_use/tool_result flattening branches; resolveHyperAgentThreadBinding's existing pre-#8470 violation (16) grows to 21 (still counted once) from the new root-key lookup tier; createHyperAgentThread and execute() are unchanged pre-existing violations. Net repo-wide total = 956 (inherited drift) + 1 (this PR's own new violation) = 957. Full-repo re-measurement of the merged branch was attempted but not completed live due to heavy concurrent devbox load (many other /green-prs sessions running the identical full-repo eslint scan in parallel); the value here is derived from two independently-clean measurements (base-tip full scan + per-file base-vs-PR delta) rather than a third full-repo run. Covered by tests/unit/executor-hyperagent.test.ts (19/19). Tighten via --update next cycle.",
       "_rebaseline_2026_07_25b_v3849_mergetrain_owngrowth": "Owner-approved (chat, 2026-07-25): 956->968 (+12). v3.8.49 /merge-prs 41-PR merge-train aggregate own-growth: measured 968 on the combined boarded tree (tip ac15014ca7) vs 956 on the pristine release tip. The batch's new over-threshold functions come from the pre-screen-flagged complexity-growth set (#8378/#8432/#8476/#8526 etc); each PR is under-ceiling alone, the combined batch adds +12. Same merge-burst class as the notes below; owner chose ceiling-absorb over per-PR extraction. Structural shrink tracked in #3501; tighten via --update next cycle.",
@@ -149,7 +155,7 @@
       "_note_8266": "2026-07-23: +1 own-growth from #8266 (@backryun) Alibaba media provider dispatch wiring"
     },
     "typeCoveragePct": {
-      "value": 92.17,
+      "value": 94.95,
       "direction": "up",
       "eps": 0.05,
       "dedicatedGate": true
@@ -360,10 +366,11 @@
       "dedicatedGate": true
     },
     "rtlPhysicalClasses": {
-      "value": 1011,
+      "value": 0,
       "direction": "down",
       "eps": 0,
-      "_seeded_2026_07_28": "Measured by scripts/check/check-rtl-ratchet.mjs. tests/unit/ui/rtl-logical-classes.test.tsx pins four components and states it is partial (#3541); this bounds the remainder."
+      "_seeded_2026_07_28": "Measured by scripts/check/check-rtl-ratchet.mjs. tests/unit/ui/rtl-logical-classes.test.tsx pins four components and states it is partial (#3541); this bounds the remainder.",
+      "_rebaseline_2026_09_26_rtl_logical_codemod": "1083->0: codemod mecanico de classes fisicas p/ utilitarios logicos Tailwind v4 (ml->ms, pl->ps, left->start, text-left->text-start, border-l->border-s, rounded-l->rounded-s) em 268 .tsx — identico em LTR, corrige espelhamento RTL (ar/fa/he/ur)."
     }
   },
   "_coverage_note": "Pisos anti-flake ~2pt abaixo do real do CI mergeado MEDIDO COM os 135 testes religados (run 27247237268: statements 78.4 / lines 78.4 / functions 83.84 / branches 75.73). O religamento da 6A.1 HONESTIFICOU a regua: os ~82.5 anteriores eram inflados porque modulos nunca importados ficavam fora do denominador do c8. Apertar via --require-tighten na Fase 6A (2026-06-16).",

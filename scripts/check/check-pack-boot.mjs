@@ -14,6 +14,7 @@
  * 0 = boots and reports the right version · 1 = boot failed · 2 = missing build.
  */
 import { execFileSync, spawn } from "node:child_process";
+import { execHostTool } from "../build/buildToolRunner.mjs";
 import { createHmac } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
@@ -422,7 +423,7 @@ async function main() {
   let shutdownConfirmed = false; // process group confirmed stopped → safe to rm the workspace
   try {
     log(`packing v${expectedVersion}…`);
-    const packOut = execFileSync("npm", ["pack", "--json", "--pack-destination", tmp], {
+    const packOut = execHostTool("npm", ["pack", "--json", "--pack-destination", tmp], {
       cwd: ROOT,
       encoding: "utf8",
       maxBuffer: 64 * 1024 * 1024,
@@ -430,7 +431,7 @@ async function main() {
     const tarball = path.join(tmp, pickTarball(packOut));
     log(`installing ${path.basename(tarball)} into a clean prefix (postinstall runs for real)…`);
     const prefix = path.join(tmp, "prefix");
-    execFileSync("npm", ["install", "-g", "--prefix", prefix, tarball], {
+    execHostTool("npm", ["install", "-g", "--prefix", prefix, tarball], {
       encoding: "utf8",
       maxBuffer: 64 * 1024 * 1024,
     });

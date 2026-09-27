@@ -121,7 +121,9 @@ test("applyStackedCompression reverts to the original body when the pipeline inf
   // set of built-in bare-string aliases ("standard"/"rtk"/"lite"/"aggressive"/"ultra") and
   // silently falls back to `{ engine: "caveman" }` for any other string — a bare custom-engine
   // id here would silently run caveman instead of the registered `inflatingEngine`.
-  const result = applyStackedCompression(body, [{ engine: INFLATE_ID } as CompressionPipelineStep]);
+  const result = applyStackedCompression(body, [
+    { engine: INFLATE_ID } as unknown as CompressionPipelineStep,
+  ]);
 
   // The inflating engine produced a bigger body, so the aggregate guard discarded it.
   assert.equal(result.compressed, false);

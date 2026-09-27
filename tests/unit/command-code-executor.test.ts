@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-command-code-executor-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -54,7 +55,7 @@ function openAiSse(obj: unknown): string {
 
 function captureFetch(body: Record<string, unknown>) {
   const calls: FetchCall[] = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({
       url: String(url),
       init,
@@ -72,7 +73,7 @@ test.afterEach(() => {
 test.after(() => {
   globalThis.fetch = originalFetch;
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("Command Code provider catalog has pinned models and alias lookup", () => {
@@ -224,7 +225,7 @@ test("Command Code executor passes the upstream OpenAI SSE stream through untouc
     }) +
     "data: [DONE]\n\n";
   let capturedStreamFlag: unknown = null;
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     capturedStreamFlag = JSON.parse(String(init.body)).stream;
     return new Response(sse, {
       status: 200,
@@ -254,11 +255,13 @@ test("Command Code executor passes the upstream OpenAI JSON through untouched (n
     id: "chatcmpl-1",
     object: "chat.completion",
     model: "gpt-5.4-mini",
-    choices: [{ index: 0, message: { role: "assistant", content: "Hello" }, finish_reason: "stop" }],
+    choices: [
+      { index: 0, message: { role: "assistant", content: "Hello" }, finish_reason: "stop" },
+    ],
     usage: { prompt_tokens: 3, completion_tokens: 2, total_tokens: 5 },
   };
   let capturedStreamFlag: unknown = null;
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     capturedStreamFlag = JSON.parse(String(init.body)).stream;
     return new Response(JSON.stringify(upstreamJson), {
       status: 200,
@@ -278,7 +281,8 @@ test("Command Code executor passes the upstream OpenAI JSON through untouched (n
 });
 
 test("Command Code executor surfaces upstream errors", async () => {
-  globalThis.fetch = async () => new Response("bad key", { status: 401, statusText: "Unauthorized" });
+  globalThis.fetch = async () =>
+    new Response("bad key", { status: 401, statusText: "Unauthorized" });
   const upstreamFailure = await getExecutor("command-code").execute({
     model: "gpt-5.4-mini",
     stream: false,

@@ -106,7 +106,7 @@ describe("BatchConceptCard", () => {
     expect(toggleBtn).not.toBeNull();
 
     await act(async () => {
-      toggleBtn!.click();
+      (toggleBtn as HTMLElement).click();
     });
 
     // After collapse: benefit key should not be in the DOM
@@ -121,7 +121,7 @@ describe("BatchConceptCard", () => {
     const toggleBtn = el.querySelector("button[aria-expanded='true']");
 
     await act(async () => {
-      toggleBtn!.click();
+      (toggleBtn as HTMLElement).click();
     });
 
     expect(localStorage.getItem("omniroute:concept-batch-collapsed")).toBe("true");
@@ -132,7 +132,7 @@ describe("BatchConceptCard", () => {
     const toggleBtn = el.querySelector("button");
 
     await act(async () => {
-      toggleBtn!.click(); // collapse
+      (toggleBtn as HTMLElement).click(); // collapse
     });
     await act(async () => {
       const btn = el.querySelector("button");
@@ -210,7 +210,7 @@ describe("FilesConceptCard", () => {
     expect(toggleBtn).not.toBeNull();
 
     await act(async () => {
-      toggleBtn!.click();
+      (toggleBtn as HTMLElement).click();
     });
 
     // After collapse: retention key should not be in the dom
@@ -223,7 +223,7 @@ describe("FilesConceptCard", () => {
     const toggleBtn = el.querySelector("button[aria-expanded='true']");
 
     await act(async () => {
-      toggleBtn!.click();
+      (toggleBtn as HTMLElement).click();
     });
 
     expect(localStorage.getItem("omniroute:concept-files-collapsed")).toBe("true");

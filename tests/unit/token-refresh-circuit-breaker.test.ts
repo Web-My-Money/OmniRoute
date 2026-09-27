@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Unit tests for the circuit breaker + refreshWithRetry leaf extracted from
 // tokenRefresh.ts. refreshWithRetry wraps a refresh attempt with exponential
@@ -43,12 +44,12 @@ test("refreshWithRetry returns the result on the first success and clears prior 
   await refreshWithRetry(async () => null, 1, silentLog, provider);
   assert.equal(getCircuitBreakerStatus()[provider].failures, 1);
 
-  const result = await refreshWithRetry(
+  const result = (await refreshWithRetry(
     async () => ({ accessToken: "ok" }),
     3,
     silentLog,
     provider
-  );
+  )) as LooseDeep;
   assert.equal(result.accessToken, "ok");
   assert.equal(getCircuitBreakerStatus()[provider], undefined, "success resets the breaker");
 });
@@ -56,7 +57,7 @@ test("refreshWithRetry returns the result on the first success and clears prior 
 test("refreshWithRetry retries to success within maxRetries", async () => {
   const provider = "cb-retry-" + Math.random().toString(36).slice(2);
   let attempts = 0;
-  const result = await refreshWithRetry(
+  const result = (await refreshWithRetry(
     async () => {
       attempts++;
       if (attempts < 2) return null;
@@ -65,7 +66,7 @@ test("refreshWithRetry retries to success within maxRetries", async () => {
     3,
     silentLog,
     provider
-  );
+  )) as LooseDeep;
   assert.equal(result.accessToken, "ok-after-retry");
   assert.equal(attempts, 2);
   assert.equal(getCircuitBreakerStatus()[provider], undefined);
@@ -74,7 +75,7 @@ test("refreshWithRetry retries to success within maxRetries", async () => {
 test("refreshWithRetry bails immediately on an unrecoverable error without retrying", async () => {
   const provider = "cb-unrecoverable-" + Math.random().toString(36).slice(2);
   let attempts = 0;
-  const result = await refreshWithRetry(
+  const result = (await refreshWithRetry(
     async () => {
       attempts++;
       return { error: "invalid_grant" };
@@ -82,7 +83,7 @@ test("refreshWithRetry bails immediately on an unrecoverable error without retry
     3,
     silentLog,
     provider
-  );
+  )) as LooseDeep;
   assert.equal(attempts, 1, "unrecoverable errors must not be retried");
   assert.equal(result.error, "invalid_grant");
   assert.equal(
@@ -95,7 +96,7 @@ test("refreshWithRetry bails immediately on an unrecoverable error without retry
 test("refreshWithRetry bails immediately on refresh_token_reused", async () => {
   const provider = "cb-reused-" + Math.random().toString(36).slice(2);
   let attempts = 0;
-  const result = await refreshWithRetry(
+  const result = (await refreshWithRetry(
     async () => {
       attempts++;
       return { error: "refresh_token_reused" };
@@ -103,7 +104,7 @@ test("refreshWithRetry bails immediately on refresh_token_reused", async () => {
     3,
     silentLog,
     provider
-  );
+  )) as LooseDeep;
   assert.equal(attempts, 1);
   assert.equal(result.error, "refresh_token_reused");
 });
@@ -136,7 +137,7 @@ test("refreshWithRetry trips the circuit breaker after repeated failures", async
 test("refreshWithRetry records a failure when all retries are exhausted", async () => {
   const provider = "cb-exhaust-" + Math.random().toString(36).slice(2);
   const log = makeLog();
-  const result = await refreshWithRetry(async () => null, 2, log, provider);
+  const result = (await refreshWithRetry(async () => null, 2, log, provider)) as LooseDeep;
   assert.equal(result, null);
   assert.equal(getCircuitBreakerStatus()[provider].failures, 1);
   assert.ok(
@@ -148,7 +149,7 @@ test("refreshWithRetry propagates thrown errors as retry failures (not crashes)"
   const provider = "cb-throw-" + Math.random().toString(36).slice(2);
   const log = makeLog();
   let attempts = 0;
-  const result = await refreshWithRetry(
+  const result = (await refreshWithRetry(
     async () => {
       attempts++;
       throw new Error("upstream boom");
@@ -156,7 +157,7 @@ test("refreshWithRetry propagates thrown errors as retry failures (not crashes)"
     2,
     log,
     provider
-  );
+  )) as LooseDeep;
   assert.equal(result, null);
   assert.equal(attempts, 2, "thrown errors are retried, not fatal");
   assert.equal(getCircuitBreakerStatus()[provider].failures, 1);

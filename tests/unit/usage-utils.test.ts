@@ -10,8 +10,9 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
+import type { UsageQuota } from "../../open-sse/services/usage/quota.ts";
 
-process.env.NODE_ENV = "test";
+(process.env as Record<string, string | undefined>).NODE_ENV = "test";
 
 const usage = await import("../../open-sse/services/usage.ts");
 const { __testing } = usage;
@@ -172,20 +173,47 @@ describe("inferGitHubPlanName", () => {
 
   it("infers Pro+ from premiumTotal >= 1400", () => {
     const data = { copilot_plan: "INDIVIDUAL" };
-    const premium = { used: 0, total: 1500, remaining: 1500, remainingPercentage: 100, unlimited: false };
-    assert.equal(__testing.inferGitHubPlanName(data, premium), "Copilot Pro+");
+    const premium = {
+      used: 0,
+      total: 1500,
+      remaining: 1500,
+      remainingPercentage: 100,
+      unlimited: false,
+    };
+    assert.equal(
+      __testing.inferGitHubPlanName(data, premium as unknown as UsageQuota),
+      "Copilot Pro+"
+    );
   });
 
   it("infers Enterprise from premiumTotal >= 900", () => {
     const data = { copilot_plan: "INDIVIDUAL" };
-    const premium = { used: 0, total: 900, remaining: 900, remainingPercentage: 100, unlimited: false };
-    assert.equal(__testing.inferGitHubPlanName(data, premium), "Copilot Enterprise");
+    const premium = {
+      used: 0,
+      total: 900,
+      remaining: 900,
+      remainingPercentage: 100,
+      unlimited: false,
+    };
+    assert.equal(
+      __testing.inferGitHubPlanName(data, premium as unknown as UsageQuota),
+      "Copilot Enterprise"
+    );
   });
 
   it("infers Pro when premiumTotal >= 250 and combined has INDIVIDUAL", () => {
     const data = { copilot_plan: "INDIVIDUAL" };
-    const premium = { used: 0, total: 300, remaining: 300, remainingPercentage: 100, unlimited: false };
-    assert.equal(__testing.inferGitHubPlanName(data, premium), "Copilot Pro");
+    const premium = {
+      used: 0,
+      total: 300,
+      remaining: 300,
+      remainingPercentage: 100,
+      unlimited: false,
+    };
+    assert.equal(
+      __testing.inferGitHubPlanName(data, premium as unknown as UsageQuota),
+      "Copilot Pro"
+    );
   });
 
   it("returns 'GitHub Copilot' fallback when nothing matches", () => {
@@ -261,7 +289,7 @@ describe("inferMiniMaxPlanLabelFromTotals", () => {
 /* ------------------------------------------------------------------ */
 describe("getAntigravityPlanLabel", () => {
   it("returns a string label", () => {
-    const label = __testing.getAntigravityPlanLabel();
+    const label = __testing.getAntigravityPlanLabel({});
     assert.ok(typeof label === "string");
     assert.ok(label.length > 0);
   });
@@ -317,6 +345,9 @@ describe("mapSubscriptionTierStringToPlanLabel", () => {
     const start = process.hrtime.bigint();
     __testing.mapSubscriptionTierStringToPlanLabel(" ".repeat(100000) + "(");
     const ms = Number(process.hrtime.bigint() - start) / 1e6;
-    assert.ok(ms < 500, `tier mapping took ${ms.toFixed(1)}ms on whitespace-heavy input — possible ReDoS`);
+    assert.ok(
+      ms < 500,
+      `tier mapping took ${ms.toFixed(1)}ms on whitespace-heavy input — possible ReDoS`
+    );
   });
 });

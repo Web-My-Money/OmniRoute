@@ -21,8 +21,9 @@ import {
 } from "../../../open-sse/services/compression/engines/registry.ts";
 import { applyStackedCompression } from "../../../open-sse/services/compression/strategySelector.ts";
 import type { CompressionEngine } from "../../../open-sse/services/compression/engines/types.ts";
+import type { CompressionEngineId } from "../../../open-sse/services/compression/types.ts";
 
-const ENGINE_ID = "metadata-less-test-engine";
+const ENGINE_ID = "metadata-less-test-engine" as CompressionEngineId;
 
 const body = () => ({ messages: [{ role: "user", content: "hello world" }] });
 

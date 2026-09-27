@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { CLI_TOOLS } = await import("../../src/shared/constants/cliTools.ts");
 const {
@@ -17,9 +18,14 @@ const { applyFingerprint, isCliCompatEnabled, setCliCompatProviders } =
 test("Amp CLI was removed from CLI_TOOLS per plan 14 D17 (MITM backlog plan 11)", () => {
   // amp (Sourcegraph) removed from CLI_TOOLS in plan 14 because it has a closed ecosystem
   // and does not support a generic custom base URL. Cross-ref: plan 11 MITM backlog.
-  assert.equal((CLI_TOOLS as Record<string, unknown>).amp, undefined);
+  assert.equal((CLI_TOOLS as LooseDeep).amp, undefined);
   // amp may still appear in cliRuntime.ts (runtime detection catalog — separate from UI catalog)
-  assert.equal(CLI_COMPAT_PROVIDER_IDS.includes("amp"), false);
+  assert.equal(
+    CLI_COMPAT_PROVIDER_IDS.includes(
+      "amp" as unknown as "claude" | "github" | "antigravity" | "codex"
+    ),
+    false
+  );
 });
 
 test("Hermes quick-config is registered as a guide-based CLI tool", () => {
@@ -62,7 +68,12 @@ test("CLI fingerprint toggles only expose implemented fingerprints and functiona
   }
 
   for (const providerId of CLI_COMPAT_OMITTED_PROVIDER_IDS) {
-    assert.equal(CLI_COMPAT_PROVIDER_IDS.includes(providerId), false);
+    assert.equal(
+      CLI_COMPAT_PROVIDER_IDS.includes(
+        providerId as unknown as "claude" | "github" | "antigravity" | "codex"
+      ),
+      false
+    );
     assert.equal((CLI_COMPAT_TOGGLE_IDS as readonly string[]).includes(providerId), false);
   }
 

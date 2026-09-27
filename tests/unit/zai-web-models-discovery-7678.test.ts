@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-zai-web-models-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -17,13 +18,13 @@ const CURATED_ZAI_WEB_MODEL_IDS = ["glm-5.2", "GLM-5.1", "GLM-5-Turbo", "GLM-5v-
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("zai-web publishes the live reasoning and vision capabilities", () => {
@@ -65,12 +66,12 @@ test("zai-web publishes the live reasoning and vision capabilities", () => {
 
 test("zai-web exposes only its curated public models without remote discovery", async () => {
   await resetStorage();
-  const connection = await providersDb.createProviderConnection({
+  const connection = (await providersDb.createProviderConnection({
     provider: "zai-web",
     authType: "apikey",
     name: "zai-web-curated",
     apiKey: "current-local-storage-token",
-  });
+  })) as JsonRecord & { id: string };
 
   await modelsDb.replaceSyncedAvailableModelsForConnection("zai-web", connection.id, [
     { id: "glm-4.6v", name: "GLM-4.6V", source: "imported" },

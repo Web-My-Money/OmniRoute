@@ -404,7 +404,12 @@ test("createResponsesLogger returns null for invalid base paths and swallows flu
   logger.logOutput("output");
 
   const sessionDir = readdirSync(join(logsDir, "logs"))[0];
-  rmSync(join(logsDir, "logs", sessionDir), { recursive: true, force: true });
+  rmSync(join(logsDir, "logs", sessionDir), {
+    recursive: true,
+    force: true,
+    maxRetries: 5,
+    retryDelay: 100,
+  });
   console.log = (...args) => capturedLogs.push(args.join(" "));
 
   try {
@@ -479,7 +484,7 @@ test("createResponsesApiTransformStream clears the keepalive timer when the stre
     const id = realSetInterval(handler, timeout, ...args);
     live.add(id);
     return id;
-  };
+  } as unknown as typeof setInterval;
   globalThis.clearInterval = function (id) {
     live.delete(id);
     return realClearInterval(id);
@@ -517,7 +522,7 @@ test("createResponsesApiTransformStream keepalive self-clears when enqueue fails
   let capturedCallback = null;
   let capturedId = null;
   let cleared = false;
-  globalThis.setInterval = function (handler, timeout, ...args) {
+  globalThis.setInterval = function (handler, _timeout, ...args) {
     capturedCallback = handler;
     capturedId = realSetInterval(() => {}, 1 << 30, ...args); // inert real timer as the id
     return capturedId;

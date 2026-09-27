@@ -22,6 +22,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-8779-agy-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -33,13 +34,13 @@ const model = await import("../../open-sse/services/model.ts");
 
 async function resetStorage() {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
 async function seedOnly(provider: string) {
   await resetStorage();
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider,
     authType: "oauth",
     email: `${provider}@example.test`,
@@ -47,12 +48,12 @@ async function seedOnly(provider: string) {
     isActive: true,
     testStatus: "active",
     priority: 1,
-  });
+  })) as JsonRecord & { id: string };
 }
 
 test.after(() => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("the agy/ prefix still canonicalizes to antigravity (#8013 unchanged)", () => {

@@ -239,7 +239,7 @@ export default function AgentBridgePageClient({
           <button
             type="button"
             onClick={() => setActionError(null)}
-            className="ml-auto text-red-500 hover:text-red-400"
+            className="ms-auto text-red-500 hover:text-red-400"
             aria-label={tc("dismissNotification")}
           >
             <span className="material-symbols-outlined text-[16px]">close</span>
@@ -259,13 +259,13 @@ export default function AgentBridgePageClient({
             <button
               type="button"
               onClick={() => setCertGuide(null)}
-              className="ml-auto text-amber-600 hover:text-amber-500"
+              className="ms-auto text-amber-600 hover:text-amber-500"
               aria-label={tc("dismissNotification")}
             >
               <span className="material-symbols-outlined text-[16px]">close</span>
             </button>
           </div>
-          <ol className="mt-2 list-decimal pl-6 space-y-1">
+          <ol className="mt-2 list-decimal ps-6 space-y-1">
             {certGuide.steps.map((step, i) => (
               <li key={i} className="font-mono text-xs break-all">
                 {step}

@@ -346,7 +346,7 @@ export default function ClaudeToolCard({
                     not on the server. Upstream report: #589.
                   */}
                   <Button variant="ghost" size="sm" onClick={() => setShowManualConfigModal(true)}>
-                    <span className="material-symbols-outlined text-[18px] mr-1">content_copy</span>
+                    <span className="material-symbols-outlined text-[18px] me-1">content_copy</span>
                     {t("manualConfig")}
                   </Button>
                   <Button
@@ -354,7 +354,7 @@ export default function ClaudeToolCard({
                     size="sm"
                     onClick={() => setShowInstallGuide(!showInstallGuide)}
                   >
-                    <span className="material-symbols-outlined text-[18px] mr-1">
+                    <span className="material-symbols-outlined text-[18px] me-1">
                       {showInstallGuide ? "expand_less" : "help"}
                     </span>
                     {showInstallGuide ? t("hide") : t("howToInstall")}
@@ -388,7 +388,7 @@ export default function ClaudeToolCard({
                 {/* Current Base URL */}
                 {claudeStatus?.settings?.env?.ANTHROPIC_BASE_URL && (
                   <div className="flex items-center gap-2">
-                    <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                    <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-end">
                       {t("current")}
                     </span>
                     <span className="material-symbols-outlined text-text-muted text-[14px]">
@@ -402,7 +402,7 @@ export default function ClaudeToolCard({
 
                 {/* Base URL */}
                 <div className="flex items-center gap-2">
-                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-end">
                     {t("baseUrl")}
                   </span>
                   <span className="material-symbols-outlined text-text-muted text-[14px]">
@@ -428,7 +428,7 @@ export default function ClaudeToolCard({
 
                 {/* API Key */}
                 <div className="flex items-center gap-2">
-                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                  <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-end">
                     {t("apiKey")}
                   </span>
                   <span className="material-symbols-outlined text-text-muted text-[14px]">
@@ -456,7 +456,7 @@ export default function ClaudeToolCard({
                 {/* Model Mappings */}
                 {tool.defaultModels.map((model) => (
                   <div key={model.alias} className="flex items-center gap-2">
-                    <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-right">
+                    <span className="w-32 shrink-0 text-sm font-semibold text-text-main text-end">
                       {model.name}
                     </span>
                     <span className="material-symbols-outlined text-text-muted text-[14px]">
@@ -517,7 +517,7 @@ export default function ClaudeToolCard({
                   disabled={!hasActiveProviders}
                   loading={applying}
                 >
-                  <span className="material-symbols-outlined text-[14px] mr-1">save</span>
+                  <span className="material-symbols-outlined text-[14px] me-1">save</span>
                   {t("apply")}
                 </Button>
                 <Button
@@ -527,11 +527,11 @@ export default function ClaudeToolCard({
                   disabled={!claudeStatus?.hasOmniRoute}
                   loading={restoring}
                 >
-                  <span className="material-symbols-outlined text-[14px] mr-1">restore</span>
+                  <span className="material-symbols-outlined text-[14px] me-1">restore</span>
                   {t("reset")}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setShowManualConfigModal(true)}>
-                  <span className="material-symbols-outlined text-[14px] mr-1">content_copy</span>
+                  <span className="material-symbols-outlined text-[14px] me-1">content_copy</span>
                   {t("manualConfig")}
                 </Button>
                 <div className="flex-1" />
@@ -543,7 +543,7 @@ export default function ClaudeToolCard({
                     if (!showBackups) fetchBackups();
                   }}
                 >
-                  <span className="material-symbols-outlined text-[14px] mr-1">history</span>
+                  <span className="material-symbols-outlined text-[14px] me-1">history</span>
                   {t("backups")}
                   {backups.length > 0 && ` (${backups.length})`}
                 </Button>

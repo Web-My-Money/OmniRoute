@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const usageService = await import("../../open-sse/services/usage.ts");
 const { __testing } = usageService;
@@ -29,7 +30,7 @@ test("usage service covers GitHub free-plan parsing, auth denial and unsupported
   // We also keep an out-of-range premium_interactions remaining (70 > 50)
   // to assert the defensive clamp at the upstream boundary.
   const calls: any[] = [];
-  globalThis.fetch = async (_url, init = {}) => {
+  globalThis.fetch = async (_url, init: MockRequestInit = {}) => {
     calls.push(init);
     return new Response(
       JSON.stringify({
@@ -158,7 +159,7 @@ test("usage service covers GitHub paid snapshot edge cases, missing quota payloa
 test("usage service covers Antigravity quota parsing, exclusions and forbidden access", async () => {
   const calls: any[] = [];
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({ url: String(url), init });
 
     if (String(url).includes("loadCodeAssist")) {
@@ -360,7 +361,7 @@ test("usage service retries Antigravity fetchAvailableModels across the shared f
   const expectedQuotaUrls = getAntigravityFetchAvailableModelsUrls();
   const finalQuotaUrl = expectedQuotaUrls.at(-1);
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({ url: String(url), init });
 
     if (String(url).includes("loadCodeAssist")) {
@@ -629,7 +630,7 @@ test("usage service covers Claude default-plan fallback, legacy org denial and f
 });
 
 test("usage service covers Codex, Kiro and Kimi usage parsing and error branches", async () => {
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     if (String(url).includes("/backend-api/wham/usage")) {
       assert.equal((init as any).headers["chatgpt-account-id"], "workspace-123");
       return new Response(
@@ -892,7 +893,7 @@ test("usage service covers Qoder, GLM, Z.AI and GLMT branches", async () => {
     "API key not available. Add a coding plan API key to view usage."
   );
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     if (String(url).includes("/api/monitor/usage/quota/limit")) {
       assert.equal((init as any).headers.Authorization, "Bearer glm-key");
       return new Response(
@@ -1042,7 +1043,7 @@ test("usage service covers MiniMax usage parsing, documented endpoint fallback a
   const calls: any[] = [];
   const beforeCall = Date.now();
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({ url: String(url), init });
 
     if (String(url) === "https://www.minimax.io/v1/token_plan/remains") {
@@ -1125,7 +1126,7 @@ test("usage service covers MiniMax usage parsing, documented endpoint fallback a
 test("usage service treats MiniMax token-plan counts as used usage", async () => {
   const beforeCall = Date.now();
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(String(url), "https://www.minimax.io/v1/token_plan/remains");
     assert.equal((init as any).headers.Authorization, "Bearer minimax-key");
 
@@ -1320,7 +1321,7 @@ test("usage helper branches cover Antigravity plan label fallbacks", () => {
 
 test("usage service covers NanoGPT PRO weekly token quota, FREE plan, auth denial and fetch failures", async () => {
   const resetAt = Date.now() + 7 * 24 * 60 * 60 * 1000;
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(String(url), "https://nano-gpt.com/api/subscription/v1/usage");
     assert.equal((init as any).headers.Authorization, "Bearer nanogpt-pro-key");
     return new Response(
@@ -1366,7 +1367,7 @@ test("usage service covers NanoGPT PRO weekly token quota, FREE plan, auth denia
   assert.equal(proUsage.quotas["Daily Images"].remaining, 100);
   assert.equal(proUsage.quotas["Daily Images"].remainingPercentage, 100);
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     assert.equal(String(url), "https://nano-gpt.com/api/subscription/v1/usage");
     assert.equal((init as any).headers.Authorization, "Bearer nanogpt-free-key");
     return new Response(

@@ -30,7 +30,7 @@ const { saveModelsDevCapabilities, clearModelsDevCapabilities } =
 const { resolveReasoningBufferedMaxTokens, REASONING_BUFFER_MIN_TRIGGER } =
   await import("../../open-sse/services/reasoningTokenBuffer.ts");
 
-function capabilityEntry(limitContext: unknown, overrides: Record<string, unknown> = {}) {
+function capabilityEntry(limitContext: number, overrides: Record<string, unknown> = {}) {
   return {
     tool_call: true,
     reasoning: false,
@@ -78,7 +78,7 @@ test.before(() => {
 test.after(() => {
   clearModelsDevCapabilities();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("#6274 reasoning buffer does not inflate probe-sized max_tokens", () => {

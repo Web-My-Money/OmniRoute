@@ -1,6 +1,7 @@
 import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
 import type { RegistryModel } from "../../open-sse/config/providers/shared.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const mod = await import("../../open-sse/executors/qwen-web.ts");
 const { REGISTRY } = await import("../../open-sse/config/providerRegistry.ts");
@@ -318,7 +319,7 @@ describe("QwenWebExecutor (v2 migration)", () => {
   });
 
   it("uses qwen3.8-max and maps its preview id for compatibility", async () => {
-    globalThis.fetch = (async (url: string | URL | Request, init: RequestInit = {}) => {
+    globalThis.fetch = (async (url: string | URL | Request, init: MockRequestInit = {}) => {
       calls.push({ url: String(url), init });
       if (String(url).includes("/api/v2/chats/new")) return chatCreatedResponse();
       return sseResponse([

@@ -290,6 +290,8 @@ export function runOpenCodeAuth(providerId) {
  * @param {string} [opts.displayName]
  * @param {boolean} [opts.auth=false]   Run `opencode auth login` after wiring.
  * @param {boolean} [opts.nonInteractive=false]   Skip prompts.
+ * @param {string} [opts.baseUrl]   Commander camelCase form of --base-url (alias of baseURL).
+ * @param {boolean} [opts.allowContainerWrite]   Permit writes into container config dirs.
  * @returns {Promise<{ exitCode: number, configPath?: string, pluginTargetDir?: string }>}
  */
 export async function runSetupOpenCodeCommand(opts = {}) {

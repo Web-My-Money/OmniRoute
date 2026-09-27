@@ -20,6 +20,7 @@ import {
   getThinkingBudgetConfig,
   DEFAULT_THINKING_CONFIG,
 } from "../../open-sse/services/thinkingBudget.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 class ClaudeLikeExecutor extends BaseExecutor {
   constructor() {
@@ -39,7 +40,7 @@ async function captureUpstreamBody(
   const executor = new ClaudeLikeExecutor();
   const originalFetch = globalThis.fetch;
   let upstreamBody: Record<string, unknown> | null = null;
-  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
     upstreamBody = JSON.parse(String(init.body));
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,

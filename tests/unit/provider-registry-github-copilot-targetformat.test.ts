@@ -23,7 +23,7 @@ const { getModelsByProviderId } = await import("../../open-sse/config/providerMo
 type ModelEntry = { id: string; targetFormat?: string; [k: string]: unknown };
 
 function githubModel(id: string): ModelEntry | undefined {
-  const provider = (REGISTRY as Record<string, { models?: ModelEntry[] }>)["github"];
+  const provider = (REGISTRY as unknown as Record<string, { models?: ModelEntry[] }>)["github"];
   return provider?.models?.find((m) => m.id === id);
 }
 
@@ -87,7 +87,7 @@ for (const id of [
 
 // Sanity: lookup-by-id helper resolves the same entries.
 test("#2911 getModelsByProviderId(github) reflects the targetFormat changes", () => {
-  const models = getModelsByProviderId("github") as ModelEntry[];
+  const models = getModelsByProviderId("github") as unknown as ModelEntry[];
   const opus47 = models.find((m) => m.id === "claude-opus-4.7");
   assert.ok(opus47, "claude-opus-4.7 resolvable via getModelsByProviderId");
   assert.notEqual(opus47.targetFormat, "openai-responses");

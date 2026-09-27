@@ -3,12 +3,13 @@ import test from "node:test";
 
 import { DefaultExecutor } from "../../open-sse/executors/default.ts";
 import { getClaudeCodeUserAgent } from "../../src/shared/constants/claudeCodeClient.ts";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 test("AgentRouter default dispatch uses the Claude Code wire image and x-api-key auth", async () => {
   const originalFetch = globalThis.fetch;
   let captured: { url: string; headers: Headers; body: string } | null = null;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: new Headers(init.headers),
@@ -49,7 +50,7 @@ test("AgentRouter OpenAI Chat dispatch uses Codex identity without Claude-only b
   const originalFetch = globalThis.fetch;
   let captured: { url: string; headers: Headers; body: Record<string, unknown> } | null = null;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: new Headers(init.headers),
@@ -96,7 +97,7 @@ test("AgentRouter OpenAI Responses dispatch uses the Responses endpoint and Code
   const originalFetch = globalThis.fetch;
   let captured: { url: string; headers: Headers; body: Record<string, unknown> } | null = null;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     captured = {
       url: String(url),
       headers: new Headers(init.headers),

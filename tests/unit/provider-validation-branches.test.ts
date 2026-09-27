@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { validateProviderApiKey } = await import("../../src/lib/providers/validation.ts");
 
@@ -41,7 +42,7 @@ test("openai-compatible validation reports missing base URL", async () => {
 
 test("openai-compatible validation accepts rate-limited /models responses", async () => {
   const calls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({ url: String(url), headers: init.headers || {} });
     return new Response(JSON.stringify({ error: "rate limited" }), { status: 429 });
   };
@@ -65,7 +66,7 @@ test("openai-compatible validation accepts rate-limited /models responses", asyn
 test("openai-compatible validation retries transient /models failures before succeeding", async () => {
   let attempts = 0;
 
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     attempts += 1;
     assert.equal(String(url), "https://api.example.com/v1/models");
     assert.equal(init.headers.Authorization, "Bearer sk-test");
@@ -90,7 +91,7 @@ test("openai-compatible validation retries transient /models failures before suc
 
 test("openai-compatible validation forwards custom User-Agent", async () => {
   const calls = [];
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     calls.push({ url: String(url), headers: init.headers || {} });
     return new Response(JSON.stringify({ error: "rate limited" }), { status: 429 });
   };

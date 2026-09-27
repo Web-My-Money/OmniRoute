@@ -155,8 +155,8 @@ function makeCtx(
     },
     classification: {
       routeClass: "MANAGEMENT" as const,
+      reason: "management_api" as const,
       normalizedPath: path,
-      method: "GET",
     },
     requestId: "test-req",
   };

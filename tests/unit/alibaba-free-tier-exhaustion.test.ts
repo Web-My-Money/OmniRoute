@@ -85,6 +85,7 @@ test("alibaba free-quota 403 does not exhaust the whole connection in combo rout
     log,
     tag: "COMBO",
     exhaustedLogLevel: "info",
+    requestScopedFailure: false,
   });
 
   assert.equal(exhausted, false);

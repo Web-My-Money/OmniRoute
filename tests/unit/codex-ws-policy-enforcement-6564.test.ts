@@ -19,6 +19,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-codex-ws-policy-6564-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -71,7 +72,7 @@ async function resetStorage() {
   for (let attempt = 0; attempt < 10; attempt++) {
     try {
       if (fs.existsSync(TEST_DATA_DIR)) {
-        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+        fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
       }
       break;
     } catch (error: unknown) {
@@ -95,7 +96,7 @@ test.after(async () => {
   apiKeysDb.resetApiKeyState();
   costRules.resetCostData();
   coreDb.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 /** Builds a bridge POST request for the internal codex-responses-ws route's "prepare" action. */
@@ -207,7 +208,7 @@ test("WS reasoning rules apply Codex-to-Codex effort and reject non-Codex target
   await apiKeysDb.updateApiKeyPermissions(key.id, {
     allowedModels: ["gpt-5.5", "codex/gpt-5.6-sol", "openai/gpt-4o"],
   });
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: "Codex WS test",
@@ -215,7 +216,7 @@ test("WS reasoning rules apply Codex-to-Codex effort and reject non-Codex target
     refreshToken: "test-codex-refresh-token",
     expiresAt: Date.now() + 60 * 60 * 1000,
     isActive: true,
-  });
+  })) as JsonRecord & { id: string };
 
   const codexRule = await rulesDb.createReasoningRoutingRule({
     name: "Codex WS high",

@@ -4,17 +4,17 @@ import assert from "node:assert/strict";
 const { memoryCache } = await import("../../src/lib/memory/cache.ts");
 
 const originalDateNow = Date.now;
-const originalMaxSize = memoryCache.maxSize;
+const originalMaxSize = memoryCache["maxSize"];
 
 test.beforeEach(async () => {
   await memoryCache.clear();
-  memoryCache.maxSize = originalMaxSize;
+  memoryCache["maxSize"] = originalMaxSize;
   Date.now = originalDateNow;
 });
 
 test.after(async () => {
   Date.now = originalDateNow;
-  memoryCache.maxSize = originalMaxSize;
+  memoryCache["maxSize"] = originalMaxSize;
   await memoryCache.clear();
 });
 
@@ -57,7 +57,7 @@ test("memoryCache expires entries after their TTL elapses", async () => {
 });
 
 test("memoryCache evicts the least recently used entry when full", async () => {
-  memoryCache.maxSize = 2;
+  memoryCache["maxSize"] = 2;
 
   await memoryCache.set("a", "value-a");
   await memoryCache.set("b", "value-b");

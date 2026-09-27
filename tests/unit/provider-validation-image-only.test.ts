@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { MockRequestInit } from "../helpers/mockFetch.ts";
 
 const { validateProviderApiKey } = await import("../../src/lib/providers/validation.ts");
 
@@ -48,7 +49,7 @@ const expectedValidationError = (status: number) =>
 for (const [provider, config] of Object.entries(imageOnlyProviders)) {
   test(`${provider} API key validator returns valid on 200`, async () => {
     let fetchCalled = false;
-    globalThis.fetch = async (url, init = {}) => {
+    globalThis.fetch = async (url, init: MockRequestInit = {}) => {
       fetchCalled = true;
       assert.equal(String(url), config.url);
       assert.equal((init.headers as Record<string, string>)[config.header], config.value);
@@ -103,7 +104,7 @@ for (const provider of Object.keys(imageOnlyProviders)) {
 
 test("freepik alias validates through the Magnific Mystic endpoint", async () => {
   let fetchCalled = false;
-  globalThis.fetch = async (url, init = {}) => {
+  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
     fetchCalled = true;
     assert.equal(String(url), "https://api.magnific.com/v1/ai/mystic");
     assert.equal((init.headers as Record<string, string>)["x-magnific-api-key"], "legacy-key");

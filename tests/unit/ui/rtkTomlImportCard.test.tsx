@@ -2,6 +2,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { LooseDeep } from "../../helpers/looseTypes";
 
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string, params?: Record<string, unknown>) =>
@@ -81,7 +82,7 @@ describe("RtkTomlImportCard", () => {
     await setTextarea(container, "schema_version = 1");
     await click(container.querySelector("[data-testid='rtk-toml-validate']"));
 
-    const [, options] = fetchMock.mock.calls[0];
+    const [, options] = fetchMock.mock.calls[0] as LooseDeep[];
     expect(JSON.parse(String(options?.body))).toMatchObject({
       action: "validate",
       overwrite: false,
@@ -111,7 +112,7 @@ describe("RtkTomlImportCard", () => {
     await click(container.querySelector("[data-testid='rtk-toml-overwrite']"));
     await click(container.querySelector("[data-testid='rtk-toml-install']"));
 
-    const [, options] = fetchMock.mock.calls[0];
+    const [, options] = fetchMock.mock.calls[0] as LooseDeep[];
     expect(JSON.parse(String(options?.body))).toMatchObject({ action: "install", overwrite: true });
     expect(onInstalled).toHaveBeenCalledOnce();
     expect(container.querySelector("[data-testid='rtk-toml-result']")?.textContent).toContain(

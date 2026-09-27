@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { WizardProviderOption } from "../../src/app/(dashboard)/dashboard/providers/components/onboarding/providerOnboardingCatalog.ts";
 
 const catalog =
   await import("../../src/app/(dashboard)/dashboard/providers/components/onboarding/providerOnboardingCatalog.ts");
@@ -53,14 +54,21 @@ test("provider onboarding option filter matches id, name, alias, and description
   ];
 
   assert.deepEqual(
-    catalog.filterWizardProviderOptions(options, "router").map((option) => option.id),
+    catalog
+      .filterWizardProviderOptions(options as unknown as WizardProviderOption[], "router")
+      .map((option) => option.id),
     ["openrouter"]
   );
   assert.deepEqual(
-    catalog.filterWizardProviderOptions(options, "coding").map((option) => option.id),
+    catalog
+      .filterWizardProviderOptions(options as unknown as WizardProviderOption[], "coding")
+      .map((option) => option.id),
     ["claude"]
   );
-  assert.equal(catalog.filterWizardProviderOptions(options, "   ").length, 2);
+  assert.equal(
+    catalog.filterWizardProviderOptions(options as unknown as WizardProviderOption[], "   ").length,
+    2
+  );
 });
 
 test("provider onboarding builds providerSpecificData without empty fields", () => {

@@ -6,6 +6,7 @@ import { dirname, resolve } from "node:path";
 import React from "react";
 import { renderToStaticMarkup as reactRenderToStaticMarkup } from "react-dom/server";
 import { NextIntlClientProvider } from "next-intl";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const { default: RequestLoggerDetail } =
   await import("../../src/shared/components/RequestLoggerDetail.tsx");
@@ -21,8 +22,12 @@ const enMessages = JSON.parse(
 function renderToStaticMarkup(element: React.ReactElement) {
   return reactRenderToStaticMarkup(
     React.createElement(
-      NextIntlClientProvider,
-      { locale: "en", timeZone: "UTC", messages: { requestLogger: enMessages.requestLogger } },
+      NextIntlClientProvider as React.ElementType,
+      {
+        locale: "en",
+        timeZone: "UTC",
+        messages: { requestLogger: enMessages.requestLogger },
+      } as LooseDeep,
       element
     )
   );
@@ -30,7 +35,7 @@ function renderToStaticMarkup(element: React.ReactElement) {
 
 function renderDetailWithSourceFormat(sourceFormat: string) {
   return renderToStaticMarkup(
-    React.createElement(RequestLoggerDetail, {
+    React.createElement(RequestLoggerDetail as unknown as React.ElementType, {
       log: {
         status: 200,
         method: "POST",
@@ -70,7 +75,7 @@ function renderDetailWithSourceFormat(sourceFormat: string) {
 
 test("request log detail splits token badges into input and output groups", () => {
   const html = renderToStaticMarkup(
-    React.createElement(RequestLoggerDetail, {
+    React.createElement(RequestLoggerDetail as unknown as React.ElementType, {
       log: {
         status: 200,
         method: "POST",
@@ -157,7 +162,7 @@ test("request log detail compression-summary badge shows positive saved%, never 
   // uses "(N% saved)" so the user-facing label is always positive.
   const make = (tokensIn: number, tokensCompressed: number) =>
     renderToStaticMarkup(
-      React.createElement(RequestLoggerDetail, {
+      React.createElement(RequestLoggerDetail as unknown as React.ElementType, {
         log: {
           status: 200,
           method: "POST",
@@ -238,10 +243,16 @@ test("request log detail follows the email visibility setting for accounts", () 
   };
 
   const hiddenHtml = renderToStaticMarkup(
-    React.createElement(RequestLoggerDetail, { ...props, emailsVisible: false })
+    React.createElement(RequestLoggerDetail as unknown as React.ElementType, {
+      ...props,
+      emailsVisible: false,
+    })
   );
   const visibleHtml = renderToStaticMarkup(
-    React.createElement(RequestLoggerDetail, { ...props, emailsVisible: true })
+    React.createElement(RequestLoggerDetail as unknown as React.ElementType, {
+      ...props,
+      emailsVisible: true,
+    })
   );
 
   assert.match(hiddenHtml, /log\*{6}@\*{8}com/);

@@ -15,6 +15,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-quota-combo-cli-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -29,7 +30,8 @@ const { REGISTRY } = await import("../../open-sse/config/providerRegistry.ts");
 
 async function resetStorage() {
   core.resetDbInstance();
-  if (fs.existsSync(TEST_DATA_DIR)) fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  if (fs.existsSync(TEST_DATA_DIR))
+    fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
@@ -39,7 +41,7 @@ test.beforeEach(async () => {
 
 test.after(async () => {
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 const CLI_PROVIDER = "codex"; // absent from PROVIDER_MODELS, present in REGISTRY
@@ -52,12 +54,12 @@ test("syncQuotaCombos generates qtSd/ combos for a CLI provider (codex) via REGI
   const firstModelId = regModels.find((m) => typeof m.id === "string")?.id as string;
   assert.ok(firstModelId, "codex must have at least one model id");
 
-  const conn = await providersDb.createProviderConnection({
+  const conn = (await providersDb.createProviderConnection({
     provider: CLI_PROVIDER,
     authType: "apikey",
     name: "codex-cli",
     apiKey: "sk-codex",
-  });
+  })) as JsonRecord & { id: string };
   const connId = (conn as Record<string, unknown>).id as string;
   const pool = poolsDb.createPool({ connectionId: connId, name: "Codex Quota" });
 

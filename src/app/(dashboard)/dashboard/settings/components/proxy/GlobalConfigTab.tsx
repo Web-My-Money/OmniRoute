@@ -227,13 +227,13 @@ export default function GlobalConfigTab() {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-black/5 dark:bg-white/5">
-                    <th className="text-left px-3 py-2 font-medium text-text-muted">
+                    <th className="text-start px-3 py-2 font-medium text-text-muted">
                       {t("healthcheckStatus")}
                     </th>
-                    <th className="text-left px-3 py-2 font-medium text-text-muted">
+                    <th className="text-start px-3 py-2 font-medium text-text-muted">
                       {t("healthcheckProxyUrl")}
                     </th>
-                    <th className="text-right px-3 py-2 font-medium text-text-muted">
+                    <th className="text-end px-3 py-2 font-medium text-text-muted">
                       {t("healthcheckLatency")}
                     </th>
                   </tr>
@@ -249,7 +249,7 @@ export default function GlobalConfigTab() {
                         )}
                       </td>
                       <td className="px-3 py-1.5 font-mono truncate max-w-xs">{r.proxyUrl}</td>
-                      <td className="px-3 py-1.5 text-right text-text-muted">
+                      <td className="px-3 py-1.5 text-end text-text-muted">
                         {r.latencyMs !== null ? `${r.latencyMs}ms` : "—"}
                       </td>
                     </tr>

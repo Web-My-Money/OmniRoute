@@ -15,6 +15,7 @@ import {
   transformToClaude,
   type ClaudeWebRequestPayload,
 } from "../../open-sse/executors/claude-web/payload.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const ORGANIZATION_ID = "organization-secret-a";
 const CONVERSATION_ID = "00000000-0000-4000-8000-000000000010";
@@ -199,7 +200,7 @@ function createBrowserHarness(
 
   const deps: ClaudeWebBrowserDeps = {
     async acquireContext(key, options) {
-      acquired.push({ key, options: options as unknown as Record<string, unknown> });
+      acquired.push({ key, options: options as unknown as LooseDeep });
       return {
         id: key,
         context: contextIdentity,
@@ -212,7 +213,7 @@ function createBrowserHarness(
       return page as never;
     },
     async fetchResponse(_page, input) {
-      evaluated.push(input as unknown as Record<string, unknown>);
+      evaluated.push(input as unknown as LooseDeep);
       return {
         status: 200,
         headers: { "content-type": "text/event-stream", "x-browser": "scoped" },
@@ -413,7 +414,7 @@ describe("Claude Web account-scoped browser transport", () => {
           body: new TextEncoder().encode('data: {"type":"message_stop"}\n\n'),
         };
       },
-    } as ClaudeWebBrowserDeps;
+    } as unknown as ClaudeWebBrowserDeps;
 
     await sendClaudeWebBrowser(request(), deps);
 

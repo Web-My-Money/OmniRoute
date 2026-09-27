@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import {
   isNativeExecutable,
   planBuildToolSpawn,
+  planHostToolSpawn,
   resolveLocalBinEntry,
   runBuildTool,
 } from "../../../scripts/build/buildToolRunner.mjs";
@@ -124,7 +125,7 @@ test("resolveLocalBinEntry reads the package's own bin map, never node_modules/.
       "the resolved entry must bypass the platform-specific .bin shim"
     );
   } finally {
-    rmSync(root, { recursive: true, force: true });
+    rmSync(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
 
@@ -145,7 +146,7 @@ test("resolveLocalBinEntry returns null for a missing package or a missing entry
       "an advertised entry that is not on disk must not be spawned"
     );
   } finally {
-    rmSync(root, { recursive: true, force: true });
+    rmSync(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
 
@@ -164,7 +165,7 @@ test("isNativeExecutable distinguishes an executable image from a JS shim", () =
     assert.equal(isNativeExecutable(pe), true);
     assert.equal(isNativeExecutable(join(root, "absent")), false, "a missing file is not native");
   } finally {
-    rmSync(root, { recursive: true, force: true });
+    rmSync(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
 
@@ -186,7 +187,7 @@ test("runBuildTool actually runs esbuild from this repo's dependency tree", () =
 
     assert.match(readFileSync(dest, "utf8"), /42/, "esbuild produced the bundle");
   } finally {
-    rmSync(out, { recursive: true, force: true });
+    rmSync(out, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
 
@@ -205,4 +206,23 @@ test("colocate-standalone.mjs never spawns the node_modules/.bin shim again", ()
     /runBuildTool\(/,
     "esbuild is spawned through the shared cross-platform runner"
   );
+});
+
+test("planHostToolSpawn routes npm/npx through a shell on Windows only", () => {
+  const win = planHostToolSpawn("npm", ["install", "-g", "--prefix", "C:\\tmp dir\\pfx"], "win32");
+
+  assert.equal(win.file, "npm");
+  assert.equal(win.shell, true, ".cmd shims need cmd.exe on Windows (EINVAL otherwise)");
+  assert.deepEqual(win.args, ["install", "-g", "--prefix", '"C:\\tmp dir\\pfx"']);
+
+  const posix = planHostToolSpawn("npm", ["install", "-g", "--prefix", "/tmp/pfx"], "linux");
+
+  assert.equal(posix.shell, false, "POSIX spawns npm directly — no shell, no quoting");
+  assert.deepEqual(posix.args, ["install", "-g", "--prefix", "/tmp/pfx"]);
+});
+
+test("planHostToolSpawn leaves already-quoted and whitespace-free args alone", () => {
+  const plan = planHostToolSpawn("npx", ["eslint", ".", '"pre-quoted"'], "win32");
+
+  assert.deepEqual(plan.args, ["eslint", ".", '"pre-quoted"']);
 });

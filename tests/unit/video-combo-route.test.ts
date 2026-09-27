@@ -10,6 +10,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import type { JsonRecord } from "../../src/shared/types/json.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-video-combo-route-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -57,18 +59,18 @@ test.afterEach(() => {
 
 test.after(() => {
   core.closeDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true });
+  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
 test("video route diverts a combo name to the combo executor and honors the ComfyUI local-override base URL", async () => {
   globalThis.setTimeout = immediateButSafeTimeout as typeof setTimeout;
 
   const OVERRIDE = "http://custom-comfy:9999";
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "comfyui",
     authType: "none",
     providerSpecificData: { baseUrl: OVERRIDE },
-  });
+  })) as JsonRecord & { id: string };
   await createCombo({
     name: "vid-local-override-combo",
     strategy: "priority",
@@ -126,12 +128,12 @@ test("video route resolves a custom video model reached through combo dispatch",
     "chat-completions",
     ["videos"]
   );
-  await providersDb.createProviderConnection({
+  (await providersDb.createProviderConnection({
     provider: "combo-custom-video-provider",
     authType: "apikey",
     apiKey: "combo-custom-key",
     providerSpecificData: { baseUrl: "https://combo-custom.example.com/v1/videos/generations" },
-  });
+  })) as JsonRecord & { id: string };
   await createCombo({
     name: "vid-custom-model-combo",
     strategy: "priority",
@@ -162,14 +164,11 @@ test("video route resolves a custom video model reached through combo dispatch",
   assert.equal(payload.data[0].url, "https://combo-custom.example.com/generated.mp4");
 
   assert.ok(captured, "fetch should have been called for the resolved custom model");
-  assert.equal(
-    captured!.url,
-    "https://combo-custom.example.com/v1/videos/generations"
-  );
-  assert.equal(captured!.headers.Authorization, "Bearer combo-custom-key");
+  assert.equal(captured!.url, "https://combo-custom.example.com/v1/videos/generations");
+  assert.equal((captured!.headers as LooseDeep).Authorization, "Bearer combo-custom-key");
   // The upstream call strips the provider prefix — resolvedProvider flowed
   // through the combo path the same way it does on the direct route.
-  assert.equal(captured!.body.model, "combo-video-v1");
+  assert.equal((captured!.body as LooseDeep).model, "combo-video-v1");
 });
 
 test("video route validates the prompt against the resolved combo target, not the combo name", async () => {

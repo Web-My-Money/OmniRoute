@@ -765,7 +765,7 @@ function ConversationsPageContent() {
                   </div>
                   <StatusBadge status={row.lastStatus} />
                 </div>
-                <div className="text-right text-[11px] text-text-muted">
+                <div className="text-end text-[11px] text-text-muted">
                   {formatTime(row.lastSeenAt)}
                 </div>
               </div>
@@ -776,13 +776,13 @@ function ConversationsPageContent() {
           <div className="hidden sm:block overflow-x-auto rounded-xl border border-border">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-bg-subtle text-left text-[11px] uppercase tracking-wider text-text-muted">
+                <tr className="border-b border-border bg-bg-subtle text-start text-[11px] uppercase tracking-wider text-text-muted">
                   <th className="px-3 py-2">Conversation</th>
-                  <th className="px-3 py-2 text-right">Turns</th>
+                  <th className="px-3 py-2 text-end">Turns</th>
                   <th className="px-3 py-2">Last Model</th>
                   <th className="px-3 py-2">Provider</th>
                   <th className="px-3 py-2">Status</th>
-                  <th className="px-3 py-2 text-right">Last Seen</th>
+                  <th className="px-3 py-2 text-end">Last Seen</th>
                 </tr>
               </thead>
               <tbody>
@@ -807,9 +807,7 @@ function ConversationsPageContent() {
                         </span>
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-right font-mono text-text-main">
-                      {row.turnCount}
-                    </td>
+                    <td className="px-3 py-2 text-end font-mono text-text-main">{row.turnCount}</td>
                     <td className="px-3 py-2 text-text-main">{row.lastModel ?? "—"}</td>
                     <td className="px-3 py-2">
                       <ProviderBadge provider={row.lastProvider} />
@@ -817,7 +815,7 @@ function ConversationsPageContent() {
                     <td className="px-3 py-2">
                       <StatusBadge status={row.lastStatus} />
                     </td>
-                    <td className="px-3 py-2 text-right text-text-muted">
+                    <td className="px-3 py-2 text-end text-text-muted">
                       {formatTime(row.lastSeenAt)}
                     </td>
                   </tr>

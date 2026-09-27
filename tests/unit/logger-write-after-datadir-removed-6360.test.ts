@@ -29,7 +29,7 @@ import pino from "pino";
 // Configure file logging BEFORE importing the logger (buildLogger runs at import time).
 const dir = mkdtempSync(join(tmpdir(), "omniroute-logger-6360-"));
 const logFile = join(dir, "logs", "application", "app.log");
-process.env.NODE_ENV = "production"; // JSON to file, simplest single-target-per-destination path
+(process.env as Record<string, string | undefined>).NODE_ENV = "production"; // JSON to file, simplest single-target-per-destination path
 process.env.APP_LOG_TO_FILE = "true";
 process.env.APP_LOG_FILE_PATH = logFile;
 process.env.APP_LOG_LEVEL = "debug";
@@ -70,7 +70,7 @@ test("logger must not crash the process when its worker transport reports a writ
 
     // Simulate the teardown every test file already does: rip out DATA_DIR
     // while the logger's worker-thread transport is still alive.
-    rmSync(dir, { recursive: true, force: true });
+    rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     assert.equal(existsSync(dir), false, "sanity: DATA_DIR must actually be gone");
 
     // Simulate the worker thread reporting the resulting write failure back to
@@ -104,6 +104,6 @@ test("logger must not crash the process when its worker transport reports a writ
 test.after(async () => {
   await flushLogger();
   if (existsSync(dir)) {
-    rmSync(dir, { recursive: true, force: true });
+    rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });

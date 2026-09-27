@@ -1,6 +1,7 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { prepareClaudeRequest } from "../../open-sse/translator/helpers/claudeHelper.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 describe("Claude cache_control passthrough", () => {
   test("preserveCacheControl=true preserves cache_control in system blocks", () => {
@@ -12,7 +13,7 @@ describe("Claude cache_control passthrough", () => {
       messages: [],
     };
 
-    const result = prepareClaudeRequest(body, "claude", true);
+    const result = prepareClaudeRequest(body, "claude", true) as LooseDeep;
 
     assert.equal(result.system.length, 2);
     assert.equal(result.system[0].cache_control, undefined);
@@ -28,7 +29,7 @@ describe("Claude cache_control passthrough", () => {
       messages: [],
     };
 
-    const result = prepareClaudeRequest(body, "claude", false);
+    const result = prepareClaudeRequest(body, "claude", false) as LooseDeep;
 
     assert.equal(result.system.length, 2);
     assert.equal(result.system[0].cache_control, undefined);
@@ -58,7 +59,7 @@ describe("Claude cache_control passthrough", () => {
       ],
     };
 
-    const result = prepareClaudeRequest(body, "claude", true);
+    const result = prepareClaudeRequest(body, "claude", true) as LooseDeep;
 
     assert.equal(result.messages.length, 2);
     assert.equal(result.messages[0].content[0].cache_control, undefined);
@@ -92,7 +93,7 @@ describe("Claude cache_control passthrough", () => {
       ],
     };
 
-    const result = prepareClaudeRequest(body, "claude", false);
+    const result = prepareClaudeRequest(body, "claude", false) as LooseDeep;
 
     // Original cache_control should be stripped and OmniRoute's strategy applied
     assert.equal(result.messages.length, 2);
@@ -117,7 +118,7 @@ describe("Claude cache_control passthrough", () => {
       ],
     };
 
-    const result = prepareClaudeRequest(body, "claude", true);
+    const result = prepareClaudeRequest(body, "claude", true) as LooseDeep;
 
     assert.equal(result.tools.length, 2);
     assert.equal(result.tools[0].cache_control, undefined);
@@ -138,7 +139,7 @@ describe("Claude cache_control passthrough", () => {
       ],
     };
 
-    const result = prepareClaudeRequest(body, "claude", false);
+    const result = prepareClaudeRequest(body, "claude", false) as LooseDeep;
 
     assert.equal(result.tools.length, 2);
     assert.equal(result.tools[0].cache_control, undefined);
@@ -172,7 +173,7 @@ describe("Claude cache_control passthrough", () => {
       ],
     };
 
-    const result = prepareClaudeRequest(body, "claude", true);
+    const result = prepareClaudeRequest(body, "claude", true) as LooseDeep;
 
     // All original cache_control should be preserved
     assert.deepEqual(result.system[0].cache_control, { type: "ephemeral", ttl: "5m" });

@@ -1,10 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-  AntigravityHandler,
-  convertGeminiToOpenAI,
-} from "../../src/mitm/handlers/antigravity.ts";
+import { AntigravityHandler, convertGeminiToOpenAI } from "../../src/mitm/handlers/antigravity.ts";
 import { runHandler } from "./_mitmHandlerHarness.ts";
+import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("antigravity handler — forwards to OmniRoute and pipes SSE", async () => {
   const r = await runHandler(
@@ -19,12 +17,10 @@ test("antigravity handler — forwards to OmniRoute and pipes SSE", async () => 
 });
 
 test("antigravity handler — propagates upstream failure as 500", async () => {
-  const r = await runHandler(
-    new AntigravityHandler(),
-    { model: "gpt-4o" },
-    "claude-3.5-sonnet",
-    { upstreamStatus: 500, upstreamBody: "boom" }
-  );
+  const r = await runHandler(new AntigravityHandler(), { model: "gpt-4o" }, "claude-3.5-sonnet", {
+    upstreamStatus: 500,
+    upstreamBody: "boom",
+  });
   assert.equal(r.status, 500);
   const body = r.responseChunks.join("");
   // Error must NOT include raw stack trace (Hard Rule #12 sanitization).
@@ -47,7 +43,7 @@ test("convertGeminiToOpenAI — maps Gemini fields to OpenAI chat body", () => {
       },
       // Gemini-only field that must NOT leak into the OpenAI body.
       thinkingConfig: { thinkingBudget: 1024 },
-    } as Record<string, unknown>,
+    } as LooseDeep,
     "claude-opus-4-6-thinking",
     true
   );
@@ -64,9 +60,9 @@ test("convertGeminiToOpenAI — maps Gemini fields to OpenAI chat body", () => {
   assert.equal(out.top_p, 0.9);
   assert.deepEqual(out.stop, ["STOP"]);
   // Gemini-native fields must be stripped, not forwarded.
-  assert.equal((out as Record<string, unknown>).contents, undefined);
-  assert.equal((out as Record<string, unknown>).generationConfig, undefined);
-  assert.equal((out as Record<string, unknown>).thinkingConfig, undefined);
+  assert.equal((out as LooseDeep).contents, undefined);
+  assert.equal((out as LooseDeep).generationConfig, undefined);
+  assert.equal((out as LooseDeep).thinkingConfig, undefined);
 });
 
 test("antigravity handler — converts raw Gemini body before forwarding", async () => {
@@ -113,7 +109,7 @@ test("convertGeminiToOpenAI — unwraps the cloudcode-pa `.request` envelope (#4
         ],
         generationConfig: { maxOutputTokens: 256, temperature: 0.4 },
       },
-    } as Record<string, unknown>,
+    } as LooseDeep,
     "ag-claude-opus-4-6-thinking",
     true
   );
