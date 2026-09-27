@@ -1,9 +1,23 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { t } from "../i18n.mjs";
 import { emit } from "../output.mjs";
 import { discoverPlugins } from "../plugins.mjs";
+
+// npm's own CLI entry — resolved without a shell. On Windows `npm` is a `.cmd`
+// shim: spawning it with `shell:false` dies ENOENT/EINVAL (Node ≥ 20.12,
+// CVE-2024-27980), and `shell:true` would reintroduce the argument
+// interpretation this module explicitly forbids for user-supplied names
+// (Hard Rule #13). Running npm-cli.js under this Node binary sidesteps both.
+function npmCliEntry() {
+  const candidates = [
+    process.env.npm_execpath, // set when invoked through an npm script
+    join(dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js"),
+    join(dirname(process.execPath), "..", "lib", "node_modules", "npm", "bin", "npm-cli.js"),
+  ];
+  return candidates.find((p) => p && existsSync(p)) ?? null;
+}
 
 // Run npm with an explicit argument array and no shell. Passing args this way
 // (instead of string-interpolating into `execSync`) prevents a malicious plugin
@@ -12,7 +26,27 @@ function runNpm(args) {
   const isBun = Boolean(process.versions.bun);
   const pm = isBun ? "bun" : "npm";
   const cmdArgs = isBun && args[0] === "install" ? ["add", ...args.slice(1)] : args;
-  const res = spawnSync(pm, cmdArgs, { stdio: "inherit", shell: false });
+  const entry = isBun ? null : npmCliEntry();
+  let res;
+  if (entry) {
+    res = spawnSync(process.execPath, [entry, ...cmdArgs], { stdio: "inherit" });
+  } else if (!isBun && process.platform === "win32") {
+    // npm-cli.js unresolvable (exotic install layout): last resort is npm.cmd
+    // through cmd.exe — safe ONLY after rejecting every metacharacter the shell
+    // could interpret (quoting cannot contain `%`).
+    for (const a of cmdArgs) {
+      if (!/^[\w@./:=+~*-]+$/.test(a)) {
+        throw new Error(`refusing to pass ${JSON.stringify(a)} through a shell`);
+      }
+    }
+    res = spawnSync(
+      pm,
+      cmdArgs.map((a) => `"${a}"`),
+      { stdio: "inherit", shell: true }
+    );
+  } else {
+    res = spawnSync(pm, cmdArgs, { stdio: "inherit", shell: false });
+  }
   if (res.error) throw res.error;
   if (typeof res.status === "number" && res.status !== 0) {
     throw new Error(`${pm} exited with code ${res.status}`);
