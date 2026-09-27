@@ -13,6 +13,7 @@
  * external/runtime values); `cwd` is derived from `projectRoot`, never user input.
  */
 import { execFileSync } from "node:child_process";
+import { execHostTool } from "./buildToolRunner.mjs";
 import { existsSync } from "node:fs";
 import path from "node:path";
 
@@ -50,5 +51,5 @@ export function buildTproxyNative(projectRoot, opts = {}) {
 
 /** @type {(cmd: string, args: string[], cwd: string) => void} */
 function defaultRun(cmd, args, cwd) {
-  execFileSync(cmd, args, { cwd, stdio: "inherit" });
+  execHostTool(cmd, args, { cwd, stdio: "inherit" });
 }

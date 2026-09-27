@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import {
   isNativeExecutable,
   planBuildToolSpawn,
+  planHostToolSpawn,
   resolveLocalBinEntry,
   runBuildTool,
 } from "../../../scripts/build/buildToolRunner.mjs";
@@ -205,4 +206,23 @@ test("colocate-standalone.mjs never spawns the node_modules/.bin shim again", ()
     /runBuildTool\(/,
     "esbuild is spawned through the shared cross-platform runner"
   );
+});
+
+test("planHostToolSpawn routes npm/npx through a shell on Windows only", () => {
+  const win = planHostToolSpawn("npm", ["install", "-g", "--prefix", "C:\\tmp dir\\pfx"], "win32");
+
+  assert.equal(win.file, "npm");
+  assert.equal(win.shell, true, ".cmd shims need cmd.exe on Windows (EINVAL otherwise)");
+  assert.deepEqual(win.args, ["install", "-g", "--prefix", '"C:\\tmp dir\\pfx"']);
+
+  const posix = planHostToolSpawn("npm", ["install", "-g", "--prefix", "/tmp/pfx"], "linux");
+
+  assert.equal(posix.shell, false, "POSIX spawns npm directly — no shell, no quoting");
+  assert.deepEqual(posix.args, ["install", "-g", "--prefix", "/tmp/pfx"]);
+});
+
+test("planHostToolSpawn leaves already-quoted and whitespace-free args alone", () => {
+  const plan = planHostToolSpawn("npx", ["eslint", ".", '"pre-quoted"'], "win32");
+
+  assert.deepEqual(plan.args, ["eslint", ".", '"pre-quoted"']);
 });

@@ -31,6 +31,7 @@
  */
 
 import { execFileSync, spawn } from "node:child_process";
+import { execHostTool } from "../build/buildToolRunner.mjs";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -151,7 +152,11 @@ async function bootAndProbe({ prefix, dataDir, port, expectVersion, label }) {
   let result = { ok: false, failures: [`${label}: never became healthy`], tail };
   while (Date.now() < deadline) {
     if (childExit !== null) {
-      result = { ok: false, failures: [`${label}: exited with code ${childExit} before serving`], tail };
+      result = {
+        ok: false,
+        failures: [`${label}: exited with code ${childExit} before serving`],
+        tail,
+      };
       break;
     }
     try {
@@ -162,7 +167,9 @@ async function bootAndProbe({ prefix, dataDir, port, expectVersion, label }) {
         // `status` may legitimately report degraded (no providers configured) — the gate
         // targets boot crashes and version mismatches, not health of a bare install.
         if (expectVersion && body.version !== expectVersion) {
-          failures.push(`${label}: health reports version ${body.version}, expected ${expectVersion}`);
+          failures.push(
+            `${label}: health reports version ${body.version}, expected ${expectVersion}`
+          );
         }
         result = { ok: failures.length === 0, version: body.version, failures, tail };
         break;
@@ -184,7 +191,7 @@ async function bootAndProbe({ prefix, dataDir, port, expectVersion, label }) {
 }
 
 function npmInstallInto(prefix, spec) {
-  execFileSync("npm", ["install", "-g", "--prefix", prefix, "--no-audit", "--no-fund", spec], {
+  execHostTool("npm", ["install", "-g", "--prefix", prefix, "--no-audit", "--no-fund", spec], {
     encoding: "utf8",
     maxBuffer: 128 * 1024 * 1024,
   });
@@ -192,13 +199,15 @@ function npmInstallInto(prefix, spec) {
 
 function resolvePreviousVersion(current, explicit) {
   if (explicit) return explicit;
-  const out = execFileSync("npm", ["view", "omniroute", "dist-tags.latest"], { encoding: "utf8" });
+  const out = execHostTool("npm", ["view", "omniroute", "dist-tags.latest"], { encoding: "utf8" });
   const latest = out.trim();
   if (!latest) throw new Error("could not resolve omniroute@latest from npm");
   if (latest === current) {
     // The version under test is already published (re-run of a shipped release): step back
     // to the highest published version strictly below it.
-    const all = JSON.parse(execFileSync("npm", ["view", "omniroute", "versions", "--json"], { encoding: "utf8" }));
+    const all = JSON.parse(
+      execHostTool("npm", ["view", "omniroute", "versions", "--json"], { encoding: "utf8" })
+    );
     const stable = all.filter((v) => !/-(rc|alpha|beta|pre|next)/.test(v) && v !== current);
     return stable[stable.length - 1];
   }
@@ -224,7 +233,7 @@ async function main() {
 
   try {
     log(`packing v${version}…`);
-    const packOut = execFileSync("npm", ["pack", "--json", "--pack-destination", tmp], {
+    const packOut = execHostTool("npm", ["pack", "--json", "--pack-destination", tmp], {
       cwd: ROOT,
       encoding: "utf8",
       maxBuffer: 128 * 1024 * 1024,
@@ -273,7 +282,9 @@ async function main() {
       if (!before.ok) {
         // A broken PREVIOUS version is not this release's fault — degrade to a warning so a
         // historically bad publish cannot block the current one.
-        warnings.push(`previous version ${previous} did not boot cleanly — upgrade path unverified`);
+        warnings.push(
+          `previous version ${previous} did not boot cleanly — upgrade path unverified`
+        );
         for (const f of before.failures) warn(f);
       } else {
         const beforeDb = findDb(bData);
@@ -334,7 +345,10 @@ async function main() {
 
 // Only run the (expensive) gate when invoked directly — importing this module for the pure
 // helper above must not pack, install or boot anything.
-if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) {
+if (
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)
+) {
   main().catch((err) => {
     console.error(`[install-upgrade] crashed: ${err?.message ?? err}`);
     process.exit(1);

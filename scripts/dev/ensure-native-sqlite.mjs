@@ -24,6 +24,7 @@
  */
 
 import { spawnSync } from "node:child_process";
+import { spawnHostTool } from "../build/buildToolRunner.mjs";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -65,8 +66,11 @@ function probeLoad(binaryPath) {
 
 /** Default rebuild: `npm rebuild better-sqlite3` at the repo root (no shell interpolation). */
 function defaultRebuild() {
-  const npm = process.platform === "win32" ? "npm.cmd" : "npm";
-  const result = spawnSync(npm, ["rebuild", "better-sqlite3"], { cwd: ROOT, stdio: "inherit" });
+  // spawnHostTool: npm is a .cmd shim on Windows — needs shell routing (EINVAL otherwise).
+  const result = spawnHostTool("npm", ["rebuild", "better-sqlite3"], {
+    cwd: ROOT,
+    stdio: "inherit",
+  });
   return result.status === 0;
 }
 

@@ -27,6 +27,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { execFileSync } from "node:child_process";
 import { assertNoStale } from "./lib/allowlist.mjs";
+import { execHostTool } from "../build/buildToolRunner.mjs";
 
 const ROOT = process.cwd();
 const ALLOWLIST_PATH = path.join(ROOT, "config/quality/dependency-allowlist.json");
@@ -141,7 +142,7 @@ export function queryNpmRegistry(pkgName, timeoutMs = 8000) {
   // Scope packages need URL-encoding for the `npm view` command.
   // `npm view` accepts scoped packages natively — no encoding needed.
   try {
-    const raw = execFileSync("npm", ["view", pkgName, "time.created", "--json"], {
+    const raw = execHostTool("npm", ["view", pkgName, "time.created", "--json"], {
       encoding: "utf8",
       timeout: timeoutMs,
       // Suppress npm progress/warn output on stderr
