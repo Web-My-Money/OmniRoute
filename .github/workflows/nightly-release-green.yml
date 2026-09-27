@@ -142,7 +142,14 @@ jobs:
           else
             MODE="--with-build --full-ci"
           fi
-          echo "[release-green] mode: $MODE (event: $EVENT_NAME)"
+          # Hosted ubuntu-latest (~7GB) cannot carry the parallel slow-wave
+          # (unit+vitest+integration+pack-artifact all at once) — the runner gets
+          # reclaimed ~15min in with no exit code (same signature as #8090). The
+          # omni-release VPS runner keeps the parallel wave; hosted runs serially.
+          if [ "${{ runner.environment }}" = "github-hosted" ]; then
+            MODE="$MODE --serial"
+          fi
+          echo "[release-green] mode: $MODE (event: $EVENT_NAME, runner: ${{ runner.environment }})"
           # MODE is an intentional flag list, so word-splitting is wanted here
           # shellcheck disable=SC2086
           node scripts/quality/validate-release-green.mjs --json --hermetic $MODE \
@@ -187,13 +194,22 @@ jobs:
             echo "_Ratchet drift (eslint warnings / cognitive-complexity / file-size) listed above is expected mid-cycle and is rebaselined at release — it is NOT a contributor concern and did not, on its own, open this issue._"
           } > issue-body.md
 
-          EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
-            --search "in:title $TITLE" --json number --jq '.[0].number' 2>/dev/null || echo "")
-          if [ -n "$EXISTING" ]; then
-            gh issue comment "$EXISTING" --repo "$GITHUB_REPOSITORY" --body-file issue-body.md
-            echo "Updated existing issue #$EXISTING"
+          # Always leave a durable report in the run itself — the fork may have
+          # Issues disabled, in which case gh issue * exits 1 and masks the real failure.
+          echo "::warning title=release-green::HARD failures on $TARGET — $RUN_URL"
+          cat issue-body.md >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$(gh api "repos/$GITHUB_REPOSITORY" --jq '.has_issues')" = "true" ]; then
+            EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+              --search "in:title $TITLE" --json number --jq '.[0].number' 2>/dev/null || echo "")
+            if [ -n "$EXISTING" ]; then
+              gh issue comment "$EXISTING" --repo "$GITHUB_REPOSITORY" --body-file issue-body.md
+              echo "Updated existing issue #$EXISTING"
+            else
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --label base-red --body-file issue-body.md
+            fi
           else
-            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --label base-red --body-file issue-body.md
+            echo "Issues are disabled on $GITHUB_REPOSITORY; reported via summary + annotation instead." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload report artifact
@@ -248,7 +264,10 @@ jobs:
           else
             MODE="--with-build --full-ci"
           fi
-          echo "[main-green] mode: $MODE (event: $EVENT_NAME)"
+          if [ "${{ runner.environment }}" = "github-hosted" ]; then
+            MODE="$MODE --serial"
+          fi
+          echo "[main-green] mode: $MODE (event: $EVENT_NAME, runner: ${{ runner.environment }})"
           # MODE is an intentional flag list, so word-splitting is wanted here
           # shellcheck disable=SC2086
           node scripts/quality/validate-release-green.mjs --json --hermetic $MODE \
@@ -285,13 +304,20 @@ jobs:
             echo "_Ratchet drift (eslint warnings / cognitive-complexity / file-size) is expected mid-cycle and did NOT, on its own, open this issue._"
           } > issue-body.md
 
-          EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
-            --search "in:title $TITLE" --json number --jq '.[0].number' 2>/dev/null || echo "")
-          if [ -n "$EXISTING" ]; then
-            gh issue comment "$EXISTING" --repo "$GITHUB_REPOSITORY" --body-file issue-body.md
-            echo "Updated existing issue #$EXISTING"
+          echo "::warning title=main-green::HARD failures on main — $RUN_URL"
+          cat issue-body.md >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$(gh api "repos/$GITHUB_REPOSITORY" --jq '.has_issues')" = "true" ]; then
+            EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+              --search "in:title $TITLE" --json number --jq '.[0].number' 2>/dev/null || echo "")
+            if [ -n "$EXISTING" ]; then
+              gh issue comment "$EXISTING" --repo "$GITHUB_REPOSITORY" --body-file issue-body.md
+              echo "Updated existing issue #$EXISTING"
+            else
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --label base-red --body-file issue-body.md
+            fi
           else
-            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --label base-red --body-file issue-body.md
+            echo "Issues are disabled on $GITHUB_REPOSITORY; reported via summary + annotation instead." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload report artifact

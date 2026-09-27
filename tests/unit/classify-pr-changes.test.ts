@@ -18,10 +18,12 @@ test("pure docs PR → docs only (no code unit/lint bag)", () => {
   assert.deepEqual(c, { code: false, docs: true, i18n: false, workflow: false, testsOnly: false });
 });
 
-test("openapi under docs/ → docs (contract gates live in docs-sync, not unit)", () => {
+test("docs/openapi.yaml → docs + code (the blocking oasdiff ratchet lives in the code lane)", () => {
+  // quality-gates (check:openapi-breaking) is gated on code == 'true'; a
+  // contract-only diff that classified as docs-only would skip it entirely.
   const c = classifyPaths(["docs/openapi.yaml"]);
   assert.equal(c.docs, true);
-  assert.equal(c.code, false);
+  assert.equal(c.code, true);
 });
 
 test("pure message catalog → i18n only (not full unit suite)", () => {

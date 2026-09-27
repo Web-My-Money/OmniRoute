@@ -34,11 +34,35 @@ const evaluateZizmor = evaluateZizmorRatchet as (
 ) => RatchetVerdict;
 const readZizmorBaseline = readBaselineZizmorValue as (p?: string) => number | null;
 const qualityWorkflowPath = new URL("../../../.github/workflows/quality.yml", import.meta.url);
+const buildWorkflowPath = new URL("../../../.github/workflows/build.yml", import.meta.url);
+const ciWorkflowPath = new URL("../../../.github/workflows/ci.yml", import.meta.url);
+const nightlyCompatWorkflowPath = new URL(
+  "../../../.github/workflows/nightly-compat.yml",
+  import.meta.url
+);
+const nightlyReleaseGreenPath = new URL(
+  "../../../.github/workflows/nightly-release-green.yml",
+  import.meta.url
+);
+const nightlyLlmSecurityPath = new URL(
+  "../../../.github/workflows/nightly-llm-security.yml",
+  import.meta.url
+);
+
+function readWorkflow(workflowPath: URL): string {
+  return fs.readFileSync(workflowPath, "utf8").replace(/\r\n/g, "\n");
+}
 
 function readQualityWorkflow(): string {
-  // Normalize CRLF: Windows checkouts keep CRLF line endings, which breaks
-  // the `key:\n` regexes below (`\r` sits between the colon and newline).
-  return fs.readFileSync(qualityWorkflowPath, "utf8").replace(/\r\n/g, "\n");
+  return readWorkflow(qualityWorkflowPath);
+}
+
+function readBuildWorkflow(): string {
+  return readWorkflow(buildWorkflowPath);
+}
+
+function readCiWorkflow(): string {
+  return readWorkflow(ciWorkflowPath);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -319,6 +343,115 @@ test("readBaselineZizmorValue: invalid JSON returns null (does not throw)", () =
 // ─────────────────────────────────────────────────────────────────────────────
 // quality.yml — release PR build gate regression coverage (#7307)
 // ─────────────────────────────────────────────────────────────────────────────
+
+test("build.yml skips artifact-neutral pushes and cancels superseded builds", () => {
+  const source = readBuildWorkflow();
+  const pushTrigger = source.match(/  push:\n[\s\S]*?\n\npermissions:/);
+
+  assert.ok(pushTrigger, "build.yml must define a push trigger before permissions");
+  assert.match(pushTrigger[0], /branches: \["\*\*"\]/);
+  for (const ignoredPath of ["tests/**", "config/quality/**"]) {
+    assert.match(pushTrigger[0], new RegExp(`      - "${ignoredPath.replace(/\*/g, "\\*")}"`));
+  }
+  for (const unsafePath of ["docs/**", "scripts/check/**", "**/*.md"]) {
+    assert.doesNotMatch(
+      pushTrigger[0],
+      new RegExp(`      - "${unsafePath.replace(/\*/g, "\\*")}"`)
+    );
+  }
+  for (const artifactPath of [
+    "package.json",
+    "src/**",
+    "scripts/build/**",
+    ".github/workflows/**",
+  ]) {
+    assert.doesNotMatch(pushTrigger[0], new RegExp(artifactPath.replace(/\*/g, "\\*")));
+  }
+  assert.match(
+    source,
+    /concurrency:\n  group: \$\{\{ github\.workflow \}\}-\$\{\{ github\.ref \}\}/
+  );
+  assert.match(source, /cancel-in-progress: true/);
+});
+
+test("ci.yml + quality.yml classify renames as delete+add (--no-renames)", () => {
+  // git diff --name-only reports only the destination of a rename, so
+  // src/x.ts → docs/x.md would classify as docs-only while production code
+  // was deleted. --no-renames lists both paths so the code classification
+  // is preserved.
+  for (const source of [readCiWorkflow(), readQualityWorkflow()]) {
+    assert.match(source, /git diff --name-only --no-renames/);
+  }
+});
+
+test("ci.yml covers the production default branch", () => {
+  // This fork's default branch is wmm-production, not main. A ci.yml that only
+  // triggers on main silently runs zero unit tests on our PRs and default-branch
+  // pushes (the only signal left is build.yml's production build).
+  const source = readCiWorkflow();
+  assert.match(source, /push:\n\s+branches: \[main, wmm-production\]/);
+  assert.match(source, /pull_request:\n\s+branches: \[main, wmm-production\]/);
+});
+
+test("nightly-compat reports failures without requiring Issues", () => {
+  // The fork has Issues disabled, so an unconditional `gh issue create` hard-fails
+  // the reporting job and masks the real result. The step must always emit a
+  // warning annotation + step summary, and only touch the Issues API when the
+  // repo actually has it enabled.
+  const source = readWorkflow(nightlyCompatWorkflowPath);
+  assert.match(source, /GITHUB_STEP_SUMMARY/);
+  assert.match(source, /::warning title=nightly-compat::/);
+  assert.match(source, /has_issues/);
+  const issueBlock = source.match(
+    /if \[ "\$\(gh api "repos\/\$GITHUB_REPOSITORY" --jq '.has_issues'\)" = "true" \]; then[\s\S]*?fi/
+  );
+  assert.ok(issueBlock, "issue create/comment must be gated on has_issues");
+  assert.match(issueBlock[0], /gh issue (comment|create)/);
+});
+
+test("nightly-release-green reports failures without requiring Issues", () => {
+  // Same disabled-Isses hazard as nightly-compat: both report steps must surface
+  // the failure via warning annotation + step summary and only call the Issues
+  // API when the repo actually has it enabled.
+  const source = readWorkflow(nightlyReleaseGreenPath);
+  const issueGates = source.match(
+    /if \[ "\$\(gh api "repos\/\$GITHUB_REPOSITORY" --jq '.has_issues'\)" = "true" \]; then/g
+  );
+  assert.equal(
+    issueGates?.length,
+    2,
+    "both release-green and main-green report steps must gate on has_issues"
+  );
+  assert.match(source, /::warning title=release-green::/);
+  assert.match(source, /::warning title=main-green::/);
+  assert.match(source, /GITHUB_STEP_SUMMARY/);
+});
+
+test("nightly-release-green runs the full sweep serially on hosted runners", () => {
+  // The scheduled --with-build --full-ci wave runs unit+vitest+integration+
+  // pack-artifact concurrently, which exceeds a hosted ubuntu-latest runner's
+  // ~7GB and gets the job reclaimed mid-sweep (no exit code). Hosted runs must
+  // pass --serial; the omni-release VPS runner keeps the parallel wave.
+  const source = readWorkflow(nightlyReleaseGreenPath);
+  const hostedSerial = source.match(
+    /if \[ "\$\{\{ runner\.environment \}\}" = "github-hosted" \]; then\s+MODE="\$MODE --serial"/g
+  );
+  assert.equal(
+    hostedSerial?.length,
+    2,
+    "both release-green and main-green must add --serial on github-hosted"
+  );
+});
+
+test("nightly-llm-security uses the lockfile-pinned promptfoo", () => {
+  // `npx promptfoo@latest` pulled 0.123.1 (published 2026-09-18) which crashes on
+  // OmniRoute's structured error body with `result?.error?.includes is not a
+  // function` — every probe errored, 0 assertions ran. The eval must use the
+  // devDependency version installed by `npm ci` so the lockfile pins it.
+  const source = readWorkflow(nightlyLlmSecurityPath);
+  assert.doesNotMatch(source, /promptfoo@latest/);
+  assert.match(source, /npx promptfoo eval/);
+});
 
 test("#7307 quality.yml adds an advisory production build for release PR code changes", () => {
   const source = readQualityWorkflow();

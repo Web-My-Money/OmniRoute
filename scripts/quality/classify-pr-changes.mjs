@@ -54,12 +54,17 @@ export function classifyPaths(files) {
     }
 
     // i18n tooling / non-message i18n source → also code (scripts, config, loaders).
-    if (
-      f.startsWith("scripts/i18n/") ||
-      f === "config/i18n.json" ||
-      f.startsWith("src/i18n/")
-    ) {
+    if (f.startsWith("scripts/i18n/") || f === "config/i18n.json" || f.startsWith("src/i18n/")) {
       i18n = true;
+      code = true;
+      continue;
+    }
+
+    // The public API contract is docs-surface AND gate-surface: the blocking
+    // oasdiff ratchet lives in the code-gated quality-gates job, so a
+    // contract-only PR must still classify as code.
+    if (f === "docs/openapi.yaml") {
+      docs = true;
       code = true;
       continue;
     }
@@ -129,8 +134,7 @@ function main() {
 }
 
 const isMain =
-  process.argv[1] &&
-  path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);
+  process.argv[1] && path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);
 
 if (isMain) {
   main();
