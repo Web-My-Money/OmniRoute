@@ -95,6 +95,12 @@ rules:
     #     runs cannot read. The `cache: npm` here only speeds up `npm ci` within
     #     the same ephemeral CI run.
     #
+    #   • nightly-release-green.yml — validation-only workflow on trusted events:
+    #     `push` to release/v* + main, `schedule`, and `workflow_dispatch`. It never
+    #     runs on `pull_request`, so a fork ref cannot populate its `cache: npm`,
+    #     and it publishes no artifacts a downstream job could consume.
+    #     (added 2026-10-01)
+    #
     # Accepted risk (first-party caching on trusted/isolated events), re-review at
     # the next release cycle (added 2026-06-16).
     ignore:
@@ -102,3 +108,4 @@ rules:
       - npm-publish.yml
       - opencode-plugin-ci.yml
       - opencode-provider-ci.yml
+      - nightly-release-green.yml

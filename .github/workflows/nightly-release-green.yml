@@ -47,7 +47,6 @@ on:
 
 permissions:
   contents: read
-  issues: write
 
 concurrency:
   # push storms during merge campaigns collapse to the newest commit per branch;
@@ -69,6 +68,9 @@ jobs:
     # no local noauth CLIs => zero machine-specific false positives) and no contention.
     # Nightly cron normally finds the var false (VM off) and falls back to hosted.
     runs-on: ${{ (vars.USE_VPS_RUNNER == 'true' && fromJSON('["self-hosted","omni-release"]')) || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+      issues: write
     env:
       JWT_SECRET: ci-nightly-secret-with-sufficient-length-for-validation
       API_KEY_SECRET: ci-nightly-api-key-secret-long
@@ -127,6 +129,7 @@ jobs:
         id: validate
         env:
           EVENT_NAME: ${{ github.event_name }}
+          RUNNER_ENV: ${{ runner.environment }}
         run: |
           set +e
           # --hermetic: scrub live-test trigger vars (self-hosted runner may carry
@@ -146,10 +149,10 @@ jobs:
           # (unit+vitest+integration+pack-artifact all at once) — the runner gets
           # reclaimed ~15min in with no exit code (same signature as #8090). The
           # omni-release VPS runner keeps the parallel wave; hosted runs serially.
-          if [ "${{ runner.environment }}" = "github-hosted" ]; then
+          if [ "$RUNNER_ENV" = "github-hosted" ]; then
             MODE="$MODE --serial"
           fi
-          echo "[release-green] mode: $MODE (event: $EVENT_NAME, runner: ${{ runner.environment }})"
+          echo "[release-green] mode: $MODE (event: $EVENT_NAME, runner: $RUNNER_ENV)"
           # MODE is an intentional flag list, so word-splitting is wanted here
           # shellcheck disable=SC2086
           node scripts/quality/validate-release-green.mjs --json --hermetic $MODE \
@@ -234,6 +237,9 @@ jobs:
     # release-green above. Schedule/dispatch always run (they also sweep main).
     if: ${{ github.event_name != 'push' || github.ref_name == 'main' }}
     runs-on: ${{ (vars.USE_VPS_RUNNER == 'true' && fromJSON('["self-hosted","omni-release"]')) || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+      issues: write
     env:
       JWT_SECRET: ci-nightly-secret-with-sufficient-length-for-validation
       API_KEY_SECRET: ci-nightly-api-key-secret-long
@@ -256,6 +262,7 @@ jobs:
         id: validate
         env:
           EVENT_NAME: ${{ github.event_name }}
+          RUNNER_ENV: ${{ runner.environment }}
         run: |
           set +e
           # push (a merge into main) → --quick fast HARD gates; schedule/dispatch → full sweep.
@@ -264,10 +271,10 @@ jobs:
           else
             MODE="--with-build --full-ci"
           fi
-          if [ "${{ runner.environment }}" = "github-hosted" ]; then
+          if [ "$RUNNER_ENV" = "github-hosted" ]; then
             MODE="$MODE --serial"
           fi
-          echo "[main-green] mode: $MODE (event: $EVENT_NAME, runner: ${{ runner.environment }})"
+          echo "[main-green] mode: $MODE (event: $EVENT_NAME, runner: $RUNNER_ENV)"
           # MODE is an intentional flag list, so word-splitting is wanted here
           # shellcheck disable=SC2086
           node scripts/quality/validate-release-green.mjs --json --hermetic $MODE \

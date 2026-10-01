@@ -25,6 +25,7 @@ jobs:
         with:
           ref: wmm-production
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Fetch upstream
         run: |
@@ -48,11 +49,15 @@ jobs:
       - name: Open or update drift issue
         if: steps.drift.outputs.behind != '0'
         uses: actions/github-script@v7
+        env:
+          DRIFT_BEHIND: ${{ steps.drift.outputs.behind }}
+          DRIFT_AHEAD: ${{ steps.drift.outputs.ahead }}
+          DRIFT_COMMITS: ${{ steps.drift.outputs.commits }}
         with:
           script: |
-            const behind = '${{ steps.drift.outputs.behind }}';
-            const ahead = '${{ steps.drift.outputs.ahead }}';
-            const commits = `${{ steps.drift.outputs.commits }}`;
+            const behind = process.env.DRIFT_BEHIND;
+            const ahead = process.env.DRIFT_AHEAD;
+            const commits = process.env.DRIFT_COMMITS;
             const title = `Upstream sync: ${behind} commit(s) behind diegosouzapw/OmniRoute@release/v3.8.50`;
             const body = [
               `This fork's \`wmm-production\` branch is **${behind}** commit(s) behind`,
