@@ -47,19 +47,39 @@
       ]
     },
     ".github/workflows/deploy-vps.yml": {
-      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+      "sentinels": [
+        "group: ${{ github.workflow }}",
+        "cancel-in-progress: false",
+        "concurrency:"
+      ]
     },
     ".github/workflows/docker-publish.yml": {
-      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+      "sentinels": [
+        "group: ${{ github.workflow }}",
+        "cancel-in-progress: false",
+        "concurrency:"
+      ]
     },
     ".github/workflows/electron-release.yml": {
-      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+      "sentinels": [
+        "group: ${{ github.workflow }}",
+        "cancel-in-progress: false",
+        "concurrency:"
+      ]
     },
     ".github/workflows/lock-released-branch.yml": {
-      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+      "sentinels": [
+        "group: ${{ github.workflow }}",
+        "cancel-in-progress: false",
+        "concurrency:"
+      ]
     },
     ".github/workflows/mutation-redundancy.yml": {
-      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+      "sentinels": [
+        "group: ${{ github.workflow }}",
+        "cancel-in-progress: false",
+        "concurrency:"
+      ]
     },
     ".github/workflows/nightly-compat.yml": {
       "sentinels": [
@@ -76,7 +96,11 @@
       ]
     },
     ".github/workflows/nightly-property.yml": {
-      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+      "sentinels": [
+        "group: ${{ github.workflow }}",
+        "cancel-in-progress: false",
+        "concurrency:"
+      ]
     },
     ".github/workflows/nightly-release-green.yml": {
       "sentinels": [
@@ -86,13 +110,25 @@
       ]
     },
     ".github/workflows/nightly-resilience.yml": {
-      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+      "sentinels": [
+        "group: ${{ github.workflow }}",
+        "cancel-in-progress: false",
+        "concurrency:"
+      ]
     },
     ".github/workflows/nightly-schemathesis.yml": {
-      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+      "sentinels": [
+        "group: ${{ github.workflow }}",
+        "cancel-in-progress: false",
+        "concurrency:"
+      ]
     },
     ".github/workflows/npm-publish.yml": {
-      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+      "sentinels": [
+        "group: ${{ github.workflow }}",
+        "cancel-in-progress: false",
+        "concurrency:"
+      ]
     },
     ".github/workflows/quality.yml": {
       "sentinels": [
@@ -102,7 +138,11 @@
       ]
     },
     ".github/workflows/scorecard.yml": {
-      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+      "sentinels": [
+        "group: ${{ github.workflow }}",
+        "cancel-in-progress: false",
+        "concurrency:"
+      ]
     },
     ".github/workflows/upstream-sync-check.yml": {
       "sentinels": [
@@ -112,7 +152,10 @@
       ]
     },
     ".gitignore": {
-      "sentinels": ["# WMM: local agent config", "mcp.json"]
+      "sentinels": [
+        "# WMM: local agent config",
+        "mcp.json"
+      ]
     },
     ".zizmor.yml": {
       "sentinels": [
@@ -155,7 +198,9 @@
       ]
     },
     "bin/cli/commands/launch-codex.mjs": {
-      "sentinels": ["export function buildCodexProviderArgs(baseUrl, model = undefined) {"]
+      "sentinels": [
+        "export function buildCodexProviderArgs(baseUrl, model = undefined) {"
+      ]
     },
     "bin/cli/commands/plugin.mjs": {
       "sentinels": [
@@ -196,7 +241,9 @@
       ]
     },
     "bin/cli/runtime/processSupervisor.mjs": {
-      "sentinels": ["onCrashCallback = undefined,"]
+      "sentinels": [
+        "onCrashCallback = undefined,"
+      ]
     },
     "bin/cli/runtime/trayRuntime.ts": {
       "sentinels": [
@@ -235,7 +282,9 @@
       ]
     },
     "config/quality/duplication-baseline.json": {
-      "sentinels": ["\"percentage\": 3.68"]
+      "sentinels": [
+        "\"percentage\": 3.68"
+      ]
     },
     "config/quality/eslint-suppressions.json": {
       "sentinels": [
@@ -268,16 +317,17 @@
       ]
     },
     "config/quality/test-masking-allowlist.json": {
-      "sentinels": ["\"sourceRemoved\": [\"src/lib/plugins/sandbox.ts\"],"]
+      "sentinels": [
+        "\"sourceRemoved\": [\"src/lib/plugins/sandbox.ts\"],"
+      ]
     },
     "config/quality/tests-typecheck-baseline.json": {
       "sentinels": []
     },
     "config/quality/upstream-patch-manifest.json": {
       "sentinels": [
-        "\"// @ts-nocheckimport test from \\\"node:test\\\";import assert from \\\"node:assert/strict\\\";const { handleChatCore } = await import(\\\"../../open-sse/handlers/chatCore.ts\\\");const originalFetch = globalThis.fetch;type ToolItem = { type: string; namespace?: string; name?: string };type SseFrame = { event: string | undefined; data: unknown };function requestBody(stream: boolean) { return { model: \\\"gpt-4o-mini\\\", stream, input: [ { type: \\\"additional_tools\\\", tools: [ { type: \\\"namespace\\\", name: \\\"mcp__atlassian__cloud__tenant\\\", tools: [{ name: \\\"read_issue\\\", parameters: { type: \\\"object\\\" } }], }, ], }, { type: \\\"message\\\", role: \\\"user\\\", content: [{ type: \\\"input_text\\\", text: \\\"read it\\\" }] }, ], };}function chatToolCall() { return { id: \\\"chatcmpl_namespace_identity\\\", object: \\\"chat.completion\\\", created: 1, model: \\\"gpt-4o-mini\\\", choices: [ { index: 0, message: { role: \\\"assistant\\\", tool_calls: [ { index: 0, id: \\\"call_namespace_identity\\\", type: \\\"function\\\", function: { name: \\\"mcp__atlassian__cloud__tenant__read_issue\\\", arguments: JSON.stringify({ key: \\\"PROJ-1\\\" }), }, }, ], }, finish_reason: \\\"tool_calls\\\", }, ], usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 }, };}function streamingChatToolCall() { const toolCall = chatToolCall().choices[0].message.tool_calls[0]; return [ { id: \\\"chatcmpl_namespace_identity\\\", object: \\\"chat.completion.chunk\\\", created: 1, model: \\\"gpt-4o-mini\\\", choices: [ { index: 0, delta: { role: \\\"assistant\\\", tool_calls: [toolCall] }, finish_reason: \\\"tool_calls\\\", }, ], }, ];}function sse(events: unknown[]) { return ( events.map((event) => \\\"data: \\\" + JSON.stringify(event) + \\\"\\\\n\\\\n\\\").join(\\\"\\\") + \\\"data: [DONE]\\\\n\\\\n\\\" );}async function invokeResponsesRequest(stream: boolean) { const calls: Array<{ body: Record<string, unknown> }> = []; globalThis.fetch = async (_url, init: MockRequestInit = {}) => { const body = JSON.parse(String(init.body)); calls.push({ body }); const payload = stream ? sse(streamingChatToolCall()) : JSON.stringify(chatToolCall()); return new Response(payload, { status: 200, headers: { \\\"Content-Type\\\": stream ? \\\"text/event-stream\\\" : \\\"application/json\\\" }, }); }; try { const body = requestBody(stream); const result = await looseAsync(handleChatCore)({ body: structuredClone(body), modelInfo: { provider: \\\"openai\\\", model: \\\"gpt-4o-mini\\\", extendedContext: false }, credentials: { apiKey: \\\"sk-test\\\", providerSpecificData: {} }, log: { debug() {}, info() {}, warn() {}, error() {} }, clientRawRequest: { endpoint: \\\"/v1/responses\\\", body: structuredClone(body), headers: new Headers({ accept: stream ? \\\"text/event-stream\\\" : \\\"application/json\\\" }), }, userAgent: \\\"namespace-identity-integration-test\\\", } as never); assert.equal(result.success, true); assert.equal(calls.length, 1); assert.equal( \\\"_toolNameMap\\\" in calls[0].body, false, \\\"identity metadata must not reach upstream\\\" ); return result.response; } finally { globalThis.fetch = originalFetch; }}function parseSseFrames(body: string): SseFrame[] { return body .trim() .split(/\\\\r?\\\\n\\\\r?\\\\n/) .map((frame) => { const fields = frame.split(/\\\\r?\\\\n/); const event = fields.find((line) => line.startsWith(\\\"event: \\\"))?.slice(\\\"event: \\\".length); const data = fields.find((line) => line.startsWith(\\\"data: \\\"))?.slice(\\\"data: \\\".length); return { event, data: data === \\\"[DONE]\\\" ? data : JSON.parse(data ?? \\\"null\\\") }; });}function assertNamespaceTuple(item: ToolItem | undefined) { assert.ok(item, \\\"expected a function-call output item\\\"); assert.equal(item.type, \\\"function_call\\\"); assert.deepEqual( { namespace: item.namespace, name: item.name }, { namespace: \\\"mcp__atlassian__cloud__tenant\\\", name: \\\"read_issue\\\" } );}test.afterEach(() => { globalThis.fetch = originalFetch;});test(\\\"returns a namespace tuple for a non-streaming Responses request translated through chatCore\\\", async () => { const response = await invokeResponsesRequest(false); const payload = await response.json(); assertNamespaceTuple(payload.output.find((item: ToolItem) => item.type === \\\"function_call\\\"));});test(\\\"emits namespace tuples for every streaming Responses function-call event translated through chatCore\\\", async () => { const response = await invokeResponsesRequest(true); const frames = parseSseFrames(await response.text()); const added = frames.find((frame) => frame.event === \\\"response.output_item.added\\\"); assertNamespaceTuple((added?.data as { item?: ToolItem })?.item); const done = frames.find((frame) => frame.event === \\\"response.output_item.done\\\"); assertNamespaceTuple((done?.data as { item?: ToolItem })?.item); const completed = frames.find((frame) => frame.event === \\\"response.completed\\\"); assertNamespaceTuple( (completed?.data as { response?: { output?: ToolItem[] } })?.response?.output?.find( (item) => item.type === \\\"function_call\\\" ) );});\"",
-        "\"\\\"_rebaseline_2026_07_18_pr7360_quota_visibility_resync\\\": \\\"2058->2059 (+1 vs recorded ceiling; measured 2056 fresh on release tip cab9e5f0c alone, so this ceiling still carries 2 units of un-banked slack from prior shrinkage — real regression from this merge is 2056->2059, +3). PR #7360 (JxnLexn) release-resync: merging origin/release/v3.8.49 to resolve the 3-file conflict (ConnectionRow.tsx/ConnectionsListPanel.tsx/useProviderConnections.ts) unions two already-compliant features in the same already-oversized god-component: release's confirm-delete-account wiring (#7361) and this PR's per-connection quota-visibility wiring. Diffed release-tip-only vs merged violation lists (scripts dumped via getComplexityEslintReport): most entries are the SAME pre-existing violations shifted a few lines (ConnectionRow/getStatusPresentation/inferErrorType — no count change) or marginally bigger (ConnectionRow function complexity 85->86, ConnectionsListPanel function 498->510 lines) from the two ConnectionRow call sites each gaining both PRs' multi-line JSX props. The 2 genuinely NEW crossings are the 'no tag' and 'tagged groups' .map() render callbacks in ConnectionsListPanel.tsx (83 and 85 lines, was <=80 on both parents individually) tipping over 80 lines specifically because both PRs' props land on the same call sites. No new logic was written during the resync itself (only import-statement unions); the growth is inherent to combining the two already-reviewed feature branches. Structural shrink tracked in #3501. Tighten via --update next cycle (true floor is 2056, not 2058).\\\",\",",
-        "\"\\\"_rebaseline_2026_07_27_3850_quality_relax_TEMP_3851_retighten_v2_20pct\\\": \\\"_rebaseline_2026_07_27_3850_quality_relax_TEMP_3851_retighten_v2_20pct: 2188->2774 (+586, +26.8% over pristine 2188). OWNER-APPROVED TEMPORARY relax for v3.8.50-3.8.54 PREPARE phase (docs/ROADMAP.md). v1 was +124 (2x daily drift) on 2026-07-27; v2 = v1 +20% buffer = +218 → +586 total (cycle 2188 measured pristine → 2774 ceiling). Justification: v3.8.50 release cut coincides with high-merge activity (33-PR Train 1D + ~37-PR Train 2 backlog + post-freeze re-home rebase churn); owner accepted enlarging the headroom so the entire PREPARE phase window (5 minor cycles: .50-.54) flows without per-PR rebaseline noise, given that re-tightening happens mechanically at v3.8.51 via #8675/#8700 decomposition work scheduled in .51 (Executor registry in-place + combo.ts decomposition per ROADMAP.md). RE-TIGHTENING MANDATORY in v3.8.51: target 2282 (shrink of 492 from structural extraction during #8675/#8700 decomposition campaigns + combo.ts split scheduled in .52, or via npm run quality:ratchet -- --update if natural shrink appears earlier). The 2282 floor still gives 94 units of post-tighten headroom vs the current pristine 2188. Tracked via roadmap issue (TO BE OPENED as part of this PR). Window: v3.8.50 (release cut, 2026-07-28 target) → v3.8.54 close (RE-TIGHTEN executed at v3.8.51 prep merge per ROADMAP.md). This entry is the LAST rebaseline in this file unless a measured regression appears. v1 entry retained below for audit trail.\\\",\","
+        "\"upstreamRef\": \"upstream/main\",",
+        "\"config/quality/upstream-patch-manifest.json\": {"
       ]
     },
     "docs/ops/BALANCED_OPERATIONS_IMPROVEMENT_DESIGN.md": {
@@ -321,7 +371,9 @@
       ]
     },
     "open-sse/config/providers/shared.ts": {
-      "sentinels": ["overrides: Pick<RegistryEntry, \"id\"> & Partial<Omit<RegistryEntry, \"id\">>"]
+      "sentinels": [
+        "overrides: Pick<RegistryEntry, \"id\"> & Partial<Omit<RegistryEntry, \"id\">>"
+      ]
     },
     "open-sse/executors/auggie.ts": {
       "sentinels": [
@@ -344,7 +396,9 @@
       ]
     },
     "open-sse/executors/copilot-m365-connection.ts": {
-      "sentinels": ["tid?: string,"]
+      "sentinels": [
+        "tid?: string,"
+      ]
     },
     "open-sse/executors/cursor.ts": {
       "sentinels": [
@@ -375,7 +429,11 @@
       ]
     },
     "open-sse/executors/trae.ts": {
-      "sentinels": ["upstreamExtraHeaders = undefined,", "signal = undefined,", "async execute({"]
+      "sentinels": [
+        "upstreamExtraHeaders = undefined,",
+        "signal = undefined,",
+        "async execute({"
+      ]
     },
     "open-sse/handlers/chatCore.ts": {
       "sentinels": [
@@ -385,7 +443,10 @@
       ]
     },
     "open-sse/handlers/rerank.ts": {
-      "sentinels": ["return_documents = undefined,", "top_n = undefined,"]
+      "sentinels": [
+        "return_documents = undefined,",
+        "top_n = undefined,"
+      ]
     },
     "open-sse/services/__tests__/specificityDetector.test.ts": {
       "sentinels": [
@@ -402,7 +463,9 @@
       ]
     },
     "open-sse/services/combo.ts": {
-      "sentinels": ["maxRows: 1_000,"]
+      "sentinels": [
+        "maxRows: 1_000,"
+      ]
     },
     "open-sse/services/combo/autoStrategy.ts": {
       "sentinels": [
@@ -417,7 +480,9 @@
       ]
     },
     "open-sse/services/compression/outputStyles/backCompat.ts": {
-      "sentinels": ["autoClarity?: boolean;"]
+      "sentinels": [
+        "autoClarity?: boolean;"
+      ]
     },
     "open-sse/services/compression/ruleLoader.ts": {
       "sentinels": [
@@ -434,7 +499,9 @@
       ]
     },
     "open-sse/services/contextHandoff.ts": {
-      "sentinels": ["export type { HandoffPayload } from \"../../src/lib/db/contextHandoffs.ts\";"]
+      "sentinels": [
+        "export type { HandoffPayload } from \"../../src/lib/db/contextHandoffs.ts\";"
+      ]
     },
     "open-sse/services/fusion.ts": {
       "sentinels": [
@@ -456,7 +523,10 @@
       ]
     },
     "open-sse/services/reasoningCache.ts": {
-      "sentinels": ["content?: unknown;", "name?: unknown;"]
+      "sentinels": [
+        "content?: unknown;",
+        "name?: unknown;"
+      ]
     },
     "open-sse/services/sessionPool/sessionFactory.ts": {
       "sentinels": [
@@ -466,10 +536,14 @@
       ]
     },
     "open-sse/services/tokenRefresh.ts": {
-      "sentinels": ["log: RefreshLogger | undefined = undefined,"]
+      "sentinels": [
+        "log: RefreshLogger | undefined = undefined,"
+      ]
     },
     "open-sse/transformer/responsesTransformer.ts": {
-      "sentinels": ["} as unknown as Transformer,"]
+      "sentinels": [
+        "} as unknown as Transformer,"
+      ]
     },
     "open-sse/translator/response/openai-responses/pureHelpers.ts": {
       "sentinels": [
@@ -486,10 +560,14 @@
       ]
     },
     "open-sse/utils/progressTracker.ts": {
-      "sentinels": ["} as unknown as Transformer,"]
+      "sentinels": [
+        "} as unknown as Transformer,"
+      ]
     },
     "open-sse/utils/sseHeartbeat.ts": {
-      "sentinels": ["} as unknown as Transformer<Uint8Array, Uint8Array>);"]
+      "sentinels": [
+        "} as unknown as Transformer<Uint8Array, Uint8Array>);"
+      ]
     },
     "open-sse/utils/stream.ts": {
       "sentinels": [
@@ -519,7 +597,10 @@
       ]
     },
     "scripts/ad-hoc/dump-auto-combos.ts": {
-      "sentinels": ["weightPack: (combo.weights ?? {}) as Record<string, number>,", "export {};"]
+      "sentinels": [
+        "weightPack: (combo.weights ?? {}) as Record<string, number>,",
+        "export {};"
+      ]
     },
     "scripts/ad-hoc/nvidia-startswith-diag.ts": {
       "sentinels": [
@@ -777,7 +858,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/activity/ActivityFeedClient.tsx": {
-      "sentinels": ["className=\"material-symbols-outlined text-[32px] animate-spin me-3\""]
+      "sentinels": [
+        "className=\"material-symbols-outlined text-[32px] animate-spin me-3\""
+      ]
     },
     "src/app/(dashboard)/dashboard/agent-skills/AgentSkillsPageClient.tsx": {
       "sentinels": [
@@ -829,7 +912,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/analytics/ComboHealthTab.tsx": {
-      "sentinels": ["<ul className=\"mt-2 text-start text-xs text-text-muted\">"]
+      "sentinels": [
+        "<ul className=\"mt-2 text-start text-xs text-text-muted\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/analytics/CompressionAnalyticsTab.tsx": {
       "sentinels": [
@@ -845,7 +930,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/analytics/RouteExplainabilityTab.tsx": {
-      "sentinels": ["<span className=\"max-w-[65%] truncate text-end font-medium text-text-main\">"]
+      "sentinels": [
+        "<span className=\"max-w-[65%] truncate text-end font-medium text-text-main\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/analytics/SearchAnalyticsTab.tsx": {
       "sentinels": [
@@ -854,7 +941,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/analytics/components/DiversityScoreCard.tsx": {
-      "sentinels": ["<div className=\"shrink-0 text-center sm:text-start\">"]
+      "sentinels": [
+        "<div className=\"shrink-0 text-center sm:text-start\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/api-manager/ApiManagerPageClient.tsx": {
       "sentinels": [
@@ -871,7 +960,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/api-manager/components/BypassProviderQuotaToggle.tsx": {
-      "sentinels": ["<div className=\"flex flex-col gap-1 pe-2\">"]
+      "sentinels": [
+        "<div className=\"flex flex-col gap-1 pe-2\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/api-manager/components/ProviderModelPermissionList.tsx": {
       "sentinels": [
@@ -881,7 +972,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/audit/A2aAuditTab.tsx": {
-      "sentinels": ["<table className=\"w-full min-w-[760px] text-start text-sm\">"]
+      "sentinels": [
+        "<table className=\"w-full min-w-[760px] text-start text-sm\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/audit/ComplianceTab.tsx": {
       "sentinels": [
@@ -891,7 +984,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/audit/McpAuditTab.tsx": {
-      "sentinels": ["<table className=\"w-full min-w-[860px] text-start text-sm\">"]
+      "sentinels": [
+        "<table className=\"w-full min-w-[860px] text-start text-sm\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/batch/BatchDetailModal.tsx": {
       "sentinels": [
@@ -907,7 +1002,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/batch/FileDetailModal.tsx": {
-      "sentinels": ["className={`ms-auto px-1.5 py-0.5 rounded text-[10px] font-medium border ${"]
+      "sentinels": [
+        "className={`ms-auto px-1.5 py-0.5 rounded text-[10px] font-medium border ${"
+      ]
     },
     "src/app/(dashboard)/dashboard/batch/FilesListTab.tsx": {
       "sentinels": [
@@ -915,16 +1012,22 @@
       ]
     },
     "src/app/(dashboard)/dashboard/batch/components/BatchConceptCard.tsx": {
-      "sentinels": ["<ul className=\"flex flex-col gap-2 ps-1\">"]
+      "sentinels": [
+        "<ul className=\"flex flex-col gap-2 ps-1\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/batch/components/FilesConceptCard.tsx": {
-      "sentinels": ["<ul className=\"flex flex-col gap-2 ps-1\">"]
+      "sentinels": [
+        "<ul className=\"flex flex-col gap-2 ps-1\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/cache/__tests__/CachePage.test.tsx": {
       "sentinels": []
     },
     "src/app/(dashboard)/dashboard/cache/__tests__/CachePerformance.test.tsx": {
-      "sentinels": ["expect(screen.getAllByText(\"85.0%\").length).toBeGreaterThan(0);"]
+      "sentinels": [
+        "expect(screen.getAllByText(\"85.0%\").length).toBeGreaterThan(0);"
+      ]
     },
     "src/app/(dashboard)/dashboard/cache/__tests__/CacheTrends.test.tsx": {
       "sentinels": [
@@ -934,10 +1037,14 @@
       ]
     },
     "src/app/(dashboard)/dashboard/cache/__tests__/IdempotencyLayer.test.tsx": {
-      "sentinels": ["expect(screen.getAllByText(\"47\").length).toBeGreaterThan(0);"]
+      "sentinels": [
+        "expect(screen.getAllByText(\"47\").length).toBeGreaterThan(0);"
+      ]
     },
     "src/app/(dashboard)/dashboard/cache/__tests__/MemoryCards.test.tsx": {
-      "sentinels": ["const { container } = render(<MemoryCards />);"]
+      "sentinels": [
+        "const { container } = render(<MemoryCards />);"
+      ]
     },
     "src/app/(dashboard)/dashboard/cache/components/CacheEntriesTab.tsx": {
       "sentinels": [
@@ -947,7 +1054,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/cache/components/CachePerformance.tsx": {
-      "sentinels": ["stats?: unknown;"]
+      "sentinels": [
+        "stats?: unknown;"
+      ]
     },
     "src/app/(dashboard)/dashboard/cache/components/ReasoningCacheTab.tsx": {
       "sentinels": [
@@ -1104,7 +1213,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/combos/BuilderIntelligentStep.tsx": {
-      "sentinels": ["<span className=\"ms-1 text-[10px] text-text-muted\">"]
+      "sentinels": [
+        "<span className=\"ms-1 text-[10px] text-text-muted\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/combos/ComboControlCenterClient.tsx": {
       "sentinels": [
@@ -1121,7 +1232,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/combos/IntelligentComboPanel.tsx": {
-      "sentinels": ["<div className=\"rounded-lg bg-black/5 dark:bg-white/5 px-3 py-2 text-end\">"]
+      "sentinels": [
+        "<div className=\"rounded-lg bg-black/5 dark:bg-white/5 px-3 py-2 text-end\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/combos/live/ComboLiveStudio.tsx": {
       "sentinels": [
@@ -1136,7 +1249,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/components/BadgeToast.tsx": {
-      "sentinels": ["<div className=\"fixed top-4 end-4 z-50 flex flex-col gap-2\">"]
+      "sentinels": [
+        "<div className=\"fixed top-4 end-4 z-50 flex flex-col gap-2\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/compression/studio/CompareView.tsx": {
       "sentinels": [
@@ -1172,7 +1287,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/compression/studio/nodes/EngineNode.tsx": {
-      "sentinels": ["className=\"absolute inset-y-0 start-0 rounded-full\""]
+      "sentinels": [
+        "className=\"absolute inset-y-0 start-0 rounded-full\""
+      ]
     },
     "src/app/(dashboard)/dashboard/conductor/FaroChat.tsx": {
       "sentinels": [
@@ -1268,7 +1385,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/costs/quota-share/hooks/usePools.ts": {
-      "sentinels": ["import type { QuotaPool } from \"@/lib/db/quotaPools\";"]
+      "sentinels": [
+        "import type { QuotaPool } from \"@/lib/db/quotaPools\";"
+      ]
     },
     "src/app/(dashboard)/dashboard/costs/quota-share/hooks/usePoolsUsageAggregate.ts": {
       "sentinels": [
@@ -1313,10 +1432,14 @@
       ]
     },
     "src/app/(dashboard)/dashboard/endpoint/components/NotionSourceCard.tsx": {
-      "sentinels": ["className=\"w-full flex items-center gap-3 text-start\""]
+      "sentinels": [
+        "className=\"w-full flex items-center gap-3 text-start\""
+      ]
     },
     "src/app/(dashboard)/dashboard/endpoint/components/ObsidianSourceCard.tsx": {
-      "sentinels": ["className=\"w-full flex items-center gap-3 text-start\""]
+      "sentinels": [
+        "className=\"w-full flex items-center gap-3 text-start\""
+      ]
     },
     "src/app/(dashboard)/dashboard/free-provider-rankings/page.tsx": {
       "sentinels": [
@@ -1462,7 +1585,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/onboarding/steps/FreeProviderOnboardingCard.tsx": {
-      "sentinels": ["<div className=\"max-h-48 space-y-2 overflow-y-auto pe-1\">"]
+      "sentinels": [
+        "<div className=\"max-h-48 space-y-2 overflow-y-auto pe-1\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/playground/components/CompareColumn.tsx": {
       "sentinels": [
@@ -1493,7 +1618,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/playground/components/ToolsBuilder.tsx": {
-      "sentinels": ["if (result.ok !== true) {"]
+      "sentinels": [
+        "if (result.ok !== true) {"
+      ]
     },
     "src/app/(dashboard)/dashboard/playground/components/tabs/ApiTab.tsx": {
       "sentinels": [
@@ -1522,7 +1649,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/profile/page.tsx": {
-      "sentinels": ["className={`relative p-4 rounded-xl border transition-all text-start ${"]
+      "sentinels": [
+        "className={`relative p-4 rounded-xl border transition-all text-start ${"
+      ]
     },
     "src/app/(dashboard)/dashboard/provider-stats/page.tsx": {
       "sentinels": [
@@ -1535,10 +1664,15 @@
       "sentinels": []
     },
     "src/app/(dashboard)/dashboard/providers/[id]/__tests__/phase1e.test.tsx": {
-      "sentinels": ["provider=\"openrouter\"", "onCopy={vi.fn()}"]
+      "sentinels": [
+        "provider=\"openrouter\"",
+        "onCopy={vi.fn()}"
+      ]
     },
     "src/app/(dashboard)/dashboard/providers/[id]/__tests__/useModelImportHandlers.test.tsx": {
-      "sentinels": ["modelMeta: { customModels: [], modelCompatOverrides: [] },"]
+      "sentinels": [
+        "modelMeta: { customModels: [], modelCompatOverrides: [] },"
+      ]
     },
     "src/app/(dashboard)/dashboard/providers/[id]/components/BatchTestResultsModal.tsx": {
       "sentinels": [
@@ -1548,10 +1682,14 @@
       ]
     },
     "src/app/(dashboard)/dashboard/providers/[id]/components/CompatibleModelsSection.tsx": {
-      "sentinels": ["provider={providerStorageAlias}"]
+      "sentinels": [
+        "provider={providerStorageAlias}"
+      ]
     },
     "src/app/(dashboard)/dashboard/providers/[id]/components/ConnectionsHeaderToolbar.tsx": {
-      "sentinels": ["handleToggleClaudeRoutingPreference: (enabled: boolean) => Promise<void>;"]
+      "sentinels": [
+        "handleToggleClaudeRoutingPreference: (enabled: boolean) => Promise<void>;"
+      ]
     },
     "src/app/(dashboard)/dashboard/providers/[id]/components/ConnectionsListPanel.tsx": {
       "sentinels": [
@@ -1566,7 +1704,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/providers/[id]/components/ModelCompatPopover.tsx": {
-      "sentinels": ["className=\"ms-1 font-medium text-red-600 dark:text-red-400\""]
+      "sentinels": [
+        "className=\"ms-1 font-medium text-red-600 dark:text-red-400\""
+      ]
     },
     "src/app/(dashboard)/dashboard/providers/[id]/components/ModelRow.tsx": {
       "sentinels": [
@@ -1616,7 +1756,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/providers/[id]/components/ZedImportCard.tsx": {
-      "sentinels": ["className=\"flex items-center justify-between w-full text-start\""]
+      "sentinels": [
+        "className=\"flex items-center justify-between w-full text-start\""
+      ]
     },
     "src/app/(dashboard)/dashboard/providers/[id]/components/modals/AddApiKeyModal.tsx": {
       "sentinels": [
@@ -1713,7 +1855,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/providers/providerPageUtils.ts": {
-      "sentinels": ["authType: \"oauth\" | \"free\" | \"apikey\" | \"no-auth\""]
+      "sentinels": [
+        "authType: \"oauth\" | \"free\" | \"apikey\" | \"no-auth\""
+      ]
     },
     "src/app/(dashboard)/dashboard/providers/services/components/CliproxyAccountHealthCard.tsx": {
       "sentinels": [
@@ -1728,10 +1872,14 @@
       ]
     },
     "src/app/(dashboard)/dashboard/providers/services/components/ServiceStatusCard.tsx": {
-      "sentinels": ["<div className=\"text-end shrink-0\">"]
+      "sentinels": [
+        "<div className=\"text-end shrink-0\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/quota/page.tsx": {
-      "sentinels": [".then((data: Record<string, unknown>) => {"]
+      "sentinels": [
+        ".then((data: Record<string, unknown>) => {"
+      ]
     },
     "src/app/(dashboard)/dashboard/radar/RadarCatalogTable.tsx": {
       "sentinels": [
@@ -1801,7 +1949,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/settings/components/CacheStatsCard.tsx": {
-      "sentinels": ["<span className=\"text-green-400 w-12 text-end\">"]
+      "sentinels": [
+        "<span className=\"text-green-400 w-12 text-end\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/settings/components/CodexFastTierTab.tsx": {
       "sentinels": [
@@ -1829,7 +1979,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/settings/components/FallbackChainsEditor.tsx": {
-      "sentinels": ["className=\"text-text-muted hover:text-red-400 transition-colors ms-2\""]
+      "sentinels": [
+        "className=\"text-text-muted hover:text-red-400 transition-colors ms-2\""
+      ]
     },
     "src/app/(dashboard)/dashboard/settings/components/FeatureFlagsGrid.tsx": {
       "sentinels": [
@@ -1845,7 +1997,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/settings/components/MitmProxyTab.tsx": {
-      "sentinels": ["<table className=\"w-full min-w-[760px] text-start text-sm\">"]
+      "sentinels": [
+        "<table className=\"w-full min-w-[760px] text-start text-sm\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/settings/components/ModelAliasesTab.tsx": {
       "sentinels": [
@@ -1858,7 +2012,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/settings/components/ModelLockoutCard.tsx": {
-      "sentinels": ["<span className=\"me-1 text-xs text-text-muted\">{t(\"suggestions\")}</span>"]
+      "sentinels": [
+        "<span className=\"me-1 text-xs text-text-muted\">{t(\"suggestions\")}</span>"
+      ]
     },
     "src/app/(dashboard)/dashboard/settings/components/ModelsDevSyncTab.tsx": {
       "sentinels": [
@@ -1867,7 +2023,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/settings/components/OneproxyTab.tsx": {
-      "sentinels": ["<th className=\"text-start py-2 px-3 text-text-muted font-medium\">"]
+      "sentinels": [
+        "<th className=\"text-start py-2 px-3 text-text-muted font-medium\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/settings/components/PricingTab.tsx": {
       "sentinels": [
@@ -1884,7 +2042,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/settings/components/ProxyCheckboxCell.tsx": {
-      "sentinels": ["<td className=\"py-2 pe-2 w-8\">"]
+      "sentinels": [
+        "<td className=\"py-2 pe-2 w-8\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/settings/components/ProxyRegistryManager.tsx": {
       "sentinels": [
@@ -1908,7 +2068,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/settings/components/SecurityTab.tsx": {
-      "sentinels": ["<ul className=\"list-disc ps-5 mt-1 space-y-1\">"]
+      "sentinels": [
+        "<ul className=\"list-disc ps-5 mt-1 space-y-1\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/settings/components/SidebarTab.tsx": {
       "sentinels": [
@@ -1983,7 +2145,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/tools/agent-bridge/components/ModelMappingTable.tsx": {
-      "sentinels": ["<th className=\"px-3 py-2 text-start text-xs font-medium text-text-muted\">"]
+      "sentinels": [
+        "<th className=\"px-3 py-2 text-start text-xs font-medium text-text-muted\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/tools/agent-bridge/components/ModelSelectorModal.tsx": {
       "sentinels": [
@@ -2005,7 +2169,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/tools/agent-bridge/normalizeState.ts": {
-      "sentinels": ["import { isRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { isRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/CaptureModesToolbar.tsx": {
       "sentinels": [
@@ -2015,7 +2181,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/CustomHostsManager.tsx": {
-      "sentinels": ["setError(parsed.error.issues[0]?.message ?? t(\"invalidHost\"));"]
+      "sentinels": [
+        "setError(parsed.error.issues[0]?.message ?? t(\"invalidHost\"));"
+      ]
     },
     "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/RequestStreamingList.tsx": {
       "sentinels": [
@@ -2023,7 +2191,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/TopBarControls.tsx": {
-      "sentinels": ["<div className=\"flex items-center gap-2 ms-auto\">"]
+      "sentinels": [
+        "<div className=\"flex items-center gap-2 ms-auto\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/chat/ChatBubble.tsx": {
       "sentinels": [
@@ -2068,10 +2238,14 @@
       ]
     },
     "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/shared/JsonViewer.tsx": {
-      "sentinels": ["<div className=\"ms-4 border-l border-border ps-2\">"]
+      "sentinels": [
+        "<div className=\"ms-4 border-l border-border ps-2\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/shared/SseEventList.tsx": {
-      "sentinels": ["<span className=\"text-text-muted shrink-0 w-8 text-end\">{i + 1}</span>"]
+      "sentinels": [
+        "<span className=\"text-text-muted shrink-0 w-8 text-end\">{i + 1}</span>"
+      ]
     },
     "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/tabs/RequestBodyTab.tsx": {
       "sentinels": [
@@ -2086,7 +2260,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/translator/TranslatorPageClient.tsx": {
-      "sentinels": ["className=\"flex w-full items-center justify-between p-4 text-start\""]
+      "sentinels": [
+        "className=\"flex w-full items-center justify-between p-4 text-start\""
+      ]
     },
     "src/app/(dashboard)/dashboard/translator/components/MonitorTab.tsx": {
       "sentinels": [
@@ -2101,7 +2277,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/translator/components/advanced/PipelineView.tsx": {
-      "sentinels": ["className=\"w-full p-3 flex items-center gap-3 text-start\""]
+      "sentinels": [
+        "className=\"w-full p-3 flex items-center gap-3 text-start\""
+      ]
     },
     "src/app/(dashboard)/dashboard/translator/components/advanced/StreamTransformerAccordion.tsx": {
       "sentinels": [
@@ -2132,7 +2310,9 @@
       ]
     },
     "src/app/(dashboard)/dashboard/usage/components/ProviderLimits/ProviderUsdCostModal.tsx": {
-      "sentinels": ["<div className=\"text-end\">"]
+      "sentinels": [
+        "<div className=\"text-end\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/usage/components/ProviderLimits/constants.ts": {
       "sentinels": [
@@ -2209,7 +2389,9 @@
       ]
     },
     "src/app/api/assess/route.ts": {
-      "sentinels": ["if (validation.success !== true) {"]
+      "sentinels": [
+        "if (validation.success !== true) {"
+      ]
     },
     "src/app/api/cache/route.ts": {
       "sentinels": [
@@ -2270,7 +2452,9 @@
       ]
     },
     "src/app/api/cli-tools/grok-build-settings/route.ts": {
-      "sentinels": ["type GrokBuildSettings,"]
+      "sentinels": [
+        "type GrokBuildSettings,"
+      ]
     },
     "src/app/api/cli-tools/guide-settings/[toolId]/route.ts": {
       "sentinels": [
@@ -2368,10 +2552,14 @@
       ]
     },
     "src/app/api/internal/codex-responses-ws/compression.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/app/api/internal/codex-responses-ws/history.ts": {
-      "sentinels": ["import { isRecord, type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { isRecord, type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/app/api/internal/codex-responses-ws/route.ts": {
       "sentinels": [
@@ -2381,10 +2569,14 @@
       ]
     },
     "src/app/api/local/redis/start/route.ts": {
-      "sentinels": ["if (guard.allowed !== true) {"]
+      "sentinels": [
+        "if (guard.allowed !== true) {"
+      ]
     },
     "src/app/api/local/redis/stop/route.ts": {
-      "sentinels": ["if (guard.allowed !== true) {"]
+      "sentinels": [
+        "if (guard.allowed !== true) {"
+      ]
     },
     "src/app/api/logs/[id]/route.ts": {
       "sentinels": [
@@ -2394,13 +2586,19 @@
       ]
     },
     "src/app/api/model-capability-overrides/route.ts": {
-      "sentinels": ["if (parsed.ok !== true) {"]
+      "sentinels": [
+        "if (parsed.ok !== true) {"
+      ]
     },
     "src/app/api/model-combo-mappings/route.ts": {
-      "sentinels": ["if (parsed.success === false) {"]
+      "sentinels": [
+        "if (parsed.success === false) {"
+      ]
     },
     "src/app/api/models/alias/route.ts": {
-      "sentinels": ["if (\"error\" in resolved) {"]
+      "sentinels": [
+        "if (\"error\" in resolved) {"
+      ]
     },
     "src/app/api/models/route.ts": {
       "sentinels": [
@@ -2424,7 +2622,9 @@
       ]
     },
     "src/app/api/oauth/cursor/login/poll/route.ts": {
-      "sentinels": ["await syncToCloud(getConsistentMachineId());"]
+      "sentinels": [
+        "await syncToCloud(getConsistentMachineId());"
+      ]
     },
     "src/app/api/oauth/kiro/auto-import/route.ts": {
       "sentinels": [
@@ -2433,7 +2633,9 @@
       ]
     },
     "src/app/api/omniroute/route/preview/route.ts": {
-      "sentinels": ["const result = rankCandidates(parsed.data.candidates);"]
+      "sentinels": [
+        "const result = rankCandidates(parsed.data.candidates);"
+      ]
     },
     "src/app/api/openapi/spec/route.ts": {
       "sentinels": [
@@ -2443,10 +2645,14 @@
       ]
     },
     "src/app/api/playground/presets/[id]/route.ts": {
-      "sentinels": ["if (validation.valid !== true) return validation.error;"]
+      "sentinels": [
+        "if (validation.valid !== true) return validation.error;"
+      ]
     },
     "src/app/api/provider-nodes/[id]/route.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/app/api/provider-nodes/validate/route.ts": {
       "sentinels": [
@@ -2462,7 +2668,9 @@
       ]
     },
     "src/app/api/providers/[id]/models/discovery/codex.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/app/api/providers/[id]/models/discovery/helpers.ts": {
       "sentinels": [
@@ -2471,7 +2679,9 @@
       ]
     },
     "src/app/api/providers/[id]/models/discoveryClientVersion.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/app/api/providers/[id]/models/route.ts": {
       "sentinels": [
@@ -2494,7 +2704,9 @@
       ]
     },
     "src/app/api/providers/[id]/sync-models/degradedLocalCatalog.ts": {
-      "sentinels": ["warning?: unknown;"]
+      "sentinels": [
+        "warning?: unknown;"
+      ]
     },
     "src/app/api/providers/[id]/sync-models/route.ts": {
       "sentinels": [
@@ -2518,7 +2730,9 @@
       ]
     },
     "src/app/api/providers/free-onboarding/route.ts": {
-      "sentinels": ["create: (input) => createProviderConnection({ ...input }),"]
+      "sentinels": [
+        "create: (input) => createProviderConnection({ ...input }),"
+      ]
     },
     "src/app/api/providers/health-autopilot/actions/route.ts": {
       "sentinels": [
@@ -2548,7 +2762,9 @@
       ]
     },
     "src/app/api/providers/volcengine-plan/connect/[sessionId]/cancel/route.ts": {
-      "sentinels": ["): Promise<Response> {"]
+      "sentinels": [
+        "): Promise<Response> {"
+      ]
     },
     "src/app/api/providers/volcengine-plan/connect/[sessionId]/code/route.ts": {
       "sentinels": [
@@ -2565,10 +2781,14 @@
       ]
     },
     "src/app/api/providers/volcengine-plan/connect/[sessionId]/resend/route.ts": {
-      "sentinels": ["): Promise<Response> {"]
+      "sentinels": [
+        "): Promise<Response> {"
+      ]
     },
     "src/app/api/providers/volcengine-plan/connect/[sessionId]/status/route.ts": {
-      "sentinels": ["): Promise<Response> {"]
+      "sentinels": [
+        "): Promise<Response> {"
+      ]
     },
     "src/app/api/providers/volcengine-plan/connect/route.ts": {
       "sentinels": [
@@ -2578,22 +2798,34 @@
       ]
     },
     "src/app/api/radar/local-model-state/route.ts": {
-      "sentinels": ["if (body.ok !== true) return error(body.status, body.message);"]
+      "sentinels": [
+        "if (body.ok !== true) return error(body.status, body.message);"
+      ]
     },
     "src/app/api/rate-limits/route.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/app/api/resilience/model-cooldowns/route.ts": {
-      "sentinels": ["if (validation.success !== true) {"]
+      "sentinels": [
+        "if (validation.success !== true) {"
+      ]
     },
     "src/app/api/resilience/route.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/app/api/services/_shared/installRoute.ts": {
-      "sentinels": ["if (parsed.ok !== true) {"]
+      "sentinels": [
+        "if (parsed.ok !== true) {"
+      ]
     },
     "src/app/api/settings/__tests__/memory.test.ts": {
-      "sentinels": ["await expect(res.json()).resolves.toMatchObject({"]
+      "sentinels": [
+        "await expect(res.json()).resolves.toMatchObject({"
+      ]
     },
     "src/app/api/settings/__tests__/settings.test.ts": {
       "sentinels": [
@@ -2615,7 +2847,9 @@
       ]
     },
     "src/app/api/settings/models-dev/route.ts": {
-      "sentinels": ["return NextResponse.json({ error: validation.error }, { status: 400 });"]
+      "sentinels": [
+        "return NextResponse.json({ error: validation.error }, { status: 400 });"
+      ]
     },
     "src/app/api/settings/obsidian/webdav/route.ts": {
       "sentinels": [
@@ -2625,16 +2859,24 @@
       ]
     },
     "src/app/api/settings/proxies/bulk-import/route.ts": {
-      "sentinels": ["const result = await upsertProxy({ ...item, type: item.type ?? \"http\" });"]
+      "sentinels": [
+        "const result = await upsertProxy({ ...item, type: item.type ?? \"http\" });"
+      ]
     },
     "src/app/api/settings/proxy/cloudflare-deploy/route.ts": {
-      "sentinels": ["body: new Uint8Array(uploadBody),"]
+      "sentinels": [
+        "body: new Uint8Array(uploadBody),"
+      ]
     },
     "src/app/api/settings/reasoning-routing-rules/[id]/route.ts": {
-      "sentinels": ["if (parsed.success === false) return parsed.response;"]
+      "sentinels": [
+        "if (parsed.success === false) return parsed.response;"
+      ]
     },
     "src/app/api/settings/reasoning-routing-rules/route.ts": {
-      "sentinels": ["if (parsed.success === false) return parsed.response;"]
+      "sentinels": [
+        "if (parsed.success === false) return parsed.response;"
+      ]
     },
     "src/app/api/settings/reasoning-routing-rules/simulate/route.ts": {
       "sentinels": [
@@ -2654,7 +2896,9 @@
       "sentinels": []
     },
     "src/app/api/tools/agent-bridge/agents/[id]/detected-models/route.ts": {
-      "sentinels": ["\"ghe-copilot\","]
+      "sentinels": [
+        "\"ghe-copilot\","
+      ]
     },
     "src/app/api/tools/traffic-inspector/internal/ingest/route.ts": {
       "sentinels": [
@@ -2684,10 +2928,14 @@
       ]
     },
     "src/app/api/tunnels/cloudflared/route.ts": {
-      "sentinels": ["return NextResponse.json({ error: validation.error }, { status: 400 });"]
+      "sentinels": [
+        "return NextResponse.json({ error: validation.error }, { status: 400 });"
+      ]
     },
     "src/app/api/tunnels/ngrok/route.ts": {
-      "sentinels": ["return NextResponse.json({ error: validation.error }, { status: 400 });"]
+      "sentinels": [
+        "return NextResponse.json({ error: validation.error }, { status: 400 });"
+      ]
     },
     "src/app/api/tunnels/tailscale/routeUtils.ts": {
       "sentinels": [
@@ -2717,7 +2965,9 @@
       ]
     },
     "src/app/api/v1/_shared/mediaGenerationRoute.ts": {
-      "sentinels": ["result: MediaGenerationResultLike,"]
+      "sentinels": [
+        "result: MediaGenerationResultLike,"
+      ]
     },
     "src/app/api/v1/_shared/rateLimit.ts": {
       "sentinels": [
@@ -2727,10 +2977,14 @@
       ]
     },
     "src/app/api/v1/batches/route.ts": {
-      "sentinels": ["if (parsedLimit.ok !== true) {"]
+      "sentinels": [
+        "if (parsedLimit.ok !== true) {"
+      ]
     },
     "src/app/api/v1/chat/completions/route.ts": {
-      "sentinels": ["import { isRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { isRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/app/api/v1/chatgpt-web/image/[id]/route.ts": {
       "sentinels": [
@@ -2747,10 +3001,14 @@
       ]
     },
     "src/app/api/v1/files/[id]/content/route.ts": {
-      "sentinels": ["return new Response(content as Uint8Array<ArrayBuffer>, {"]
+      "sentinels": [
+        "return new Response(content as Uint8Array<ArrayBuffer>, {"
+      ]
     },
     "src/app/api/v1/files/route.ts": {
-      "sentinels": ["if (parsed.ok !== true) return parsed.response;"]
+      "sentinels": [
+        "if (parsed.ok !== true) return parsed.response;"
+      ]
     },
     "src/app/api/v1/images/edits/route.ts": {
       "sentinels": [
@@ -2830,22 +3088,34 @@
       ]
     },
     "src/app/api/v1/web/fetch/route.ts": {
-      "sentinels": ["if (target.ok !== true) return target.response;"]
+      "sentinels": [
+        "if (target.ok !== true) return target.response;"
+      ]
     },
     "src/app/api/v1beta/models/route.ts": {
-      "sentinels": ["if (typeof provider !== \"string\" || !provider) continue;"]
+      "sentinels": [
+        "if (typeof provider !== \"string\" || !provider) continue;"
+      ]
     },
     "src/app/api/version-manager/restart/route.ts": {
-      "sentinels": ["if (parsed.ok !== true) {"]
+      "sentinels": [
+        "if (parsed.ok !== true) {"
+      ]
     },
     "src/app/api/version-manager/start/route.ts": {
-      "sentinels": ["if (parsed.ok !== true) {"]
+      "sentinels": [
+        "if (parsed.ok !== true) {"
+      ]
     },
     "src/app/api/version-manager/stop/route.ts": {
-      "sentinels": ["if (parsed.ok !== true) {"]
+      "sentinels": [
+        "if (parsed.ok !== true) {"
+      ]
     },
     "src/app/api/webhooks/[id]/route.ts": {
-      "sentinels": ["metadata: z.record(z.string(), z.string()).optional(),"]
+      "sentinels": [
+        "metadata: z.record(z.string(), z.string()).optional(),"
+      ]
     },
     "src/app/api/webhooks/[id]/test/route.ts": {
       "sentinels": [
@@ -2854,10 +3124,14 @@
       ]
     },
     "src/app/api/webhooks/route.ts": {
-      "sentinels": ["metadata: z.record(z.string(), z.string()).optional(),"]
+      "sentinels": [
+        "metadata: z.record(z.string(), z.string()).optional(),"
+      ]
     },
     "src/app/authorize/route.ts": {
-      "sentinels": ["if (parsed.ok !== true) {"]
+      "sentinels": [
+        "if (parsed.ok !== true) {"
+      ]
     },
     "src/app/callback/page.tsx": {
       "sentinels": [
@@ -2874,7 +3148,9 @@
       ]
     },
     "src/app/docs/components/ApiExplorerClient.tsx": {
-      "sentinels": ["className={`w-full text-start px-3 py-2 rounded-lg text-sm transition-colors"]
+      "sentinels": [
+        "className={`w-full text-start px-3 py-2 rounded-lg text-sm transition-colors"
+      ]
     },
     "src/app/docs/components/DocsPageAnalytics.tsx": {
       "sentinels": [
@@ -2883,7 +3159,9 @@
       ]
     },
     "src/app/docs/layout.tsx": {
-      "sentinels": ["<DocsLayout tree={source.getPageTree()} {...docsLayoutOptions}>"]
+      "sentinels": [
+        "<DocsLayout tree={source.getPageTree()} {...docsLayoutOptions}>"
+      ]
     },
     "src/app/error.tsx": {
       "sentinels": [
@@ -2908,7 +3186,9 @@
       ]
     },
     "src/app/landing/components/Footer.tsx": {
-      "sentinels": ["<p className=\"text-gray-600 text-sm break-words text-center md:text-start\">"]
+      "sentinels": [
+        "<p className=\"text-gray-600 text-sm break-words text-center md:text-start\">"
+      ]
     },
     "src/app/landing/components/GetStarted.tsx": {
       "sentinels": [
@@ -2944,7 +3224,11 @@
       ]
     },
     "src/app/manifest.ts": {
-      "sentinels": ["src: \"/icon-512.png\",", "purpose: \"maskable\",", "type: \"image/png\","]
+      "sentinels": [
+        "src: \"/icon-512.png\",",
+        "purpose: \"maskable\",",
+        "type: \"image/png\","
+      ]
     },
     "src/app/privacy/page.tsx": {
       "sentinels": [
@@ -2953,13 +3237,19 @@
       ]
     },
     "src/app/terms/page.tsx": {
-      "sentinels": ["<ul className=\"list-disc ps-6 space-y-2\">"]
+      "sentinels": [
+        "<ul className=\"list-disc ps-6 space-y-2\">"
+      ]
     },
     "src/domain/connectionModelRules.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/domain/tagRouter.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/i18n/messages/en.json": {
       "sentinels": [
@@ -2983,7 +3273,9 @@
       ]
     },
     "src/lib/a2a/skills/healthReport.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/api/errorResponse.ts": {
       "sentinels": [
@@ -2998,10 +3290,14 @@
       ]
     },
     "src/lib/auth/managementPassword.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/cloudAgent/api.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/cloudSync.ts": {
       "sentinels": [
@@ -3025,7 +3321,9 @@
       ]
     },
     "src/lib/combos/builderOptions.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/combos/compositeTiers.ts": {
       "sentinels": [
@@ -3034,10 +3332,14 @@
       ]
     },
     "src/lib/combos/controlCenter.ts": {
-      "sentinels": ["import { isRecord, type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { isRecord, type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/combos/intelligentRouting.ts": {
-      "sentinels": ["import { isRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { isRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/combos/invariants.ts": {
       "sentinels": [
@@ -3047,13 +3349,19 @@
       ]
     },
     "src/lib/combos/steps.ts": {
-      "sentinels": ["import { isRecord, type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { isRecord, type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/combos/testHealth.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/compliance/providerAudit.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/config/hotReload.ts": {
       "sentinels": [
@@ -3068,7 +3376,9 @@
       ]
     },
     "src/lib/copilot/codegraphKnowledge.ts": {
-      "sentinels": ["if (existsSync(/* turbopackIgnore: true */ c)) return c;"]
+      "sentinels": [
+        "if (existsSync(/* turbopackIgnore: true */ c)) return c;"
+      ]
     },
     "src/lib/db/adapters/betterSqliteAdapter.ts": {
       "sentinels": [
@@ -3106,7 +3416,9 @@
       ]
     },
     "src/lib/db/agenticConversations.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/apiKeys.ts": {
       "sentinels": [
@@ -3116,7 +3428,9 @@
       ]
     },
     "src/lib/db/caseMapping.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/cleanup.ts": {
       "sentinels": [
@@ -3126,19 +3440,29 @@
       ]
     },
     "src/lib/db/cliToolState.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/compression.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/compressionCombos.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/compressionContextBudget.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/contextHandoffs.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/core.ts": {
       "sentinels": [
@@ -3162,16 +3486,24 @@
       ]
     },
     "src/lib/db/domainState.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/evals.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/healthCheck.ts": {
-      "sentinels": ["import { isRecord, type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { isRecord, type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/interceptionRules.ts": {
-      "sentinels": ["import { isRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { isRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/memoryFtsMaintenance.ts": {
       "sentinels": [
@@ -3194,22 +3526,34 @@
       ]
     },
     "src/lib/db/oneproxy.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/optimizationSettings.ts": {
-      "sentinels": ["import { isRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { isRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/paramFilters.ts": {
-      "sentinels": ["import { isRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { isRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/providerLimits.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/providers.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/providers/codexAccountState.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/providers/columns.ts": {
       "sentinels": [
@@ -3218,13 +3562,19 @@
       ]
     },
     "src/lib/db/providers/lazyConnectionView.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/providers/usageIdentityReconciliation.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/proxies/types.ts": {
-      "sentinels": ["export type { JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "export type { JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/quotaSnapshots.ts": {
       "sentinels": [
@@ -3241,10 +3591,14 @@
       ]
     },
     "src/lib/db/repositories/sqliteComboRepository.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/settings.ts": {
-      "sentinels": ["const combos = db.prepare(\"SELECT id, data FROM combos LIMIT 5000\").all();"]
+      "sentinels": [
+        "const combos = db.prepare(\"SELECT id, data FROM combos LIMIT 5000\").all();"
+      ]
     },
     "src/lib/db/settings/shared.ts": {
       "sentinels": [
@@ -3260,7 +3614,9 @@
       ]
     },
     "src/lib/db/syncTokens.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/db/tierConfig.ts": {
       "sentinels": [
@@ -3284,7 +3640,9 @@
       ]
     },
     "src/lib/db/vacuumScheduler.ts": {
-      "sentinels": ["import { isRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { isRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/docsMdxComponents.ts": {
       "sentinels": [
@@ -3301,13 +3659,19 @@
       ]
     },
     "src/lib/env/runtimeEnv.ts": {
-      "sentinels": ["function formatZodPath(path: readonly PropertyKey[]): string {"]
+      "sentinels": [
+        "function formatZodPath(path: readonly PropertyKey[]): string {"
+      ]
     },
     "src/lib/guardrails/credentialMasker.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/guardrails/piiMasker.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/guardrails/videoBridgeHelpers.ts": {
       "sentinels": [
@@ -3324,25 +3688,40 @@
       ]
     },
     "src/lib/logPayloads.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/memory/__tests__/generic-backend.test.ts": {
-      "sentinels": ["accessCount: 0,"]
+      "sentinels": [
+        "accessCount: 0,"
+      ]
     },
     "src/lib/memory/__tests__/injection.test.ts": {
-      "sentinels": ["lastAccessedAt: null,", "accessCount: 0,"]
+      "sentinels": [
+        "lastAccessedAt: null,",
+        "accessCount: 0,"
+      ]
     },
     "src/lib/memory/__tests__/schemas.test.ts": {
-      "sentinels": ["import { describe, expect, test } from \"vitest\";"]
+      "sentinels": [
+        "import { describe, expect, test } from \"vitest\";"
+      ]
     },
     "src/lib/memory/qdrant.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/modelMetadataRegistry.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/modelsDevSync/transform.ts": {
-      "sentinels": ["last_synced?: string | null;"]
+      "sentinels": [
+        "last_synced?: string | null;"
+      ]
     },
     "src/lib/monitoring/cgroupMemory.ts": {
       "sentinels": [
@@ -3373,10 +3752,14 @@
       ]
     },
     "src/lib/monitoring/providerHealthMatrix.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/oauth/gitlab.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/oauth/providers/antigravity.ts": {
       "sentinels": [
@@ -3384,28 +3767,44 @@
       ]
     },
     "src/lib/oauth/providers/claude.ts": {
-      "sentinels": ["mapTokens: (tokens, extra = undefined) => {"]
+      "sentinels": [
+        "mapTokens: (tokens, extra = undefined) => {"
+      ]
     },
     "src/lib/oauth/providers/codex.ts": {
-      "sentinels": ["mapTokens: (tokens, extra = undefined) => {"]
+      "sentinels": [
+        "mapTokens: (tokens, extra = undefined) => {"
+      ]
     },
     "src/lib/oauth/providers/github.ts": {
-      "sentinels": ["mapTokens: (tokens, extra = undefined) => ({"]
+      "sentinels": [
+        "mapTokens: (tokens, extra = undefined) => ({"
+      ]
     },
     "src/lib/oauth/providers/gitlab-duo.ts": {
-      "sentinels": ["mapTokens: (tokens, extra = undefined) => {"]
+      "sentinels": [
+        "mapTokens: (tokens, extra = undefined) => {"
+      ]
     },
     "src/lib/oauth/providers/kiro.ts": {
-      "sentinels": ["mapTokens: (tokens, extra = undefined) => ({"]
+      "sentinels": [
+        "mapTokens: (tokens, extra = undefined) => ({"
+      ]
     },
     "src/lib/oauth/providers/openference.ts": {
-      "sentinels": ["mapTokens: (tokens, extra = undefined) => {"]
+      "sentinels": [
+        "mapTokens: (tokens, extra = undefined) => {"
+      ]
     },
     "src/lib/oauth/providers/qoder.ts": {
-      "sentinels": ["mapTokens: (tokens, extra = undefined) => ({"]
+      "sentinels": [
+        "mapTokens: (tokens, extra = undefined) => ({"
+      ]
     },
     "src/lib/oauth/utils/agyAuthImport.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/oauth/utils/claudeAuthFile.ts": {
       "sentinels": [
@@ -3415,10 +3814,14 @@
       ]
     },
     "src/lib/oauth/utils/claudeAuthImport.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/oauth/utils/cliProxyAuthImport.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/oauth/utils/codexAuthFile.ts": {
       "sentinels": [
@@ -3428,10 +3831,14 @@
       ]
     },
     "src/lib/oauth/utils/codexAuthImport.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/oauth/utils/codexConnectionSelection.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/opaquePath.ts": {
       "sentinels": [
@@ -3448,10 +3855,14 @@
       ]
     },
     "src/lib/pricingSync.ts": {
-      "sentinels": ["export type PricingByProvider = Record<string, PricingModels>;"]
+      "sentinels": [
+        "export type PricingByProvider = Record<string, PricingModels>;"
+      ]
     },
     "src/lib/providerModels/cursorAgent.ts": {
-      "sentinels": ["if (existsSync(/* turbopackIgnore: true */ candidate)) return candidate;"]
+      "sentinels": [
+        "if (existsSync(/* turbopackIgnore: true */ candidate)) return candidate;"
+      ]
     },
     "src/lib/providerModels/managedModelImport.ts": {
       "sentinels": [
@@ -3461,16 +3872,24 @@
       ]
     },
     "src/lib/providerModels/modelDiscovery.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/providerModels/ollamaCapabilities.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/providers/claudeExtraUsage.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/providers/claudeFastMode.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/providers/codexConnectionDefaults.ts": {
       "sentinels": [
@@ -3480,16 +3899,24 @@
       ]
     },
     "src/lib/providers/codexFastTier.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/providers/requestDefaults.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/providers/volcenginePlanBinding.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/providers/volcenginePlanModelDiscovery.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/proxyHealth/statusPolicy.ts": {
       "sentinels": [
@@ -3510,7 +3937,9 @@
       ]
     },
     "src/lib/quota/quotaAnalytics.ts": {
-      "sentinels": ["log.error({ err: error }, \"Failed to compute quota analytics summary\");"]
+      "sentinels": [
+        "log.error({ err: error }, \"Failed to compute quota analytics summary\");"
+      ]
     },
     "src/lib/quota/quotaResetTimers.ts": {
       "sentinels": [
@@ -3520,13 +3949,19 @@
       ]
     },
     "src/lib/reasoningRouting/policy.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/resilience/modelLockoutSettings.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/resilience/settings/types.ts": {
-      "sentinels": ["export type { JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "export type { JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/routerEval/index.ts": {
       "sentinels": [
@@ -3535,7 +3970,9 @@
       ]
     },
     "src/lib/semanticCache.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/services/htmlRewriter.ts": {
       "sentinels": [
@@ -3580,7 +4017,9 @@
       ]
     },
     "src/lib/system/autoUpdate.ts": {
-      "sentinels": ["const logFd = openSync(/* turbopackIgnore: true */ config.logPath, \"a\");"]
+      "sentinels": [
+        "const logFd = openSync(/* turbopackIgnore: true */ config.logPath, \"a\");"
+      ]
     },
     "src/lib/tailscaleTunnel.ts": {
       "sentinels": [
@@ -3597,13 +4036,19 @@
       ]
     },
     "src/lib/usage/callLogs.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/usage/callLogs/format.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/usage/codexResetCredits.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/usage/comboForecast.ts": {
       "sentinels": [
@@ -3634,7 +4079,9 @@
       ]
     },
     "src/lib/usage/providerLimits.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/usage/providerLimits/quotaNormalize.ts": {
       "sentinels": [
@@ -3644,28 +4091,44 @@
       ]
     },
     "src/lib/usage/providerLimitsCache.ts": {
-      "sentinels": ["import { isRecord, type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { isRecord, type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/usage/providerWindowCosts.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/usage/resilienceExplain.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/usage/routeExplain.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/usage/tokenAccounting.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/usage/usageHistory.ts": {
-      "sentinels": ["details: Record<string, Record<string, PendingRequestDetail[]>>;"]
+      "sentinels": [
+        "details: Record<string, Record<string, PendingRequestDetail[]>>;"
+      ]
     },
     "src/lib/usage/usageHistory/helpers.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/usage/usageStats.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/lib/versionManager/binaryManager.ts": {
       "sentinels": [
@@ -3675,13 +4138,19 @@
       ]
     },
     "src/lib/vscode/modelPresentation.ts": {
-      "sentinels": ["const parsed = parseModel(canonicalBaseModelId);"]
+      "sentinels": [
+        "const parsed = parseModel(canonicalBaseModelId);"
+      ]
     },
     "src/lib/ws/handshake.ts": {
-      "sentinels": ["wsAuth: (settings as Record<string, unknown>).wsAuth === true,"]
+      "sentinels": [
+        "wsAuth: (settings as Record<string, unknown>).wsAuth === true,"
+      ]
     },
     "src/mitm/cert/install.ts": {
-      "sentinels": ["if (fs.existsSync(/* turbopackIgnore: true */ config.dir)) {"]
+      "sentinels": [
+        "if (fs.existsSync(/* turbopackIgnore: true */ config.dir)) {"
+      ]
     },
     "src/mitm/cert/rootCa.ts": {
       "sentinels": [
@@ -3707,7 +4176,9 @@
       ]
     },
     "src/mitm/detection/copilot.ts": {
-      "sentinels": ["if (!fs.existsSync(/* turbopackIgnore: true */ dir)) continue;"]
+      "sentinels": [
+        "if (!fs.existsSync(/* turbopackIgnore: true */ dir)) continue;"
+      ]
     },
     "src/mitm/detection/cursor.ts": {
       "sentinels": [
@@ -3758,10 +4229,14 @@
       ]
     },
     "src/mitm/manager.ts": {
-      "sentinels": ["if (!fs.existsSync(/* turbopackIgnore: true */ certPath)) {"]
+      "sentinels": [
+        "if (!fs.existsSync(/* turbopackIgnore: true */ certPath)) {"
+      ]
     },
     "src/mitm/tproxy/caTrust.ts": {
-      "sentinels": ["if (fs.existsSync(/* turbopackIgnore: true */ c.dir)) return c;"]
+      "sentinels": [
+        "if (fs.existsSync(/* turbopackIgnore: true */ c.dir)) return c;"
+      ]
     },
     "src/mitm/tproxy/transparentSocket.ts": {
       "sentinels": [
@@ -3769,10 +4244,15 @@
       ]
     },
     "src/server/authz/pipeline.ts": {
-      "sentinels": ["if (outcome.allow === false) {"]
+      "sentinels": [
+        "if (outcome.allow === false) {"
+      ]
     },
     "src/shared/components/Badge.tsx": {
-      "sentinels": ["title?: string;", "title={title}"]
+      "sentinels": [
+        "title?: string;",
+        "title={title}"
+      ]
     },
     "src/shared/components/Collapsible.tsx": {
       "sentinels": [
@@ -3780,7 +4260,9 @@
       ]
     },
     "src/shared/components/CollapsibleSection.tsx": {
-      "sentinels": ["\"flex items-center justify-between w-full px-4 py-3 text-start\","]
+      "sentinels": [
+        "\"flex items-center justify-between w-full px-4 py-3 text-start\","
+      ]
     },
     "src/shared/components/CommandPalette.tsx": {
       "sentinels": [
@@ -3803,7 +4285,9 @@
       ]
     },
     "src/shared/components/InfoTooltip.tsx": {
-      "sentinels": ["\"absolute bottom-full start-1/2 -translate-x-1/2 mb-2\","]
+      "sentinels": [
+        "\"absolute bottom-full start-1/2 -translate-x-1/2 mb-2\","
+      ]
     },
     "src/shared/components/Input.tsx": {
       "sentinels": [
@@ -3906,7 +4390,9 @@
       ]
     },
     "src/shared/components/RiskNoticeModal.tsx": {
-      "sentinels": ["<span className=\"material-symbols-outlined text-[14px] me-1\">check</span>"]
+      "sentinels": [
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">check</span>"
+      ]
     },
     "src/shared/components/SegmentedControl.tsx": {
       "sentinels": [
@@ -3915,7 +4401,9 @@
       ]
     },
     "src/shared/components/Select.tsx": {
-      "sentinels": ["<span className=\"text-red-500 ms-1\" aria-hidden=\"true\">"]
+      "sentinels": [
+        "<span className=\"text-red-500 ms-1\" aria-hidden=\"true\">"
+      ]
     },
     "src/shared/components/Sidebar.tsx": {
       "sentinels": [
@@ -3942,7 +4430,9 @@
       ]
     },
     "src/shared/components/UsageAnalytics.tsx": {
-      "sentinels": ["className=\"ms-0.5 opacity-70 hover:opacity-100\""]
+      "sentinels": [
+        "className=\"ms-0.5 opacity-70 hover:opacity-100\""
+      ]
     },
     "src/shared/components/UsageStats.tsx": {
       "sentinels": [
@@ -3997,7 +4487,9 @@
       ]
     },
     "src/shared/components/docs/APIReference.tsx": {
-      "sentinels": ["<table className=\"w-full text-sm text-start border-collapse\">"]
+      "sentinels": [
+        "<table className=\"w-full text-sm text-start border-collapse\">"
+      ]
     },
     "src/shared/components/docs/Callout.tsx": {
       "sentinels": [
@@ -4035,7 +4527,9 @@
       ]
     },
     "src/shared/services/qwenCodeConfig.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/shared/types/json.ts": {
       "sentinels": [
@@ -4059,13 +4553,19 @@
       ]
     },
     "src/shared/utils/codexConfig.ts": {
-      "sentinels": ["export interface ParsedCodexToml {"]
+      "sentinels": [
+        "export interface ParsedCodexToml {"
+      ]
     },
     "src/shared/utils/grokBilling.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/shared/utils/kimiBilling.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/shared/utils/upstreamError.ts": {
       "sentinels": [
@@ -4082,10 +4582,14 @@
       ]
     },
     "src/sse/handlers/chatHelpers.ts": {
-      "sentinels": ["env: NodeJS.ProcessEnv = process.env"]
+      "sentinels": [
+        "env: NodeJS.ProcessEnv = process.env"
+      ]
     },
     "src/sse/services/auth.ts": {
-      "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
+      "sentinels": [
+        "import { type JsonRecord } from \"@/shared/types/json\";"
+      ]
     },
     "src/types/global.d.ts": {
       "sentinels": [
@@ -4400,7 +4904,10 @@
       ]
     },
     "tests/integration/compression-pipeline.test.ts": {
-      "sentinels": ["activeComboId: null,", "engines: {},"]
+      "sentinels": [
+        "activeComboId: null,",
+        "engines: {},"
+      ]
     },
     "tests/integration/cursor-e2e.test.ts": {
       "sentinels": [
@@ -4431,7 +4938,9 @@
       ]
     },
     "tests/integration/gemini-rate-limit-classification.test.ts": {
-      "sentinels": ["maxCooldownMs: 60000,"]
+      "sentinels": [
+        "maxCooldownMs: 60000,"
+      ]
     },
     "tests/integration/heap-growth.test.ts": {
       "sentinels": [
@@ -4933,7 +5442,9 @@
       ]
     },
     "tests/unit/_fixtures/tsx-runtime-modern-syntax.ts": {
-      "sentinels": ["export {};"]
+      "sentinels": [
+        "export {};"
+      ]
     },
     "tests/unit/_mocks/settings.ts": {
       "sentinels": [
@@ -5184,7 +5695,9 @@
       ]
     },
     "tests/unit/alibaba-free-tier-exhaustion.test.ts": {
-      "sentinels": ["requestScopedFailure: false,"]
+      "sentinels": [
+        "requestScopedFailure: false,"
+      ]
     },
     "tests/unit/alibaba-free-tier-quota-fetcher.test.ts": {
       "sentinels": [
@@ -5548,7 +6061,10 @@
       ]
     },
     "tests/unit/api/v1/relay-routing-backend.test.ts": {
-      "sentinels": ["const env: NodeJS.ProcessEnv = {};", "const env: NodeJS.ProcessEnv = {"]
+      "sentinels": [
+        "const env: NodeJS.ProcessEnv = {};",
+        "const env: NodeJS.ProcessEnv = {"
+      ]
     },
     "tests/unit/api/webhooks/webhook-url-ssrf-guard.test.ts": {
       "sentinels": [
@@ -5770,7 +6286,9 @@
       ]
     },
     "tests/unit/authz/routeGuard.test.ts": {
-      "sentinels": ["reason: \"management_api\" as const,"]
+      "sentinels": [
+        "reason: \"management_api\" as const,"
+      ]
     },
     "tests/unit/auto-candidate-overrides-7819.test.ts": {
       "sentinels": [
@@ -5816,7 +6334,9 @@
       ]
     },
     "tests/unit/auto-combo-scoring-clamp.test.ts": {
-      "sentinels": [") as unknown as typeof DEFAULT_WEIGHTS;"]
+      "sentinels": [
+        ") as unknown as typeof DEFAULT_WEIGHTS;"
+      ]
     },
     "tests/unit/auto-combos-enhanced-4235.test.ts": {
       "sentinels": [
@@ -5909,7 +6429,9 @@
       ]
     },
     "tests/unit/balance-e2e-shards.test.ts": {
-      "sentinels": ["_meta: \"x\" as unknown as number,"]
+      "sentinels": [
+        "_meta: \"x\" as unknown as number,"
+      ]
     },
     "tests/unit/bare-model-autopick.test.ts": {
       "sentinels": [
@@ -6088,8 +6610,8 @@
     "tests/unit/build/check-workflows.test.ts": {
       "sentinels": [
         "/if \\[ \"\\$\\(gh api \"repos\\/\\$GITHUB_REPOSITORY\" --jq '.has_issues'\\)\" = \"true\" \\]; then[\\s\\S]*?fi/",
-        "/if \\[ \"\\$\\{\\{ runner\\.environment \\}\\}\" = \"github-hosted\" \\]; then\\s+MODE=\"\\$MODE --serial\"/g",
-        "const buildWorkflowPath = new URL(\"../../../.github/workflows/build.yml\", import.meta.url);"
+        "const buildWorkflowPath = new URL(\"../../../.github/workflows/build.yml\", import.meta.url);",
+        "/if \\[ \"\\$\\(gh api \"repos\\/\\$GITHUB_REPOSITORY\" --jq '.has_issues'\\)\" = \"true\" \\]; then/g"
       ]
     },
     "tests/unit/build/colocate-standalone-esm-scope.test.ts": {
@@ -6116,6 +6638,13 @@
     "tests/unit/build/optional-pack-installer.test.ts": {
       "sentinels": [
         "fs.rmSync(packDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); // only the tarball remains"
+      ]
+    },
+    "tests/unit/build/optional-transformers-dependency.test.ts": {
+      "sentinels": [
+        "lock.packages[\"node_modules/@huggingface/transformers\"]?.dependencies?.[\"onnxruntime-node\"];",
+        "lock.packages[\"node_modules/@huggingface/transformers\"]?.dependencies?.[\"onnxruntime-node\"],",
+        "\"root lock optionalDependencies must hold onnxruntime-node at transformers' declared pin\""
       ]
     },
     "tests/unit/build/repair-empty-external-package-dirs-nested.test.ts": {
@@ -6157,7 +6686,9 @@
       ]
     },
     "tests/unit/bypass-handler.test.ts": {
-      "sentinels": ["{ broken: true } as unknown as string"]
+      "sentinels": [
+        "{ broken: true } as unknown as string"
+      ]
     },
     "tests/unit/cache-config-route-8219.test.ts": {
       "sentinels": [
@@ -6656,7 +7187,9 @@
       ]
     },
     "tests/unit/chatgpt-web-tools-7679.test.ts": {
-      "sentinels": ["const hardenedPrompt = serializeToolsToPrompt(TOOLS);"]
+      "sentinels": [
+        "const hardenedPrompt = serializeToolsToPrompt(TOOLS);"
+      ]
     },
     "tests/unit/chatgpt-web.test.ts": {
       "sentinels": [
@@ -6822,7 +7355,9 @@
       ]
     },
     "tests/unit/claudeAuthFile.test.ts": {
-      "sentinels": ["import type { JsonRecord } from \"../../src/shared/types/json.ts\";"]
+      "sentinels": [
+        "import type { JsonRecord } from \"../../src/shared/types/json.ts\";"
+      ]
     },
     "tests/unit/claudeAuthImport-bootstrap-headers-10144.test.ts": {
       "sentinels": [
@@ -6832,7 +7367,9 @@
       ]
     },
     "tests/unit/claudeAuthImport.test.ts": {
-      "sentinels": ["import type { JsonRecord } from \"../../src/shared/types/json.ts\";"]
+      "sentinels": [
+        "import type { JsonRecord } from \"../../src/shared/types/json.ts\";"
+      ]
     },
     "tests/unit/cleanup-column-fix.test.mjs": {
       "sentinels": [
@@ -7558,10 +8095,14 @@
       ]
     },
     "tests/unit/codex-tools-redundant-oneof-enum.test.ts": {
-      "sentinels": ["import type { JsonRecord } from \"../../src/shared/types/json.ts\";"]
+      "sentinels": [
+        "import type { JsonRecord } from \"../../src/shared/types/json.ts\";"
+      ]
     },
     "tests/unit/codex-tools-strict-default.test.ts": {
-      "sentinels": ["import type { JsonRecord } from \"../../src/shared/types/json.ts\";"]
+      "sentinels": [
+        "import type { JsonRecord } from \"../../src/shared/types/json.ts\";"
+      ]
     },
     "tests/unit/codex-turn-state.test.ts": {
       "sentinels": [
@@ -7578,10 +8119,15 @@
       ]
     },
     "tests/unit/codexAuthImport.test.ts": {
-      "sentinels": ["import type { JsonRecord } from \"../../src/shared/types/json.ts\";"]
+      "sentinels": [
+        "import type { JsonRecord } from \"../../src/shared/types/json.ts\";"
+      ]
     },
     "tests/unit/codexAuthImportBulk.test.ts": {
-      "sentinels": ["const entries: number = 3;", "const failed: number = 1;"]
+      "sentinels": [
+        "const entries: number = 3;",
+        "const failed: number = 1;"
+      ]
     },
     "tests/unit/collect-metrics-module-coverage.test.ts": {
       "sentinels": [
@@ -7605,7 +8151,9 @@
       ]
     },
     "tests/unit/combo-apply-strategy-ordering-split.test.ts": {
-      "sentinels": ["...(deps() as Record<string, unknown>),"]
+      "sentinels": [
+        "...(deps() as Record<string, unknown>),"
+      ]
     },
     "tests/unit/combo-attempt-body-isolation-7847.test.ts": {
       "sentinels": [
@@ -7727,7 +8275,9 @@
       ]
     },
     "tests/unit/combo-empty-content-failover-5085.test.ts": {
-      "sentinels": ["requestScopedFailure: false,"]
+      "sentinels": [
+        "requestScopedFailure: false,"
+      ]
     },
     "tests/unit/combo-empty-models.test.ts": {
       "sentinels": [
@@ -8010,7 +8560,9 @@
       ]
     },
     "tests/unit/combo/combo-decision-trace.test.ts": {
-      "sentinels": ["} as unknown as Parameters<typeof recordComboDecision>[1])"]
+      "sentinels": [
+        "} as unknown as Parameters<typeof recordComboDecision>[1])"
+      ]
     },
     "tests/unit/combo/combo-failure-tracker-session-isolation.test.ts": {
       "sentinels": [
@@ -8025,7 +8577,10 @@
       ]
     },
     "tests/unit/combo/combo-target-timeout-standards.test.ts": {
-      "sentinels": ["args.status as unknown as Response,", "requestScopedFailure: false,"]
+      "sentinels": [
+        "args.status as unknown as Response,",
+        "requestScopedFailure: false,"
+      ]
     },
     "tests/unit/combo/context-requirements-integration.test.ts": {
       "sentinels": [
@@ -8215,7 +8770,10 @@
       ]
     },
     "tests/unit/compression/body-adapter.test.ts": {
-      "sentinels": ["activeComboId: null,", "engines: {},"]
+      "sentinels": [
+        "activeComboId: null,",
+        "engines: {},"
+      ]
     },
     "tests/unit/compression/cachingAware.test.ts": {
       "sentinels": [
@@ -8237,7 +8795,10 @@
       ]
     },
     "tests/unit/compression/caveman-v379.test.ts": {
-      "sentinels": ["activeComboId: null,", "engines: {},"]
+      "sentinels": [
+        "activeComboId: null,",
+        "engines: {},"
+      ]
     },
     "tests/unit/compression/cavemanSharedBoundaries.test.ts": {
       "sentinels": [
@@ -8544,7 +9105,10 @@
       ]
     },
     "tests/unit/compression/rtk-raw-output.test.ts": {
-      "sentinels": ["activeComboId: null,", "engines: {},"]
+      "sentinels": [
+        "activeComboId: null,",
+        "engines: {},"
+      ]
     },
     "tests/unit/compression/rtk-render-gitdiff.test.ts": {
       "sentinels": [
@@ -8587,7 +9151,10 @@
       ]
     },
     "tests/unit/compression/strategySelector.test.ts": {
-      "sentinels": ["activeComboId: null,", "engines: {},"]
+      "sentinels": [
+        "activeComboId: null,",
+        "engines: {},"
+      ]
     },
     "tests/unit/conductor-a2a-post.test.ts": {
       "sentinels": [
@@ -8707,7 +9274,9 @@
       ]
     },
     "tests/unit/copilot-web-executor.test.ts": {
-      "sentinels": ["stream: false,"]
+      "sentinels": [
+        "stream: false,"
+      ]
     },
     "tests/unit/correctness/goldenSnapshot.test.ts": {
       "sentinels": [
@@ -8772,7 +9341,9 @@
       ]
     },
     "tests/unit/cursor-image-input.test.ts": {
-      "sentinels": ["log: {},"]
+      "sentinels": [
+        "log: {},"
+      ]
     },
     "tests/unit/cursor-renewal.test.ts": {
       "sentinels": [
@@ -9405,7 +9976,9 @@
       ]
     },
     "tests/unit/deepseek-web.test.ts": {
-      "sentinels": ["const resp = await origFetch(String(url), opts);"]
+      "sentinels": [
+        "const resp = await origFetch(String(url), opts);"
+      ]
     },
     "tests/unit/default-reasoning-effort-6879.test.ts": {
       "sentinels": [
@@ -9667,7 +10240,9 @@
       ]
     },
     "tests/unit/eviction-guards-codexQuotaFetcher.test.ts": {
-      "sentinels": ["const { registerCodexConnection, unregisterCodexConnection } = codex;"]
+      "sentinels": [
+        "const { registerCodexConnection, unregisterCodexConnection } = codex;"
+      ]
     },
     "tests/unit/exclusive-connection-leases.test.ts": {
       "sentinels": [
@@ -10207,8 +10782,8 @@
     "tests/unit/guardrails/videoBridgeResultCache.test.ts": {
       "sentinels": [
         "fetchedBuffer = Buffer.from(\"bounded-without-result-cache\") as Buffer<ArrayBuffer>;",
-        "fetchedBuffer = Buffer.from(\"one-protected-download\") as Buffer<ArrayBuffer>;",
-        "fetchRemote: async (url: string, _options?: Record<string, unknown>) => {"
+        "} as NonNullable<ConstructorParameters<typeof VideoBridgeGuardrail>[0]>[\"deps\"];",
+        "fetchedBuffer = Buffer.from(\"one-protected-download\") as Buffer<ArrayBuffer>;"
       ]
     },
     "tests/unit/guardrails/videoBridgeRuntime.test.ts": {
@@ -11559,7 +12134,9 @@
       ]
     },
     "tests/unit/muse-spark-ws-timeout-diagnostics-10727.test.ts": {
-      "sentinels": ["readyState: number = WebSocket.CONNECTING;"]
+      "sentinels": [
+        "readyState: number = WebSocket.CONNECTING;"
+      ]
     },
     "tests/unit/music-generation-handler.test.ts": {
       "sentinels": [
@@ -11592,7 +12169,9 @@
       ]
     },
     "tests/unit/ninerouter-executor.test.ts": {
-      "sentinels": ["(process.env as Record<string, string | undefined>).NODE_ENV = \"test\";"]
+      "sentinels": [
+        "(process.env as Record<string, string | undefined>).NODE_ENV = \"test\";"
+      ]
     },
     "tests/unit/no-thinking-alias.test.ts": {
       "sentinels": [
@@ -12063,7 +12642,11 @@
       ]
     },
     "tests/unit/plugins-loader-ipc.test.ts": {
-      "sentinels": ["onDeactivate: false,", "onUninstall: false,", "onResponse: false,"]
+      "sentinels": [
+        "onDeactivate: false,",
+        "onUninstall: false,",
+        "onResponse: false,"
+      ]
     },
     "tests/unit/plugins-loader.test.ts": {
       "sentinels": [
@@ -12262,7 +12845,10 @@
       ]
     },
     "tests/unit/provider-breaker-halfopen-recovery.test.ts": {
-      "sentinels": ["resetTimeout: 30_000,", "resetTimeout: 100,"]
+      "sentinels": [
+        "resetTimeout: 30_000,",
+        "resetTimeout: 100,"
+      ]
     },
     "tests/unit/provider-connection-apikey-dedup.test.ts": {
       "sentinels": [
@@ -13909,7 +14495,9 @@
       ]
     },
     "tests/unit/security/live-server-allowlist.test.ts": {
-      "sentinels": ["const EMPTY_ENV: NodeJS.ProcessEnv = {} as NodeJS.ProcessEnv;"]
+      "sentinels": [
+        "const EMPTY_ENV: NodeJS.ProcessEnv = {} as NodeJS.ProcessEnv;"
+      ]
     },
     "tests/unit/security/local-endpoints.test.ts": {
       "sentinels": [
@@ -13970,7 +14558,9 @@
       ]
     },
     "tests/unit/service-token-limit-counter.test.ts": {
-      "sentinels": ["mod.recordTokenUsage(\"\", \"openai\", \"gpt-4o\", 15);"]
+      "sentinels": [
+        "mod.recordTokenUsage(\"\", \"openai\", \"gpt-4o\", 15);"
+      ]
     },
     "tests/unit/services-branch-hardening.test.ts": {
       "sentinels": [
@@ -13986,7 +14576,9 @@
       ]
     },
     "tests/unit/services/cliproxy-account-health.test.ts": {
-      "sentinels": ["new Promise<Response>((_resolve, reject) => {"]
+      "sentinels": [
+        "new Promise<Response>((_resolve, reject) => {"
+      ]
     },
     "tests/unit/services/emergency-fallback.test.ts": {
       "sentinels": [
@@ -14516,7 +15108,9 @@
       ]
     },
     "tests/unit/t09-a2a-lifecycle.test.ts": {
-      "sentinels": ["tm[\"cleanupExpired\"]();"]
+      "sentinels": [
+        "tm[\"cleanupExpired\"]();"
+      ]
     },
     "tests/unit/t16-gemini-enum-type-string.test.ts": {
       "sentinels": [
@@ -14643,7 +15237,9 @@
       ]
     },
     "tests/unit/token-health-check-circuit-breaker.test.ts": {
-      "sentinels": ["await import(\"../../src/lib/tokenHealthCheck.ts\");"]
+      "sentinels": [
+        "await import(\"../../src/lib/tokenHealthCheck.ts\");"
+      ]
     },
     "tests/unit/token-health-check-cursor.test.ts": {
       "sentinels": [
@@ -14748,10 +15344,14 @@
       ]
     },
     "tests/unit/tproxy-tls-capture.test.ts": {
-      "sentinels": ["chunks.push(chunk as unknown as Buffer<ArrayBufferLike>);"]
+      "sentinels": [
+        "chunks.push(chunk as unknown as Buffer<ArrayBufferLike>);"
+      ]
     },
     "tests/unit/tproxy-transparent-socket.test.ts": {
-      "sentinels": ["createTransparentListener: (_ip: string, _port: number) => 42,"]
+      "sentinels": [
+        "createTransparentListener: (_ip: string, _port: number) => 42,"
+      ]
     },
     "tests/unit/transform-stream-hwm.test.ts": {
       "sentinels": [
@@ -14787,7 +15387,9 @@
       ]
     },
     "tests/unit/translator-openai-to-gemini-defaults.test.ts": {
-      "sentinels": [") as unknown as {"]
+      "sentinels": [
+        ") as unknown as {"
+      ]
     },
     "tests/unit/translator-openai-to-gemini.test.ts": {
       "sentinels": [
@@ -14844,7 +15446,9 @@
       ]
     },
     "tests/unit/ts7-open-sse-type-fixes.test.ts": {
-      "sentinels": ["} as unknown as Transformer);"]
+      "sentinels": [
+        "} as unknown as Transformer);"
+      ]
     },
     "tests/unit/turbopack-cache-heal-6289.test.ts": {
       "sentinels": [
@@ -14961,7 +15565,11 @@
       ]
     },
     "tests/unit/ui/request-logger-cache-tokens.test.tsx": {
-      "sentinels": ["onSelectRelated={noop}", "onPrevious={noop}", "onNext={noop}"]
+      "sentinels": [
+        "onSelectRelated={noop}",
+        "onPrevious={noop}",
+        "onNext={noop}"
+      ]
     },
     "tests/unit/ui/resilience-connections.test.tsx": {
       "sentinels": [
@@ -15240,7 +15848,9 @@
       ]
     },
     "tests/unit/v1-ws-bridge.test.ts": {
-      "sentinels": ["return new Promise<void>((resolve) => {"]
+      "sentinels": [
+        "return new Promise<void>((resolve) => {"
+      ]
     },
     "tests/unit/v1-ws-route.test.ts": {
       "sentinels": [
@@ -15329,7 +15939,9 @@
       ]
     },
     "tests/unit/video-bridge-route-security.test.ts": {
-      "sentinels": ["} as unknown as Parameters<typeof handleVideoExtractionBrokerRequest>[1]"]
+      "sentinels": [
+        "} as unknown as Parameters<typeof handleVideoExtractionBrokerRequest>[1]"
+      ]
     },
     "tests/unit/video-combo-route.test.ts": {
       "sentinels": [
@@ -15470,7 +16082,9 @@
       ]
     },
     "tests/unit/web-runtime-env.test.ts": {
-      "sentinels": ["} as NodeJS.ProcessEnv;"]
+      "sentinels": [
+        "} as NodeJS.ProcessEnv;"
+      ]
     },
     "tests/unit/webdav-server-3485.test.ts": {
       "sentinels": [
@@ -15609,7 +16223,9 @@
       ]
     },
     "tsconfig.json": {
-      "sentinels": ["\"**/*.stories.tsx\","]
+      "sentinels": [
+        "\"**/*.stories.tsx\","
+      ]
     },
     "tsconfig.typecheck-dashboard.json": {
       "sentinels": [
