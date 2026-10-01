@@ -1062,6 +1062,12 @@ jobs:
       # (if-no-files-found: warn) — Sonar consumes the same file.
       - name: Upload coverage to Codecov (informational)
         if: always()
+        # Informational-only: a missing CODECOV_TOKEN makes the upload stall
+        # (not error), which twice burned the whole 20min job budget and
+        # cancelled the run after every real gate had passed. Hard-timeout the
+        # step and tolerate failure so the upload can never sink the job.
+        timeout-minutes: 3
+        continue-on-error: true
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           files: coverage/lcov.info
