@@ -2,11 +2,10 @@
 // tests/unit/ui/use-stream-metrics.test.tsx
 // Runs via Vitest (vitest.config.ts — includes tests/unit/**/*.test.tsx)
 // Uses React DOM directly (no @testing-library/dom dep required).
-import React, { act, useRef } from "react";
+import React, { act, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useStreamMetrics } from "../../../src/app/(dashboard)/dashboard/playground/hooks/useStreamMetrics";
-import type { UseStreamMetrics } from "../../../src/app/(dashboard)/dashboard/playground/hooks/useStreamMetrics";
 
 // ─── Minimal hook test harness ────────────────────────────────────────────────
 // Uses a React ref to capture hook values from inside the component — avoids
@@ -24,12 +23,12 @@ function mountHook<T>(useHook: () => T): {
   const root = createRoot(container);
 
   function HookComponent() {
-    const captureRef = useRef<T>(undefined as unknown as T);
-    captureRef.current = useHook();
-    // Expose the captured value through the outer hookRef via the React ref.
-    // This is safe because captureRef lives inside the component.
-
-    hookRef.current = captureRef.current;
+    const value = useHook();
+    // Write-through in an effect: mutating outer state during render trips
+    // react-hooks/immutability; act() flushes effects so hookRef is populated.
+    useEffect(() => {
+      hookRef.current = value;
+    });
     return null;
   }
 

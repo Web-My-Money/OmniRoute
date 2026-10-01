@@ -142,6 +142,10 @@ const EXPECTED: Record<InventoryKind, Record<string, number>> = {
     "src/lib/providers/volcenginePlanBinding.ts": 1,
     "src/lib/proxyEgress.ts": 1,
     "src/lib/quota/connectionRecovery.ts": 2,
+    // Quota auto-ping scheduler: reads active oauth connections to tick their
+    // quota window — the same scheduler class as credentialHealth/scheduler
+    // (B), it does not select a connection to serve a user request.
+    "src/lib/services/quotaAutoPing.ts": 1,
     "src/lib/sync/bundle.ts": 1,
     "src/lib/tokenHealthCheck.ts": 1,
     "src/lib/tokenHealthCheckCopilot.ts": 1,
@@ -213,7 +217,7 @@ const CLASSIFICATION: Record<InventoryKind, Record<string, BypassClass>> = {
 function sourceFiles(directory: string): string[] {
   const absolute = path.join(REPO_ROOT, directory);
   return fs.readdirSync(absolute, { withFileTypes: true }).flatMap((entry) => {
-    const relative = path.join(directory, entry.name);
+    const relative = path.posix.join(directory, entry.name);
     if (entry.isDirectory()) return sourceFiles(relative);
     return /\.(?:cjs|js|mjs|ts|tsx)$/.test(entry.name) ? [relative] : [];
   });

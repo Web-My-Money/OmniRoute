@@ -11,7 +11,10 @@ process.env.DISABLE_SQLITE_AUTO_BACKUP = "true";
 const core = await import("../../src/lib/db/core.ts");
 const apiKeys = await import("../../src/lib/db/apiKeys.ts");
 
-await apiKeys.getApiKeys();
+// `allowed_connections` is a lazy fallback column (API_KEY_COLUMN_FALLBACKS),
+// not part of the CREATE TABLE — the raw INSERT below prepares before the
+// first ensured read, so ensure the schema up front.
+await apiKeys.getExclusiveLeaseConnectionIds();
 
 function insertKey(input: {
   id: string;
