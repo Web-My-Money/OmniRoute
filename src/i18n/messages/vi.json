@@ -1019,7 +1019,7 @@
     "apiManager": "Khóa API",
     "apiManagerSubtitle": "Quản lý khóa API và quyền truy cập",
     "embeddedServices": "Dịch vụ nhúng",
-    "embeddedServicesSubtitle": "__MISSING__:Optional local services",
+    "embeddedServicesSubtitle": "Các dịch vụ cục bộ tùy chọn",
     "logs": "Nhật ký",
     "webhooks": "Webhook",
     "webhooksSubtitle": "Nhận thông báo về các sự kiện",
@@ -5724,8 +5724,8 @@
     "aggregatorsGateways": "Trình tổng hợp và cổng kết nối",
     "enterpriseCloud": "Doanh nghiệp & Đám mây",
     "apiFormatLabel": "Nhãn định dạng API",
-    "apiKeyOptionalHint": "__MISSING__:Leave empty if your local setup or provider does not require authentication.",
-    "apiKeyOptionalLabel": "__MISSING__:API Key (optional)",
+    "apiKeyOptionalHint": "Để trống nếu cài đặt cục bộ hoặc nhà cung cấp của bạn không yêu cầu xác thực.",
+    "apiKeyOptionalLabel": "API Key (tùy chọn)",
     "apiRegionChina": "Khu vực API: Trung Quốc",
     "apiRegionHint": "Gợi ý khu vực API",
     "apiRegionInternational": "Khu vực API: Quốc tế",
@@ -6157,8 +6157,8 @@
       "inception": "Inception Labs tương thích OpenAI tại https://api.inceptionlabs.ai/v1. mercury-2 là LLM khuếch tán (dLLM) đầu tiên trong danh mục — tạo sinh nhanh hơn 5-10 lần so với các mô hình tự hồi quy tương đương, hỗ trợ gọi công cụ, json_mode và đầu ra có cấu trúc.",
       "inference-net": "25 USD tín dụng miễn phí khi đăng ký và có các khoản tài trợ nghiên cứu",
       "internlm": "Hạn mức miễn phí hàng tháng ~1M token đầu vào / 3M token đầu ra (~10 RPM)",
-      "jina-ai": "__MISSING__:Bearer API key for api.jina.ai (embeddings, rerank, classify, segment, search). Not the Reader / r.jina.ai card. Dashboard keys take precedence over JINA_AI_API_KEY.",
-      "jina-reader": "__MISSING__:Bearer API key for r.jina.ai URL-to-markdown only. Does not serve /v1/embeddings or /v1/rerank. The same Jina token as Foundation API works.",
+      "jina-ai": "Bearer API key cho api.jina.ai (embeddings, rerank, classify, segment, search). Không phải thẻ Reader / r.jina.ai. Khóa trên Dashboard được ưu tiên hơn JINA_AI_API_KEY.",
+      "jina-reader": "Bearer API key chỉ dành cho r.jina.ai URL-to-markdown. Không phục vụ /v1/embeddings hay /v1/rerank. Dùng được cùng token Jina với Foundation API.",
       "kenari": "Kenari cung cấp endpoint chat completions tương thích OpenAI tại https://kenari.id/v1/chat/completions cùng danh mục /v1/models trực tiếp gồm Claude, GPT, DeepSeek, GLM, Kimi và nhiều mô hình khác. OmniRoute dùng giao thức OpenAI và liệt kê mô hình qua passthrough.",
       "kie": "Kết nối KIE.AI bằng khóa API.",
       "kilo-gateway": "Kết nối Kilo Gateway bằng khóa API.",
@@ -6271,7 +6271,7 @@
       "cursor": "Kết nối Cursor IDE bằng luồng OAuth hiện có.",
       "cursor-api": "Connect Cursor with a user API key (crsr_...) from cursor.com/dashboard/api; no IDE session needed.",
       "github": "Kết nối GitHub Copilot bằng luồng OAuth hiện có.",
-      "gitlab-duo": "__MISSING__:OAuth application with ai_features + read_user scopes. Configure GITLAB_DUO_OAUTH_CLIENT_ID and optionally GITLAB_DUO_OAUTH_CLIENT_SECRET on this OmniRoute instance.",
+      "gitlab-duo": "Ứng dụng OAuth với scope ai_features + read_user. Cấu hình GITLAB_DUO_OAUTH_CLIENT_ID và tùy chọn GITLAB_DUO_OAUTH_CLIENT_SECRET trên instance OmniRoute này.",
       "kilocode": "Kết nối Kilo Code bằng luồng OAuth hiện có.",
       "kimi-coding": "Kết nối Kimi Coding bằng luồng OAuth hiện có.",
       "kiro": "Gói miễn phí: 50 tín dụng/tháng (khoảng 25–100 nghìn token). ⚠️ Điều khoản Kiro cấm sử dụng proxy/harness của bên thứ ba.",
@@ -6341,8 +6341,8 @@
     "apiProtocolHint": "Một số nhà cung cấp phát hành cùng các mô hình qua nhiều giao thức khác nhau. Hãy giữ giá trị mặc định trừ khi bạn cần dùng giao thức thay thế.",
     "bulkAddFormatHintCloudflare": "Mỗi dòng một khóa. Định dạng: name|accountId|apiKey (Cloudflare account ID + API token).",
     "lmarenaWebCookieHint": "Mở arena.ai, đăng nhập, sau đó sao chép toàn bộ header Cookie từ một yêu cầu mạng. Bao gồm arena-auth-prod-v1.0 và arena-auth-prod-v1.1 (và các phần tiếp theo nếu có), ưu tiên kèm theo cf_clearance. Không chỉ dán cookie arena-auth-prod-v1 trống. Tùy chọn: providerSpecificData.recaptchaV3Token nếu create-evaluation vẫn trả về 403.",
-    "kimiOfficialSupporterBadge": "__MISSING__:Official Supporter",
-    "kimiOfficialSupporterTooltip": "__MISSING__:Kimi (Moonshot AI) is an official OmniRoute launch partner",
+    "kimiOfficialSupporterBadge": "Đối tác chính thức",
+    "kimiOfficialSupporterTooltip": "Kimi (Moonshot AI) là đối tác ra mắt chính thức của OmniRoute",
     "cheaperInferenceSupporterBadge": "Người bạn mã nguồn mở",
     "cheaperInferenceSupporterTooltip": "Cheaper Inference hỗ trợ OmniRoute với tư cách là người bạn mã nguồn mở",
     "kimiPartnerLinkNote": "Partner link — supports OmniRoute at no extra cost to you",
@@ -8668,13 +8668,13 @@
   },
   "omniglyph": {
     "preview": "Xem trước",
-    "description": "__MISSING__:Context-as-image compression. Renders the system prompt, tool documentation, and dense history as compact PNG pages for the measured Claude Fable 5 path. The published OmniGlyph package also exposes native GPT 5.6 transformers, but OmniRoute keeps those routes fail-closed until provider fidelity and reading receipts exist.",
+    "description": "Nén context thành ảnh. Kết xuất system prompt, tài liệu công cụ và lịch sử dày đặc thành các trang PNG gọn cho đường Claude Fable 5 đã đo. Gói OmniGlyph đã xuất bản cũng lộ các transformer GPT 5.6 nguyên bản, nhưng OmniRoute giữ các tuyến đó fail-closed cho đến khi có độ trung thực provider và biên nhận đọc.",
     "economicsTitle": "Hiệu quả kinh tế",
     "economics": {
       "fewerTokens": "ít token hơn cho khối đã chuyển đổi",
       "savings": "mức tiết kiệm toàn quy trình (đã đo)",
       "imageTokens": "token hình ảnh cho trang 1568×728 (khoảng 28 nghìn ký tự)",
-      "accuracy": "__MISSING__:scoped Fable 5 reading receipt"
+      "accuracy": "biên nhận đọc Fable 5 theo phạm vi"
     },
     "beforeAfterTitle": "Trước → sau",
     "blockSavings": "Giảm {percent}% token trên khối này",
@@ -8687,18 +8687,18 @@
     "gates": {
       "model": {
         "label": "Mô hình",
-        "pass": "__MISSING__:claude-fable-5 (measured); gpt-5.6 (HOLD)",
-        "why": "__MISSING__:Only the measured Fable 5 path is enabled in OmniRoute. GPT 5.6 is structurally supported by the package but remains blocked until its provider receipt; unverified families such as Grok stay text-only."
+        "pass": "claude-fable-5 (đã đo); gpt-5.6 (TẠM GIỮ)",
+        "why": "Chỉ đường Fable 5 đã đo được bật trong OmniRoute. GPT 5.6 được gói hỗ trợ về mặt cấu trúc nhưng vẫn bị chặn cho đến khi có biên nhận provider; các họ chưa xác minh như Grok vẫn chỉ ở dạng văn bản."
       },
       "transport": {
         "label": "Đường truyền",
-        "pass": "__MISSING__:direct provider",
-        "why": "__MISSING__:Aggregators may resample images and destroy legibility — only a direct provider route is authoritative."
+        "pass": "provider trực tiếp",
+        "why": "Aggregator có thể resample ảnh và phá hỏng khả năng đọc — chỉ tuyến provider trực tiếp mới đáng tin cậy."
       },
       "format": {
         "label": "Định dạng",
-        "pass": "__MISSING__:native Claude/OpenAI",
-        "why": "__MISSING__:The body must match the provider wire: Claude Messages, OpenAI Chat Completions, or native OpenAI Responses input[]."
+        "pass": "Claude/OpenAI nguyên bản",
+        "why": "Body phải khớp với wire của provider: Claude Messages, OpenAI Chat Completions, hoặc input[] của OpenAI Responses nguyên bản."
       },
       "profitable": {
         "label": "Có lợi",
@@ -8707,7 +8707,7 @@
       }
     },
     "enableTitle": "Bật bộ máy",
-    "enableDescription": "__MISSING__:Runs last in the stack after text engines clean the request, using the native provider wire; OpenAI Chat/Responses requests are compressed after translation so their shape is preserved. It also runs standalone through <code>omniglyph</code> mode. This is a preview and remains off by default until end-to-end validation is complete.",
+    "enableDescription": "Chạy cuối cùng trong stack sau khi các engine văn bản làm sạch request, dùng wire nguyên bản của provider; các request OpenAI Chat/Responses được nén sau khi dịch nên giữ nguyên hình dạng. Cũng chạy độc lập qua chế độ <code>omniglyph</code>. Đây là bản preview và mặc định tắt cho đến khi hoàn tất xác thực đầu-cuối.",
     "profileTitle": "Hồ sơ nén",
     "profileDescription": "Hồ sơ là giới hạn trên, không phải giới hạn dưới: một hồ sơ chặt chẽ hơn không thể bị mở lại bằng ghi đè ở từng bước. Đo trên chính mã nguồn này: với coding-safe hoặc balanced, một phiên chưa tích lũy lịch sử sẽ không nén gì cả, vì cả hai đều nâng ngưỡng số ký tự tối thiểu và giữ nguyên system prompt, lược đồ công cụ và kết quả công cụ.",
     "profiles": {
@@ -8736,7 +8736,7 @@
   },
   "embeddedServices": {
     "title": "Dịch vụ nhúng",
-    "description": "__MISSING__:Optional helpers that run on your machine. Most users can start without them — install one only when an integration needs it.",
+    "description": "Các helper tùy chọn chạy trên máy của bạn. Đa số người dùng có thể bắt đầu mà không cần chúng — chỉ cài khi một tích hợp yêu cầu.",
     "stateRunning": "Đang chạy",
     "stateStopped": "Đã dừng",
     "stateStarting": "Đang khởi động",
@@ -10705,7 +10705,7 @@
     "continue": "Tiếp tục"
   },
   "cursorAuthModal": {
-    "title": "__MISSING__:Connect Cursor",
+    "title": "Kết nối Cursor",
     "tabLogin": "Login with Cursor",
     "tabImport": "Import token",
     "loginDescription": "Opens Cursor's browser login. Works in Docker — approve in your host browser, then return here.",
@@ -10718,7 +10718,7 @@
     "autoDetecting": "Tự động phát hiện token...",
     "readingFromCursor": "Đang đọc token từ Cursor IDE hoặc cursor-agent",
     "tokensAutoDetected": "Đã tự động phát hiện token từ Cursor IDE thành công!",
-    "cursorNotDetected": "__MISSING__:Cursor IDE not detected. Paste your access token (and refresh token if available).",
+    "cursorNotDetected": "Không phát hiện Cursor IDE. Dán access token của bạn (và refresh token nếu có).",
     "dockerImportHint": "Running in Docker? Prefer Login with Cursor. IDE auto-import and cursor-agent are usually unavailable inside the container. See docs/providers/CURSOR-DOCKER.md.",
     "accessToken": "Token truy cập",
     "refreshToken": "Refresh Token",
@@ -12088,7 +12088,7 @@
       },
       "acp": {
         "title": "Các tác nhân ACP",
-        "phrase": "__MISSING__:Run complex, long-running logic in the backend",
+        "phrase": "Chạy logic phức tạp, lâu dài ở backend",
         "warning": "Hầu hết người dùng có thể bỏ qua — chỉ dùng khi một tích hợp yêu cầu.",
         "flow": "Ứng dụng khách → OmniRoute → khởi chạy CLI (stdio/ACP) → phản hồi",
         "seeOther": "See →"
