@@ -25,19 +25,84 @@
         "2. **Zero Committed Secrets**: Never commit secrets, API keys, or raw tokens into git."
       ]
     },
+    ".env.example": {
+      "sentinels": [
+        "# ~7GB RAM survive the full unit+vitest+integration+pack wave instead of being",
+        "# equivalent of `npm run release:green -- --serial` — so hosted runners with",
+        "# Release-green sweep runner (#34). Set 1 to force the serial lane — the"
+      ]
+    },
+    ".github/workflows/build.yml": {
+      "sentinels": [
+        "group: ${{ github.workflow }}-${{ github.ref }}",
+        "cancel-in-progress: true",
+        "- \"config/quality/**\""
+      ]
+    },
     ".github/workflows/ci.yml": {
       "sentinels": [
+        "git diff --name-only --no-renames \"$BASE_SHA\" \"$HEAD_SHA\" > changed-files.txt",
         "# (tests/**, src/**/__tests__/**): pre-existing test-mock debt is frozen",
-        "# in config/quality/tests-typecheck-baseline.json; only NEW errors fail.",
-        "# sentinel = a local patch reverted. Pure grep — no git/network needed."
+        "# in config/quality/tests-typecheck-baseline.json; only NEW errors fail."
       ]
+    },
+    ".github/workflows/deploy-vps.yml": {
+      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+    },
+    ".github/workflows/docker-publish.yml": {
+      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+    },
+    ".github/workflows/electron-release.yml": {
+      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+    },
+    ".github/workflows/lock-released-branch.yml": {
+      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+    },
+    ".github/workflows/mutation-redundancy.yml": {
+      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+    },
+    ".github/workflows/nightly-compat.yml": {
+      "sentinels": [
+        "EXISTING=$(gh issue list --repo \"$GITHUB_REPOSITORY\" --state open --search \"$TITLE in:title\" --json number --jq '.[0].number')",
+        "echo \"Issues are disabled on $GITHUB_REPOSITORY; reported via summary + annotation instead.\" >> \"$GITHUB_STEP_SUMMARY\"",
+        "echo \"::warning title=nightly-compat::Node compat failures on $TARGET — $RUN_URL\""
+      ]
+    },
+    ".github/workflows/nightly-llm-security.yml": {
+      "sentinels": [
+        "# job with `result?.error?.includes is not a function` on every probe response.",
+        "# Use the lockfile-pinned devDependency (installed by `npm ci` above), NOT",
+        "# a floating promptfoo release — 0.123.1 (published 2026-09-18) broke this"
+      ]
+    },
+    ".github/workflows/nightly-property.yml": {
+      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+    },
+    ".github/workflows/nightly-release-green.yml": {
+      "sentinels": [
+        "echo \"Issues are disabled on $GITHUB_REPOSITORY; reported via summary + annotation instead.\" >> \"$GITHUB_STEP_SUMMARY\"",
+        "gh issue create --repo \"$GITHUB_REPOSITORY\" --title \"$TITLE\" --label base-red --body-file issue-body.md",
+        "--search \"in:title $TITLE\" --json number --jq '.[0].number' 2>/dev/null || echo \"\")"
+      ]
+    },
+    ".github/workflows/nightly-resilience.yml": {
+      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+    },
+    ".github/workflows/nightly-schemathesis.yml": {
+      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
+    },
+    ".github/workflows/npm-publish.yml": {
+      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
     },
     ".github/workflows/quality.yml": {
       "sentinels": [
-        "# Upstream-drift guard: '-s ours' rebases revert local patches with no",
-        "# conflict (v3.8.50 regressed PR #28 this way). Sentinel grep, no git.",
-        "# config/quality/tests-typecheck-baseline.json; only NEW errors fail."
+        "git diff --name-only --no-renames \"$BASE_SHA\" \"$HEAD_SHA\" > changed-files.txt",
+        "# --no-renames: keep both rename endpoints so a code→docs rename still",
+        "# Upstream-drift guard: '-s ours' rebases revert local patches with no"
       ]
+    },
+    ".github/workflows/scorecard.yml": {
+      "sentinels": ["group: ${{ github.workflow }}", "cancel-in-progress: false", "concurrency:"]
     },
     ".github/workflows/upstream-sync-check.yml": {
       "sentinels": [
@@ -48,6 +113,13 @@
     },
     ".gitignore": {
       "sentinels": ["# WMM: local agent config", "mcp.json"]
+    },
+    ".zizmor.yml": {
+      "sentinels": [
+        "# `push` to release/v* + main, `schedule`, and `workflow_dispatch`. It never",
+        "# • nightly-release-green.yml — validation-only workflow on trusted events:",
+        "# runs on `pull_request`, so a fork ref cannot populate its `cache: npm`,"
+      ]
     },
     "Dockerfile.railway": {
       "sentinels": [
@@ -84,6 +156,13 @@
     },
     "bin/cli/commands/launch-codex.mjs": {
       "sentinels": ["export function buildCodexProviderArgs(baseUrl, model = undefined) {"]
+    },
+    "bin/cli/commands/plugin.mjs": {
+      "sentinels": [
+        "join(dirname(process.execPath), \"..\", \"lib\", \"node_modules\", \"npm\", \"bin\", \"npm-cli.js\"),",
+        "// npm's own CLI entry — resolved without a shell. On Windows `npm` is a `.cmd`",
+        "// (Hard Rule #13). Running npm-cli.js under this Node binary sidesteps both."
+      ]
     },
     "bin/cli/commands/setup-claude.mjs": {
       "sentinels": [
@@ -131,6 +210,13 @@
         "{ cliPath, port, maxRestarts, tlsCert = undefined, tlsKey = undefined, timeoutMs = 60000 },"
       ]
     },
+    "config/quality/.license-allowlist.json": {
+      "sentinels": [
+        "\"justification\": \"Windows platform binary of sharp (optional dep of next/transformers). The AND-ed LGPL-3.0 applies to the bundled prebuilt libvips DLLs — same rationale as the already-registered @img/sharp-libvips-linux-x64 / -linuxmusl-x64 exceptions: dynamically-linked native binaries distributed by the sharp project, not modified or statically linked by OmniRoute. Only surfaces in scans on Windows hosts (npm installs optional platform deps per-OS), which is why it was invisible to Linux CI.\",",
+        "\"license\": \"Apache-2.0 AND LGPL-3.0-or-later\",",
+        "\"@img/sharp-win32-x64\": {"
+      ]
+    },
     "config/quality/complexity-baseline.json": {
       "sentinels": [
         "\"_rebaseline_2026_07_18_pr7360_quota_visibility_resync\": \"2058->2059 (+1 vs recorded ceiling; measured 2056 fresh on release tip cab9e5f0c alone, so this ceiling still carries 2 units of un-banked slack from prior shrinkage — real regression from this merge is 2056->2059, +3). PR #7360 (JxnLexn) release-resync: merging origin/release/v3.8.49 to resolve the 3-file conflict (ConnectionRow.tsx/ConnectionsListPanel.tsx/useProviderConnections.ts) unions two already-compliant features in the same already-oversized god-component: release's confirm-delete-account wiring (#7361) and this PR's per-connection quota-visibility wiring. Diffed release-tip-only vs merged violation lists (scripts dumped via getComplexityEslintReport): most entries are the SAME pre-existing violations shifted a few lines (ConnectionRow/getStatusPresentation/inferErrorType — no count change) or marginally bigger (ConnectionRow function complexity 85->86, ConnectionsListPanel function 498->510 lines) from the two ConnectionRow call sites each gaining both PRs' multi-line JSX props. The 2 genuinely NEW crossings are the 'no tag' and 'tagged groups' .map() render callbacks in ConnectionsListPanel.tsx (83 and 85 lines, was <=80 on both parents individually) tipping over 80 lines specifically because both PRs' props land on the same call sites. No new logic was written during the resync itself (only import-statement unions); the growth is inherent to combining the two already-reviewed feature branches. Structural shrink tracked in #3501. Tighten via --update next cycle (true floor is 2056, not 2058).\",",
@@ -141,25 +227,39 @@
     "config/quality/dashboard-typecheck-baseline.json": {
       "sentinels": []
     },
+    "config/quality/dependency-allowlist.json": {
+      "sentinels": [
+        "\"@testing-library/user-event\": \"Utilitario oficial do ecossistema testing-library para testes de UI (adicionada no PR #11224); Refs #9985.\",",
+        "\"@types/turndown\": \"Tipos DefinitelyTyped para turndown (ja allowlisted) — pacote types-only, sem superficie de runtime.\"",
+        "\"turndown-plugin-gfm\","
+      ]
+    },
+    "config/quality/duplication-baseline.json": {
+      "sentinels": ["\"percentage\": 3.68"]
+    },
     "config/quality/eslint-suppressions.json": {
       "sentinels": [
-        "\"src/app/(dashboard)/dashboard/resilience/connections/components/ResilienceConnectionsClient.tsx\": {",
-        "\"src/app/(dashboard)/dashboard/usage/components/ProviderLimits/useCodexResetCreditRedemption.ts\": {",
-        "\"src/app/(dashboard)/dashboard/providers/[id]/components/modals/EditCompatibleNodeModal.tsx\": {"
+        "\"tests/unit/tlsClient-circuit-breaker.test.ts\": {",
+        "\"tests/benchmarks/pipeline-accuracy.bench.ts\": {",
+        "\"tests/unit/theoldllm-stress.test.ts\": {"
       ]
     },
     "config/quality/file-size-baseline.json": {
       "sentinels": [
+        "\"_rebaseline_2026_10_01_ollama_capability_upstream_drift\": \"Inherited base drift (not own growth): upstream 65e81158ab (fix(ollama): route models by advertised capability, #11088) grew AddApiKeyModal.tsx 1173->1174 (+1) on wmm-production without carrying its rebaseline, so the file-size gate went base-red the moment earlier lint steps stopped masking it. +1 single line on a god-modal with a long dated rebaseline history; no extractable block involved.\",",
         "\"_rebaseline_2026_08_20_imageregistry_1034\": \"imageRegistry.ts 1033->1034: +1 line drift between #10842 (cursor image provider, froze at 1033) and its actual merged state on release (measured 1034) — trivial rebaseline, not a new feature.\",",
-        "\"_rebaseline_2026_09_26_basered_chat_body_admission\": \"Base-red absorvida: chatBodyAdmission.ts cresceu 1118->1172 em merges upstream (admission hardening, bc0cd13df7 e antecedentes) sem rebaseline; medida real congelada.\"",
-        "\"_rebaseline_2026_09_26_basered_provider_test_route\": \"Base-red absorvida: provider test route.ts cresceu 1237->1241 em merges upstream (#-sequence entre o freeze e a v3.8.50) sem rebaseline; medida real congelada.\","
+        "\"_rebaseline_2026_09_26_basered_chat_body_admission\": \"Base-red absorvida: chatBodyAdmission.ts cresceu 1118->1172 em merges upstream (admission hardening, bc0cd13df7 e antecedentes) sem rebaseline; medida real congelada.\""
       ]
     },
     "config/quality/open-sse-typecheck-baseline.json": {
       "sentinels": []
     },
     "config/quality/quality-baseline.json": {
-      "sentinels": ["\"value\": 1200,"]
+      "sentinels": [
+        "\"_rebaseline_2026_08_30_devin_drain\": \"416 -> 409. Measured by `node scripts/check/check-dead-code.mjs` on this branch after the checker's Windows fix (it now invokes node_modules/knip/bin/knip.js via process.execPath instead of the unspawnable .bin POSIX shim — the gate never ran locally on Windows before). The -7 vs baseline reflects real removals from the recent quality waves (dead localDb-mock path, orphaned test helpers, unused exports cleaned during the typecheck/test-discovery drains). Tightening to the true measured value; structural cleanup stays tracked in #3501.\",",
+        "\"_baseline_2026_08_30_devin\": \"194 = measured by `node scripts/check/check-circular-deps.mjs` (dpdm, 4 entrypoints: chatCore/combo/mcp-server/db-core) on this branch — the first green run after the checker was fixed to spawn dpdm's JS bin via process.execPath (the .bin POSIX shim was unspawnable on Windows). The checker now reads this key and exits 1 on a measured regression; the CI step stays continue-on-error advisory per its external-binary rationale, so the signal is visible without blocking.\"",
+        "\"_rebaseline_2026_09_26_rtl_logical_codemod\": \"1083->0: codemod mecanico de classes fisicas p/ utilitarios logicos Tailwind v4 (ml->ms, pl->ps, left->start, text-left->text-start, border-l->border-s, rounded-l->rounded-s) em 268 .tsx — identico em LTR, corrige espelhamento RTL (ar/fa/he/ur).\""
+      ]
     },
     "config/quality/test-discovery-baseline.json": {
       "sentinels": [
@@ -168,23 +268,23 @@
       ]
     },
     "config/quality/test-masking-allowlist.json": {
-      "sentinels": []
+      "sentinels": ["\"sourceRemoved\": [\"src/lib/plugins/sandbox.ts\"],"]
     },
     "config/quality/tests-typecheck-baseline.json": {
       "sentinels": []
     },
     "config/quality/upstream-patch-manifest.json": {
       "sentinels": [
-        "\"&& node --input-type=module -e \\\"import { createRequire } from 'node:module'; import { pathToFileURL } from 'node:url'; const standaloneRoot = '/app/.build/next/standalone/node_modules/'; const require = createRequire('/app/.build/next/standalone/package.json'); for (const pkg of ['@atjsh/llmlingua-2', '@huggingface/transformers', 'js-tiktoken']) { const resolved = require.resolve(pkg); if (!resolved.startsWith(standaloneRoot)) throw new Error(pkg + ' resolved outside standalone: ' + resolved); await import(pathToFileURL(resolved).href); } const onnxRuntime = require.resolve('onnxruntime-node'); if (!onnxRuntime.startsWith(standaloneRoot)) throw new Error('onnxruntime-node resolved outside standalone: ' + onnxRuntime); await import(pathToFileURL(onnxRuntime).href);\\\"\",",
-        "\"**Status (2026-08-13): cutover complete.** A real Railway build of this branch (commit `5568391` at time of writing) succeeded end-to-end against a throwaway verification service — booted healthy, and a request shaped exactly like the tool-schema-heavy payloads that used to trip `chat_admission_busy`/`structure_limit` (see the `fix(admission)` commit below) now passes admission cleanly. A few vestigial fields on the Railway service still display the old upstream image tag (`diegosouzapw/omniroute:3.8.49`) and the `DOCKER_IMAGE` env var; these are leftover labels — the running code is from this fork. See `SYNC_UPSTREAM.md` for how to pull upstream updates without losing the WMM fixes.\",",
-        "\"- Every `RUN --mount=type=cache,id=...` in `Dockerfile.railway` uses a Railway-specific id format Railway requires but does not clearly document beyond one example: `id=s/<the-real-Railway-service-id>-<target path>`, and it must be the literal id of whichever specific Railway service is doing the build — verified against two real builds that a mismatched (but real) id fails identically to a made-up one. The ids in this file are hardcoded to the live production `omniroute` service's id. A throwaway verification service needs those ids temporarily swapped to its own id to build successfully; see `Dockerfile.railway`'s header comment for the full list of shapes tried and why.\","
+        "\"// @ts-nocheckimport test from \\\"node:test\\\";import assert from \\\"node:assert/strict\\\";const { handleChatCore } = await import(\\\"../../open-sse/handlers/chatCore.ts\\\");const originalFetch = globalThis.fetch;type ToolItem = { type: string; namespace?: string; name?: string };type SseFrame = { event: string | undefined; data: unknown };function requestBody(stream: boolean) { return { model: \\\"gpt-4o-mini\\\", stream, input: [ { type: \\\"additional_tools\\\", tools: [ { type: \\\"namespace\\\", name: \\\"mcp__atlassian__cloud__tenant\\\", tools: [{ name: \\\"read_issue\\\", parameters: { type: \\\"object\\\" } }], }, ], }, { type: \\\"message\\\", role: \\\"user\\\", content: [{ type: \\\"input_text\\\", text: \\\"read it\\\" }] }, ], };}function chatToolCall() { return { id: \\\"chatcmpl_namespace_identity\\\", object: \\\"chat.completion\\\", created: 1, model: \\\"gpt-4o-mini\\\", choices: [ { index: 0, message: { role: \\\"assistant\\\", tool_calls: [ { index: 0, id: \\\"call_namespace_identity\\\", type: \\\"function\\\", function: { name: \\\"mcp__atlassian__cloud__tenant__read_issue\\\", arguments: JSON.stringify({ key: \\\"PROJ-1\\\" }), }, }, ], }, finish_reason: \\\"tool_calls\\\", }, ], usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 }, };}function streamingChatToolCall() { const toolCall = chatToolCall().choices[0].message.tool_calls[0]; return [ { id: \\\"chatcmpl_namespace_identity\\\", object: \\\"chat.completion.chunk\\\", created: 1, model: \\\"gpt-4o-mini\\\", choices: [ { index: 0, delta: { role: \\\"assistant\\\", tool_calls: [toolCall] }, finish_reason: \\\"tool_calls\\\", }, ], }, ];}function sse(events: unknown[]) { return ( events.map((event) => \\\"data: \\\" + JSON.stringify(event) + \\\"\\\\n\\\\n\\\").join(\\\"\\\") + \\\"data: [DONE]\\\\n\\\\n\\\" );}async function invokeResponsesRequest(stream: boolean) { const calls: Array<{ body: Record<string, unknown> }> = []; globalThis.fetch = async (_url, init: MockRequestInit = {}) => { const body = JSON.parse(String(init.body)); calls.push({ body }); const payload = stream ? sse(streamingChatToolCall()) : JSON.stringify(chatToolCall()); return new Response(payload, { status: 200, headers: { \\\"Content-Type\\\": stream ? \\\"text/event-stream\\\" : \\\"application/json\\\" }, }); }; try { const body = requestBody(stream); const result = await looseAsync(handleChatCore)({ body: structuredClone(body), modelInfo: { provider: \\\"openai\\\", model: \\\"gpt-4o-mini\\\", extendedContext: false }, credentials: { apiKey: \\\"sk-test\\\", providerSpecificData: {} }, log: { debug() {}, info() {}, warn() {}, error() {} }, clientRawRequest: { endpoint: \\\"/v1/responses\\\", body: structuredClone(body), headers: new Headers({ accept: stream ? \\\"text/event-stream\\\" : \\\"application/json\\\" }), }, userAgent: \\\"namespace-identity-integration-test\\\", } as never); assert.equal(result.success, true); assert.equal(calls.length, 1); assert.equal( \\\"_toolNameMap\\\" in calls[0].body, false, \\\"identity metadata must not reach upstream\\\" ); return result.response; } finally { globalThis.fetch = originalFetch; }}function parseSseFrames(body: string): SseFrame[] { return body .trim() .split(/\\\\r?\\\\n\\\\r?\\\\n/) .map((frame) => { const fields = frame.split(/\\\\r?\\\\n/); const event = fields.find((line) => line.startsWith(\\\"event: \\\"))?.slice(\\\"event: \\\".length); const data = fields.find((line) => line.startsWith(\\\"data: \\\"))?.slice(\\\"data: \\\".length); return { event, data: data === \\\"[DONE]\\\" ? data : JSON.parse(data ?? \\\"null\\\") }; });}function assertNamespaceTuple(item: ToolItem | undefined) { assert.ok(item, \\\"expected a function-call output item\\\"); assert.equal(item.type, \\\"function_call\\\"); assert.deepEqual( { namespace: item.namespace, name: item.name }, { namespace: \\\"mcp__atlassian__cloud__tenant\\\", name: \\\"read_issue\\\" } );}test.afterEach(() => { globalThis.fetch = originalFetch;});test(\\\"returns a namespace tuple for a non-streaming Responses request translated through chatCore\\\", async () => { const response = await invokeResponsesRequest(false); const payload = await response.json(); assertNamespaceTuple(payload.output.find((item: ToolItem) => item.type === \\\"function_call\\\"));});test(\\\"emits namespace tuples for every streaming Responses function-call event translated through chatCore\\\", async () => { const response = await invokeResponsesRequest(true); const frames = parseSseFrames(await response.text()); const added = frames.find((frame) => frame.event === \\\"response.output_item.added\\\"); assertNamespaceTuple((added?.data as { item?: ToolItem })?.item); const done = frames.find((frame) => frame.event === \\\"response.output_item.done\\\"); assertNamespaceTuple((done?.data as { item?: ToolItem })?.item); const completed = frames.find((frame) => frame.event === \\\"response.completed\\\"); assertNamespaceTuple( (completed?.data as { response?: { output?: ToolItem[] } })?.response?.output?.find( (item) => item.type === \\\"function_call\\\" ) );});\"",
+        "\"\\\"_rebaseline_2026_07_18_pr7360_quota_visibility_resync\\\": \\\"2058->2059 (+1 vs recorded ceiling; measured 2056 fresh on release tip cab9e5f0c alone, so this ceiling still carries 2 units of un-banked slack from prior shrinkage — real regression from this merge is 2056->2059, +3). PR #7360 (JxnLexn) release-resync: merging origin/release/v3.8.49 to resolve the 3-file conflict (ConnectionRow.tsx/ConnectionsListPanel.tsx/useProviderConnections.ts) unions two already-compliant features in the same already-oversized god-component: release's confirm-delete-account wiring (#7361) and this PR's per-connection quota-visibility wiring. Diffed release-tip-only vs merged violation lists (scripts dumped via getComplexityEslintReport): most entries are the SAME pre-existing violations shifted a few lines (ConnectionRow/getStatusPresentation/inferErrorType — no count change) or marginally bigger (ConnectionRow function complexity 85->86, ConnectionsListPanel function 498->510 lines) from the two ConnectionRow call sites each gaining both PRs' multi-line JSX props. The 2 genuinely NEW crossings are the 'no tag' and 'tagged groups' .map() render callbacks in ConnectionsListPanel.tsx (83 and 85 lines, was <=80 on both parents individually) tipping over 80 lines specifically because both PRs' props land on the same call sites. No new logic was written during the resync itself (only import-statement unions); the growth is inherent to combining the two already-reviewed feature branches. Structural shrink tracked in #3501. Tighten via --update next cycle (true floor is 2056, not 2058).\\\",\",",
+        "\"\\\"_rebaseline_2026_07_27_3850_quality_relax_TEMP_3851_retighten_v2_20pct\\\": \\\"_rebaseline_2026_07_27_3850_quality_relax_TEMP_3851_retighten_v2_20pct: 2188->2774 (+586, +26.8% over pristine 2188). OWNER-APPROVED TEMPORARY relax for v3.8.50-3.8.54 PREPARE phase (docs/ROADMAP.md). v1 was +124 (2x daily drift) on 2026-07-27; v2 = v1 +20% buffer = +218 → +586 total (cycle 2188 measured pristine → 2774 ceiling). Justification: v3.8.50 release cut coincides with high-merge activity (33-PR Train 1D + ~37-PR Train 2 backlog + post-freeze re-home rebase churn); owner accepted enlarging the headroom so the entire PREPARE phase window (5 minor cycles: .50-.54) flows without per-PR rebaseline noise, given that re-tightening happens mechanically at v3.8.51 via #8675/#8700 decomposition work scheduled in .51 (Executor registry in-place + combo.ts decomposition per ROADMAP.md). RE-TIGHTENING MANDATORY in v3.8.51: target 2282 (shrink of 492 from structural extraction during #8675/#8700 decomposition campaigns + combo.ts split scheduled in .52, or via npm run quality:ratchet -- --update if natural shrink appears earlier). The 2282 floor still gives 94 units of post-tighten headroom vs the current pristine 2188. Tracked via roadmap issue (TO BE OPENED as part of this PR). Window: v3.8.50 (release cut, 2026-07-28 target) → v3.8.54 close (RE-TIGHTEN executed at v3.8.51 prep merge per ROADMAP.md). This entry is the LAST rebaseline in this file unless a measured regression appears. v1 entry retained below for audit trail.\\\",\","
       ]
     },
     "docs/ops/BALANCED_OPERATIONS_IMPROVEMENT_DESIGN.md": {
       "sentinels": [
         "Add bounded maintenance for the external-content memory FTS index. Maintenance must not run on every request and must avoid blocking normal traffic for an unbounded period. The preferred trigger is the existing cleanup cycle after meaningful memory deletions or measurable FTS bloat.",
-        "The work ships as small, independently verified waves. Each wave must preserve production behavior, use focused tests, pass the owning repository's verification floor, deploy through its normal Git workflow, and receive post-deployment health and resource checks.",
-        "Provider-health status should distinguish unsupported validation from invalid credentials. Unsupported probes must not look like broken credentials. Expired OAuth connections should show the recovery action and last successful use or test when available."
+        "Remove or clearly quarantine startup code that cannot execute only after proving it has no supported entry point. (Since this doc was written, the legacy server-init module was removed upstream; keep new runtime initialization on the `src/instrumentation-node.ts` path only.)",
+        "The work ships as small, independently verified waves. Each wave must preserve production behavior, use focused tests, pass the owning repository's verification floor, deploy through its normal Git workflow, and receive post-deployment health and resource checks."
       ]
     },
     "docs/ops/WAVE_1_RELIABILITY_IMPLEMENTATION_PLAN.md": {
@@ -199,6 +299,11 @@
         "description: Surface cleanup status, DB growth, memory split, and FTS health on one operator surface.",
         "- No auth-posture change on `/api/storage/health` (CLI + dashboard call it as-is).",
         "> dashboard page. Extend `/api/storage/health` + the existing SystemStorageTab."
+      ]
+    },
+    "docs/reference/ENVIRONMENT.md": {
+      "sentinels": [
+        "| `RELEASE_GREEN_SERIAL` | `0` | `scripts/quality/validate-release-green.mjs` | Set `1` to force the serial lane — the equivalent of `--serial` — so memory-constrained hosted runners survive the full release-green sweep instead of being reclaimed mid-run. |"
       ]
     },
     "electron/types.d.ts": {
@@ -361,14 +466,16 @@
       ]
     },
     "open-sse/services/tokenRefresh.ts": {
-      "sentinels": ["log = undefined,"]
+      "sentinels": ["log: RefreshLogger | undefined = undefined,"]
     },
     "open-sse/transformer/responsesTransformer.ts": {
       "sentinels": ["} as unknown as Transformer,"]
     },
     "open-sse/translator/response/openai-responses/pureHelpers.ts": {
       "sentinels": [
-        "export function stripEmptyOptionalToolArgs(value, toolName, schema = undefined) {"
+        "schema: Record<string, unknown> | undefined = undefined",
+        "export function stripEmptyOptionalToolArgs(",
+        "toolName,"
       ]
     },
     "open-sse/utils/cacheControlPolicy.ts": {
@@ -399,9 +506,9 @@
     },
     "package-lock.json": {
       "sentinels": [
-        "\"integrity\": \"sha512-ru00MoyeeouE5BX4gRL+6m/BsDfbRayOskWqUvh7CLGW+UXxHQItqALa38kKnOiZPqJrtzJUgAC2+F0rL1S4Pg==\",",
-        "\"integrity\": \"sha512-9zeA+KLZNNzglF2TPKRQEDyx6Yby7daAkuy8MiPzpXPsYDWi/DRM8jmwUDxokQjYqBpv5DgPiwD4h4ZZSy1Ujw==\",",
-        "\"resolved\": \"https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.21.tgz\","
+        "\"resolved\": \"https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-linux-arm64-musl/-/claude-agent-sdk-linux-arm64-musl-0.3.234.tgz\",",
+        "\"resolved\": \"https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-linux-x64-musl/-/claude-agent-sdk-linux-x64-musl-0.3.234.tgz\",",
+        "\"resolved\": \"https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk-darwin-arm64/-/claude-agent-sdk-darwin-arm64-0.3.234.tgz\","
       ]
     },
     "package.json": {
@@ -433,6 +540,39 @@
         "* @param {string} destinationPath"
       ]
     },
+    "scripts/build/build-tproxy-native.mjs": {
+      "sentinels": [
+        "import { execHostTool } from \"./buildToolRunner.mjs\";",
+        "execHostTool(cmd, args, { cwd, stdio: \"inherit\" });"
+      ]
+    },
+    "scripts/build/buildToolRunner.mjs": {
+      "sentinels": [
+        "return execFileAsync(plan.file, plan.args, plan.shell ? { ...options, shell: true } : options);",
+        "return execFileSync(plan.file, plan.args, plan.shell ? { ...options, shell: true } : options);",
+        "return spawnSync(plan.file, plan.args, plan.shell ? { ...options, shell: true } : options);"
+      ]
+    },
+    "scripts/check/audit-sqlite-coupling.test.mjs": {
+      "sentinels": [
+        "const dirtyRun = spawnSync(process.execPath, [\"scripts/check/audit-sqlite-coupling.mjs\", \"--json\"], {",
+        "execFileSync(process.execPath, [\"scripts/check/audit-sqlite-coupling.mjs\", \"--json\"], {"
+      ]
+    },
+    "scripts/check/check-bundle-size.mjs": {
+      "sentinels": [
+        "// Resolve via the package's own bin entry — the .bin/size-limit shim is a POSIX",
+        "const SIZE_LIMIT_BIN = resolveLocalBinEntry(\"size-limit\", \"size-limit\", ROOT);",
+        "import { resolveLocalBinEntry } from \"../build/buildToolRunner.mjs\";"
+      ]
+    },
+    "scripts/check/check-circular-deps.mjs": {
+      "sentinels": [
+        "`[circular-deps] FAIL — circularDeps=${result.count} regressed above baseline ${baseline} (direction: down). Break the new cycle or document a rebaseline.`",
+        "`[circular-deps] Advisory — add to quality-baseline.json: { \"value\": ${result.count}, \"direction\": \"down\" }`",
+        "// Ratchet-aware: reads metrics.circularDeps from quality-baseline.json when present;"
+      ]
+    },
     "scripts/check/check-dashboard-typecheck.mjs": {
       "sentinels": [
         "(i) => ` - ${i.file} ${i.code} (baseline ${i.baselineCount} -> live ${i.liveCount})`",
@@ -440,11 +580,64 @@
         "// without a shell throws EINVAL on Windows (CVE-2024-27980 hardening)."
       ]
     },
+    "scripts/check/check-db-rules.mjs": {
+      "sentinels": [
+        "\"memoryFtsMaintenance\", // intentionally-internal: db/cleanup.ts + /api/storage/health via import direto (FTS rebuild maintenance; anti-barrel per Rule #2)"
+      ]
+    },
+    "scripts/check/check-dead-code.mjs": {
+      "sentinels": [
+        "throw new Error(`knip binary not found under ${path.join(ROOT, \"node_modules\")}`);",
+        "// Invoke knip's JS entry through node directly: the .bin/knip shim is a POSIX",
+        "// script that cannot be spawned on Windows (ENOENT), so the gate never ran"
+      ]
+    },
+    "scripts/check/check-deps.mjs": {
+      "sentinels": [
+        "const raw = execHostTool(\"npm\", [\"view\", pkgName, \"time.created\", \"--json\"], {",
+        "import { execHostTool } from \"../build/buildToolRunner.mjs\";"
+      ]
+    },
+    "scripts/check/check-duplication.mjs": {
+      "sentinels": [
+        "execFileSync(process.execPath, [JSCPD_BIN, ...JSCPD_FIXED_ARGS, \"--output\", out], {",
+        "if (!JSCPD_BIN) throw new Error(\"jscpd binary not found in node_modules\");",
+        "import { resolveLocalBinEntry } from \"../build/buildToolRunner.mjs\";"
+      ]
+    },
+    "scripts/check/check-install-upgrade.mjs": {
+      "sentinels": [
+        "const out = execHostTool(\"npm\", [\"view\", \"omniroute\", \"dist-tags.latest\"], { encoding: \"utf8\" });",
+        "execHostTool(\"npm\", [\"install\", \"-g\", \"--prefix\", prefix, \"--no-audit\", \"--no-fund\", spec], {",
+        "execHostTool(\"npm\", [\"view\", \"omniroute\", \"versions\", \"--json\"], { encoding: \"utf8\" })"
+      ]
+    },
+    "scripts/check/check-licenses.mjs": {
+      "sentinels": [
+        "const output = execFileSync(process.execPath, [CHECKER_BIN, \"--production\", \"--json\"], {",
+        "import { resolveLocalBinEntry } from \"../build/buildToolRunner.mjs\";",
+        "const CHECKER_BIN = resolveLocalBinEntry("
+      ]
+    },
+    "scripts/check/check-lockfile.mjs": {
+      "sentinels": [
+        "const output = execFileSync(process.execPath, [bin, ...args], { encoding: \"utf8\" });",
+        "const bin = resolveLocalBinEntry(\"lockfile-lint\", \"lockfile-lint\", ROOT);",
+        "import { resolveLocalBinEntry } from \"../build/buildToolRunner.mjs\";"
+      ]
+    },
     "scripts/check/check-open-sse-typecheck.mjs": {
       "sentinels": [
         "(i) => ` - ${i.file} ${i.code} (baseline ${i.baselineCount} -> live ${i.liveCount})`",
         "// Invoke the local tsc entrypoint through node directly — spawning npx(.cmd)",
         "// without a shell throws EINVAL on Windows (CVE-2024-27980 hardening)."
+      ]
+    },
+    "scripts/check/check-pack-boot.mjs": {
+      "sentinels": [
+        "const packOut = execHostTool(\"npm\", [\"pack\", \"--json\", \"--pack-destination\", tmp], {",
+        "execHostTool(\"npm\", [\"install\", \"-g\", \"--prefix\", prefix, tarball], {",
+        "import { execHostTool } from \"../build/buildToolRunner.mjs\";"
       ]
     },
     "scripts/check/check-test-discovery.mjs": {
@@ -461,8 +654,35 @@
         ".map((r) => ` ✗ ${r.file} ${r.code} (baseline ${r.baselineCount}, live ${r.liveCount})`)"
       ]
     },
+    "scripts/check/check-ts7-diagnostics-ratchet.mjs": {
+      "sentinels": [
+        "import { spawnHostTool } from \"../build/buildToolRunner.mjs\";",
+        "const npm = \"npm\";"
+      ]
+    },
+    "scripts/check/check-type-coverage.mjs": {
+      "sentinels": [
+        "stdout = execFileSync(process.execPath, [typeCoverageBin, \"--json-output\", \"-p\", TSCONFIG], {",
+        "const typeCoverageBin = resolveLocalBinEntry(\"type-coverage\", \"type-coverage\", ROOT);",
+        "import { resolveLocalBinEntry } from \"../build/buildToolRunner.mjs\";"
+      ]
+    },
     "scripts/check/check-upstream-drift.mjs": {
       "sentinels": []
+    },
+    "scripts/check/check-workflows.mjs": {
+      "sentinels": [
+        "? spawnSync(\"where\", [name], { encoding: \"utf8\", timeout: 5_000, windowsHide: true })",
+        "// `command -v` on Unix; `where` on Windows — `sh` does not exist on a plain",
+        "// Windows PATH, so shelling to it always reported every binary missing."
+      ]
+    },
+    "scripts/dev/ensure-native-sqlite.mjs": {
+      "sentinels": [
+        "// spawnHostTool: npm is a .cmd shim on Windows — needs shell routing (EINVAL otherwise).",
+        "const result = spawnHostTool(\"npm\", [\"rebuild\", \"better-sqlite3\"], {",
+        "import { spawnHostTool } from \"../build/buildToolRunner.mjs\";"
+      ]
     },
     "scripts/dev/responses-ws-proxy.mjs": {
       "sentinels": [
@@ -491,6 +711,34 @@
         "* idleTimeoutMs?: number,"
       ]
     },
+    "scripts/homolog/run.mjs": {
+      "sentinels": [
+        "import { spawnHostTool } from \"../build/buildToolRunner.mjs\";",
+        "const hy = spawnHostTool(",
+        "const pw = spawnHostTool("
+      ]
+    },
+    "scripts/quality/classify-pr-changes.mjs": {
+      "sentinels": [
+        "process.argv[1] && path.resolve(fileURLToPath(import.meta.url)) === path.resolve(process.argv[1]);",
+        "if (f.startsWith(\"scripts/i18n/\") || f === \"config/i18n.json\" || f.startsWith(\"src/i18n/\")) {",
+        "// The public API contract is docs-surface AND gate-surface: the blocking"
+      ]
+    },
+    "scripts/quality/validate-release-green.mjs": {
+      "sentinels": [
+        "\"Unit tests (full suite, CI concurrency — ~30-50min idle, up to ~80min under load (awaiting idle .113 measurement, #9532))\",",
+        "// node scripts/quality/validate-release-green.mjs [--json] [--with-build] [--quick] [--full-ci] [--serial] [--hermetic]",
+        "...(await Promise.all(slow.map((g) => runAsync(npmCmd, g.args, { timeout: g.timeout }))))"
+      ]
+    },
+    "scripts/release/sync-next-cycle.mjs": {
+      "sentinels": [
+        "`chore(release): sync main (v${prevVersion} close) into ${BRANCH} — parallel-cycle sync-back`,",
+        "execHostTool(\"npm\", [\"run\", \"release:sync-changelog-i18n\", \"--\", prevVersion, belowPrev], {",
+        "`[sync-next-cycle] ABORT: main's ## [${prevVersion}] section missing after re-insertion`"
+      ]
+    },
     "scripts/router-eval/index.ts": {
       "sentinels": [
         "return new sqlite.Database(sqliteFile, { readonly: true }) as unknown as SqliteDatabase;",
@@ -505,21 +753,43 @@
         "body = body.replace(tls_old, ' && TLS_CLIENT_VERSION=\"${TLS_CLIENT_VERSION}\" node node_modules/tls-client-node/scripts/postinstall.js ' + BS)"
       ]
     },
+    "src/app/(dashboard)/dashboard/BootstrapBanner.tsx": {
+      "sentinels": [
+        "className=\"shrink-0 text-amber-600/60 hover:text-amber-700 dark:text-amber-400/60 dark:hover:text-amber-300 transition-colors ms-1\""
+      ]
+    },
     "src/app/(dashboard)/dashboard/HomePageClient.tsx": {
       "sentinels": [
+        "className=\"shrink-0 ms-2 p-1.5 rounded-lg text-text-muted hover:text-text-main hover:bg-bg-subtle transition-colors opacity-0 group-hover:opacity-100\"",
+        "className=\"border border-border rounded-lg p-3 hover:bg-surface/40 transition-colors text-start cursor-pointer w-full\"",
         ".then((data: { showQuickStartOnHome?: unknown; showProviderTopologyOnHome?: unknown }) => {"
       ]
     },
+    "src/app/(dashboard)/dashboard/a2a/page.tsx": {
+      "sentinels": [
+        "className=\"absolute start-1/2 top-[-3px] h-3 w-0.5 -translate-x-1/2 rounded-full\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/acp-agents/page.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined text-[16px] me-1\">refresh</span>",
+        "<span className=\"material-symbols-outlined text-[16px] me-1\">add</span>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/activity/ActivityFeedClient.tsx": {
+      "sentinels": ["className=\"material-symbols-outlined text-[32px] animate-spin me-3\""]
+    },
     "src/app/(dashboard)/dashboard/agent-skills/AgentSkillsPageClient.tsx": {
       "sentinels": [
-        "import { useState, useEffect, useCallback, useMemo, useRef, type ReactElement } from \"react\";",
-        "export function AgentSkillsPageClient(): ReactElement {",
-        "function CoverageBarSkeleton(): ReactElement {"
+        "className=\"w-full rounded-lg border border-border bg-bg py-2 ps-9 pe-3 text-sm text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/40\"",
+        "<span className=\"absolute start-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[16px] text-text-muted pointer-events-none\">",
+        "import { useState, useEffect, useCallback, useMemo, useRef, type ReactElement } from \"react\";"
       ]
     },
     "src/app/(dashboard)/dashboard/agent-skills/components/CoverageBar.tsx": {
       "sentinels": [
         "export function CoverageBar({ coverage }: CoverageBarProps): ReactElement {",
+        "<span className=\"shrink-0 text-text-muted w-12 text-end\">",
         "import type { ReactElement } from \"react\";"
       ]
     },
@@ -544,6 +814,112 @@
         "}: SkillPreviewPaneProps): ReactElement {"
       ]
     },
+    "src/app/(dashboard)/dashboard/analytics/AutoRoutingAnalyticsTab.tsx": {
+      "sentinels": [
+        "<td className=\"text-end py-2 px-3 text-text-muted\">{percentage.toFixed(1)}%</td>",
+        "<th className=\"text-start py-2 px-3 font-medium\">{t(\"chartProvider\")}</th>",
+        "<td className=\"text-end py-2 px-3\">{provider.count.toLocaleString()}</td>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/analytics/CacheHealthTab.tsx": {
+      "sentinels": [
+        "<tr className=\"border-b border-border text-start text-xs uppercase text-text-muted\">",
+        "{compact(data.heavyWriteThreshold)} {text(t, \"cacheHealthTokens\", \"tokens\")}",
+        "<td className=\"py-2 pe-4 text-end text-text-muted\">{compact(m.calls)}</td>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/analytics/ComboHealthTab.tsx": {
+      "sentinels": ["<ul className=\"mt-2 text-start text-xs text-text-muted\">"]
+    },
+    "src/app/(dashboard)/dashboard/analytics/CompressionAnalyticsTab.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined animate-spin me-2\">progress_activity</span>",
+        "<div className=\"text-xs text-text-muted text-end\">{pct}%</div>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/analytics/ProviderUtilizationTab.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined me-2 animate-spin text-[18px]\">",
+        "<p className=\"text-sm font-semibold text-text-main\">{cardTitle}</p>",
+        "<p className=\"text-xs text-text-muted\">{cardSubtitle}</p>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/analytics/RouteExplainabilityTab.tsx": {
+      "sentinels": ["<span className=\"max-w-[65%] truncate text-end font-medium text-text-main\">"]
+    },
+    "src/app/(dashboard)/dashboard/analytics/SearchAnalyticsTab.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined animate-spin me-2\">progress_activity</span>",
+        "<div className=\"text-xs text-text-muted text-end\">{pct}%</div>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/analytics/components/DiversityScoreCard.tsx": {
+      "sentinels": ["<div className=\"shrink-0 text-center sm:text-start\">"]
+    },
+    "src/app/(dashboard)/dashboard/api-manager/ApiManagerPageClient.tsx": {
+      "sentinels": [
+        "<div className=\"relative ms-2 flex flex-wrap gap-1 ps-5 animate-in fade-in slide-in-from-top-1 duration-150\">",
+        "className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-start text-xs transition-all ${",
+        "className=\"pointer-events-none absolute start-1.5 top-0 bottom-1 w-px bg-primary/25\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/api-manager/components/ApiKeyFilterBar.tsx": {
+      "sentinels": [
+        "className=\"absolute inset-y-0 end-0 flex items-center pe-2.5 text-text-muted hover:text-text-primary transition-colors\"",
+        "<span className=\"text-[10px] font-semibold uppercase tracking-wider text-text-muted me-1\">",
+        "inputClassName={searchQuery ? \"pe-9\" : \"\"}"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/api-manager/components/BypassProviderQuotaToggle.tsx": {
+      "sentinels": ["<div className=\"flex flex-col gap-1 pe-2\">"]
+    },
+    "src/app/(dashboard)/dashboard/api-manager/components/ProviderModelPermissionList.tsx": {
+      "sentinels": [
+        "<div className=\"w-full flex items-center gap-2 px-3 py-2 hover:bg-surface/50 transition-colors text-start\">",
+        "className=\"absolute end-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main\"",
+        "<div className=\"px-3 pb-2 ps-9\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/audit/A2aAuditTab.tsx": {
+      "sentinels": ["<table className=\"w-full min-w-[760px] text-start text-sm\">"]
+    },
+    "src/app/(dashboard)/dashboard/audit/ComplianceTab.tsx": {
+      "sentinels": [
+        "<th className=\"px-4 py-3 text-end font-medium\">{t(\"details\")}</th>",
+        "<table className=\"w-full min-w-[1040px] text-start text-sm\">",
+        "{t.has(`eventTypes.${entry.action}`)"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/audit/McpAuditTab.tsx": {
+      "sentinels": ["<table className=\"w-full min-w-[860px] text-start text-sm\">"]
+    },
+    "src/app/(dashboard)/dashboard/batch/BatchDetailModal.tsx": {
+      "sentinels": [
+        "className=\"flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg bg-orange-500/10 border border-orange-500/25 text-orange-400 hover:text-orange-300 transition-colors disabled:opacity-50 ms-auto\"",
+        "<div className=\"flex items-center gap-3 flex-shrink-0 ms-4\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/batch/BatchListTab.tsx": {
+      "sentinels": [
+        "<th className=\"text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider\">",
+        "<span className=\"ms-1 text-[10px] text-emerald-500/90 bg-emerald-500/10 rounded px-1 py-0.5 align-middle\">",
+        "{ input_tokens?: number; output_tokens?: number } | null | undefined;"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/batch/FileDetailModal.tsx": {
+      "sentinels": ["className={`ms-auto px-1.5 py-0.5 rounded text-[10px] font-medium border ${"]
+    },
+    "src/app/(dashboard)/dashboard/batch/FilesListTab.tsx": {
+      "sentinels": [
+        "<th className=\"text-start px-4 py-3 font-medium text-[var(--color-text-muted)] uppercase text-xs tracking-wider\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/batch/components/BatchConceptCard.tsx": {
+      "sentinels": ["<ul className=\"flex flex-col gap-2 ps-1\">"]
+    },
+    "src/app/(dashboard)/dashboard/batch/components/FilesConceptCard.tsx": {
+      "sentinels": ["<ul className=\"flex flex-col gap-2 ps-1\">"]
+    },
     "src/app/(dashboard)/dashboard/cache/__tests__/CachePage.test.tsx": {
       "sentinels": []
     },
@@ -563,34 +939,217 @@
     "src/app/(dashboard)/dashboard/cache/__tests__/MemoryCards.test.tsx": {
       "sentinels": ["const { container } = render(<MemoryCards />);"]
     },
+    "src/app/(dashboard)/dashboard/cache/components/CacheEntriesTab.tsx": {
+      "sentinels": [
+        "<tr className=\"text-start text-xs text-text-muted border-b border-border/30\">",
+        "<td className=\"py-2 pe-4 tabular-nums\">{entry.hit_count}</td>",
+        "<td className=\"py-2 pe-4 tabular-nums text-green-500\">"
+      ]
+    },
     "src/app/(dashboard)/dashboard/cache/components/CachePerformance.tsx": {
       "sentinels": ["stats?: unknown;"]
     },
+    "src/app/(dashboard)/dashboard/cache/components/ReasoningCacheTab.tsx": {
+      "sentinels": [
+        "<tr className=\"border-b border-border/20 text-start text-[11px] uppercase tracking-[0.12em] text-text-muted\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/cache/media/MediaPageClient.tsx": {
+      "sentinels": [
+        "className=\"w-full px-3 py-2 rounded-lg bg-surface border border-black/10 dark:border-white/10 text-text-main text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 file:me-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-primary/10 file:text-primary file:text-sm\"",
+        "className=\"absolute bottom-2 end-2 bg-black/60 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1\"",
+        "<span className=\"text-xs text-text-muted ms-auto\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/cache/page.tsx": {
+      "sentinels": [
+        "<tr className=\"border-b border-border/20 text-start text-[11px] uppercase tracking-[0.12em] text-text-muted\">",
+        "<div className=\"text-end\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/changelog/components/ChangelogViewer.tsx": {
+      "sentinels": [
+        "<li className=\"ms-2 flex items-start text-sm leading-relaxed text-text-muted\">",
+        "<span className=\"me-3 mt-2 size-1.5 shrink-0 rounded-full bg-text-muted/30\" />"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/changelog/components/NewsViewer.tsx": {
+      "sentinels": [
+        "className=\"flex flex-col gap-6 border-s-4 border-primary ps-5 md:flex-row md:items-center md:ps-6\"",
+        "<div className=\"shrink-0 md:ms-auto\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/chaos/components/ChaosModeSelector.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined text-[16px] align-middle me-1\">merge</span>",
+        "<span className=\"material-symbols-outlined text-[16px] align-middle me-1\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/chaos/components/ChaosProviderOverridesPanel.tsx": {
+      "sentinels": [
+        "{p.defaultModel && <span className=\"opacity-60 ms-1\">({p.defaultModel})</span>}"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/chaos/components/ChaosTestResultsPanel.tsx": {
+      "sentinels": [
+        "className={`ms-2 ${model.status === \"success\" ? \"text-green-500\" : \"text-red-500\"}`}",
+        "<span className=\"ms-2 text-text-muted\">({model.durationMs}ms)</span>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/cli-agents/CliAgentsPageClient.tsx": {
+      "sentinels": [
+        "className=\"w-full ps-8 pe-3 py-1.5 text-sm bg-surface border border-black/10 dark:border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50\"",
+        "className=\"absolute start-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-[16px] text-text-muted pointer-events-none\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/cli-code/components/AntigravityToolCard.tsx": {
+      "sentinels": [
+        "<span className=\"w-32 shrink-0 text-sm font-semibold text-text-main text-end\">",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">save</span>"
+      ]
+    },
     "src/app/(dashboard)/dashboard/cli-code/components/ClaudeToolCard.tsx": {
       "sentinels": [
-        "const env: Record<string, string> = { ANTHROPIC_BASE_URL: getEffectiveBaseUrl() };"
+        "const env: Record<string, string> = { ANTHROPIC_BASE_URL: getEffectiveBaseUrl() };",
+        "<span className=\"material-symbols-outlined text-[18px] me-1\">content_copy</span>",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">content_copy</span>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/cli-code/components/ClineToolCard.tsx": {
+      "sentinels": [
+        "<p className=\"mt-2 ps-6 text-xs text-text-muted\">{t(\"noBackupsAvailable\")}</p>",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">save</span>",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/cli-code/components/CliproxyapiToolCard.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">restart_alt</span>",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">play_arrow</span>",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">download</span>"
       ]
     },
     "src/app/(dashboard)/dashboard/cli-code/components/CodexToolCard.tsx": {
       "sentinels": [
-        "import { normalizeCodexBaseUrl, type CodexWireApi } from \"@/shared/utils/codexBaseUrl\";",
-        "const [wireApi, setWireApi] = useState<CodexWireApi>(\"responses\");",
-        "onChange={(e) => setWireApi(e.target.value as CodexWireApi)}"
+        "<span className=\"w-32 shrink-0 text-[11px] font-mono text-text-main text-end truncate opacity-70 group-hover:opacity-100 transition-opacity\">",
+        "<div className=\"text-[11px] text-text-muted mb-2 font-medium uppercase tracking-wider text-end\">",
+        "import { normalizeCodexBaseUrl, type CodexWireApi } from \"@/shared/utils/codexBaseUrl\";"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/cli-code/components/CopilotToolCard.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">",
+        "<div className=\"mt-3 grid grid-cols-2 gap-3 ps-6\">"
       ]
     },
     "src/app/(dashboard)/dashboard/cli-code/components/CustomCliCard.tsx": {
       "sentinels": [
-        "(key: string, fallback: string, values?: Record<string, string | number | Date>) => {"
+        "(key: string, fallback: string, values?: Record<string, string | number | Date>) => {",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">add</span>",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/cli-code/components/DefaultToolCard.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">save</span>",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">"
       ]
     },
     "src/app/(dashboard)/dashboard/cli-code/components/DroidToolCard.tsx": {
-      "sentinels": ["const addModel = (value?: string) => {"]
+      "sentinels": [
+        "<span className=\"w-32 shrink-0 text-sm font-semibold text-text-main text-end pt-1.5\">",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">content_copy</span>",
+        "<span className=\"w-32 shrink-0 text-sm font-semibold text-text-main text-end\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/cli-code/components/GrokBuildToolCard.tsx": {
+      "sentinels": [
+        "<span className=\"w-32 shrink-0 truncate text-end text-[11px] font-mono text-text-main opacity-70 transition-opacity group-hover:opacity-100\">",
+        "<div className=\"mb-2 text-end text-[11px] font-medium uppercase tracking-wider text-text-muted\">",
+        "const labelClass = \"w-32 shrink-0 text-end text-sm font-semibold text-text-main\";"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/cli-code/components/HermesAgentToolCard.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">visibility</span>",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">refresh</span>",
+        "{/* Optional future: Reset or Manual config could go here, end-aligned */}"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/cli-code/components/KiloToolCard.tsx": {
+      "sentinels": [
+        "<p className=\"mt-2 ps-6 text-xs text-text-muted\">{t(\"noBackupsAvailable\")}</p>",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">save</span>",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/cli-code/components/OpenClawToolCard.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">content_copy</span>",
+        "<span className=\"w-32 shrink-0 text-sm font-semibold text-text-main text-end\">",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">restore</span>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/cloud-agents/page.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined text-[16px] me-1\">rocket_launch</span>",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">settings</span>",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">cancel</span>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/combos/AutoComboCatalog.tsx": {
+      "sentinels": [
+        "className=\"absolute bottom-1.5 end-1.5 p-0.5 hover:bg-black/5 dark:hover:bg-white/5 rounded text-text-muted hover:text-primary transition-colors\"",
+        "className=\"flex w-full items-start justify-between gap-3 text-start\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/combos/BuilderIntelligentStep.tsx": {
+      "sentinels": ["<span className=\"ms-1 text-[10px] text-text-muted\">"]
+    },
+    "src/app/(dashboard)/dashboard/combos/ComboControlCenterClient.tsx": {
+      "sentinels": [
+        "<span className=\"text-end font-semibold\">{fmtPercent(target.health?.successRate)}</span>",
+        "<span className=\"text-end font-semibold\">{fmtMs(target.health?.avgLatencyMs)}</span>",
+        "<span className=\"text-end font-semibold\">{target.health?.requests ?? 0}</span>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/combos/GlobalModelSearchPanel.tsx": {
+      "sentinels": [
+        "className=\"w-full text-xs py-2 ps-3 pe-7 rounded border border-black/10 dark:border-white/10 bg-white dark:bg-white/5 text-text-main focus:border-primary focus:outline-none\"",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">playlist_add</span>",
+        "className=\"absolute end-2.5 top-2 text-text-muted hover:text-text-main text-xs\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/combos/IntelligentComboPanel.tsx": {
+      "sentinels": ["<div className=\"rounded-lg bg-black/5 dark:bg-white/5 px-3 py-2 text-end\">"]
+    },
+    "src/app/(dashboard)/dashboard/combos/live/ComboLiveStudio.tsx": {
+      "sentinels": [
+        "<div className=\"ms-auto flex items-center border border-border rounded overflow-hidden text-xs\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/combos/page.tsx": {
       "sentinels": [
-        "const [builderStage, setBuilderStage] = useState<ComboBuilderStage>(COMBO_BUILDER_STAGES[0]);",
-        "function toInputValue(value: unknown): string | number | readonly string[] {",
-        "const fusionTuning = (config.fusionTuning ?? {}) as Record<string, unknown>;"
+        "<div className=\"flex items-center justify-between md:justify-end gap-1.5 shrink-0 ms-0 md:ms-2 w-full md:w-auto mt-2 md:mt-0 pt-2 md:pt-0 border-t border-black/5 dark:border-white/5 md:border-t-0\">",
+        "<span className=\"ms-auto text-[9px] font-bold uppercase tracking-wide bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded\">",
+        "const [builderStage, setBuilderStage] = useState<ComboBuilderStage>(COMBO_BUILDER_STAGES[0]);"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/components/BadgeToast.tsx": {
+      "sentinels": ["<div className=\"fixed top-4 end-4 z-50 flex flex-col gap-2\">"]
+    },
+    "src/app/(dashboard)/dashboard/compression/studio/CompareView.tsx": {
+      "sentinels": [
+        "className=\"ms-1 w-24 rounded border px-1 text-xs\"",
+        "className=\"ms-1 w-32 rounded border px-1 text-xs\"",
+        "className=\"ms-1 w-16 rounded border px-1 text-xs\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/compression/studio/CompressionCockpit.tsx": {
+      "sentinels": [
+        "<div className=\"ms-auto flex items-center gap-2\">",
+        "<span className=\"ms-auto text-[11px] text-muted\">",
+        "<div className=\"flex items-center gap-1 ms-2\">"
       ]
     },
     "src/app/(dashboard)/dashboard/compression/studio/EncoderComparisonTable.tsx": {
@@ -600,11 +1159,65 @@
         "import type { EncoderComparison, EncoderSize } from \"./compressionFlowModel\";"
       ]
     },
+    "src/app/(dashboard)/dashboard/compression/studio/PlayView.tsx": {
+      "sentinels": [
+        "className=\"flex w-full items-center justify-between border-b py-1 text-start font-mono text-xs\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/compression/studio/WaterfallInspector.tsx": {
+      "sentinels": [
+        "<span className=\"ms-1.5 text-[10px] text-muted bg-muted/10 px-1 rounded\">",
+        "className=\"absolute inset-y-0 start-0 rounded-full bg-muted/40\"",
+        "<span className=\"ms-auto opacity-60\">{run.mode}</span>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/compression/studio/nodes/EngineNode.tsx": {
+      "sentinels": ["className=\"absolute inset-y-0 start-0 rounded-full\""]
+    },
+    "src/app/(dashboard)/dashboard/conductor/FaroChat.tsx": {
+      "sentinels": [
+        "<div key={i} className={m.role === \"user\" ? \"text-end\" : \"text-start\"}>",
+        "onClick={() => void send(input)}",
+        "<Badge variant=\"warning\" dot>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/context/combos/CompressionHub.tsx": {
+      "sentinels": [
+        "<ol className=\"ms-4 list-decimal space-y-1.5\">",
+        "checked ? \"start-5\" : \"start-0.5\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/context/rtk/RtkTomlImportCard.tsx": {
+      "sentinels": [
+        "className=\"mt-1 block w-full text-xs text-text-muted file:me-3 file:rounded file:border file:border-border file:bg-bg file:px-2.5 file:py-1 file:text-xs file:text-text-main\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/conversations/page.tsx": {
+      "sentinels": [
+        "<tr className=\"border-b border-border bg-bg-subtle text-start text-[11px] uppercase tracking-wider text-text-muted\">",
+        "<td className=\"px-3 py-2 text-end font-mono text-text-main\">{row.turnCount}</td>",
+        "<div className=\"text-end text-[11px] text-text-muted\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/costs/CostOverviewTab.tsx": {
+      "sentinels": [
+        "className=\"w-full rounded-lg border border-border/40 bg-surface/40 py-2 ps-9 pe-3 text-sm text-text-main placeholder:text-text-muted focus:border-primary focus:outline-none\"",
+        "<span className=\"material-symbols-outlined pointer-events-none absolute start-3 top-1/2 -translate-y-1/2 text-sm text-text-muted\">",
+        "<td className=\"py-3 text-end font-mono text-text-muted\">"
+      ]
+    },
     "src/app/(dashboard)/dashboard/costs/quota-share/QuotaSharePageClient.tsx": {
       "sentinels": [
-        "import type { QuotaDimension } from \"@/lib/quota/dimensions\";",
-        "import type { QuotaPool } from \"@/lib/db/quotaPools\";",
-        "dimensions: QuotaDimension[];"
+        "className=\"flex items-center gap-1 text-xs text-text-muted hover:text-text-main transition-colors ms-1 disabled:opacity-40\"",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">add</span>",
+        "import type { QuotaDimension } from \"@/lib/quota/dimensions\";"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/costs/quota-share/components/AllocationTable.tsx": {
+      "sentinels": [
+        "<th className=\"text-end py-1 pe-2 font-semibold\">{t(\"realConsumedColumn\")}</th>",
+        "<td className=\"py-1.5 pe-2 text-end font-bold tabular-nums\" style={{ color }}>",
+        "<th className=\"text-start py-1 pe-2 font-semibold\">{t(\"apiKeyColumn\")}</th>"
       ]
     },
     "src/app/(dashboard)/dashboard/costs/quota-share/components/CreatePoolModal.tsx": {
@@ -619,6 +1232,12 @@
         "const utilizations = dims.map((d) => (d.limit > 0 ? (d.consumedTotal / d.limit) * 100 : 0));",
         "<StackedAllocationBar allocations={pool.allocations} usage={usage} keyLabels={keyLabels} />",
         "<AccountQuotaRow provider={provider} providers={providers} connectionIds={connectionIds} />"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/costs/quota-share/components/PoolWizard.tsx": {
+      "sentinels": [
+        "className=\"px-2 py-1.5 rounded border border-border bg-bg-base text-xs tabular-nums text-end\"",
+        "className=\"px-2 py-1 rounded border border-border bg-bg-base text-sm text-end tabular-nums\""
       ]
     },
     "src/app/(dashboard)/dashboard/costs/quota-share/components/QuotaEndpointsCard.tsx": {
@@ -636,8 +1255,9 @@
     },
     "src/app/(dashboard)/dashboard/costs/quota-share/components/UsageLogCard.tsx": {
       "sentinels": [
-        "setEvents(Array.isArray(raw) ? (raw as ConsumptionEvent[]) : []);",
-        "setEvents([]);"
+        "className=\"flex items-center gap-1 text-[10px] uppercase tracking-wide font-bold text-text-muted hover:text-text-main w-full text-start cursor-pointer\"",
+        "<div className=\"flex flex-col gap-0.5 max-h-48 overflow-y-auto pe-1\">",
+        "setEvents(Array.isArray(raw) ? (raw as ConsumptionEvent[]) : []);"
       ]
     },
     "src/app/(dashboard)/dashboard/costs/quota-share/hooks/useLocalStoragePoolMigration.ts": {
@@ -657,14 +1277,136 @@
         "error: err instanceof Error ? err.message : \"fetch failed\","
       ]
     },
+    "src/app/(dashboard)/dashboard/endpoint/ApiEndpointsTab.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined text-[16px] text-text-muted absolute start-3 top-1/2 -translate-y-1/2\">",
+        "<div className=\"flex items-center gap-1 ms-1 border-l border-black/10 dark:border-white/10 ps-2 flex-wrap\">",
+        "className=\"w-full ps-9 pe-3 py-2 text-xs rounded-lg border border-black/10 dark:border-white/10"
+      ]
+    },
     "src/app/(dashboard)/dashboard/endpoint/EndpointPageClient.tsx": {
-      "sentinels": ["type CopyHandler = (text: string, key?: string) => void | Promise<unknown>;"]
+      "sentinels": [
+        "className=\"w-full flex items-center gap-3 py-3 hover:bg-surface/40 transition-colors rounded -mx-1 px-1 text-start cursor-pointer\"",
+        "className={`mb-2 ms-7 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${",
+        "type CopyHandler = (text: string, key?: string) => void | Promise<unknown>;"
+      ]
     },
     "src/app/(dashboard)/dashboard/endpoint/__tests__/ApiEndpointsTab.test.tsx": {
       "sentinels": [
         "// No local next-intl mock: the global vitest setup mock renders the real en.json",
         "// The CLI-keys fetch resolves after the catalog — wait for the token swap.",
         "// copy (with param interpolation), which the assertions below rely on —"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/endpoint/components/A2ADashboard.tsx": {
+      "sentinels": [
+        "<th className=\"text-start py-2 pe-2\">{t(\"tableUpdated\")}</th>",
+        "<th className=\"text-start py-2 pe-2\">{t(\"tableSkill\")}</th>",
+        "<th className=\"text-start py-2 pe-2\">{t(\"tableState\")}</th>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/endpoint/components/MCPDashboard.tsx": {
+      "sentinels": [
+        "<td className=\"py-2 pe-2 text-xs\">{tool.scopes.join(\", \") || \"—\"}</td>",
+        "<td className=\"py-2 pe-2 font-mono text-xs\">{entry.toolName}</td>",
+        "<th className=\"text-start py-2 pe-2\">{t(\"tableTimestamp\")}</th>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/endpoint/components/NotionSourceCard.tsx": {
+      "sentinels": ["className=\"w-full flex items-center gap-3 text-start\""]
+    },
+    "src/app/(dashboard)/dashboard/endpoint/components/ObsidianSourceCard.tsx": {
+      "sentinels": ["className=\"w-full flex items-center gap-3 text-start\""]
+    },
+    "src/app/(dashboard)/dashboard/free-provider-rankings/page.tsx": {
+      "sentinels": [
+        "const url = qs ? `/api/free-provider-rankings?${qs}` : \"/api/free-provider-rankings\";",
+        "<tr className=\"text-start text-sm text-text-muted border-b border-border\">",
+        "<td className=\"py-3 text-end text-text-muted\">{provider.modelCount}</td>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/gamification/admin/page.tsx": {
+      "sentinels": [
+        "<th className=\"text-end p-2 font-medium text-text-muted\">{t(\"xpLastHour\")}</th>",
+        "<th className=\"text-start p-2 font-medium text-text-muted\">{t(\"apiKey\")}</th>",
+        "<th className=\"text-end p-2 font-medium text-text-muted\">{t(\"zScore\")}</th>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/health/ProviderHealthMatrixCard.tsx": {
+      "sentinels": [
+        "className=\"flex w-full flex-col gap-3 p-4 text-start lg:flex-row lg:items-center lg:justify-between\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/health/page.tsx": {
+      "sentinels": [
+        "<span className=\"text-xs text-text-muted ms-2\">({lockout.reason})</span>",
+        "{data.status === \"healthy\" ? t(\"allOperational\") : t(\"issuesDetected\")}",
+        "<div className=\"text-[10px] text-(--text-muted,#666) text-end mt-1\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/leaderboard/page.tsx": {
+      "sentinels": [
+        "<tr className=\"text-start text-sm text-text-muted border-b border-border\">",
+        "<th className=\"pb-3 font-medium text-end\">{tg(\"score\")}</th>",
+        "<td className=\"py-3 text-end font-mono\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/logs/page.tsx": {
+      "sentinels": [
+        "className=\"w-full px-3 py-2 text-sm text-start hover:bg-[var(--hover-bg,#2a2a3e)]",
+        "className=\"absolute end-0 top-full mt-1 z-50 min-w-[140px] rounded-lg"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/mcp/page.tsx": {
+      "sentinels": [
+        "className=\"flex flex-col items-start px-4 py-2.5 rounded-lg border transition-all duration-200 text-start\"",
+        "className=\"ms-auto text-xs px-2 py-0.5 rounded border hover:opacity-80 transition-opacity\"",
+        "className=\"absolute start-1/2 top-[-3px] h-3 w-0.5 -translate-x-1/2 rounded-full\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/media-providers/components/LlmChatCard.tsx": {
+      "sentinels": [
+        "<span className=\"inline-block w-1.5 h-3.5 bg-text-main ms-0.5 align-text-bottom animate-pulse\" />",
+        "<option value=\"\">{initialModel || \"—\"}</option>",
+        "{modelOptions.length === 0 && !loading && ("
+      ]
+    },
+    "src/app/(dashboard)/dashboard/memory/components/EmbeddingSourceSelector.tsx": {
+      "sentinels": [
+        "className={`flex flex-col items-start p-3 rounded-lg border text-start transition-all ${",
+        "className={`absolute top-1 start-1 w-4 h-4 bg-white rounded-full transition-transform ${"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/memory/components/QdrantConfigCard.tsx": {
+      "sentinels": [
+        "className={`absolute top-1 start-1 w-4 h-4 bg-white rounded-full transition-transform ${",
+        "<ol className=\"mt-5 list-decimal space-y-3 ps-5 text-sm text-text-muted\">",
+        "const [tutorialOpen, setTutorialOpen] = useState(false);"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/memory/components/RerankConfigCard.tsx": {
+      "sentinels": [
+        "className={`absolute top-1 start-1 w-4 h-4 bg-white rounded-full transition-transform ${",
+        "title={!rerankEnabled && !hasProvider ? t(\"rerank.noProviderWithKey\") : undefined}"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/memory/components/RetrievePreview.tsx": {
+      "sentinels": [
+        "<div className=\"p-6 text-center text-sm text-text-muted\">{t(\"playground.noResults\")}</div>",
+        "<span className=\"material-symbols-outlined text-[12px] align-middle me-1\">warning</span>",
+        "<span className=\"material-symbols-outlined text-[12px] align-middle me-1\">check</span>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/memory/components/tabs/MemoriesTab.tsx": {
+      "sentinels": [
+        "const showHitRate = (stats.cacheStats?.hits ?? 0) + (stats.cacheStats?.misses ?? 0) > 0;",
+        "className=\"text-xs font-mono text-text-main truncate px-2 py-1 bg-surface/30 rounded\"",
+        "<div className=\"text-2xl font-bold\">{((stats.hitRate ?? 0) * 100).toFixed(1)}%</div>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/memory/page.tsx": {
+      "sentinels": [
+        "className={`absolute top-1 start-1 w-4 h-4 bg-white rounded-full transition-transform ${"
       ]
     },
     "src/app/(dashboard)/dashboard/omni-skills/OmniSkillsPageClient.tsx": {
@@ -676,6 +1418,7 @@
     },
     "src/app/(dashboard)/dashboard/omni-skills/components/OmniExecutionsTab.tsx": {
       "sentinels": [
+        "<tr className=\"text-start text-sm text-text-muted border-b border-border\">",
         "import type { ReactElement } from \"react\";",
         "}: OmniExecutionsTabProps): ReactElement {"
       ]
@@ -695,9 +1438,9 @@
     },
     "src/app/(dashboard)/dashboard/omni-skills/components/OmniSkillCard.tsx": {
       "sentinels": [
+        "className={`w-full text-start rounded-lg border p-3 transition-all focus:outline-none focus:ring-2 focus:ring-violet-500/50 ${",
         "export function OmniSkillCard({ skill, selected, onClick }: OmniSkillCardProps): ReactElement {",
-        "effectiveMode === \"on\" ? \"onMode\" : effectiveMode === \"auto\" ? \"autoMode\" : \"offMode\"",
-        "import type { ReactElement } from \"react\";"
+        "effectiveMode === \"on\" ? \"onMode\" : effectiveMode === \"auto\" ? \"autoMode\" : \"offMode\""
       ]
     },
     "src/app/(dashboard)/dashboard/omni-skills/components/OmniSkillsList.tsx": {
@@ -708,19 +1451,85 @@
     },
     "src/app/(dashboard)/dashboard/omni-skills/components/SkillInspectorPane.tsx": {
       "sentinels": [
+        "<tr className=\"text-start text-text-muted border-b border-border\">",
         "import { useState, useEffect, type ReactElement } from \"react\";",
         "}: SkillInspectorPaneProps): ReactElement {"
       ]
     },
+    "src/app/(dashboard)/dashboard/onboarding/page.tsx": {
+      "sentinels": [
+        "<div className=\"bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] text-start\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/onboarding/steps/FreeProviderOnboardingCard.tsx": {
+      "sentinels": ["<div className=\"max-h-48 space-y-2 overflow-y-auto pe-1\">"]
+    },
+    "src/app/(dashboard)/dashboard/playground/components/CompareColumn.tsx": {
+      "sentinels": [
+        "<div className=\"flex flex-col h-full border-r border-border last:border-e-0 min-w-0\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/playground/components/MarkdownMessage.tsx": {
+      "sentinels": [
+        "<blockquote className=\"border-s-4 border-neutral-400 ps-3 italic text-neutral-600 dark:text-neutral-400 my-2\">",
+        "<th className=\"border border-neutral-300 dark:border-neutral-600 px-3 py-1.5 text-start font-semibold\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/playground/components/ParamSliders.tsx": {
+      "sentinels": [
+        "className=\"w-16 text-xs text-end bg-surface border border-border rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-primary\""
+      ]
+    },
     "src/app/(dashboard)/dashboard/playground/components/PresetPicker.tsx": {
       "sentinels": [
+        "className=\"truncate text-start flex-1 hover:text-primary transition-colors\"",
         "{saveError && <p className=\"text-xs text-destructive\">{saveError}</p>}",
-        "params: configState.params as unknown as Record<string, unknown>,",
-        ": t(\"loadPresetPlaceholder\")}"
+        "params: configState.params as unknown as Record<string, unknown>,"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/playground/components/StructuredOutputEditor.tsx": {
+      "sentinels": [
+        "className={`absolute top-0.5 start-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${"
       ]
     },
     "src/app/(dashboard)/dashboard/playground/components/ToolsBuilder.tsx": {
       "sentinels": ["if (result.ok !== true) {"]
+    },
+    "src/app/(dashboard)/dashboard/playground/components/tabs/ApiTab.tsx": {
+      "sentinels": [
+        "className=\"w-full px-3 py-2 rounded-lg bg-surface border border-border text-text-main text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 file:me-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-primary/10 file:text-primary file:text-sm\"",
+        "className=\"absolute bottom-2 end-2 bg-black/60 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1\"",
+        "(data as { text?: string }).text || \"(empty result — check provider credentials)\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/playground/components/tabs/ChatTab.tsx": {
+      "sentinels": [
+        "msg.role === \"user\" ? \"ms-auto items-end\" : \"me-auto items-start\"",
+        "<div className=\"flex flex-col max-w-[85%] me-auto items-start\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/playground/components/tabs/CompareTab.tsx": {
+      "sentinels": [
+        "<span className=\"ms-auto text-[11px] text-text-muted\">",
+        "<div className=\"flex items-center gap-1.5 ms-2\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/plugins/[name]/config/page.tsx": {
+      "sentinels": [
+        "export default function PluginConfigPage({ params }: { params: Promise<{ name: string }> }) {",
+        "<span className=\"ms-2 text-xs text-gray-500\">{field.description}</span>",
+        "className=\"ms-2\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/profile/page.tsx": {
+      "sentinels": ["className={`relative p-4 rounded-xl border transition-all text-start ${"]
+    },
+    "src/app/(dashboard)/dashboard/provider-stats/page.tsx": {
+      "sentinels": [
+        "className=\"text-end py-2 px-3 text-text-muted font-medium cursor-pointer hover:text-text-main transition-colors select-none\"",
+        "<span className=\"material-symbols-outlined text-[14px] ms-1 align-middle text-primary\">",
+        "<th className=\"text-end py-2 px-3 text-text-muted font-medium\">{t(\"avgTtft\")}</th>"
+      ]
     },
     "src/app/(dashboard)/dashboard/providers/[id]/ProviderDetailPageClient.tsx": {
       "sentinels": []
@@ -731,6 +1540,13 @@
     "src/app/(dashboard)/dashboard/providers/[id]/__tests__/useModelImportHandlers.test.tsx": {
       "sentinels": ["modelMeta: { customModels: [], modelCompatOverrides: [] },"]
     },
+    "src/app/(dashboard)/dashboard/providers/[id]/components/BatchTestResultsModal.tsx": {
+      "sentinels": [
+        "<div className=\"fixed inset-0 z-50 flex items-start justify-center pt-[10vh]\" onClick={onClose}>",
+        "r.valid ? \"bg-emerald-500/15 text-emerald-400\" : \"bg-red-500/15 text-red-400\"",
+        "<span className=\"text-text-muted ms-auto\">"
+      ]
+    },
     "src/app/(dashboard)/dashboard/providers/[id]/components/CompatibleModelsSection.tsx": {
       "sentinels": ["provider={providerStorageAlias}"]
     },
@@ -738,7 +1554,25 @@
       "sentinels": ["handleToggleClaudeRoutingPreference: (enabled: boolean) => Promise<void>;"]
     },
     "src/app/(dashboard)/dashboard/providers/[id]/components/ConnectionsListPanel.tsx": {
-      "sentinels": ["codexGlobalServiceMode: CodexGlobalServiceMode;"]
+      "sentinels": [
+        "className=\"w-full rounded-lg border border-border bg-sidebar/50 py-1.5 ps-7 pe-3 text-xs text-text-main placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-primary\"",
+        "<span className=\"material-symbols-outlined pointer-events-none absolute start-2 top-1/2 -translate-y-1/2 text-[15px] text-text-muted\">",
+        "codexGlobalServiceMode: CodexGlobalServiceMode;"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/[id]/components/KimiCodeAuthMethodModal.tsx": {
+      "sentinels": [
+        "className=\"w-full rounded-lg border border-border p-4 text-start transition-colors hover:bg-sidebar\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/[id]/components/ModelCompatPopover.tsx": {
+      "sentinels": ["className=\"ms-1 font-medium text-red-600 dark:text-red-400\""]
+    },
+    "src/app/(dashboard)/dashboard/providers/[id]/components/ModelRow.tsx": {
+      "sentinels": [
+        "className=\"w-full rounded-lg border border-border bg-sidebar/50 py-1.5 ps-7 pe-3 text-xs text-text-main placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-primary\"",
+        "<span className=\"material-symbols-outlined pointer-events-none absolute start-2 top-1/2 -translate-y-1/2 text-[15px] text-text-muted\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/providers/[id]/components/ProviderModalsPanel.tsx": {
       "sentinels": [
@@ -754,15 +1588,69 @@
     },
     "src/app/(dashboard)/dashboard/providers/[id]/components/ProviderParamFilterSection.tsx": {
       "sentinels": [
+        "<p className=\"text-[11px] text-text-muted mt-1 ms-5\">{t(\"paramFiltersAutoLearnHint\")}</p>",
         "notify.error(t(\"paramFiltersResetError\", { error: errorMessage(err) }));",
-        "notify.error(t(\"paramFiltersLoadError\", { error: errorMessage(err) }));",
-        "notify.error(t(\"paramFiltersSaveError\", { error: errorMessage(err) }));"
+        "notify.error(t(\"paramFiltersLoadError\", { error: errorMessage(err) }));"
       ]
     },
     "src/app/(dashboard)/dashboard/providers/[id]/components/ProviderPlaygroundPanel.tsx": {
       "sentinels": [
         "export function renderKindPanel(kind: ServiceKind, providerId: string): ReactElement | null {",
         "import { useState, type ReactElement } from \"react\";"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/[id]/components/SiliconFlowEndpointModal.tsx": {
+      "sentinels": [
+        "className=\"w-full p-4 text-start border border-border rounded-lg hover:bg-sidebar transition-colors\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/[id]/components/VolcengineConnectModal.tsx": {
+      "sentinels": [
+        "className=\"w-full rounded-lg border border-border p-3 text-start text-sm transition-colors hover:bg-sidebar disabled:cursor-not-allowed disabled:opacity-60\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/[id]/components/WebSessionCredentialGuide.tsx": {
+      "sentinels": [
+        "className=\"ms-2 inline-flex items-center gap-1 text-primary hover:underline\"",
+        "<ol className=\"list-decimal space-y-1 ps-5\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/[id]/components/ZedImportCard.tsx": {
+      "sentinels": ["className=\"flex items-center justify-between w-full text-start\""]
+    },
+    "src/app/(dashboard)/dashboard/providers/[id]/components/modals/AddApiKeyModal.tsx": {
+      "sentinels": [
+        "<ul className=\"mt-2 list-disc ps-5 text-xs text-text-muted font-normal space-y-0.5\">",
+        "onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}",
+        "className=\"flex flex-col gap-3 ps-2 border-s-2 border-border\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/[id]/components/modals/AlibabaProviderRegionField.tsx": {
+      "sentinels": [
+        "className=\"w-full rounded-lg border border-border p-4 text-start transition-colors hover:bg-sidebar\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/[id]/components/modals/EditCompatibleNodeModal.tsx": {
+      "sentinels": [
+        "<div id=\"advanced-settings\" className=\"flex flex-col gap-3 ps-2 border-s-2 border-border\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/[id]/components/modals/EditConnectionModal.tsx": {
+      "sentinels": [
+        "<span className=\"ms-2 text-[11px] font-normal text-text-muted\">",
+        "className=\"flex flex-col gap-3 ps-2 border-s-2 border-border\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/[id]/components/modals/ImportCodexAuthModal.tsx": {
+      "sentinels": [
+        "className=\"text-sm text-text-muted file:me-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-border file:text-xs file:bg-bg-subtle file:text-text-main hover:file:bg-bg-hover cursor-pointer disabled:opacity-50\"",
+        "className=\"text-sm text-text-muted file:me-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-border file:text-xs file:bg-bg-subtle file:text-text-main hover:file:bg-bg-hover cursor-pointer\"",
+        "<ul className=\"text-xs text-text-muted space-y-0.5 list-disc ps-4\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/[id]/components/modals/ImportGrokCliAuthModal.tsx": {
+      "sentinels": [
+        "className=\"text-sm text-text-muted file:me-3 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer\""
       ]
     },
     "src/app/(dashboard)/dashboard/providers/[id]/hooks/useModelImportHandlers.ts": {
@@ -778,6 +1666,38 @@
         "// resolve to `unknown`; declare only the slice this hook actually calls."
       ]
     },
+    "src/app/(dashboard)/dashboard/providers/components/AddCompatibleProviderModal.tsx": {
+      "sentinels": [
+        "<div id={advancedId} className=\"flex flex-col gap-3 ps-2 border-s-2 border-border\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/components/CodexCliGuideModal.tsx": {
+      "sentinels": [
+        "<blockquote className=\"my-2 border-s-2 border-primary/40 ps-3 text-sm text-text-muted/80 italic\">",
+        "<li className=\"ms-2 flex items-start text-sm leading-relaxed text-text-muted\">",
+        "<span className=\"me-2 mt-2 size-1 shrink-0 rounded-full bg-text-muted/40\" />"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/components/ImportProvidersFromFileModal.tsx": {
+      "sentinels": [
+        "<tr className=\"text-start text-text-muted border-b border-border bg-bg-subtle sticky top-0\">",
+        ": t(\"importFromFileImport\", { count: s.selected.size })}",
+        "err.reason as (typeof PARSE_ERROR_REASON_KEYS)[number]"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/components/ProviderSummaryCard.tsx": {
+      "sentinels": [
+        "className=\"absolute inset-y-0 end-0 flex items-center pe-2.5 text-text-muted hover:text-text-primary transition-colors\"",
+        "<span className=\"text-[11px] font-medium uppercase tracking-wide text-text-muted me-1\">",
+        "inputClassName={modelSearchQuery ? \"pe-9\" : \"\"}"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/components/onboarding/ProviderOnboardingWizard.tsx": {
+      "sentinels": [
+        "className=\"rounded-xl border border-border bg-bg-card p-5 text-start transition-colors hover:border-primary/50 hover:bg-bg-subtle\"",
+        "className={`flex h-full flex-col gap-3 rounded-xl border p-4 text-start transition-colors ${"
+      ]
+    },
     "src/app/(dashboard)/dashboard/providers/components/onboarding/providerOnboardingCatalog.ts": {
       "sentinels": [
         "const freeApiKeyProviders = (Object.values(FREE_PROVIDERS) as WizardProviderDefinition[]).filter(",
@@ -785,14 +1705,193 @@
         "// FREE_PROVIDERS is declared as `{}` (empty stub); cast its values to the"
       ]
     },
+    "src/app/(dashboard)/dashboard/providers/page.tsx": {
+      "sentinels": [
+        "import(\"./components/ImportProvidersFromFileModal\").then((m) => m.ImportProvidersFromFileModal),",
+        "<span className=\"text-text-muted ms-1.5\">({r.provider})</span>",
+        "<span className=\"text-text-muted ms-auto\">"
+      ]
+    },
     "src/app/(dashboard)/dashboard/providers/providerPageUtils.ts": {
       "sentinels": ["authType: \"oauth\" | \"free\" | \"apikey\" | \"no-auth\""]
+    },
+    "src/app/(dashboard)/dashboard/providers/services/components/CliproxyAccountHealthCard.tsx": {
+      "sentinels": [
+        "<div className=\"text-end text-xs text-text-muted\">",
+        ": STATE_LABELS[result?.state ?? \"unreachable\"]}",
+        "const state = account.disabled"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/services/components/NinerouterModelList.tsx": {
+      "sentinels": [
+        "<span className=\"ms-2 text-[10px] font-medium text-text-muted bg-bg-subtle px-1.5 py-0.5 rounded shrink-0\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/providers/services/components/ServiceStatusCard.tsx": {
+      "sentinels": ["<div className=\"text-end shrink-0\">"]
     },
     "src/app/(dashboard)/dashboard/quota/page.tsx": {
       "sentinels": [".then((data: Record<string, unknown>) => {"]
     },
+    "src/app/(dashboard)/dashboard/radar/RadarCatalogTable.tsx": {
+      "sentinels": [
+        "<tr className=\"text-start text-sm text-text-muted border-b border-border\">",
+        "<th className=\"pb-3 font-medium text-end\">{t(\"colActions\")}</th>",
+        "<span className=\"ms-2 text-sm font-mono text-text-muted\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/radar/intel/page.tsx": {
+      "sentinels": [
+        "<td className=\"py-3 text-end\">{ranking.matches}</td>",
+        "<td className=\"py-3 text-end\">{ranking.rating}</td>",
+        "<th className=\"pb-3 text-end\">{t(\"matches\")}</th>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/radar/page.tsx": {
+      "sentinels": [
+        "<div className=\"flex flex-col gap-2 text-sm text-text-muted text-start w-full\">",
+        "<p className=\"text-xs text-text-muted text-start\">{t(\"contributorHint\")}</p>",
+        "<p className=\"text-xs text-text-muted text-start\">{t(\"supporterHint\")}</p>"
+      ]
+    },
     "src/app/(dashboard)/dashboard/runtime/RuntimePageClient.tsx": {
-      "sentinels": ["const nodeMap = useProviderNodeMap();"]
+      "sentinels": [
+        "<th className=\"text-start py-2 px-2 text-[10px] font-semibold text-text-muted uppercase tracking-wider\">",
+        "<th className=\"text-end py-2 px-2 text-[10px] font-semibold text-text-muted uppercase tracking-wider\">",
+        "className=\"text-start rounded-xl border px-4 py-3 transition-colors cursor-pointer bg-surface\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/search-tools/components/ProviderComparison.tsx": {
+      "sentinels": [
+        "<span className=\"text-xs text-text-muted ms-2\">{t(\"compareProviders\")}...</span>",
+        "<th className=\"text-start p-2 text-text-muted font-semibold\" />"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/search-tools/components/ResultsPanel.tsx": {
+      "sentinels": [
+        "className={`text-[10px] px-2 py-0.5 rounded-md ms-2 whitespace-nowrap ${getScoreBg(r.score)} ${getScoreColor(r.score)}`}",
+        "className=\"border-s-[3px] border-s-primary p-3 bg-surface rounded-e-lg border border-border\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/search-tools/components/ScrapeResult.tsx": {
+      "sentinels": [
+        "className=\"ms-3 text-xs px-2 py-1 rounded bg-warning/20 text-warning hover:bg-warning/30 transition-colors\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/search-tools/components/SearchHistory.tsx": {
+      "sentinels": [
+        "className=\"w-full text-start p-2 bg-surface border border-border rounded-lg hover:border-primary/30 transition-colors\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/AccessTokensTab.tsx": {
+      "sentinels": [
+        "e instanceof Error ? e.message : L(\"accessTokensCreateError\", \"Could not create token.\")",
+        "<th className=\"py-2 pe-4 font-medium\">{L(\"accessTokensColScope\", \"Scope\")}</th>",
+        "<th className=\"py-2 pe-4 font-medium\">{L(\"accessTokensColName\", \"Name\")}</th>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/AppearanceTab.tsx": {
+      "sentinels": [
+        "\"flex items-start gap-3 rounded-lg border p-3 text-start transition-colors disabled:opacity-60\","
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/AuthzSection.tsx": {
+      "sentinels": [
+        "className={`ms-3 ${status.type === \"error\" ? \"text-red-500\" : \"text-green-500\"}`}"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/CacheStatsCard.tsx": {
+      "sentinels": ["<span className=\"text-green-400 w-12 text-end\">"]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/CodexFastTierTab.tsx": {
+      "sentinels": [
+        "<span className=\"ms-1 text-xs text-text-muted\">({supportedModels.length})</span>",
+        "<div className=\"mt-3 ps-6 flex flex-col gap-2\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/ComboDefaultsTab.tsx": {
+      "sentinels": [
+        "<span className=\"text-xs text-text-muted ms-auto\">{t(\"globalComboConfig\")}</span>",
+        "className=\"ms-auto text-red-400 hover:text-red-500 transition-colors\"",
+        "<span className=\"flex-1 text-start text-text-muted\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/CompressionSettingsTab.tsx": {
+      "sentinels": [
+        "<span className=\"ms-auto text-xs font-medium text-emerald-500 flex items-center gap-1\">",
+        "className={`flex items-start gap-3 p-3 rounded-lg border text-start transition-all ${",
+        "<span className=\"ms-auto text-xs font-medium text-red-500 flex items-center gap-1\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/DatabaseBackupRetentionCard.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined text-[14px] me-1\" aria-hidden=\"true\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/FallbackChainsEditor.tsx": {
+      "sentinels": ["className=\"text-text-muted hover:text-red-400 transition-colors ms-2\""]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/FeatureFlagsGrid.tsx": {
+      "sentinels": [
+        "className=\"w-full rounded-lg border border-border bg-bg-subtle py-1.5 ps-8 pe-4 text-sm text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15 sm:w-64\"",
+        "<span className=\"material-symbols-outlined absolute start-2.5 top-2 text-sm text-text-muted\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/MemorySkillsTab.tsx": {
+      "sentinels": [
+        "className={`absolute top-1 start-1 w-4 h-4 bg-white rounded-full transition-transform ${",
+        "className={`flex flex-col items-start p-3 rounded-lg border text-start transition-all ${",
+        "<span className=\"ms-auto text-xs font-medium text-emerald-500 flex items-center gap-1\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/MitmProxyTab.tsx": {
+      "sentinels": ["<table className=\"w-full min-w-[760px] text-start text-sm\">"]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/ModelAliasesTab.tsx": {
+      "sentinels": [
+        "<span className=\"ms-auto text-xs font-medium text-emerald-500 flex items-center gap-1\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/ModelCapabilityOverridesTab.tsx": {
+      "sentinels": [
+        "className={`w-full px-3 py-2 text-start text-xs flex items-center justify-between gap-2 hover:bg-bg-hover/50 ${"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/ModelLockoutCard.tsx": {
+      "sentinels": ["<span className=\"me-1 text-xs text-text-muted\">{t(\"suggestions\")}</span>"]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/ModelsDevSyncTab.tsx": {
+      "sentinels": [
+        "className={`absolute top-1 start-1 w-4 h-4 bg-white rounded-full transition-transform ${",
+        "className={`ms-auto text-xs font-medium flex items-center gap-1 ${"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/OneproxyTab.tsx": {
+      "sentinels": ["<th className=\"text-start py-2 px-3 text-text-muted font-medium\">"]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/PricingTab.tsx": {
+      "sentinels": [
+        "className=\"w-full px-2 py-1 text-end text-xs bg-transparent border border-transparent hover:border-border focus:border-primary focus:bg-bg-base rounded transition-colors outline-none tabular-nums\"",
+        "className=\"w-full ps-10 pe-3 py-2 bg-bg-base border border-border rounded-lg focus:outline-none focus:border-primary text-sm\"",
+        "className=\"w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-bg-hover/50 transition-colors text-start\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/ProxyBulkImportModal.tsx": {
+      "sentinels": [
+        "<tr className=\"text-start text-text-muted border-b border-border bg-bg-subtle sticky top-0\">",
+        "<span className=\"px-1.5 py-0.5 rounded bg-bg-subtle border border-border text-[10px]\">",
+        "reason: t(err.reason as \"bulkImportMinFields\" | \"bulkImportInvalidPort\"),"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/ProxyCheckboxCell.tsx": {
+      "sentinels": ["<td className=\"py-2 pe-2 w-8\">"]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/ProxyRegistryManager.tsx": {
+      "sentinels": [
+        "className=\"absolute end-0 top-full z-50 mt-1 w-56 rounded-md border border-border bg-surface p-1 shadow-xl\"",
+        "<span className=\"ms-1 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-400\">",
+        "<tr className=\"text-start text-text-muted border-b border-border bg-bg-subtle sticky top-0\">"
+      ]
     },
     "src/app/(dashboard)/dashboard/settings/components/RedisLauncherPanel.tsx": {
       "sentinels": [
@@ -801,39 +1900,255 @@
         "// Translation keys may be absent on older locale bundles — fall back to the"
       ]
     },
+    "src/app/(dashboard)/dashboard/settings/components/RoutingTab.tsx": {
+      "sentinels": [
+        "<p className=\"text-[11px] leading-relaxed text-text-muted border-s-2 border-purple-500/30 ps-2 italic\">",
+        "className={`w-full flex flex-col items-start gap-1 p-3 rounded-lg border text-start transition-all ${",
+        "className={`flex items-start gap-3 rounded-lg border p-3 text-start transition-all ${"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/SecurityTab.tsx": {
+      "sentinels": ["<ul className=\"list-disc ps-5 mt-1 space-y-1\">"]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/SidebarTab.tsx": {
+      "sentinels": [
+        "className=\"mt-3.5 ms-4 text-text-muted/30 hover:text-text-muted/70 cursor-grab active:cursor-grabbing touch-none shrink-0\"",
+        "\"material-symbols-outlined text-[14px] text-text-muted/40 transition-transform ms-auto\",",
+        "<div className=\"flex items-center gap-2 border-l border-border/60 ps-3\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/SystemPromptTab.tsx": {
+      "sentinels": [
+        "<div className=\"absolute bottom-2 end-3 text-xs text-text-muted/60 tabular-nums\">"
+      ]
+    },
     "src/app/(dashboard)/dashboard/settings/components/SystemStorageTab.tsx": {
       "sentinels": [
         "className=\"flex items-center justify-between px-2.5 py-1.5 rounded bg-black/[0.02] dark:bg-white/[0.02] text-xs\"",
         "<p className=\"text-sm font-semibold\">{formatBytes(storageHealth.walBytes ?? 0)}</p>",
-        "<p className=\"text-xs text-text-muted mb-1\">{t(\"storageCleanupRowsDeleted\")}</p>"
+        "<span className=\"material-symbols-outlined text-[14px] me-1\" aria-hidden=\"true\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/ThinkingBudgetTab.tsx": {
+      "sentinels": [
+        "<span className=\"ms-auto text-xs font-medium text-emerald-500 flex items-center gap-1\">",
+        "className={`flex items-start gap-3 p-3 rounded-lg border text-start transition-all ${"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/proxy/FreePoolTab.tsx": {
+      "sentinels": [
+        "<div className=\"flex gap-2 ms-auto flex-wrap items-center\">",
+        "<th className=\"px-3 py-2 text-start w-8\" scope=\"col\"></th>",
+        "<th className=\"px-3 py-2 text-start\" scope=\"col\"></th>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/settings/components/proxy/GlobalConfigTab.tsx": {
+      "sentinels": [
+        "<th className=\"text-start px-3 py-2 font-medium text-text-muted\">",
+        "<th className=\"text-end px-3 py-2 font-medium text-text-muted\">",
+        "<td className=\"px-3 py-1.5 text-end text-text-muted\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/tokens/page.tsx": {
+      "sentinels": [
+        "className=\"text-xs px-3 py-1.5 rounded text-red-400 hover:bg-red-500/10 transition-colors ms-4\"",
+        "className={`py-3 text-end font-mono ${isSent ? \"text-red-400\" : \"text-emerald-400\"}`}",
+        "<tr className=\"text-start text-sm text-text-muted border-b border-border\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/tools/agent-bridge/AgentBridgePageClient.tsx": {
+      "sentinels": [
+        "className=\"ms-auto text-amber-600 hover:text-amber-500\"",
+        "className=\"ms-auto text-red-500 hover:text-red-400\"",
+        "<ol className=\"mt-2 list-decimal ps-6 space-y-1\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/tools/agent-bridge/components/AgentBridgeMaintenanceCard.tsx": {
+      "sentinels": [
+        "className=\"inline-flex items-center gap-1.5 rounded-lg bg-zinc-500/10 text-text-muted px-3 py-1.5 text-xs font-medium hover:bg-zinc-500/20 transition-colors disabled:opacity-50\"",
+        "className=\"inline-flex items-center gap-1.5 rounded-lg bg-blue-500/10 text-blue-600 px-3 py-1.5 text-xs font-medium hover:bg-blue-500/20 transition-colors disabled:opacity-50\"",
+        "className=\"inline-flex items-center gap-1.5 rounded-lg bg-red-500/10 text-red-600 px-3 py-1.5 text-xs font-medium hover:bg-red-500/20 transition-colors disabled:opacity-50\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/tools/agent-bridge/components/AgentCard.tsx": {
+      "sentinels": [
+        "className=\"w-full flex items-center justify-between gap-3 px-4 py-3 text-start hover:bg-surface/30 transition-colors\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/tools/agent-bridge/components/AgentList.tsx": {
+      "sentinels": [
+        "className=\"rounded-lg border border-border/50 bg-surface ps-8 pe-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/50\"",
+        "<span className=\"material-symbols-outlined absolute start-2 top-1/2 -translate-y-1/2 text-[16px] text-text-muted pointer-events-none\">",
+        "<h2 className=\"text-sm font-semibold text-text-main me-auto\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/tools/agent-bridge/components/ModelMappingTable.tsx": {
+      "sentinels": ["<th className=\"px-3 py-2 text-start text-xs font-medium text-text-muted\">"]
+    },
+    "src/app/(dashboard)/dashboard/tools/agent-bridge/components/ModelSelectorModal.tsx": {
+      "sentinels": [
+        "{m.name !== m.id && <span className=\"ms-2 text-text-muted text-xs\">{m.name}</span>}",
+        "className={`w-full text-start px-3 py-2 rounded-lg text-sm transition-colors ${"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/tools/agent-bridge/components/SetupWizard.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined text-[14px] ms-1\">arrow_forward</span>",
+        "Found {detectedModels.length} model{detectedModels.length !== 1 ? \"s\" : \"\"} in",
+        "{i < steps.length - 1 && <div className=\"flex-1 h-px bg-border/30 ms-1\" />}"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/tools/agent-bridge/components/UpstreamCaField.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined text-[12px] me-1\">check_circle</span>",
+        "<span className=\"material-symbols-outlined text-[12px] me-1\">error</span>"
       ]
     },
     "src/app/(dashboard)/dashboard/tools/agent-bridge/normalizeState.ts": {
       "sentinels": ["import { isRecord } from \"@/shared/types/json\";"]
     },
+    "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/CaptureModesToolbar.tsx": {
+      "sentinels": [
+        "<div className=\"ms-auto flex items-center gap-2\">",
+        "interceptCount: s.interceptCount,",
+        "available: s.available,"
+      ]
+    },
     "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/CustomHostsManager.tsx": {
       "sentinels": ["setError(parsed.error.issues[0]?.message ?? t(\"invalidHost\"));"]
+    },
+    "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/RequestStreamingList.tsx": {
+      "sentinels": [
+        "className=\"ms-1 underline hover:text-blue-100 focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-400\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/TopBarControls.tsx": {
+      "sentinels": ["<div className=\"flex items-center gap-2 ms-auto\">"]
+    },
+    "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/chat/ChatBubble.tsx": {
+      "sentinels": [
+        "user: \"ms-auto bg-blue-600/30 border border-blue-500/30 text-blue-100\",",
+        "isUser ? \"ms-auto\" : \"me-auto\","
+      ]
+    },
+    "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/chat/ToolCallBlock.tsx": {
+      "sentinels": [
+        "<span className=\"text-text-muted text-xs font-mono ms-auto\">{id.slice(0, 8)}</span>",
+        "className=\"flex w-full items-center gap-2 text-start focus-ring rounded\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/chat/ToolResultBlock.tsx": {
+      "sentinels": [
+        "<span className=\"text-text-muted text-xs font-mono ms-auto\">{toolUseId.slice(0, 8)}</span>",
+        "className=\"flex w-full items-center gap-2 text-start focus-ring rounded\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/session/SessionPicker.tsx": {
+      "sentinels": [
+        "<div className=\"absolute start-0 top-full z-50 mt-1 min-w-[200px] rounded-lg border border-border bg-surface shadow-lg py-1\">",
+        "className=\"w-full text-start px-3 py-1.5 text-xs text-text-muted hover:bg-bg-subtle focus-ring\"",
+        "className={`flex-1 text-start px-3 py-1.5 text-xs hover:bg-bg-subtle focus-ring ${"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/session/SessionRecorderBar.tsx": {
+      "sentinels": [
+        "className=\"ms-auto rounded border border-red-500/50 px-2 py-0.5 text-xs hover:bg-red-800/30 focus-ring\"",
+        "className=\"ms-auto rounded border border-border px-2 py-0.5 text-xs hover:bg-surface focus-ring\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/shared/AnnotationField.tsx": {
+      "sentinels": [
+        "<span className=\"absolute end-2 bottom-2 text-xs text-text-muted animate-pulse\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/shared/HeaderTable.tsx": {
+      "sentinels": [
+        "<th className=\"text-start px-2 py-1 text-text-muted font-medium\">{t(\"value\")}</th>",
+        "<th className=\"text-start px-2 py-1 text-text-muted font-medium\">{t(\"name\")}</th>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/shared/JsonViewer.tsx": {
+      "sentinels": ["<div className=\"ms-4 border-l border-border ps-2\">"]
+    },
+    "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/shared/SseEventList.tsx": {
+      "sentinels": ["<span className=\"text-text-muted shrink-0 w-8 text-end\">{i + 1}</span>"]
+    },
+    "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/tabs/RequestBodyTab.tsx": {
+      "sentinels": [
+        "<span className=\"ms-auto text-xs text-text-muted\">{request.requestSize} B</span>"
+      ]
     },
     "src/app/(dashboard)/dashboard/tools/traffic-inspector/components/tabs/ResponseBodyTab.tsx": {
       "sentinels": [
         "<pre className=\"text-xs font-mono text-text-main whitespace-pre-wrap break-words\">",
-        "function extractMergedDisplay(merged: MergedResponse): MergedDisplay | null {",
-        "if (block.type === \"text\" && typeof block.text === \"string\" && block.text) {"
+        "<span className=\"ms-auto text-xs text-text-muted\">{request.responseSize} B</span>",
+        "function extractMergedDisplay(merged: MergedResponse): MergedDisplay | null {"
       ]
+    },
+    "src/app/(dashboard)/dashboard/translator/TranslatorPageClient.tsx": {
+      "sentinels": ["className=\"flex w-full items-center justify-between p-4 text-start\""]
     },
     "src/app/(dashboard)/dashboard/translator/components/MonitorTab.tsx": {
       "sentinels": [
-        "(key: string, fallback: string, values?: Record<string, string | number | Date>) => {"
+        "(key: string, fallback: string, values?: Record<string, string | number | Date>) => {",
+        "<span className=\"material-symbols-outlined animate-spin me-2\" aria-hidden=\"true\">",
+        "<th className=\"pb-2 pe-4\">{translateOrFallback(\"routeDetails\", \"Route\")}</th>"
       ]
+    },
+    "src/app/(dashboard)/dashboard/translator/components/advanced/CompressionPreviewAccordion.tsx": {
+      "sentinels": [
+        "className=\"flex items-center gap-3 flex-1 min-w-0 text-start -m-1 p-1 rounded\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/translator/components/advanced/PipelineView.tsx": {
+      "sentinels": ["className=\"w-full p-3 flex items-center gap-3 text-start\""]
     },
     "src/app/(dashboard)/dashboard/translator/components/advanced/StreamTransformerAccordion.tsx": {
       "sentinels": [
-        "(key: string, fallback: string, values?: Record<string, string | number | Date>) => {"
+        "(key: string, fallback: string, values?: Record<string, string | number | Date>) => {",
+        "className=\"flex items-center gap-3 flex-1 min-w-0 text-start -m-1 p-1 rounded\"",
+        "<tr className=\"text-start text-xs text-text-muted border-b border-border\">"
       ]
+    },
+    "src/app/(dashboard)/dashboard/usage/components/BudgetTab.tsx": {
+      "sentinels": [
+        "className=\"w-full ps-10 pe-3 py-2 bg-bg-base border border-border rounded-lg focus:outline-none focus:border-primary text-sm\"",
+        "<span className=\"material-symbols-outlined absolute start-3 top-1/2 -translate-y-1/2 text-text-muted text-lg\">",
+        "<div className=\"text-end text-[12px] tabular-nums\">{formatCurrency(today)}</div>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/usage/components/EvalsTab.tsx": {
+      "sentinels": [
+        "className=\"grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-3 py-3 text-start transition-colors hover:bg-surface/30\"",
+        "className=\"w-full flex items-center justify-between px-6 py-4 hover:bg-surface/30 transition-colors text-start\"",
+        "<div className=\"flex max-h-[75vh] flex-col gap-4 overflow-y-auto pe-1\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/usage/components/FreeBudgetCard.tsx": {
+      "sentinels": [
+        "<span className=\"text-[11px] font-semibold text-emerald-500\">{labels.noApiKey}</span>",
+        "<td className=\"py-1 pe-2 text-end text-text-main tabular-nums\">{amount}</td>",
+        "<th className=\"font-medium py-1 pe-2 text-end\">{labels.tokensMonth}</th>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/usage/components/ProviderLimits/ProviderUsdCostModal.tsx": {
+      "sentinels": ["<div className=\"text-end\">"]
     },
     "src/app/(dashboard)/dashboard/usage/components/ProviderLimits/constants.ts": {
       "sentinels": [
         "export const TIER_FILTERS: { key: string; labelKey: string; label?: string }[] = ["
+      ]
+    },
+    "src/app/(dashboard)/dashboard/usage/components/ProviderLimits/index.tsx": {
+      "sentinels": [
+        "<span className=\"text-[11px] uppercase tracking-wider text-text-muted font-semibold me-1\">",
+        "className=\"text-start rounded-lg px-3 py-2.5 border transition-colors cursor-pointer\""
+      ]
+    },
+    "src/app/(dashboard)/dashboard/usage/components/ProviderLimits/parts/QuotaCardExpanded.tsx": {
+      "sentinels": [
+        "className={`font-semibold ${row.kind === \"status\" ? \"text-end\" : \"tabular-nums\"}`}",
+        "<div className=\"flex items-center gap-1.5 ms-auto\">"
       ]
     },
     "src/app/(dashboard)/dashboard/usage/components/ProviderLimits/parts/QuotaEnvGroup.tsx": {
@@ -845,6 +2160,45 @@
     "src/app/(dashboard)/dashboard/usage/components/ProviderLimits/utils.tsx": {
       "sentinels": [
         "export function resolvePlanValue(plan, providerSpecificData, providerId = undefined) {"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/usage/components/SessionsTab.tsx": {
+      "sentinels": [
+        "<th className=\"text-start py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider\">",
+        "<th className=\"text-end py-2 px-3 text-xs font-semibold text-text-muted uppercase tracking-wider\">",
+        "<td className=\"py-2.5 px-3 text-end\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/webhooks/components/WebhookDeliveriesPanel.tsx": {
+      "sentinels": [
+        "<td className=\"py-2 pe-3 font-mono text-text-main\">{d.event_type}</td>",
+        "<th className=\"py-2 pe-3 font-medium\">{t(\"deliveries.latency\")}</th>",
+        "<th className=\"py-2 pe-3 font-medium\">{t(\"deliveries.status\")}</th>"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/webhooks/components/shared/HmacRecipeBlock.tsx": {
+      "sentinels": [
+        "className=\"absolute end-2 top-2 rounded p-1 text-text-muted transition-colors hover:bg-surface hover:text-text-main\"",
+        "<pre className=\"overflow-x-auto rounded-lg bg-sidebar p-3 pe-10 text-xs text-text-main\">"
+      ]
+    },
+    "src/app/(dashboard)/dashboard/webhooks/components/shared/IntegrationCard.tsx": {
+      "sentinels": [
+        "className={`relative flex w-full flex-col items-start gap-2 rounded-xl border p-4 text-start transition-all disabled:cursor-not-allowed disabled:opacity-50 ${",
+        "<span className=\"absolute end-2 top-2 rounded-full bg-surface px-1.5 py-0.5 text-[10px] font-medium text-text-muted ring-1 ring-border\">",
+        "<span className=\"ms-auto mt-auto flex size-5 items-center justify-center rounded-full bg-primary\">"
+      ]
+    },
+    "src/app/(dashboard)/home/HomeRecentRequests.tsx": {
+      "sentinels": [
+        "<td className=\"py-1.5 font-mono truncate max-w-[140px]\" title={row.model || \"\"}>",
+        "<th className=\"py-1.5 text-start font-semibold\">{t(\"recentRequestsModel\")}</th>",
+        "<th className=\"py-1.5 text-end font-semibold\">{t(\"recentRequestsWhen\")}</th>"
+      ]
+    },
+    "src/app/(dashboard)/home/ProviderTopology.tsx": {
+      "sentinels": [
+        "<span className=\"ms-1 px-1.5 py-0.5 rounded-full bg-primary text-white text-[10px] font-bold leading-none\">"
       ]
     },
     "src/app/api/a2a/status/route.ts": {
@@ -1505,12 +2859,22 @@
     "src/app/authorize/route.ts": {
       "sentinels": ["if (parsed.ok !== true) {"]
     },
+    "src/app/callback/page.tsx": {
+      "sentinels": [
+        "const [currentUrl] = useState(() => (typeof window === \"undefined\" ? \"\" : window.location.href));",
+        "window.opener.postMessage({ type: \"oauth_callback\", data: callbackData }, origin);",
+        "<div className=\"bg-surface border border-border rounded-lg p-3 text-start\">"
+      ]
+    },
     "src/app/docs/[...slug]/page.tsx": {
       "sentinels": [
         "const [{ DocsPage, DocsBody }, mdxModule, { getMdxComponentMap }] = await Promise.all([",
         "const defaultMdxComponents = getMdxComponentMap(mdxModule);",
         "<MDX components={defaultMdxComponents} />"
       ]
+    },
+    "src/app/docs/components/ApiExplorerClient.tsx": {
+      "sentinels": ["className={`w-full text-start px-3 py-2 rounded-lg text-sm transition-colors"]
     },
     "src/app/docs/components/DocsPageAnalytics.tsx": {
       "sentinels": [
@@ -1521,8 +2885,75 @@
     "src/app/docs/layout.tsx": {
       "sentinels": ["<DocsLayout tree={source.getPageTree()} {...docsLayoutOptions}>"]
     },
+    "src/app/error.tsx": {
+      "sentinels": [
+        "className=\"p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 text-xs max-w-[600px] overflow-auto text-start mb-6\""
+      ]
+    },
+    "src/app/global-error.tsx": {
+      "sentinels": [
+        "className=\"p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-500 text-xs max-w-[600px] overflow-auto text-start mb-6\""
+      ]
+    },
+    "src/app/landing/components/AnimatedBackground.tsx": {
+      "sentinels": [
+        "<div className=\"absolute -bottom-20 start-1/2 w-[550px] h-[550px] bg-blue-500/12 rounded-full blur-[120px] animate-blob-delayed-2\" />",
+        "<div className=\"absolute -top-20 start-1/4 w-[600px] h-[600px] bg-[#E54D5E]/20 rounded-full blur-[120px] animate-blob\" />"
+      ]
+    },
+    "src/app/landing/components/FlowAnimation.tsx": {
+      "sentinels": [
+        "<div className=\"absolute end-0 top-0 bottom-0 flex flex-col justify-between py-6\">",
+        "<div className=\"absolute start-0 top-1/2 -translate-y-1/2 flex flex-col gap-7\">"
+      ]
+    },
+    "src/app/landing/components/Footer.tsx": {
+      "sentinels": ["<p className=\"text-gray-600 text-sm break-words text-center md:text-start\">"]
+    },
+    "src/app/landing/components/GetStarted.tsx": {
+      "sentinels": [
+        "<span className=\"ms-auto text-gray-500 text-xs opacity-0 group-hover:opacity-100\">",
+        "<div className=\"ms-2 text-xs text-gray-500 font-mono\">{t(\"terminal\")}</div>"
+      ]
+    },
+    "src/app/landing/components/HeroSection.tsx": {
+      "sentinels": [
+        "<div className=\"absolute top-0 start-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-[#E54D5E]/10 rounded-full blur-[120px] pointer-events-none\"></div>"
+      ]
+    },
+    "src/app/landing/components/HowItWorks.tsx": {
+      "sentinels": [
+        "<div className=\"flex flex-col gap-6 relative group md:items-end md:text-end\">"
+      ]
+    },
+    "src/app/landing/page.tsx": {
+      "sentinels": [
+        "<div className=\"absolute top-0 start-1/4 w-[700px] h-[700px] bg-[#E54D5E]/12 rounded-full blur-[130px] animate-blob\"></div>",
+        "className=\"absolute top-1/3 end-1/4 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[130px] animate-blob\"",
+        "className=\"absolute bottom-0 start-1/2 w-[650px] h-[650px] bg-blue-500/8 rounded-full blur-[130px] animate-blob\""
+      ]
+    },
+    "src/app/layout.tsx": {
+      "sentinels": [
+        "className=\"sr-only focus:not-sr-only focus:absolute focus:top-2 focus:start-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#6366f1] focus:text-white focus:rounded-lg focus:text-sm focus:font-semibold focus:shadow-lg\""
+      ]
+    },
+    "src/app/maintenance/page.tsx": {
+      "sentinels": [
+        "<ul className=\"mt-6 text-sm text-text-muted text-start rounded-xl border border-border bg-bg-alt p-4 space-y-2\">"
+      ]
+    },
     "src/app/manifest.ts": {
       "sentinels": ["src: \"/icon-512.png\",", "purpose: \"maskable\",", "type: \"image/png\","]
+    },
+    "src/app/privacy/page.tsx": {
+      "sentinels": [
+        "<ul className=\"list-disc ps-6 space-y-2 mt-3\">",
+        "<ul className=\"list-disc ps-6 space-y-2\">"
+      ]
+    },
+    "src/app/terms/page.tsx": {
+      "sentinels": ["<ul className=\"list-disc ps-6 space-y-2\">"]
     },
     "src/domain/connectionModelRules.ts": {
       "sentinels": ["import { type JsonRecord } from \"@/shared/types/json\";"]
@@ -1535,6 +2966,13 @@
         "\"storageMaintenanceDesc\": \"Background cleanup runs every 6 hours and removes rows past the retention windows configured below.\",",
         "\"storageCgroupBilled\": \"Container memory (billed)\",",
         "\"storageMaintenance\": \"Maintenance & cleanup\","
+      ]
+    },
+    "src/i18n/messages/pt-BR.json": {
+      "sentinels": [
+        "\"storageMaintenanceDesc\": \"A limpeza em segundo plano é executada a cada 6 horas e remove as linhas fora das janelas de retenção configuradas abaixo.\",",
+        "\"storageCleanupDisabled\": \"Limpeza automática desativada\",",
+        "\"storageCgroupBilled\": \"Memória do contêiner (cobrada)\","
       ]
     },
     "src/i18n/messages/vi.json": {
@@ -2295,7 +3733,9 @@
     },
     "src/mitm/detection/zed.ts": {
       "sentinels": [
-        "if (fs.existsSync(/* turbopackIgnore: true */ p)) return { installed: true, path: p };"
+        "if (fs.existsSync(/* turbopackIgnore: true */ p)) return { installed: true, path: p };",
+        "process.env.LOCALAPPDATA ?? path.join(HOME, \"AppData\", \"Local\"),",
+        "\"Programs\","
       ]
     },
     "src/mitm/inspector/httpProxyServer.ts": {
@@ -2334,10 +3774,72 @@
     "src/shared/components/Badge.tsx": {
       "sentinels": ["title?: string;", "title={title}"]
     },
+    "src/shared/components/Collapsible.tsx": {
+      "sentinels": [
+        "className=\"flex items-center gap-3 flex-1 min-w-0 text-start -m-1 p-1 rounded\""
+      ]
+    },
+    "src/shared/components/CollapsibleSection.tsx": {
+      "sentinels": ["\"flex items-center justify-between w-full px-4 py-3 text-start\","]
+    },
+    "src/shared/components/CommandPalette.tsx": {
+      "sentinels": [
+        "subgroup.subgroupLabel ? \"ps-10 pe-6\" : \"px-6\"",
+        "} py-2.5 text-start transition-colors ${"
+      ]
+    },
+    "src/shared/components/ConsoleLogViewer.tsx": {
+      "sentinels": [
+        "<div className=\"flex items-center gap-2 ms-auto text-xs text-[var(--color-text-muted)]\">",
+        "<span className=\"material-symbols-outlined text-[16px] align-middle me-2\">error</span>",
+        "<span className=\"text-xs ms-2 opacity-70\">— {tv(\"fileLoggingRequired\")}</span>"
+      ]
+    },
     "src/shared/components/Header.tsx": {
       "sentinels": [
         "Record<HideableSidebarItemId | \"omni-skills\" | \"settings\" | \"proxy\", string>",
+        "<div className=\"flex items-center gap-3 ms-auto\">",
         "const HEADER_DESCRIPTIONS: Partial<"
+      ]
+    },
+    "src/shared/components/InfoTooltip.tsx": {
+      "sentinels": ["\"absolute bottom-full start-1/2 -translate-x-1/2 mb-2\","]
+    },
+    "src/shared/components/Input.tsx": {
+      "sentinels": [
+        "<div className=\"absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none text-text-muted\">",
+        "<span className=\"text-red-500 ms-1\" aria-hidden=\"true\">",
+        "icon && \"ps-10\","
+      ]
+    },
+    "src/shared/components/KiroAuthModal.tsx": {
+      "sentinels": [
+        "className=\"w-full p-4 text-start border border-border rounded-lg hover:bg-sidebar transition-colors\""
+      ]
+    },
+    "src/shared/components/ManualConfigModal.tsx": {
+      "sentinels": [
+        "<Button variant=\"ghost\" size=\"sm\" onClick={() => copyConfig(config.content, index)}>",
+        "<span className=\"material-symbols-outlined text-[14px] me-1\">"
+      ]
+    },
+    "src/shared/components/Modal.tsx": {
+      "sentinels": [
+        "\"flex items-center gap-1.5 me-3 shrink-0\",",
+        "compactHeader ? \"\" : \"gap-2 me-4\""
+      ]
+    },
+    "src/shared/components/ModelSelectModal.tsx": {
+      "sentinels": [
+        "<span className=\"ms-1 rounded px-1 py-px text-[9px] font-semibold uppercase tracking-wide bg-emerald-500/20 text-emerald-700 dark:text-emerald-400\">",
+        "className=\"w-full ps-8 pe-3 py-1.5 bg-surface border border-border rounded text-xs focus:outline-none focus:ring-1 focus:ring-primary/50\"",
+        "<span className=\"ms-1 rounded px-1 py-px text-[9px] font-semibold uppercase tracking-wide bg-red-500/20 text-red-600 dark:text-red-400\">"
+      ]
+    },
+    "src/shared/components/NoAuthAccountCard.tsx": {
+      "sentinels": [
+        "className=\"grid max-h-72 grid-cols-1 gap-1.5 overflow-y-auto pe-1 sm:grid-cols-2 lg:grid-cols-3\"",
+        "const handleAddManualApiKey = async () => {"
       ]
     },
     "src/shared/components/OAuthModal.tsx": {
@@ -2347,11 +3849,77 @@
         "throw new Error(String(data.error || t(\"errorBrowserUnavailable\")));"
       ]
     },
+    "src/shared/components/OAuthModalPanels.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined text-sm align-middle me-1\">warning</span>",
+        "<code className=\"font-mono\">http://127.0.0.1:&lt;port&gt;/?user_id=...</code> which",
+        "the browser may show as unreachable — that is expected. Copy the FULL URL from the"
+      ]
+    },
+    "src/shared/components/PricingModal.tsx": {
+      "sentinels": [
+        "className=\"w-20 px-2 py-1 text-end bg-bg-base border border-border rounded focus:outline-none focus:border-primary\"",
+        "<th className=\"px-3 py-2 text-end\">{t(\"cacheCreation\")}</th>",
+        "<th className=\"px-3 py-2 text-end\">{t(\"reasoning\")}</th>"
+      ]
+    },
+    "src/shared/components/ProviderTestSlideOver.tsx": {
+      "sentinels": [
+        "className=\"w-full flex items-center gap-3 px-4 py-2 text-start hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors\"",
+        "<span className=\"text-[11px] text-text-muted shrink-0 font-mono w-14 text-end\">",
+        "<div className=\"flex-1 min-h-0 flex flex-col ps-4 pe-2 py-3\">"
+      ]
+    },
     "src/shared/components/ProxyConfigModal.tsx": {
       "sentinels": [
         "export type ProxyConfigLevel = \"global\" | \"provider\" | \"combo\" | \"key\";",
         ": ALL_PROXY_TYPES.filter((type) => type.value !== \"socks5\");",
-        "const hasTypeOption = runtimeProxyTypes.some("
+        "<span className=\"text-text-muted text-xs ms-2\">"
+      ]
+    },
+    "src/shared/components/ProxyLogger.tsx": {
+      "sentinels": [
+        "className=\"w-full ps-10 pe-4 py-2 rounded-lg bg-bg-subtle border border-border text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary\"",
+        "<span className=\"material-symbols-outlined absolute start-3 top-1/2 -translate-y-1/2 text-text-muted text-[18px]\">",
+        "<span className=\"text-[10px] text-text-muted uppercase tracking-wider me-1\">"
+      ]
+    },
+    "src/shared/components/RequestLoggerDetail.tsx": {
+      "sentinels": [
+        "<span className=\"text-[10px] text-text-muted/50 font-mono self-center ms-2 px-1.5 py-0.5 rounded bg-bg-subtle border border-border/40 select-all\">",
+        "className=\"text-[10px] text-text-muted/50 font-mono self-center ms-2 px-1.5 py-0.5 rounded bg-bg-subtle border border-border/40 select-all\"",
+        "className={`flex items-center gap-2 px-2 py-1.5 rounded text-start text-xs transition-colors ${"
+      ]
+    },
+    "src/shared/components/RequestLoggerV2.tsx": {
+      "sentinels": [
+        "className=\"w-full ps-9 pe-3 py-2 rounded-lg bg-bg-subtle border border-border text-sm text-text-primary font-mono placeholder:text-text-muted focus:outline-none focus:border-primary\"",
+        "className=\"w-full ps-10 pe-4 py-2 rounded-lg bg-bg-subtle border border-border text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-primary\"",
+        "<span className=\"material-symbols-outlined absolute start-3 top-1/2 -translate-y-1/2 text-text-muted text-[18px]\">"
+      ]
+    },
+    "src/shared/components/RequestTimeline.tsx": {
+      "sentinels": [
+        "<div className=\"ms-4 flex items-center gap-1.5 text-text-muted\">",
+        "<div className=\"w-3 border-t border-slate-400/60 ms-2\" />",
+        "<div className=\"w-3 border-t-2 border-accent/40 ms-2\" />"
+      ]
+    },
+    "src/shared/components/RiskNoticeModal.tsx": {
+      "sentinels": ["<span className=\"material-symbols-outlined text-[14px] me-1\">check</span>"]
+    },
+    "src/shared/components/SegmentedControl.tsx": {
+      "sentinels": [
+        "<span className=\"material-symbols-outlined text-[16px] me-1.5\" aria-hidden=\"true\">",
+        "option.icon && \"flex items-center\""
+      ]
+    },
+    "src/shared/components/Select.tsx": {
+      "sentinels": ["<span className=\"text-red-500 ms-1\" aria-hidden=\"true\">"]
+    },
+    "src/shared/components/Sidebar.tsx": {
+      "sentinels": [
+        "<div className=\"w-0 h-0 border-t-[5px] border-b-[5px] border-e-[6px] border-t-transparent border-b-transparent border-e-sidebar dark:border-e-sidebar\" />"
       ]
     },
     "src/shared/components/SkillsConceptCard.tsx": {
@@ -2361,11 +3929,59 @@
         "export function SkillsConceptCard({"
       ]
     },
+    "src/shared/components/TokenHealthBadge.tsx": {
+      "sentinels": [
+        "className=\"absolute top-full end-0 mt-1 z-50 min-w-[200px] p-3 rounded-lg shadow-lg\""
+      ]
+    },
+    "src/shared/components/Tooltip.tsx": {
+      "sentinels": [
+        "top: \"bottom-full start-1/2 -translate-x-1/2 mb-2\",",
+        "bottom: \"top-full start-1/2 -translate-x-1/2 mt-2\",",
+        "right: \"start-full top-1/2 -translate-y-1/2 ms-2\","
+      ]
+    },
+    "src/shared/components/UsageAnalytics.tsx": {
+      "sentinels": ["className=\"ms-0.5 opacity-70 hover:opacity-100\""]
+    },
+    "src/shared/components/UsageStats.tsx": {
+      "sentinels": [
+        "if (currentSort !== field) return <span className=\"ms-1 opacity-20\">↕</span>;",
+        "<span className=\"ms-2 px-1.5 py-0.5 rounded bg-primary text-white font-bold\">",
+        "<td className=\"px-6 py-3 text-end font-medium\">{fmt(data.totalTokens)}</td>"
+      ]
+    },
+    "src/shared/components/analytics/ApiKeyFilterDropdown.tsx": {
+      "sentinels": [
+        "className=\"absolute start-0 top-full z-50 mt-1.5 w-[260px] rounded-xl border border-border/50 bg-surface shadow-xl\"",
+        "className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-start text-xs transition-colors ${",
+        "<span className=\"ms-auto text-[10px] text-text-muted font-normal\">"
+      ]
+    },
+    "src/shared/components/analytics/CustomRangePicker.tsx": {
+      "sentinels": [
+        "className=\"absolute end-0 top-full z-50 mt-2 w-[340px] rounded-xl border border-border/50 bg-surface p-4 shadow-xl\""
+      ]
+    },
+    "src/shared/components/analytics/ModelTable.tsx": {
+      "sentinels": [
+        "<td className=\"px-4 py-2.5 text-end font-mono text-amber-500\">{fmtCost(m.cost)}</td>",
+        "className={`px-4 py-2.5 ${col.align === \"right\" ? \"text-end\" : \"text-start\"}`}",
+        "<span className=\"text-xs font-mono text-text-muted w-10 text-end\">"
+      ]
+    },
+    "src/shared/components/analytics/RequestCountTable.tsx": {
+      "sentinels": [
+        "<td className=\"px-4 py-2.5 text-end font-mono text-text-muted\">",
+        "<td className=\"px-4 py-2.5 text-end font-mono font-semibold\">",
+        "className=\"px-4 py-2.5 text-start cursor-pointer group\""
+      ]
+    },
     "src/shared/components/analytics/charts.tsx": {
       "sentinels": [
-        "export function ActivityHeatmap({ activityMap }: { activityMap?: Record<string, number> | null }) {",
-        "export function MostActiveDay7d({ activityMap }: { activityMap?: Record<string, number> | null }) {",
-        "(a: number, b) => a + (typeof b === \"number\" ? b : 0),"
+        "className={`text-sm font-bold text-end ${section.wideValues ? \"truncate min-w-0\" : \"shrink-0\"} ${stat.color || \"text-text-main\"}`}",
+        "<div className=\"flex flex-col gap-[3px] shrink-0 text-[10px] text-text-muted pe-1 sticky start-0 z-10 bg-surface\">",
+        "export function ActivityHeatmap({ activityMap }: { activityMap?: Record<string, number> | null }) {"
       ]
     },
     "src/shared/components/analytics/rechartsDonuts.tsx": {
@@ -2373,6 +3989,31 @@
         "getLegendTitle?: (seg: DonutSegment) => string | undefined;",
         "getLegendKey?: (seg: DonutSegment, i: number) => string;",
         "formatter: (n: number) => string;"
+      ]
+    },
+    "src/shared/components/compression/EngineConfigPage.tsx": {
+      "sentinels": [
+        "<span className=\"me-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-text-muted\">"
+      ]
+    },
+    "src/shared/components/docs/APIReference.tsx": {
+      "sentinels": ["<table className=\"w-full text-sm text-start border-collapse\">"]
+    },
+    "src/shared/components/docs/Callout.tsx": {
+      "sentinels": [
+        "\"relative overflow-hidden rounded-lg border-s-4 p-4 my-4 transition-colors\","
+      ]
+    },
+    "src/shared/components/layouts/AuthLayout.tsx": {
+      "sentinels": [
+        "<div className=\"fixed bottom-0 end-0 w-[600px] h-[600px] bg-orange-200/20 dark:bg-orange-900/10 rounded-full blur-[120px] pointer-events-none z-0 translate-y-1/3 translate-x-1/3\" />",
+        "<div className=\"fixed top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 dark:bg-primary/5 rounded-full blur-[100px] pointer-events-none z-0\" />",
+        "<div className=\"absolute top-6 end-6 z-20\">"
+      ]
+    },
+    "src/shared/components/oauthModal/GitlabDuoSetupStep.tsx": {
+      "sentinels": [
+        "<div className=\"rounded-md border border-border bg-muted/40 px-3 py-3 text-start\">"
       ]
     },
     "src/shared/middleware/chatBodyAdmission.ts": {
@@ -3528,6 +5169,13 @@
         "const connection = (await providersDb.createProviderConnection({"
       ]
     },
+    "tests/unit/alibaba-free-tier-allowlist.test.ts": {
+      "sentinels": [
+        "if (previousPath) process.env.ALIBABA_FREE_TIER_ALLOWLIST_PATH = previousPath;",
+        "// (data-freshness semantics are the point of the field), so the test writes",
+        "// its own pack instead of depending on shipped data staying fresh forever."
+      ]
+    },
     "tests/unit/alibaba-free-tier-discovery.test.ts": {
       "sentinels": [
         "assert.ok((merged.alibabaNoFreeTierModels as string[] | undefined)?.includes(\"kimi-k2.7-code\"));",
@@ -4388,8 +6036,9 @@
     },
     "tests/unit/build/build-tool-runner-win-shim.test.ts": {
       "sentinels": [
-        "rmSync(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });",
-        "rmSync(out, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });"
+        "const win = planHostToolSpawn(\"npm\", [\"install\", \"-g\", \"--prefix\", \"C:\\\\tmp dir\\\\pfx\"], \"win32\");",
+        "const posix = planHostToolSpawn(\"npm\", [\"install\", \"-g\", \"--prefix\", \"/tmp/pfx\"], \"linux\");",
+        "assert.equal(win.shell, true, \".cmd shims need cmd.exe on Windows (EINVAL otherwise)\");"
       ]
     },
     "tests/unit/build/check-bundle-size.test.ts": {
@@ -4438,7 +6087,9 @@
     },
     "tests/unit/build/check-workflows.test.ts": {
       "sentinels": [
-        "fs.rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });"
+        "/if \\[ \"\\$\\(gh api \"repos\\/\\$GITHUB_REPOSITORY\" --jq '.has_issues'\\)\" = \"true\" \\]; then[\\s\\S]*?fi/",
+        "/if \\[ \"\\$\\{\\{ runner\\.environment \\}\\}\" = \"github-hosted\" \\]; then\\s+MODE=\"\\$MODE --serial\"/g",
+        "const buildWorkflowPath = new URL(\"../../../.github/workflows/build.yml\", import.meta.url);"
       ]
     },
     "tests/unit/build/colocate-standalone-esm-scope.test.ts": {
@@ -5019,6 +6670,12 @@
         "rmSync(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });"
       ]
     },
+    "tests/unit/check-db-rules-classification.test.ts": {
+      "sentinels": [
+        "test(\"INTENTIONALLY_INTERNAL contains the expected 41 audited modules\", () => {",
+        "\"memoryFtsMaintenance\","
+      ]
+    },
     "tests/unit/check-deps.test.ts": {
       "sentinels": []
     },
@@ -5056,6 +6713,13 @@
         "const stream = \"R100\\0old name.ts\\0new name.ts\\0C100\\0copy source.ts\\0copy destination.ts\\0\";",
         "assert.throws(() => parseManifest(\"{\", \"manifest.json\"), /not valid JSON.*manifest\\.json/);",
         "assert.deepEqual(parseNameStatus(\"T\\0type changed.ts\\0U\\0unmerged.ts\\0X\\0unknown.ts\\0\"), ["
+      ]
+    },
+    "tests/unit/classify-pr-changes.test.ts": {
+      "sentinels": [
+        "test(\"docs/openapi.yaml → docs + code (the blocking oasdiff ratchet lives in the code lane)\", () => {",
+        "// contract-only diff that classified as docs-only would skip it entirely.",
+        "// quality-gates (check:openapi-breaking) is gated on code == 'true'; a"
       ]
     },
     "tests/unit/claude-cache-control-passthrough.test.ts": {
@@ -6372,9 +8036,9 @@
     },
     "tests/unit/combo/image-combo.test.ts": {
       "sentinels": [
-        "log as unknown as typeof import(\"D:/WMM_DEV_HUB/APPS_WORKSPACE/wmm-omniroute/src/sse/utils/logger\")",
         "fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });",
-        "bodyStr.includes(\"not found\") || bodyStr.includes(\"not a valid\"),"
+        "bodyStr.includes(\"not found\") || bodyStr.includes(\"not a valid\"),",
+        "log as unknown as typeof import(\"@/sse/utils/logger\")"
       ]
     },
     "tests/unit/combo/recovery-hint.test.ts": {
@@ -6403,8 +8067,8 @@
     },
     "tests/unit/combo/video-combo.test.ts": {
       "sentinels": [
-        "log as unknown as typeof import(\"D:/WMM_DEV_HUB/APPS_WORKSPACE/wmm-omniroute/src/sse/utils/logger\")",
-        "fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });"
+        "fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });",
+        "log as unknown as typeof import(\"@/sse/utils/logger\")"
       ]
     },
     "tests/unit/combos-duplicate-resolution-audit.test.ts": {
@@ -8028,7 +9692,9 @@
     },
     "tests/unit/exclusive-lease-managed-set.test.ts": {
       "sentinels": [
-        "fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });"
+        "fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });",
+        "// `allowed_connections` is a lazy fallback column (API_KEY_COLUMN_FALLBACKS),",
+        "// not part of the CREATE TABLE — the raw INSERT below prepares before the"
       ]
     },
     "tests/unit/execute-chat-resource-pressure-breaker.test.ts": {
@@ -8610,6 +10276,13 @@
         ".rm(DUMMY_HOME, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 })",
         ".catch(() => {});",
         "await fs"
+      ]
+    },
+    "tests/unit/hard-session-lease-bypass-inventory.test.ts": {
+      "sentinels": [
+        "// Quota auto-ping scheduler: reads active oauth connections to tick their",
+        "// quota window — the same scheduler class as credentialHealth/scheduler",
+        "// (B), it does not select a connection to serve a user request."
       ]
     },
     "tests/unit/headroom-codex-quota-snapshot-6379.test.ts": {
@@ -10283,6 +11956,13 @@
         "capturedTrace = request.headers[\"x-omniroute-peer-trace\"] as string | undefined;"
       ]
     },
+    "tests/unit/per-connection-admission-9654.test.ts": {
+      "sentinels": [
+        "// fill the whole budget: CHAT_MAX_HEAVY_IN_FLIGHT is env-tunable (default 4),",
+        "// occupy sess-a's per-connection controller via the module-level instance —",
+        "// occupy the shared process-global budget via sess-a — fill every slot, the"
+      ]
+    },
     "tests/unit/persist-429-cooldown-account-fallback.test.ts": {
       "sentinels": [
         "import { markConnectionRateLimitedUntil, clearConnectionRateLimit } from \"../../src/lib/localDb.ts\";",
@@ -11436,6 +13116,13 @@
         "fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });"
       ]
     },
+    "tests/unit/quota-pool-log-route.test.ts": {
+      "sentinels": [
+        "test(\"UsageLogCard: fail-soft — guards events with Array.isArray\", () => {",
+        "\"UsageLogCard must guard events with Array.isArray for fail-soft behavior\"",
+        "usageLogCardSrc.includes(\"Array.isArray(raw)\"),"
+      ]
+    },
     "tests/unit/quota-pool-single-provider.test.ts": {
       "sentinels": [
         "fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });",
@@ -11773,7 +13460,7 @@
       "sentinels": [
         "fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });",
         "fs.rmSync(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });",
-        "globalThis.fetch = (async (input: unknown, init: MockRequestInit = {}) => {"
+        "const bodyText = Buffer.isBuffer(init.body) || init.body instanceof Uint8Array"
       ]
     },
     "tests/unit/release-cycle-base-resolver.test.ts": {
@@ -13304,13 +14991,17 @@
       ]
     },
     "tests/unit/ui/use-improve-prompt.test.tsx": {
-      "sentinels": []
+      "sentinels": [
+        "import { useImprovePrompt } from \"../../../src/app/(dashboard)/dashboard/playground/hooks/useImprovePrompt\";",
+        "vi.stubGlobal(\"fetch\", vi.fn().mockRejectedValue(new Error(\"Network failure\")));",
+        "// react-hooks/immutability; act() flushes effects so hookRef is populated."
+      ]
     },
     "tests/unit/ui/use-presets.test.tsx": {
       "sentinels": [
         "import { usePresets } from \"../../../src/app/(dashboard)/dashboard/playground/hooks/usePresets\";",
-        "expect.objectContaining({ method: \"DELETE\" })",
-        "params: {},"
+        "// react-hooks/immutability; act() flushes effects so hookRef is populated.",
+        "// Write-through in an effect: mutating outer state during render trips"
       ]
     },
     "tests/unit/ui/use-provider-connections-cursor-refresh.test.tsx": {
@@ -13320,13 +15011,25 @@
       ]
     },
     "tests/unit/ui/use-stream-metrics.test.tsx": {
-      "sentinels": []
+      "sentinels": [
+        "import { useStreamMetrics } from \"../../../src/app/(dashboard)/dashboard/playground/hooks/useStreamMetrics\";",
+        "// react-hooks/immutability; act() flushes effects so hookRef is populated.",
+        "// Write-through in an effect: mutating outer state during render trips"
+      ]
     },
     "tests/unit/ui/use-structured-output.test.tsx": {
-      "sentinels": []
+      "sentinels": [
+        "import { useStructuredOutput } from \"../../../src/app/(dashboard)/dashboard/playground/hooks/useStructuredOutput\";",
+        "// react-hooks/immutability; act() flushes effects so hookRef is populated.",
+        "// Write-through in an effect: mutating outer state during render trips"
+      ]
     },
     "tests/unit/ui/use-tools-builder.test.tsx": {
-      "sentinels": []
+      "sentinels": [
+        "import { useToolsBuilder } from \"../../../src/app/(dashboard)/dashboard/playground/hooks/useToolsBuilder\";",
+        "// react-hooks/immutability; act() flushes effects so hookRef is populated.",
+        "// Write-through in an effect: mutating outer state during render trips"
+      ]
     },
     "tests/unit/ui/web-session-credential-guide.test.tsx": {
       "sentinels": [
@@ -13549,6 +15252,13 @@
         "fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });",
         "import type { JsonRecord } from \"../../src/shared/types/json.ts\";",
         "(await providersDb.createProviderConnection({"
+      ]
+    },
+    "tests/unit/validate-release-green.test.ts": {
+      "sentinels": [
+        "assert.match(src, /else[\\s\\S]*?await Promise\\.all\\(slow\\.map\\(/, \"parallel stays the default\");",
+        "test(\"pre-flight supports --serial so hosted runners survive the slow wave\", async () => {",
+        "assert.match(src, /RELEASE_GREEN_SERIAL/, \"RELEASE_GREEN_SERIAL env must be honoured\");"
       ]
     },
     "tests/unit/validation-search-embedding-split.test.ts": {

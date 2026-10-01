@@ -434,7 +434,7 @@ test("nightly-release-green runs the full sweep serially on hosted runners", () 
   // pass --serial; the omni-release VPS runner keeps the parallel wave.
   const source = readWorkflow(nightlyReleaseGreenPath);
   const hostedSerial = source.match(
-    /if \[ "\$\{\{ runner\.environment \}\}" = "github-hosted" \]; then\s+MODE="\$MODE --serial"/g
+    /if \[ "\$RUNNER_ENV" = "github-hosted" \]; then\s+MODE="\$MODE --serial"/g
   );
   assert.equal(
     hostedSerial?.length,

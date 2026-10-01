@@ -26,6 +26,15 @@ test("ONNX chain (@huggingface/transformers + onnxruntime-node) stays optional s
     optionalDependencies?: Record<string, string>;
     overrides?: Record<string, string>;
   }>("package.json");
+  // The expected pin is read from the lockfile's record of transformers' own
+  // declared dependency — hardcoding it here breaks on every transformers bump
+  // (as happened when 4.3.0 moved the pin 1.24.3 -> 1.30.0).
+  const lock = readJson<{
+    packages: Record<string, { dependencies?: Record<string, string> }>;
+  }>("package-lock.json");
+  const onnxPin =
+    lock.packages["node_modules/@huggingface/transformers"]?.dependencies?.["onnxruntime-node"];
+  assert.ok(onnxPin, "transformers must declare an onnxruntime-node pin in the lockfile");
 
   assert.equal(
     pkg.dependencies?.["@huggingface/transformers"],
@@ -44,12 +53,12 @@ test("ONNX chain (@huggingface/transformers + onnxruntime-node) stays optional s
   );
   assert.equal(
     pkg.optionalDependencies?.["onnxruntime-node"],
-    "1.24.3",
+    onnxPin,
     "onnxruntime-node must be an optionalDependency pinned in lockstep with the overrides pin"
   );
   assert.equal(
     pkg.overrides?.["onnxruntime-node"],
-    "1.24.3",
+    onnxPin,
     "the overrides pin must stay aligned with @huggingface/transformers' own pin (single-copy invariant)"
   );
 });
@@ -63,7 +72,7 @@ test("lockfile marks the whole ONNX chain optional", () => {
         dependencies?: Record<string, string>;
         optionalDependencies?: Record<string, string>;
       }
-      >;
+    >;
   }>("package-lock.json");
 
   assert.equal(
@@ -73,8 +82,8 @@ test("lockfile marks the whole ONNX chain optional", () => {
   );
   assert.equal(
     lock.packages[""]?.optionalDependencies?.["onnxruntime-node"],
-    "1.24.3",
-    "root lock optionalDependencies must hold onnxruntime-node"
+    lock.packages["node_modules/@huggingface/transformers"]?.dependencies?.["onnxruntime-node"],
+    "root lock optionalDependencies must hold onnxruntime-node at transformers' declared pin"
   );
   assert.ok(
     lock.packages["node_modules/@huggingface/transformers"]?.optional,
