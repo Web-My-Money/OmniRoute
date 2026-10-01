@@ -464,6 +464,7 @@ const DEFAULT_API_KEYS_LIMIT = 1_000;
 
 export async function getApiKeys(limit?: number, offset?: number) {
   const db = getDbInstance() as ApiKeysDbLike;
+  ensureApiKeysColumns(db);
   let rows: ApiKeyRow[];
   if (limit !== undefined) {
     const sql = "SELECT * FROM api_keys ORDER BY created_at LIMIT ? OFFSET ?";

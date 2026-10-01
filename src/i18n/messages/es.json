@@ -805,6 +805,13 @@
     "batchConceptBenefit50pct": "50% discount on input + output tokens",
     "batchConceptAsync24h": "Async with a 24h completion window",
     "batchConceptUseCases": "Best for bulk classification, evaluations, and embeddings",
+    "batchHeaderSubtitle": "Run many requests as one job",
+    "batchStep1": "1 · Upload JSONL",
+    "batchStep1Desc": "Add requests",
+    "batchStep2": "2 · Create batch",
+    "batchStep2Desc": "Run job",
+    "batchStep3": "3 · Get results",
+    "batchStep3Desc": "Download output",
     "filesConceptTitle": "Batch files",
     "filesConceptSubtitle": "JSONL files used by batches: input requests, results, and errors.",
     "filesConceptInput": "Input — your JSONL with one request per line",
@@ -974,14 +981,7 @@
     "batchFileUsedByCount": "Usado por {count, plural, one {# lote} other {# lotes}}",
     "batchFilePreview": "Vista Previa",
     "batchFilePreviewTruncated": "Mostrando las primeras {shown} líneas ({total} líneas en total)",
-    "batchFileDownloadFull": "Descargar Archivo Completo",
-    "batchHeaderSubtitle": "Run many requests as one job",
-    "batchStep1": "1 · Upload JSONL",
-    "batchStep1Desc": "Add requests",
-    "batchStep2": "2 · Create batch",
-    "batchStep2Desc": "Run job",
-    "batchStep3": "3 · Get results",
-    "batchStep3Desc": "Download output"
+    "batchFileDownloadFull": "Descargar Archivo Completo"
   },
   "disabled": "Disabled",
   "featureFlagOmnirouteEmergencyFallbackDescription": "Route budget-exhausted requests to the emergency free fallback provider/model.",
@@ -1019,7 +1019,7 @@
     "apiManager": "Gestor de API",
     "apiManagerSubtitle": "Administrar claves API y acceso",
     "embeddedServices": "Servicios Integrados",
-    "embeddedServicesSubtitle": "Gestionar servicios proxy locales",
+    "embeddedServicesSubtitle": "__MISSING__:Optional local services",
     "logs": "Registros",
     "webhooks": "Ganchos web",
     "webhooksSubtitle": "Recibe notificaciones de eventos",
@@ -1267,6 +1267,7 @@
     "agentBridgeSubtitle": "Intercept IDE agent traffic",
     "trafficInspector": "Traffic Inspector",
     "trafficInspectorSubtitle": "__MISSING__:Inspect request and response traffic from your apps",
+    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client.",
     "cliCode": "CLI Code",
     "cliCodeSubtitle": "Code tools pointing to OmniRoute",
     "cliAgents": "CLI Agents",
@@ -1300,8 +1301,7 @@
       "open": "abrir",
       "close": "cerrar"
     },
-    "noResults": "Sin resultados",
-    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client."
+    "noResults": "Sin resultados"
   },
   "webhooks": {
     "title": "Ganchos web",
@@ -1808,6 +1808,11 @@
     "updateStarted": "Actualización iniciada...",
     "reloadingPageAutomatically": "Recargando página automáticamente...",
     "providerTopology": "Topología del proveedor",
+    "recentRequests": "Recent Requests",
+    "recentRequestsEmpty": "No requests yet.",
+    "recentRequestsModel": "Model",
+    "recentRequestsTokens": "In / Out",
+    "recentRequestsWhen": "When",
     "downloadDmg": "Descargar DMG (macOS)",
     "downloadDmgDescription": "Una nueva versión de la aplicación de escritorio OmniRoute está disponible. Por favor, descarga e instala el instalador DMG de macOS para actualizar (actual: v{version}).",
     "downloadExe": "Descargar EXE (Windows)",
@@ -1865,11 +1870,6 @@
     "releaseNotes": "Notas de la versión",
     "readMore": "Leer Más",
     "noAuthLabel": "Sin Autenticación",
-    "recentRequests": "Recent Requests",
-    "recentRequestsEmpty": "No requests yet.",
-    "recentRequestsModel": "Model",
-    "recentRequestsTokens": "In / Out",
-    "recentRequestsWhen": "When",
     "readinessEyebrow": "Get ready to route",
     "readinessTitle": "Send your first request",
     "readinessSubtitle": "Four small steps. OmniRoute checks readiness as you go.",
@@ -2922,9 +2922,9 @@
       "interpreter": "Open Interpreter autonomous coding agent CLI",
       "omp": "Oh My Pi terminal coding agent",
       "letta": "Letta CLI agent with persistent memory and tool use",
+      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support",
       "warp": "Warp AI terminal with custom provider support",
-      "agent-deck": "Agent Deck multi-agent orchestrator",
-      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support"
+      "agent-deck": "Agent Deck multi-agent orchestrator"
     },
     "guides": {
       "cursor": {
@@ -3849,6 +3849,9 @@
   },
   "endpoint": {
     "title": "Punto final API",
+    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
+    "testEndpoint": "Test endpoint →",
+    "advancedProtocols": "Advanced protocols",
     "available": "Puntos finales disponibles",
     "cloudProxy": "Proxy en la nube",
     "disableConfirm": "¿Está seguro de que desea desactivar el proxy en la nube?",
@@ -4156,10 +4159,7 @@
     "notionIntegrationHelp": "Crear una Integración Interna en",
     "notionIntegrationToken": "Token de Integración Interna de Notion",
     "notionNotConnected": "No conectado",
-    "notionTokenConfigured": "Token configurado. Las herramientas de Notion están disponibles a través de MCP.",
-    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
-    "testEndpoint": "Test endpoint →",
-    "advancedProtocols": "Advanced protocols"
+    "notionTokenConfigured": "Token configurado. Las herramientas de Notion están disponibles a través de MCP."
   },
   "endpoints": {
     "tabProxy": "Endpoint Proxy",
@@ -4632,6 +4632,13 @@
     "retry": "Reintentar",
     "allOperational": "Todos los sistemas operativos.",
     "issuesDetected": "Problemas del sistema detectados",
+    "healthVerdictReady": "OmniRoute is ready",
+    "healthVerdictActionRequired": "Action required to restore full operation",
+    "healthVerdictCoolingDown": "Cooling down after recent changes",
+    "healthSubtitle": "System health check",
+    "advancedDiagnosticsTitle": "Advanced diagnostics",
+    "hide": "Hide",
+    "show": "Show",
     "updatedAt": "Actualizado {time}",
     "latency": "Latencia",
     "latencyP50": "p50",
@@ -4742,14 +4749,7 @@
     "issueCount": "{count} issues",
     "score": "Score",
     "lastRequest": "Last request",
-    "lastError": "Último error",
-    "healthVerdictReady": "OmniRoute is ready",
-    "healthVerdictActionRequired": "Action required to restore full operation",
-    "healthVerdictCoolingDown": "Cooling down after recent changes",
-    "healthSubtitle": "System health check",
-    "advancedDiagnosticsTitle": "Advanced diagnostics",
-    "hide": "Hide",
-    "show": "Show"
+    "lastError": "Último error"
   },
   "telemetry": {
     "title": "Telemetría del sistema",
@@ -4954,7 +4954,9 @@
     "multiProvider": "Multiproveedor",
     "usageTracking": "Seguimiento de uso",
     "securityDesc": "Establezca una contraseña para proteger su panel u omítala por ahora.",
+    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
     "providerDesc": "Conecte su primer proveedor de IA. Puedes agregar más más tarde.",
+    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard.",
     "apiKeyRequired": "Clave API (obligatoria)",
     "customUrlOptional": "URL personalizada (opcional)",
     "testDesc": "Verifiquemos que la conexión de su proveedor funcione.",
@@ -5011,9 +5013,7 @@
         "skipped": "ya configurado",
         "failed": "fallido"
       }
-    },
-    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
-    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard."
+    }
   },
   "providers": {
     "title": "Proveedores",
@@ -5724,8 +5724,8 @@
     "aggregatorsGateways": "Aggregators Gateways",
     "enterpriseCloud": "Empresa y nube",
     "apiFormatLabel": "Api Format Label",
-    "apiKeyOptionalHint": "Api Key Optional Hint",
-    "apiKeyOptionalLabel": "Api Key Optional Label",
+    "apiKeyOptionalHint": "__MISSING__:Leave empty if your local setup or provider does not require authentication.",
+    "apiKeyOptionalLabel": "__MISSING__:API Key (optional)",
     "apiRegionChina": "Api Region China",
     "apiRegionHint": "Api Region Hint",
     "apiRegionInternational": "Api Region International",
@@ -6157,8 +6157,8 @@
       "inception": "Inception Labs is OpenAI-compatible at https://api.inceptionlabs.ai/v1. mercury-2 is the first diffusion LLM (dLLM) in the catalog — 5-10x faster generation than comparable autoregressive models, with tool calling, json_mode, and structured outputs.",
       "inference-net": "$25 free credits on signup plus research grants available",
       "internlm": "Free monthly quota ~1M input / 3M output tokens (~10 RPM)",
-      "jina-ai": "Bearer API key for the Jina AI rerank API.",
-      "jina-reader": "Connect Jina Reader with an API key.",
+      "jina-ai": "__MISSING__:Bearer API key for api.jina.ai (embeddings, rerank, classify, segment, search). Not the Reader / r.jina.ai card. Dashboard keys take precedence over JINA_AI_API_KEY.",
+      "jina-reader": "__MISSING__:Bearer API key for r.jina.ai URL-to-markdown only. Does not serve /v1/embeddings or /v1/rerank. The same Jina token as Foundation API works.",
       "kenari": "Kenari exposes an OpenAI-compatible chat completions endpoint at https://kenari.id/v1/chat/completions, plus a live /v1/models catalog covering Claude, GPT, DeepSeek, GLM, Kimi and more. OmniRoute uses the OpenAI protocol and lists models via passthrough.",
       "kie": "Connect KIE.AI with an API key.",
       "kilo-gateway": "Connect Kilo Gateway with an API key.",
@@ -6271,7 +6271,7 @@
       "cursor": "Connect Cursor IDE with the existing OAuth flow.",
       "cursor-api": "Connect Cursor with a user API key (crsr_...) from cursor.com/dashboard/api; no IDE session needed.",
       "github": "Connect GitHub Copilot with the existing OAuth flow.",
-      "gitlab-duo": "OAuth application with ai_features + read_user scopes. Configure GITLAB_DUO_OAUTH_CLIENT_ID and optionally GITLAB_DUO_OAUTH_CLIENT_SECRET on this OmniRoute instance.",
+      "gitlab-duo": "__MISSING__:OAuth application with ai_features + read_user scopes. Configure GITLAB_DUO_OAUTH_CLIENT_ID and optionally GITLAB_DUO_OAUTH_CLIENT_SECRET on this OmniRoute instance.",
       "kilocode": "Connect Kilo Code with the existing OAuth flow.",
       "kimi-coding": "Connect Kimi Coding with the existing OAuth flow.",
       "kiro": "Free tier: 50 credits/month (~25K–100K tokens). ⚠️ Kiro ToS prohibits third-party proxy/harness use.",
@@ -6302,6 +6302,20 @@
     "webSessionGuideStep3": "Copie la credencial requerida del propio dominio del proveedor. Para las cookies, copie solo el valor del encabezado Cookie y omita Cookie:.",
     "webSessionGuideStep3Manual": "Ruta manual: abre las herramientas de desarrollo del navegador (F12 → Red), actualiza la página, abre una solicitud autenticada y copia el valor del encabezado Cookie de los Encabezados de Solicitud — omite el prefijo Cookie:.",
     "webSessionGuideStep4": "Pégalo aquí y comprueba la conexión. Si deja de funcionar, inicie sesión nuevamente y reemplácelo con un valor nuevo.",
+    "harImportButtonLabel": "Import .har file",
+    "harImportButtonBusy": "Importing…",
+    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
+    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
+    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
+    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
+    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
+    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
+    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
+    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
+    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
+    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
+    "harImportErrorReadFailed": "Couldn't read that file.",
+    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file.",
     "webSessionSecurityHint": "Trate esto como una contraseña: puede acceder a su cuenta web iniciada hasta que caduque o sea revocada.",
     "webNoAuthGuideTitle": "No se requiere credencial",
     "webNoAuthGuideBody": "{provider} no necesita una clave API ni una cookie. Guarde la conexión para utilizar su punto final web gratuito.",
@@ -6327,8 +6341,8 @@
     "apiProtocolHint": "Algunos proveedores publican los mismos modelos a través de más de un protocolo. Deja el predeterminado a menos que necesites la alternativa.",
     "bulkAddFormatHintCloudflare": "One key per line. Format: name|accountId|apiKey (Cloudflare account ID + API token).",
     "lmarenaWebCookieHint": "Open arena.ai, sign in, then copy the full Cookie header from a Network request. Include arena-auth-prod-v1.0 and arena-auth-prod-v1.1 (and further chunks if present), preferably with cf_clearance. Do not paste only the empty arena-auth-prod-v1 cookie. Optional: providerSpecificData.recaptchaV3Token if create-evaluation still returns 403.",
-    "kimiOfficialSupporterBadge": "Official Supporter",
-    "kimiOfficialSupporterTooltip": "Kimi (Moonshot AI) is an official OmniRoute launch partner",
+    "kimiOfficialSupporterBadge": "__MISSING__:Official Supporter",
+    "kimiOfficialSupporterTooltip": "__MISSING__:Kimi (Moonshot AI) is an official OmniRoute launch partner",
     "cheaperInferenceSupporterBadge": "Amigo del código abierto",
     "cheaperInferenceSupporterTooltip": "Cheaper Inference apoya a OmniRoute como amigo del código abierto",
     "kimiPartnerLinkNote": "Partner link — supports OmniRoute at no extra cost to you",
@@ -6416,21 +6430,7 @@
     "savedModelEndpointSettings": "Configuración del punto final del modelo guardado",
     "searchByModelAria": "Buscar por modelo",
     "selectSupportedEndpoint": "Seleccione al menos un endpoint compatible",
-    "antigravityClientProfileHarness": "Harness / CLI",
-    "harImportButtonLabel": "Import .har file",
-    "harImportButtonBusy": "Importing…",
-    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
-    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
-    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
-    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
-    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
-    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
-    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
-    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
-    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
-    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
-    "harImportErrorReadFailed": "Couldn't read that file.",
-    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file."
+    "antigravityClientProfileHarness": "Harness / CLI"
   },
   "settings": {
     "title": "Configuración",
@@ -6710,6 +6710,18 @@
     "sidebarVisibility": "Hide sidebar items",
     "sidebarVisibilityDesc": "Hide any sidebar navigation entry to reduce visual clutter.",
     "sidebarVisibilityHint": "Any sidebar section is hidden automatically when a...",
+    "presetAll": "All",
+    "presetAllDesc": "Show everything",
+    "presetEssentials": "Essentials",
+    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
+    "presetMinimal": "Minimal",
+    "presetMinimalDesc": "Core pages only",
+    "presetDeveloper": "Developer",
+    "presetDeveloperDesc": "Dev & proxy tools",
+    "presetAdmin": "Admin",
+    "presetAdminDesc": "Monitoring & audit",
+    "settingsSidebarTitle": "Sidebar Customization",
+    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable.",
     "hideHealthLogs": "Ocultar registros de verificación de estado",
     "hideHealthLogsDesc": "Cuando está activado, suprime los mensajes [HealthCheck] en la consola del servidor",
     "themeAccent": "Color del tema",
@@ -6921,7 +6933,7 @@
     "afterPromptPlaceholder": "Instructions inserted after agent/provider prompt...",
     "chars": "{count} caracteres",
     "thinkingBudgetTitle": "Pensando en el presupuesto",
-    "thinkingBudgetDesc": "Controle el uso del token de razonamiento de IA en todas las solicitudes",
+    "thinkingBudgetDesc": "__MISSING__:Controls whether OmniRoute rewrites client thinking/reasoning parameters before requests go upstream. This is separate from compression, prompt cache, and API-key token limits.",
     "thinkingBudgetIndependenceHint": "Las funciones de compresión, enrutamiento y límite de tokens siguen funcionando en todos los modos. Auto no significa \"auto-mostrar pensamiento\": elimina los campos de razonamiento del cliente.",
     "passthrough": "Paso a través",
     "passthroughDesc": "Sin cambios: el cliente controla el presupuesto pensando en",
@@ -6946,7 +6958,7 @@
     "tokenBudget": "Presupuesto simbólico",
     "tokens": "fichas",
     "baseEffortLevel": "Nivel de esfuerzo base",
-    "adaptiveHint": "El modo adaptable escala desde este nivel base según el recuento de mensajes, el uso de herramientas y la duración del mensaje.",
+    "adaptiveHint": "__MISSING__:Adaptive mode scales from this base level based on message count, tool usage, and prompt length. Does not decrypt provider encrypted reasoning blobs.",
     "requireLogin": "Requerir inicio de sesión",
     "requireLoginDesc": "Cuando está activado, el panel requiere contraseña. Cuando esté APAGADO, acceda sin iniciar sesión.",
     "currentPassword": "Contraseña actual",
@@ -7678,6 +7690,20 @@
     "jsonImportError": "Error during JSON import",
     "storagePurgeData": "Purgar datos",
     "storagePurgeDataDesc": "Immediately delete all records without applying retention checks. Use with caution.",
+    "storageMaintenance": "__MISSING__:Maintenance & cleanup",
+    "storageMaintenanceDesc": "__MISSING__:Background cleanup runs every 6 hours and removes rows past the retention windows configured below.",
+    "storageLastAutoCleanup": "__MISSING__:Last auto-cleanup",
+    "storageCleanupNeverRan": "__MISSING__:Not run yet",
+    "storageCleanupRowsDeleted": "__MISSING__:Rows removed",
+    "storageCleanupErrors": "__MISSING__:{count} errors",
+    "storageCleanupEnabled": "__MISSING__:Auto-cleanup on",
+    "storageCleanupDisabled": "__MISSING__:Auto-cleanup off",
+    "storageWalSize": "__MISSING__:WAL size",
+    "storageProcessRss": "__MISSING__:Process memory (RSS)",
+    "storageCgroupBilled": "__MISSING__:Container memory (billed)",
+    "storageCgroupCache": "__MISSING__:File cache",
+    "storageFtsIndex": "__MISSING__:Memory FTS index / data",
+    "storageTopTables": "__MISSING__:Largest tables",
     "storageRetentionCleanup": "Retention Settings",
     "storageRetentionCleanupDesc": "Configure operational record retention and database backup cleanup.",
     "retentionCallDays": "Call {count}d",
@@ -8277,19 +8303,7 @@
     "cliproxyapiHealth": "Salud",
     "cliproxyapiPort": "Puerto",
     "qdrantHost": "Anfitrión",
-    "qdrantCollection": "Colección",
-    "presetAll": "All",
-    "presetAllDesc": "Show everything",
-    "presetEssentials": "Essentials",
-    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
-    "presetMinimal": "Minimal",
-    "presetMinimalDesc": "Core pages only",
-    "presetDeveloper": "Developer",
-    "presetDeveloperDesc": "Dev & proxy tools",
-    "presetAdmin": "Admin",
-    "presetAdminDesc": "Monitoring & audit",
-    "settingsSidebarTitle": "Sidebar Customization",
-    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable."
+    "qdrantCollection": "Colección"
   },
   "contextRtk": {
     "title": "RTK Engine",
@@ -8654,13 +8668,13 @@
   },
   "omniglyph": {
     "preview": "Preview",
-    "description": "Context-as-image compression. Renders the system prompt, tool documentation, and dense history as compact PNG pages that Claude Fable 5 reads instead of text. Image tokens are billed by dimensions rather than characters, so the converted block costs about 10× less. Direct Anthropic route only.",
+    "description": "__MISSING__:Context-as-image compression. Renders the system prompt, tool documentation, and dense history as compact PNG pages for the measured Claude Fable 5 path. The published OmniGlyph package also exposes native GPT 5.6 transformers, but OmniRoute keeps those routes fail-closed until provider fidelity and reading receipts exist.",
     "economicsTitle": "The economics",
     "economics": {
       "fewerTokens": "fewer tokens on the converted block",
       "savings": "end-to-end savings (measured)",
       "imageTokens": "image tokens for a 1568×728 page (about 28k characters)",
-      "accuracy": "reading accuracy on Fable 5 (n=30)"
+      "accuracy": "__MISSING__:scoped Fable 5 reading receipt"
     },
     "beforeAfterTitle": "Before → after",
     "blockSavings": "−{percent}% tokens on this block",
@@ -8673,18 +8687,18 @@
     "gates": {
       "model": {
         "label": "Model",
-        "pass": "claude-fable-5",
-        "why": "Only Fable 5 reads dense pages at 100% accuracy (measured, n=30). GPT-5.5 and Gemini 2.5 Flash are blocked."
+        "pass": "__MISSING__:claude-fable-5 (measured); gpt-5.6 (HOLD)",
+        "why": "__MISSING__:Only the measured Fable 5 path is enabled in OmniRoute. GPT 5.6 is structurally supported by the package but remains blocked until its provider receipt; unverified families such as Grok stay text-only."
       },
       "transport": {
         "label": "Transport",
-        "pass": "direct Anthropic",
-        "why": "Aggregators resample images and destroy legibility — only the direct route is authoritative."
+        "pass": "__MISSING__:direct provider",
+        "why": "__MISSING__:Aggregators may resample images and destroy legibility — only a direct provider route is authoritative."
       },
       "format": {
         "label": "Format",
-        "pass": "native Claude",
-        "why": "The body must use Claude format and must never put a system role inside messages."
+        "pass": "__MISSING__:native Claude/OpenAI",
+        "why": "__MISSING__:The body must match the provider wire: Claude Messages, OpenAI Chat Completions, or native OpenAI Responses input[]."
       },
       "profitable": {
         "label": "Profitable",
@@ -8693,7 +8707,7 @@
       }
     },
     "enableTitle": "Enable the engine",
-    "enableDescription": "Runs last in the stack (after RTK/Caveman cleans the text, OmniGlyph converts the remainder to images) and also runs standalone through <code>omniglyph</code> mode. This is a preview and remains off by default until end-to-end validation is complete.",
+    "enableDescription": "__MISSING__:Runs last in the stack after text engines clean the request, using the native provider wire; OpenAI Chat/Responses requests are compressed after translation so their shape is preserved. It also runs standalone through <code>omniglyph</code> mode. This is a preview and remains off by default until end-to-end validation is complete.",
     "profileTitle": "Compression profile",
     "profileDescription": "The profile is a ceiling, not a floor: a stricter profile cannot be reopened by a per-step override. Measured on this codebase: with coding-safe or balanced, a session that has not accumulated history yet compresses nothing, because both raise the minimum-characters threshold and keep the system prompt, tool schemas and tool results native.",
     "profiles": {
@@ -8722,7 +8736,7 @@
   },
   "embeddedServices": {
     "title": "Embedded Services",
-    "description": "Local engines managed on demand — CLIProxyAPI, 9Router, Mux, and Bifrost. Accessible on loopback only.",
+    "description": "__MISSING__:Optional helpers that run on your machine. Most users can start without them — install one only when an integration needs it.",
     "stateRunning": "Running",
     "stateStopped": "Stopped",
     "stateStarting": "Starting",
@@ -8921,7 +8935,7 @@
     "featureMissingToolResponse": "Inyección de respuesta de herramienta",
     "featureMissingToolResponseDesc": "Inyecta mensajes tool_result vacíos cuando los clientes envían tool_calls sin las respuestas correspondientes.",
     "featureThinkingBudget": "Pensando en el presupuesto",
-    "featureThinkingBudgetDesc": "Gestiona automáticamente la configuración de pensamiento. Elimina los parámetros de pensamiento cuando el último mensaje no es del usuario.",
+    "featureThinkingBudgetDesc": "__MISSING__:Proxy-level control of thinking/reasoning request fields: passthrough (client controls), auto (strip all thinking params), custom (fixed budget), or adaptive (scale by complexity). Independent of compression and routing. Does not decrypt encrypted reasoning content.",
     "featureDirectPaths": "Rutas de traducción directa",
     "featureDirectPathsDesc": "Algunos pares de formatos (Claude→Gemini) tienen traductores directos que pasan por alto el centro OpenAI, lo que produce resultados más precisos.",
     "featureImageMapping": "Mapeo de tamaño de imagen",
@@ -10691,7 +10705,7 @@
     "continue": "Continuar"
   },
   "cursorAuthModal": {
-    "title": "Conectar cursor IDE",
+    "title": "__MISSING__:Connect Cursor",
     "tabLogin": "Login with Cursor",
     "tabImport": "Import token",
     "loginDescription": "Opens Cursor's browser login. Works in Docker — approve in your host browser, then return here.",
@@ -10704,7 +10718,7 @@
     "autoDetecting": "Tokens de detección automática...",
     "readingFromCursor": "Lectura desde Cursor IDE o cursor-agent",
     "tokensAutoDetected": "¡Los tokens se detectaron automáticamente con éxito desde Cursor IDE!",
-    "cursorNotDetected": "IDE del cursor no detectado. Pegue manualmente su token.",
+    "cursorNotDetected": "__MISSING__:Cursor IDE not detected. Paste your access token (and refresh token if available).",
     "dockerImportHint": "Running in Docker? Prefer Login with Cursor. IDE auto-import and cursor-agent are usually unavailable inside the container. See docs/providers/CURSOR-DOCKER.md.",
     "accessToken": "Token de acceso",
     "refreshToken": "Refresh Token",
@@ -12074,10 +12088,10 @@
       },
       "acp": {
         "title": "ACP Agents",
-        "phrase": "CLIs that OmniRoute spawns as execution backend (reverse flow)",
+        "phrase": "__MISSING__:Run complex, long-running logic in the backend",
+        "warning": "Most users can ignore this — use only when an integration requires it.",
         "flow": "Client → OmniRoute → spawn CLI (stdio/ACP) → response",
-        "seeOther": "See →",
-        "warning": "Most users can ignore this — use only when an integration requires it."
+        "seeOther": "See →"
       }
     },
     "comparison": {
@@ -12836,6 +12850,10 @@
       "ALLOW_MULTI_CONNECTIONS_PER_COMPAT_NODE": {
         "description": "Allow multiple connections for each compatibility node."
       },
+      "DISABLE_CONTEXT_WINDOW_CHECKS": {
+        "label": "Disable Context Window Checks",
+        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
+      },
       "RESPONSES_PASSTHROUGH_DROP_COMMENTARY": {
         "description": "Remove internal commentary-phase output items from Responses API passthrough streams before forwarding them to clients. Disable this flag to receive raw upstream commentary."
       },
@@ -12901,10 +12919,6 @@
       },
       "SKILLS_SANDBOX_NETWORK_ENABLED": {
         "description": "Enable network access in the skills sandbox."
-      },
-      "DISABLE_CONTEXT_WINDOW_CHECKS": {
-        "label": "Disable Context Window Checks",
-        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
       }
     }
   },
@@ -13383,6 +13397,13 @@
   },
   "resilienceConnections": {
     "title": "Resiliencia de Conexión",
+    "reassuranceTitle": "Your connections recover automatically",
+    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
+    "plainStates": {
+      "healthy": "Requests can be sent",
+      "coolingDown": "Trying again soon",
+      "lockedOut": "Needs your attention"
+    },
     "table": {
       "status": "Estado",
       "provider": "Proveedor",
@@ -13477,16 +13498,10 @@
         "modelLockouts": "Bloqueos de Modelo",
         "count": "Cantidad de Conexiones"
       }
-    },
-    "reassuranceTitle": "Your connections recover automatically",
-    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
-    "plainStates": {
-      "healthy": "Requests can be sent",
-      "coolingDown": "Trying again soon",
-      "lockedOut": "Needs your attention"
     }
   },
   "featureFlagCapabilityFilterEnabledDescription": "Rechazar solicitudes antes del despacho cuando el modelo objetivo carece de capacidades requeridas (visión, herramientas, salida estructurada, ventana de contexto). Protege las solicitudes directas de un solo proveedor que eluden el filtro de compatibilidad de la capa combinada.",
+  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "publicSystem": {
     "notFound": {
       "title": "Página no encontrada",
@@ -13922,7 +13937,6 @@
     "structuredOutputMismatch": "El proveedor no admite salida estructurada",
     "contextWindowMismatch": "La solicitud excede la ventana de contexto del proveedor"
   },
-  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "cheaperInferenceSponsorBanner": {
     "title": "Cheaper Inference is an OmniRoute Open Source Friend",
     "description": "A cost-ranked gateway reselling dozens of frontier models behind one OpenAI-compatible endpoint — routing each request to the cheapest eligible provider, never above list price.",

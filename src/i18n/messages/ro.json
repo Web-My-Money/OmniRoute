@@ -805,6 +805,13 @@
     "batchConceptBenefit50pct": "50% discount on input + output tokens",
     "batchConceptAsync24h": "Async with a 24h completion window",
     "batchConceptUseCases": "Best for bulk classification, evaluations, and embeddings",
+    "batchHeaderSubtitle": "Run many requests as one job",
+    "batchStep1": "1 · Upload JSONL",
+    "batchStep1Desc": "Add requests",
+    "batchStep2": "2 · Create batch",
+    "batchStep2Desc": "Run job",
+    "batchStep3": "3 · Get results",
+    "batchStep3Desc": "Download output",
     "filesConceptTitle": "Batch files",
     "filesConceptSubtitle": "JSONL files used by batches: input requests, results, and errors.",
     "filesConceptInput": "Input — your JSONL with one request per line",
@@ -974,14 +981,7 @@
     "batchFileUsedByCount": "Folosit de {count, plural, one {# lot} other {# loturi}}",
     "batchFilePreview": "Previzualizare",
     "batchFilePreviewTruncated": "Afișare primele {shown} linii ({total} linii totale)",
-    "batchFileDownloadFull": "Descarcă Fișierul Complet",
-    "batchHeaderSubtitle": "Run many requests as one job",
-    "batchStep1": "1 · Upload JSONL",
-    "batchStep1Desc": "Add requests",
-    "batchStep2": "2 · Create batch",
-    "batchStep2Desc": "Run job",
-    "batchStep3": "3 · Get results",
-    "batchStep3Desc": "Download output"
+    "batchFileDownloadFull": "Descarcă Fișierul Complet"
   },
   "disabled": "Dezactivat",
   "featureFlagOmnirouteEmergencyFallbackDescription": "Redirecționează cererile cu buget epuizat către furnizorul/modelul de rezervă gratuit de urgență.",
@@ -1019,7 +1019,7 @@
     "apiManager": "Manager API",
     "apiManagerSubtitle": "Gestionați cheile API și accesul",
     "embeddedServices": "Servicii Integrate",
-    "embeddedServicesSubtitle": "Gestionați serviciile proxy locale",
+    "embeddedServicesSubtitle": "__MISSING__:Optional local services",
     "logs": "Bușteni",
     "webhooks": "Webhook-uri",
     "webhooksSubtitle": "Primiți notificări despre evenimente",
@@ -1267,6 +1267,7 @@
     "agentBridgeSubtitle": "Interceptează traficul agentului IDE",
     "trafficInspector": "Inspector de trafic",
     "trafficInspectorSubtitle": "__MISSING__:Inspect request and response traffic from your apps",
+    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client.",
     "cliCode": "Cod CLI",
     "cliCodeSubtitle": "Instrumente de cod care indică spre OmniRoute",
     "cliAgents": "Agenți CLI",
@@ -1300,8 +1301,7 @@
       "open": "deschide",
       "close": "închide"
     },
-    "noResults": "Niciun rezultat",
-    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client."
+    "noResults": "Niciun rezultat"
   },
   "webhooks": {
     "title": "Webhook-uri",
@@ -1808,6 +1808,11 @@
     "updateStarted": "Actualizarea a început...",
     "reloadingPageAutomatically": "Se reîncarcă pagina automat...",
     "providerTopology": "Topologia furnizorului",
+    "recentRequests": "Recent Requests",
+    "recentRequestsEmpty": "No requests yet.",
+    "recentRequestsModel": "Model",
+    "recentRequestsTokens": "In / Out",
+    "recentRequestsWhen": "When",
     "downloadDmg": "Descarcă DMG (macOS)",
     "downloadDmgDescription": "O nouă versiune a aplicației desktop OmniRoute este disponibilă. Vă rugăm să descărcați și să instalați programul de instalare DMG pentru macOS pentru a actualiza (curent: v{version}).",
     "downloadExe": "Descarcă EXE (Windows)",
@@ -1865,11 +1870,6 @@
     "releaseNotes": "Note de Lansare",
     "readMore": "Citește mai mult",
     "noAuthLabel": "Fără Autentificare",
-    "recentRequests": "Recent Requests",
-    "recentRequestsEmpty": "No requests yet.",
-    "recentRequestsModel": "Model",
-    "recentRequestsTokens": "In / Out",
-    "recentRequestsWhen": "When",
     "readinessEyebrow": "Get ready to route",
     "readinessTitle": "Send your first request",
     "readinessSubtitle": "Four small steps. OmniRoute checks readiness as you go.",
@@ -2922,9 +2922,9 @@
       "interpreter": "CLI pentru agentul de programare autonom Open Interpreter",
       "omp": "Agent de programare pentru terminal Oh My Pi",
       "letta": "Agent CLI Letta cu memorie persistentă și utilizare de instrumente",
+      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support",
       "warp": "Terminal Warp AI cu suport pentru furnizori personalizați",
-      "agent-deck": "Orchestrator multi-agent Agent Deck",
-      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support"
+      "agent-deck": "Orchestrator multi-agent Agent Deck"
     },
     "guides": {
       "cursor": {
@@ -3849,6 +3849,9 @@
   },
   "endpoint": {
     "title": "API Endpoint",
+    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
+    "testEndpoint": "Test endpoint →",
+    "advancedProtocols": "Advanced protocols",
     "available": "Puncte finale disponibile",
     "cloudProxy": "Cloud Proxy",
     "disableConfirm": "Sigur doriți să dezactivați proxy-ul cloud?",
@@ -4156,10 +4159,7 @@
     "notionIntegrationHelp": "Creează o integrare internă la",
     "notionIntegrationToken": "Token Intern de Integrare Notion",
     "notionNotConnected": "Neconectat",
-    "notionTokenConfigured": "Token configurat. Instrumentele Notion sunt disponibile prin MCP.",
-    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
-    "testEndpoint": "Test endpoint →",
-    "advancedProtocols": "Advanced protocols"
+    "notionTokenConfigured": "Token configurat. Instrumentele Notion sunt disponibile prin MCP."
   },
   "endpoints": {
     "tabProxy": "Endpoint Proxy",
@@ -4632,6 +4632,13 @@
     "retry": "Reîncercați",
     "allOperational": "Toate sistemele sunt operaționale",
     "issuesDetected": "Au fost detectate probleme de sistem",
+    "healthVerdictReady": "OmniRoute is ready",
+    "healthVerdictActionRequired": "Action required to restore full operation",
+    "healthVerdictCoolingDown": "Cooling down after recent changes",
+    "healthSubtitle": "System health check",
+    "advancedDiagnosticsTitle": "Advanced diagnostics",
+    "hide": "Hide",
+    "show": "Show",
     "updatedAt": "Actualizat {time}",
     "latency": "Latența",
     "latencyP50": "p50",
@@ -4742,14 +4749,7 @@
     "issueCount": "{count} probleme",
     "score": "Scor",
     "lastRequest": "Ultima solicitare",
-    "lastError": "Ultima eroare",
-    "healthVerdictReady": "OmniRoute is ready",
-    "healthVerdictActionRequired": "Action required to restore full operation",
-    "healthVerdictCoolingDown": "Cooling down after recent changes",
-    "healthSubtitle": "System health check",
-    "advancedDiagnosticsTitle": "Advanced diagnostics",
-    "hide": "Hide",
-    "show": "Show"
+    "lastError": "Ultima eroare"
   },
   "telemetry": {
     "title": "Telemetria sistemului",
@@ -4954,7 +4954,9 @@
     "multiProvider": "Multi-furnizor",
     "usageTracking": "Urmărirea utilizării",
     "securityDesc": "Setați o parolă pentru a vă proteja tabloul de bord sau omiteți pentru moment.",
+    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
     "providerDesc": "Conectați-vă primul furnizor de AI. Puteți adăuga mai multe mai târziu.",
+    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard.",
     "apiKeyRequired": "Cheie API (obligatorie)",
     "customUrlOptional": "Adresă URL personalizată (opțional)",
     "testDesc": "Să verificăm că conexiunea la furnizor funcționează.",
@@ -5011,9 +5013,7 @@
         "skipped": "deja configurat",
         "failed": "eșuat"
       }
-    },
-    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
-    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard."
+    }
   },
   "providers": {
     "title": "Furnizorii",
@@ -5724,8 +5724,8 @@
     "aggregatorsGateways": "Aggregators Gateways",
     "enterpriseCloud": "Enterprise & Cloud",
     "apiFormatLabel": "Api Format Label",
-    "apiKeyOptionalHint": "Api Key Optional Hint",
-    "apiKeyOptionalLabel": "Api Key Optional Label",
+    "apiKeyOptionalHint": "__MISSING__:Leave empty if your local setup or provider does not require authentication.",
+    "apiKeyOptionalLabel": "__MISSING__:API Key (optional)",
     "apiRegionChina": "Api Region China",
     "apiRegionHint": "Api Region Hint",
     "apiRegionInternational": "Api Region International",
@@ -6157,8 +6157,8 @@
       "inception": "Inception Labs este compatibil cu OpenAI la https://api.inceptionlabs.ai/v1. mercury-2 este primul LLM de difuzie (dLLM) din catalog — generare de 5-10 ori mai rapidă decât modelele autoregresive comparabile, cu apeluri de instrumente, json_mode și ieșiri structurate.",
       "inference-net": "$25 credite gratuite la înregistrare plus granturi de cercetare disponibile",
       "internlm": "Cota lunară gratuită ~1M tokeni de intrare / 3M tokeni de ieșire (~10 RPM)",
-      "jina-ai": "Cheie API Bearer pentru API-ul de rerank Jina AI.",
-      "jina-reader": "Conectați Jina Reader cu o cheie API.",
+      "jina-ai": "__MISSING__:Bearer API key for api.jina.ai (embeddings, rerank, classify, segment, search). Not the Reader / r.jina.ai card. Dashboard keys take precedence over JINA_AI_API_KEY.",
+      "jina-reader": "__MISSING__:Bearer API key for r.jina.ai URL-to-markdown only. Does not serve /v1/embeddings or /v1/rerank. The same Jina token as Foundation API works.",
       "kenari": "Kenari expune un endpoint de chat completions compatibil cu OpenAI la https://kenari.id/v1/chat/completions, plus un catalog live /v1/models care acoperă Claude, GPT, DeepSeek, GLM, Kimi și multe altele. OmniRoute utilizează protocolul OpenAI și listează modelele prin passthrough.",
       "kie": "Conectează KIE.AI cu o cheie API.",
       "kilo-gateway": "Conectează Kilo Gateway cu o cheie API.",
@@ -6271,7 +6271,7 @@
       "cursor": "Conectați Cursor IDE cu fluxul OAuth existent.",
       "cursor-api": "Connect Cursor with a user API key (crsr_...) from cursor.com/dashboard/api; no IDE session needed.",
       "github": "Conectați GitHub Copilot cu fluxul OAuth existent.",
-      "gitlab-duo": "Aplicație OAuth cu permisiunile ai_features + read_user. Configurați GITLAB_DUO_OAUTH_CLIENT_ID și opțional GITLAB_DUO_OAUTH_CLIENT_SECRET pe această instanță OmniRoute.",
+      "gitlab-duo": "__MISSING__:OAuth application with ai_features + read_user scopes. Configure GITLAB_DUO_OAUTH_CLIENT_ID and optionally GITLAB_DUO_OAUTH_CLIENT_SECRET on this OmniRoute instance.",
       "kilocode": "Conectați Kilo Code cu fluxul OAuth existent.",
       "kimi-coding": "Conectați Kimi Coding cu fluxul OAuth existent.",
       "kiro": "Nivel gratuit: 50 de credite/lună (~25K–100K tokenuri). ⚠️ Kiro ToS interzice utilizarea de proxy/harness terțe.",
@@ -6302,6 +6302,20 @@
     "webSessionGuideStep3": "Copiați acreditările necesare din domeniul propriu al furnizorului. Pentru cookie-uri, copiați numai valoarea antetului Cookie și omiteți Cookie:.",
     "webSessionGuideStep3Manual": "Calea manuală: deschideți instrumentele de dezvoltare ale browserului (F12 → Rețea), reîncărcați pagina, deschideți o cerere autentificată și copiați valoarea antetului Cookie din Anteturile cererii — omiteți prefixul Cookie:.",
     "webSessionGuideStep4": "Lipiți-l aici și verificați conexiunea. Dacă nu mai funcționează, conectați-vă din nou și înlocuiți-l cu o valoare nouă.",
+    "harImportButtonLabel": "Import .har file",
+    "harImportButtonBusy": "Importing…",
+    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
+    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
+    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
+    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
+    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
+    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
+    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
+    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
+    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
+    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
+    "harImportErrorReadFailed": "Couldn't read that file.",
+    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file.",
     "webSessionSecurityHint": "Tratați acest lucru ca pe o parolă: poate accesa contul dvs. web conectat până când expiră sau este revocat.",
     "webNoAuthGuideTitle": "Nu sunt necesare acreditări",
     "webNoAuthGuideBody": "{provider} nu are nevoie de o cheie API sau cookie. Salvați conexiunea pentru a utiliza punctul final web gratuit.",
@@ -6327,8 +6341,8 @@
     "apiProtocolHint": "Unii furnizori publică aceleași modele pe mai mult de un protocol. Lăsați setarea implicită, cu excepția cazului în care aveți nevoie de alternativă.",
     "bulkAddFormatHintCloudflare": "O cheie pe linie. Format: name|accountId|apiKey (ID cont Cloudflare + token API).",
     "lmarenaWebCookieHint": "Deschide arena.ai, conectează-te, apoi copiază antetul Cookie complet dintr-o cerere Network. Include arena-auth-prod-v1.0 și arena-auth-prod-v1.1 (și fragmentele ulterioare dacă sunt prezente), de preferință cu cf_clearance. Nu lipi doar cookie-ul gol arena-auth-prod-v1. Opțional: providerSpecificData.recaptchaV3Token dacă create-evaluation returnează în continuare 403.",
-    "kimiOfficialSupporterBadge": "Prieten Fondator",
-    "kimiOfficialSupporterTooltip": "Kimi (Moonshot AI) este prietenul fondator open source al OmniRoute",
+    "kimiOfficialSupporterBadge": "__MISSING__:Official Supporter",
+    "kimiOfficialSupporterTooltip": "__MISSING__:Kimi (Moonshot AI) is an official OmniRoute launch partner",
     "cheaperInferenceSupporterBadge": "Prieten open source",
     "cheaperInferenceSupporterTooltip": "Cheaper Inference susține OmniRoute ca prieten open source",
     "kimiPartnerLinkNote": "Link de partener — susține OmniRoute fără costuri suplimentare pentru dvs.",
@@ -6416,21 +6430,7 @@
     "savedModelEndpointSettings": "Setările punctului final al modelului salvat",
     "searchByModelAria": "Caută după model",
     "selectSupportedEndpoint": "Selectați cel puțin un punct final acceptat",
-    "antigravityClientProfileHarness": "Harness / CLI",
-    "harImportButtonLabel": "Import .har file",
-    "harImportButtonBusy": "Importing…",
-    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
-    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
-    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
-    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
-    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
-    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
-    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
-    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
-    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
-    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
-    "harImportErrorReadFailed": "Couldn't read that file.",
-    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file."
+    "antigravityClientProfileHarness": "Harness / CLI"
   },
   "settings": {
     "title": "Setări",
@@ -6710,6 +6710,18 @@
     "sidebarVisibility": "Hide sidebar items",
     "sidebarVisibilityDesc": "Hide any sidebar navigation entry to reduce visual clutter.",
     "sidebarVisibilityHint": "Any sidebar section is hidden automatically when a...",
+    "presetAll": "All",
+    "presetAllDesc": "Show everything",
+    "presetEssentials": "Essentials",
+    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
+    "presetMinimal": "Minimal",
+    "presetMinimalDesc": "Core pages only",
+    "presetDeveloper": "Developer",
+    "presetDeveloperDesc": "Dev & proxy tools",
+    "presetAdmin": "Admin",
+    "presetAdminDesc": "Monitoring & audit",
+    "settingsSidebarTitle": "Sidebar Customization",
+    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable.",
     "hideHealthLogs": "Ascundeți jurnalele de verificare a stării de sănătate",
     "hideHealthLogsDesc": "Când este ACTIVAT, suprimați mesajele [HealthCheck] din consola serverului",
     "themeAccent": "Culoarea temei",
@@ -6921,7 +6933,7 @@
     "afterPromptPlaceholder": "Instrucțiuni inserate după promptul agentului/furnizorului...",
     "chars": "{count} caractere",
     "thinkingBudgetTitle": "Gândirea bugetului",
-    "thinkingBudgetDesc": "Controlați utilizarea simbolurilor de raționament AI pentru toate solicitările",
+    "thinkingBudgetDesc": "__MISSING__:Controls whether OmniRoute rewrites client thinking/reasoning parameters before requests go upstream. This is separate from compression, prompt cache, and API-key token limits.",
     "thinkingBudgetIndependenceHint": "Funcțiile de compresie, rutare și limită de token-uri continuă să funcționeze în fiecare mod. Auto nu înseamnă „gândire auto-afişată” — elimină câmpurile de raționare ale clientului.",
     "passthrough": "trecere",
     "passthroughDesc": "Fără modificări — clientul controlează bugetul de gândire",
@@ -6946,7 +6958,7 @@
     "tokenBudget": "Buget simbol",
     "tokens": "jetoane",
     "baseEffortLevel": "Nivelul de efort de bază",
-    "adaptiveHint": "Modul adaptiv crește de la acest nivel de bază în funcție de numărul de mesaje, utilizarea instrumentului și lungimea promptului.",
+    "adaptiveHint": "__MISSING__:Adaptive mode scales from this base level based on message count, tool usage, and prompt length. Does not decrypt provider encrypted reasoning blobs.",
     "requireLogin": "Necesită autentificare",
     "requireLoginDesc": "Când este pornit, tabloul de bord necesită o parolă. Când este OFF, accesați fără autentificare.",
     "currentPassword": "Parola curentă",
@@ -7678,6 +7690,20 @@
     "jsonImportError": "Eroare în timpul importului JSON",
     "storagePurgeData": "Curățați datele",
     "storagePurgeDataDesc": "Șterge imediat toate înregistrările fără a aplica verificările de retenție. A se utiliza cu prudență.",
+    "storageMaintenance": "__MISSING__:Maintenance & cleanup",
+    "storageMaintenanceDesc": "__MISSING__:Background cleanup runs every 6 hours and removes rows past the retention windows configured below.",
+    "storageLastAutoCleanup": "__MISSING__:Last auto-cleanup",
+    "storageCleanupNeverRan": "__MISSING__:Not run yet",
+    "storageCleanupRowsDeleted": "__MISSING__:Rows removed",
+    "storageCleanupErrors": "__MISSING__:{count} errors",
+    "storageCleanupEnabled": "__MISSING__:Auto-cleanup on",
+    "storageCleanupDisabled": "__MISSING__:Auto-cleanup off",
+    "storageWalSize": "__MISSING__:WAL size",
+    "storageProcessRss": "__MISSING__:Process memory (RSS)",
+    "storageCgroupBilled": "__MISSING__:Container memory (billed)",
+    "storageCgroupCache": "__MISSING__:File cache",
+    "storageFtsIndex": "__MISSING__:Memory FTS index / data",
+    "storageTopTables": "__MISSING__:Largest tables",
     "storageRetentionCleanup": "Setări de retenție",
     "storageRetentionCleanupDesc": "Configurează retenția înregistrărilor operaționale și curățarea backupurilor bazei de date.",
     "retentionCallDays": "Apel {count}z",
@@ -8277,19 +8303,7 @@
     "cliproxyapiHealth": "Sănătate",
     "cliproxyapiPort": "Port",
     "qdrantHost": "Gazdă",
-    "qdrantCollection": "Colecție",
-    "presetAll": "All",
-    "presetAllDesc": "Show everything",
-    "presetEssentials": "Essentials",
-    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
-    "presetMinimal": "Minimal",
-    "presetMinimalDesc": "Core pages only",
-    "presetDeveloper": "Developer",
-    "presetDeveloperDesc": "Dev & proxy tools",
-    "presetAdmin": "Admin",
-    "presetAdminDesc": "Monitoring & audit",
-    "settingsSidebarTitle": "Sidebar Customization",
-    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable."
+    "qdrantCollection": "Colecție"
   },
   "contextRtk": {
     "title": "RTK Engine",
@@ -8654,13 +8668,13 @@
   },
   "omniglyph": {
     "preview": "Previzualizare",
-    "description": "Compresie context-ca-imagine. Randează promptul de sistem, documentația instrumentelor și istoricul dens ca pagini PNG compacte pe care Claude Fable 5 le citește în loc de text. Tokenii de imagine sunt taxați în funcție de dimensiuni, nu de caractere, astfel încât blocul convertit costă de aproximativ 10× mai puțin. Doar prin ruta directă Anthropic.",
+    "description": "__MISSING__:Context-as-image compression. Renders the system prompt, tool documentation, and dense history as compact PNG pages for the measured Claude Fable 5 path. The published OmniGlyph package also exposes native GPT 5.6 transformers, but OmniRoute keeps those routes fail-closed until provider fidelity and reading receipts exist.",
     "economicsTitle": "Aspecte economice",
     "economics": {
       "fewerTokens": "mai puțini tokeni pe blocul convertit",
       "savings": "economii end-to-end (măsurate)",
       "imageTokens": "tokeni de imagine pentru o pagină de 1568×728 (aproximativ 28k caractere)",
-      "accuracy": "precizia citirii pe Fable 5 (n=30)"
+      "accuracy": "__MISSING__:scoped Fable 5 reading receipt"
     },
     "beforeAfterTitle": "Înainte → după",
     "blockSavings": "−{percent}% tokeni pe acest bloc",
@@ -8673,18 +8687,18 @@
     "gates": {
       "model": {
         "label": "Model",
-        "pass": "claude-fable-5",
-        "why": "Doar Fable 5 citește paginile dense cu o precizie de 100% (măsurată, n=30). GPT-5.5 și Gemini 2.5 Flash sunt blocate."
+        "pass": "__MISSING__:claude-fable-5 (measured); gpt-5.6 (HOLD)",
+        "why": "__MISSING__:Only the measured Fable 5 path is enabled in OmniRoute. GPT 5.6 is structurally supported by the package but remains blocked until its provider receipt; unverified families such as Grok stay text-only."
       },
       "transport": {
         "label": "Transport",
-        "pass": "direct Anthropic",
-        "why": "Agregatorii reeșantionează imaginile și distrug lizibilitatea — doar ruta directă este autoritară."
+        "pass": "__MISSING__:direct provider",
+        "why": "__MISSING__:Aggregators may resample images and destroy legibility — only a direct provider route is authoritative."
       },
       "format": {
         "label": "Format",
-        "pass": "Claude nativ",
-        "why": "Corpul trebuie să utilizeze formatul Claude și nu trebuie să pună niciodată un rol de sistem în interiorul mesajelor."
+        "pass": "__MISSING__:native Claude/OpenAI",
+        "why": "__MISSING__:The body must match the provider wire: Claude Messages, OpenAI Chat Completions, or native OpenAI Responses input[]."
       },
       "profitable": {
         "label": "Profitabil",
@@ -8693,7 +8707,7 @@
       }
     },
     "enableTitle": "Activează motorul",
-    "enableDescription": "Rulează ultimul în stivă (după ce RTK/Caveman curăță textul, OmniGlyph convertește restul în imagini) și rulează, de asemenea, de sine stătător prin modul <code>omniglyph</code>. Aceasta este o previzualizare și rămâne dezactivată în mod implicit până când validarea end-to-end este finalizată.",
+    "enableDescription": "__MISSING__:Runs last in the stack after text engines clean the request, using the native provider wire; OpenAI Chat/Responses requests are compressed after translation so their shape is preserved. It also runs standalone through <code>omniglyph</code> mode. This is a preview and remains off by default until end-to-end validation is complete.",
     "profileTitle": "Compression profile",
     "profileDescription": "The profile is a ceiling, not a floor: a stricter profile cannot be reopened by a per-step override. Measured on this codebase: with coding-safe or balanced, a session that has not accumulated history yet compresses nothing, because both raise the minimum-characters threshold and keep the system prompt, tool schemas and tool results native.",
     "profiles": {
@@ -8722,7 +8736,7 @@
   },
   "embeddedServices": {
     "title": "Servicii integrate",
-    "description": "Motoare locale gestionate la cerere — CLIProxyAPI, 9Router, Mux și Bifrost. Accesibile doar pe loopback.",
+    "description": "__MISSING__:Optional helpers that run on your machine. Most users can start without them — install one only when an integration needs it.",
     "stateRunning": "Rulează",
     "stateStopped": "Oprit",
     "stateStarting": "Se pornește",
@@ -8921,7 +8935,7 @@
     "featureMissingToolResponse": "Injecție cu răspuns la instrument",
     "featureMissingToolResponseDesc": "Injectează mesaje goale tool_result atunci când clienții trimit tool_calls fără răspunsuri corespunzătoare.",
     "featureThinkingBudget": "Gândirea bugetului",
-    "featureThinkingBudgetDesc": "Gestionează automat configurația gândirii. Îndepărtează parametrii de gândire atunci când ultimul mesaj nu este de la utilizator.",
+    "featureThinkingBudgetDesc": "__MISSING__:Proxy-level control of thinking/reasoning request fields: passthrough (client controls), auto (strip all thinking params), custom (fixed budget), or adaptive (scale by complexity). Independent of compression and routing. Does not decrypt encrypted reasoning content.",
     "featureDirectPaths": "Căi de traducere directă",
     "featureDirectPathsDesc": "Unele perechi de formate (Claude→Gemini) au traducători directe care ocolesc hub-ul OpenAI, producând rezultate mai precise.",
     "featureImageMapping": "Maparea dimensiunii imaginii",
@@ -10691,7 +10705,7 @@
     "continue": "Continuă"
   },
   "cursorAuthModal": {
-    "title": "Conectați Cursor IDE",
+    "title": "__MISSING__:Connect Cursor",
     "tabLogin": "Login with Cursor",
     "tabImport": "Import token",
     "loginDescription": "Opens Cursor's browser login. Works in Docker — approve in your host browser, then return here.",
@@ -10704,7 +10718,7 @@
     "autoDetecting": "Se detectează automat jetoanele...",
     "readingFromCursor": "Citirea din Cursor IDE sau cursor-agent",
     "tokensAutoDetected": "Jetoanele au fost detectate automat cu succes din Cursor IDE!",
-    "cursorNotDetected": "IDE-ul cursorului nu a fost detectat. Vă rugăm să lipiți manual indicativul.",
+    "cursorNotDetected": "__MISSING__:Cursor IDE not detected. Paste your access token (and refresh token if available).",
     "dockerImportHint": "Running in Docker? Prefer Login with Cursor. IDE auto-import and cursor-agent are usually unavailable inside the container. See docs/providers/CURSOR-DOCKER.md.",
     "accessToken": "Token de acces",
     "refreshToken": "Refresh Token",
@@ -12074,10 +12088,10 @@
       },
       "acp": {
         "title": "Agenți ACP",
-        "phrase": "CLI-uri pe care OmniRoute le lansează ca backend de execuție (flux invers)",
+        "phrase": "__MISSING__:Run complex, long-running logic in the backend",
+        "warning": "Most users can ignore this — use only when an integration requires it.",
         "flow": "Client → OmniRoute → lansare CLI (stdio/ACP) → răspuns",
-        "seeOther": "Vezi →",
-        "warning": "Most users can ignore this — use only when an integration requires it."
+        "seeOther": "Vezi →"
       }
     },
     "comparison": {
@@ -12836,6 +12850,10 @@
       "ALLOW_MULTI_CONNECTIONS_PER_COMPAT_NODE": {
         "description": "Permite conexiuni multiple pentru fiecare nod de compatibilitate."
       },
+      "DISABLE_CONTEXT_WINDOW_CHECKS": {
+        "label": "Disable Context Window Checks",
+        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
+      },
       "RESPONSES_PASSTHROUGH_DROP_COMMENTARY": {
         "description": "Elimină elementele de ieșire din faza de comentarii interne din fluxurile passthrough ale Responses API înainte de a le redirecționa către clienți. Dezactivează acest flag pentru a primi comentariile brute din amonte."
       },
@@ -12901,10 +12919,6 @@
       },
       "SKILLS_SANDBOX_NETWORK_ENABLED": {
         "description": "Activează accesul la rețea în sandbox-ul de abilități."
-      },
-      "DISABLE_CONTEXT_WINDOW_CHECKS": {
-        "label": "Disable Context Window Checks",
-        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
       }
     }
   },
@@ -13383,6 +13397,13 @@
   },
   "resilienceConnections": {
     "title": "Reziliența Conexiunii",
+    "reassuranceTitle": "Your connections recover automatically",
+    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
+    "plainStates": {
+      "healthy": "Requests can be sent",
+      "coolingDown": "Trying again soon",
+      "lockedOut": "Needs your attention"
+    },
     "table": {
       "status": "Stare",
       "provider": "Furnizor",
@@ -13477,16 +13498,10 @@
         "modelLockouts": "Blocaje Model",
         "count": "Număr de Conexiuni"
       }
-    },
-    "reassuranceTitle": "Your connections recover automatically",
-    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
-    "plainStates": {
-      "healthy": "Requests can be sent",
-      "coolingDown": "Trying again soon",
-      "lockedOut": "Needs your attention"
     }
   },
   "featureFlagCapabilityFilterEnabledDescription": "Respinge cererile înainte de expediere atunci când modelul țintă nu are capabilitățile necesare (viziune, instrumente, ieșire structurată, fereastră de context). Protejează cererile directe de un singur furnizor care ocolesc filtrul de compatibilitate al stratului combinat.",
+  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "publicSystem": {
     "notFound": {
       "title": "Pagina nu a fost găsită",
@@ -13922,7 +13937,6 @@
     "structuredOutputMismatch": "Furnizorul nu suportă ieșirea structurată",
     "contextWindowMismatch": "Cererea depășește fereastra de context a furnizorului"
   },
-  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "cheaperInferenceSponsorBanner": {
     "title": "Cheaper Inference is an OmniRoute Open Source Friend",
     "description": "A cost-ranked gateway reselling dozens of frontier models behind one OpenAI-compatible endpoint — routing each request to the cheapest eligible provider, never above list price.",

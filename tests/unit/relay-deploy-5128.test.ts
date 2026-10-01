@@ -20,6 +20,17 @@ import type { MockRequestInit } from "../helpers/mockFetch.ts";
 //   D) the proxy-registry schema enum lacked "deno"/"cloudflare", so editing a
 //      deployed relay in the UI failed Zod validation with a silent 400.
 
+// The route hands undici a `Uint8Array` body (not `Buffer` — the TS BodyInit type
+// requires a non-Buffer view), so `String(body)` in a mock degrades to the
+// comma-joined byte list. Decode any ArrayBuffer/typed-array body properly.
+function decodeBodyText(body: unknown): string {
+  if (Buffer.isBuffer(body)) return body.toString("utf8");
+  if (body instanceof ArrayBuffer) return Buffer.from(body).toString("utf8");
+  if (ArrayBuffer.isView(body))
+    return Buffer.from(body.buffer, body.byteOffset, body.byteLength).toString("utf8");
+  return String(body);
+}
+
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-5128-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
 
@@ -94,9 +105,7 @@ test("#5128C: Cloudflare worker upload sends an accepted script Content-Type", a
       // embedded part header instead of reading FormData.get().
       const headers = new Headers(init.headers);
       requestContentType = headers.get("content-type") ?? undefined;
-      const bodyText = Buffer.isBuffer(init.body)
-        ? (init.body as Buffer).toString("utf8")
-        : String(init.body);
+      const bodyText = decodeBodyText(init.body);
       const match = bodyText.match(/name="index\.js"[^]*?Content-Type: ([^\r\n]+)/);
       scriptPartContentType = match?.[1];
       // Simulate the CF API rejecting the upload so the route short-circuits
@@ -148,9 +157,7 @@ test("#6416: Cloudflare worker script body is Service Worker syntax (no top-leve
   globalThis.fetch = (async (input: unknown, init: MockRequestInit = {}) => {
     const url = String(input);
     if (init.method === "PUT" && url.includes("/workers/scripts/") && !url.includes("/subdomain")) {
-      const bodyText = Buffer.isBuffer(init.body)
-        ? (init.body as Buffer).toString("utf8")
-        : String(init.body);
+      const bodyText = decodeBodyText(init.body);
       const scriptMatch = bodyText.match(
         /name="index\.js"[^]*?Content-Type: [^\r\n]+\r\n\r\n([^]*?)\r\n--/
       );

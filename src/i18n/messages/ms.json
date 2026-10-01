@@ -805,6 +805,13 @@
     "batchConceptBenefit50pct": "50% discount on input + output tokens",
     "batchConceptAsync24h": "Async with a 24h completion window",
     "batchConceptUseCases": "Best for bulk classification, evaluations, and embeddings",
+    "batchHeaderSubtitle": "Run many requests as one job",
+    "batchStep1": "1 · Upload JSONL",
+    "batchStep1Desc": "Add requests",
+    "batchStep2": "2 · Create batch",
+    "batchStep2Desc": "Run job",
+    "batchStep3": "3 · Get results",
+    "batchStep3Desc": "Download output",
     "filesConceptTitle": "Batch files",
     "filesConceptSubtitle": "JSONL files used by batches: input requests, results, and errors.",
     "filesConceptInput": "Input — your JSONL with one request per line",
@@ -974,14 +981,7 @@
     "batchFileUsedByCount": "Digunakan oleh {count, plural, one {# batch} other {# batches}}",
     "batchFilePreview": "Pratonton",
     "batchFilePreviewTruncated": "Menunjukkan {shown} baris pertama ({total} jumlah baris)",
-    "batchFileDownloadFull": "Muat Turun Fail Penuh",
-    "batchHeaderSubtitle": "Run many requests as one job",
-    "batchStep1": "1 · Upload JSONL",
-    "batchStep1Desc": "Add requests",
-    "batchStep2": "2 · Create batch",
-    "batchStep2Desc": "Run job",
-    "batchStep3": "3 · Get results",
-    "batchStep3Desc": "Download output"
+    "batchFileDownloadFull": "Muat Turun Fail Penuh"
   },
   "disabled": "Disabled",
   "featureFlagOmnirouteEmergencyFallbackDescription": "Route budget-exhausted requests to the emergency free fallback provider/model.",
@@ -1019,7 +1019,7 @@
     "apiManager": "Pengurus API",
     "apiManagerSubtitle": "Urus kunci dan akses API",
     "embeddedServices": "Perkhidmatan Terbenam",
-    "embeddedServicesSubtitle": "Urus perkhidmatan proksi tempatan",
+    "embeddedServicesSubtitle": "__MISSING__:Optional local services",
     "logs": "Log",
     "webhooks": "Webhooks",
     "webhooksSubtitle": "Dapatkan pemberitahuan tentang acara",
@@ -1267,6 +1267,7 @@
     "agentBridgeSubtitle": "Pintas trafik ejen IDE",
     "trafficInspector": "Pemeriksa Trafik",
     "trafficInspectorSubtitle": "__MISSING__:Inspect request and response traffic from your apps",
+    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client.",
     "cliCode": "Kod CLI",
     "cliCodeSubtitle": "Alatan kod yang menghala ke OmniRoute",
     "cliAgents": "Ejen CLI",
@@ -1300,8 +1301,7 @@
       "open": "buka",
       "close": "tutup"
     },
-    "noResults": "Tiada hasil",
-    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client."
+    "noResults": "Tiada hasil"
   },
   "webhooks": {
     "title": "Webhooks",
@@ -1808,6 +1808,11 @@
     "updateStarted": "Kemas kini bermula...",
     "reloadingPageAutomatically": "Memuat semula halaman secara automatik...",
     "providerTopology": "Topologi Pembekal",
+    "recentRequests": "Recent Requests",
+    "recentRequestsEmpty": "No requests yet.",
+    "recentRequestsModel": "Model",
+    "recentRequestsTokens": "In / Out",
+    "recentRequestsWhen": "When",
     "downloadDmg": "Muat Turun DMG (macOS)",
     "downloadDmgDescription": "Versi baru aplikasi desktop OmniRoute tersedia. Sila muat turun dan pasang pemasang DMG macOS untuk mengemas kini (semasa: v{version}).",
     "downloadExe": "Muat Turun EXE (Windows)",
@@ -1865,11 +1870,6 @@
     "releaseNotes": "Nota Rilisan",
     "readMore": "Baca Lagi",
     "noAuthLabel": "Tiada Auth",
-    "recentRequests": "Recent Requests",
-    "recentRequestsEmpty": "No requests yet.",
-    "recentRequestsModel": "Model",
-    "recentRequestsTokens": "In / Out",
-    "recentRequestsWhen": "When",
     "readinessEyebrow": "Get ready to route",
     "readinessTitle": "Send your first request",
     "readinessSubtitle": "Four small steps. OmniRoute checks readiness as you go.",
@@ -2922,9 +2922,9 @@
       "interpreter": "CLI ejen pengekodan autonomi Open Interpreter",
       "omp": "Ejen pengekodan terminal Oh My Pi",
       "letta": "Ejen CLI Letta dengan memori berterusan dan penggunaan alat",
+      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support",
       "warp": "Terminal Warp AI dengan sokongan penyedia tersuai",
-      "agent-deck": "Orkestrator berbilang ejen Agent Deck",
-      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support"
+      "agent-deck": "Orkestrator berbilang ejen Agent Deck"
     },
     "guides": {
       "cursor": {
@@ -3849,6 +3849,9 @@
   },
   "endpoint": {
     "title": "Titik Akhir API",
+    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
+    "testEndpoint": "Test endpoint →",
+    "advancedProtocols": "Advanced protocols",
     "available": "Titik Akhir Tersedia",
     "cloudProxy": "Proksi Awan",
     "disableConfirm": "Adakah anda pasti mahu melumpuhkan proksi awan?",
@@ -4156,10 +4159,7 @@
     "notionIntegrationHelp": "Buat Integrasi Dalaman di",
     "notionIntegrationToken": "Token Integrasi Dalaman Notion",
     "notionNotConnected": "Tidak disambungkan",
-    "notionTokenConfigured": "Token telah dikonfigurasikan. Alat Notion boleh didapati melalui MCP.",
-    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
-    "testEndpoint": "Test endpoint →",
-    "advancedProtocols": "Advanced protocols"
+    "notionTokenConfigured": "Token telah dikonfigurasikan. Alat Notion boleh didapati melalui MCP."
   },
   "endpoints": {
     "tabProxy": "Endpoint Proxy",
@@ -4632,6 +4632,13 @@
     "retry": "Cuba semula",
     "allOperational": "Semua sistem beroperasi",
     "issuesDetected": "Isu sistem dikesan",
+    "healthVerdictReady": "OmniRoute is ready",
+    "healthVerdictActionRequired": "Action required to restore full operation",
+    "healthVerdictCoolingDown": "Cooling down after recent changes",
+    "healthSubtitle": "System health check",
+    "advancedDiagnosticsTitle": "Advanced diagnostics",
+    "hide": "Hide",
+    "show": "Show",
     "updatedAt": "Dikemas kini {time}",
     "latency": "Latensi",
     "latencyP50": "p50",
@@ -4742,14 +4749,7 @@
     "issueCount": "{count} isu",
     "score": "Skor",
     "lastRequest": "Permintaan terakhir",
-    "lastError": "Ralat terakhir",
-    "healthVerdictReady": "OmniRoute is ready",
-    "healthVerdictActionRequired": "Action required to restore full operation",
-    "healthVerdictCoolingDown": "Cooling down after recent changes",
-    "healthSubtitle": "System health check",
-    "advancedDiagnosticsTitle": "Advanced diagnostics",
-    "hide": "Hide",
-    "show": "Show"
+    "lastError": "Ralat terakhir"
   },
   "telemetry": {
     "title": "Sistem Telemetri",
@@ -4954,7 +4954,9 @@
     "multiProvider": "Pelbagai Pembekal",
     "usageTracking": "Penjejakan Penggunaan",
     "securityDesc": "Tetapkan kata laluan untuk melindungi papan pemuka anda atau langkau buat masa ini.",
+    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
     "providerDesc": "Sambungkan pembekal AI pertama anda. Anda boleh menambah lagi kemudian.",
+    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard.",
     "apiKeyRequired": "Kunci API (diperlukan)",
     "customUrlOptional": "URL tersuai (pilihan)",
     "testDesc": "Mari sahkan sambungan pembekal anda berfungsi.",
@@ -5011,9 +5013,7 @@
         "skipped": "sudah dikonfigurasi",
         "failed": "gagal"
       }
-    },
-    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
-    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard."
+    }
   },
   "providers": {
     "title": "Pembekal",
@@ -5724,8 +5724,8 @@
     "aggregatorsGateways": "Aggregators Gateways",
     "enterpriseCloud": "Perusahaan & Awan",
     "apiFormatLabel": "Api Format Label",
-    "apiKeyOptionalHint": "Api Key Optional Hint",
-    "apiKeyOptionalLabel": "Api Key Optional Label",
+    "apiKeyOptionalHint": "__MISSING__:Leave empty if your local setup or provider does not require authentication.",
+    "apiKeyOptionalLabel": "__MISSING__:API Key (optional)",
     "apiRegionChina": "Api Region China",
     "apiRegionHint": "Api Region Hint",
     "apiRegionInternational": "Api Region International",
@@ -6157,8 +6157,8 @@
       "inception": "Inception Labs adalah serasi dengan OpenAI di https://api.inceptionlabs.ai/v1. mercury-2 adalah LLM pengedaran pertama (dLLM) dalam katalog — 5-10x lebih pantas dalam penjanaan berbanding model autoregresif yang setara, dengan panggilan alat, json_mode, dan output terstruktur.",
       "inference-net": "Kredit percuma $25 semasa pendaftaran serta geran penyelidikan tersedia",
       "internlm": "Kuota bulanan percuma ~1M input / 3M output token (~10 RPM)",
-      "jina-ai": "Kunci API Bearer untuk API rerank Jina AI.",
-      "jina-reader": "Sambungkan Jina Reader dengan kunci API.",
+      "jina-ai": "__MISSING__:Bearer API key for api.jina.ai (embeddings, rerank, classify, segment, search). Not the Reader / r.jina.ai card. Dashboard keys take precedence over JINA_AI_API_KEY.",
+      "jina-reader": "__MISSING__:Bearer API key for r.jina.ai URL-to-markdown only. Does not serve /v1/embeddings or /v1/rerank. The same Jina token as Foundation API works.",
       "kenari": "Kenari mendedahkan titik akhir pelengkapan sembang yang serasi dengan OpenAI di https://kenari.id/v1/chat/completions, serta katalog /v1/models langsung yang merangkumi Claude, GPT, DeepSeek, GLM, Kimi dan banyak lagi. OmniRoute menggunakan protokol OpenAI dan menyenaraikan model melalui passthrough.",
       "kie": "Sambungkan KIE.AI dengan kunci API.",
       "kilo-gateway": "Sambungkan Kilo Gateway dengan kunci API.",
@@ -6271,7 +6271,7 @@
       "cursor": "Sambungkan Cursor IDE dengan aliran OAuth sedia ada.",
       "cursor-api": "Connect Cursor with a user API key (crsr_...) from cursor.com/dashboard/api; no IDE session needed.",
       "github": "Sambungkan GitHub Copilot dengan aliran OAuth sedia ada.",
-      "gitlab-duo": "Aplikasi OAuth dengan skop ai_features + read_user. Konfigurasikan GITLAB_DUO_OAUTH_CLIENT_ID dan secara pilihan GITLAB_DUO_OAUTH_CLIENT_SECRET pada tika OmniRoute ini.",
+      "gitlab-duo": "__MISSING__:OAuth application with ai_features + read_user scopes. Configure GITLAB_DUO_OAUTH_CLIENT_ID and optionally GITLAB_DUO_OAUTH_CLIENT_SECRET on this OmniRoute instance.",
       "kilocode": "Sambungkan Kilo Code dengan aliran OAuth sedia ada.",
       "kimi-coding": "Sambungkan Kimi Coding dengan aliran OAuth sedia ada.",
       "kiro": "Peringkat percuma: 50 kredit/bulan (~25K–100K token). ⚠️ ToS Kiro melarang penggunaan proksi/harness pihak ketiga.",
@@ -6302,6 +6302,20 @@
     "webSessionGuideStep3": "Salin bukti kelayakan yang diperlukan daripada domain penyedia sendiri. Untuk kuki, salin hanya nilai pengepala Kuki dan tinggalkan Kuki:.",
     "webSessionGuideStep3Manual": "Jalan manual: buka alat pemaju pelayar (F12 → Rangkaian), segarkan halaman, buka permintaan yang telah disahkan, dan salin nilai tajuk Cookie dari Tajuk Permintaan — abaikan awalan Cookie:.",
     "webSessionGuideStep4": "Tampalkannya di sini dan semak sambungannya. Jika ia berhenti berfungsi, log masuk semula dan gantikannya dengan nilai baharu.",
+    "harImportButtonLabel": "Import .har file",
+    "harImportButtonBusy": "Importing…",
+    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
+    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
+    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
+    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
+    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
+    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
+    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
+    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
+    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
+    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
+    "harImportErrorReadFailed": "Couldn't read that file.",
+    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file.",
     "webSessionSecurityHint": "Anggap ini seperti kata laluan: ia boleh mengakses akaun web anda yang dilog masuk sehingga ia tamat tempoh atau dibatalkan.",
     "webNoAuthGuideTitle": "Tiada kelayakan diperlukan",
     "webNoAuthGuideBody": "{provider} tidak memerlukan kunci API atau kuki. Simpan sambungan untuk menggunakan titik akhir web percumanya.",
@@ -6327,8 +6341,8 @@
     "apiProtocolHint": "Sesetengah penyedia menerbitkan model yang sama melalui lebih daripada satu protokol. Tinggalkan yang lalai kecuali anda memerlukan alternatif.",
     "bulkAddFormatHintCloudflare": "Satu kunci setiap baris. Format: name|accountId|apiKey (ID akaun Cloudflare + token API).",
     "lmarenaWebCookieHint": "Buka arena.ai, log masuk, kemudian salin pengepala Cookie penuh daripada permintaan Rangkaian. Sertakan arena-auth-prod-v1.0 dan arena-auth-prod-v1.1 (dan bahagian selanjutnya jika ada), sebaik-baiknya dengan cf_clearance. Jangan tampal kuki arena-auth-prod-v1 yang kosong sahaja. Pilihan: providerSpecificData.recaptchaV3Token jika create-evaluation masih mengembalikan 403.",
-    "kimiOfficialSupporterBadge": "Rakan Pengasas",
-    "kimiOfficialSupporterTooltip": "Kimi (Moonshot AI) ialah rakan sumber terbuka pengasas OmniRoute",
+    "kimiOfficialSupporterBadge": "__MISSING__:Official Supporter",
+    "kimiOfficialSupporterTooltip": "__MISSING__:Kimi (Moonshot AI) is an official OmniRoute launch partner",
     "cheaperInferenceSupporterBadge": "Rakan Sumber Terbuka",
     "cheaperInferenceSupporterTooltip": "Cheaper Inference menyokong OmniRoute sebagai Rakan Sumber Terbuka",
     "kimiPartnerLinkNote": "Pautan rakan kongsi — menyokong OmniRoute tanpa kos tambahan kepada anda",
@@ -6416,21 +6430,7 @@
     "savedModelEndpointSettings": "Tetapan titik akhir model yang disimpan",
     "searchByModelAria": "Cari mengikut model",
     "selectSupportedEndpoint": "Pilih sekurang-kurangnya satu titik akhir yang disokong",
-    "antigravityClientProfileHarness": "Harness / CLI",
-    "harImportButtonLabel": "Import .har file",
-    "harImportButtonBusy": "Importing…",
-    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
-    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
-    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
-    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
-    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
-    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
-    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
-    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
-    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
-    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
-    "harImportErrorReadFailed": "Couldn't read that file.",
-    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file."
+    "antigravityClientProfileHarness": "Harness / CLI"
   },
   "settings": {
     "title": "tetapan",
@@ -6710,6 +6710,18 @@
     "sidebarVisibility": "Hide sidebar items",
     "sidebarVisibilityDesc": "Hide any sidebar navigation entry to reduce visual clutter.",
     "sidebarVisibilityHint": "Any sidebar section is hidden automatically when a...",
+    "presetAll": "All",
+    "presetAllDesc": "Show everything",
+    "presetEssentials": "Essentials",
+    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
+    "presetMinimal": "Minimal",
+    "presetMinimalDesc": "Core pages only",
+    "presetDeveloper": "Developer",
+    "presetDeveloperDesc": "Dev & proxy tools",
+    "presetAdmin": "Admin",
+    "presetAdminDesc": "Monitoring & audit",
+    "settingsSidebarTitle": "Sidebar Customization",
+    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable.",
     "hideHealthLogs": "Sembunyikan Log Pemeriksaan Kesihatan",
     "hideHealthLogsDesc": "Apabila HIDUP, sekat mesej [HealthCheck] dalam konsol pelayan",
     "themeAccent": "Warna tema",
@@ -6921,7 +6933,7 @@
     "afterPromptPlaceholder": "Arahan dimasukkan selepas prompt ejen/penyedia...",
     "chars": "{count} aksara",
     "thinkingBudgetTitle": "Belanjawan Berfikir",
-    "thinkingBudgetDesc": "Kawal penggunaan token penaakulan AI merentas semua permintaan",
+    "thinkingBudgetDesc": "__MISSING__:Controls whether OmniRoute rewrites client thinking/reasoning parameters before requests go upstream. This is separate from compression, prompt cache, and API-key token limits.",
     "thinkingBudgetIndependenceHint": "Ciri pemampatan, penghalaan, dan had token terus berfungsi dalam setiap mod. Auto tidak bermaksud “auto-tunjuk pemikiran” — ia menghapuskan medan pemikiran klien.",
     "passthrough": "Laluan",
     "passthroughDesc": "Tiada perubahan — pelanggan mengawal belanjawan berfikir",
@@ -6946,7 +6958,7 @@
     "tokenBudget": "Belanjawan Token",
     "tokens": "token",
     "baseEffortLevel": "Tahap Usaha Asas",
-    "adaptiveHint": "Skala mod penyesuaian dari tahap asas ini berdasarkan kiraan mesej, penggunaan alat dan panjang segera.",
+    "adaptiveHint": "__MISSING__:Adaptive mode scales from this base level based on message count, tool usage, and prompt length. Does not decrypt provider encrypted reasoning blobs.",
     "requireLogin": "Memerlukan log masuk",
     "requireLoginDesc": "Apabila HIDUP, papan pemuka memerlukan kata laluan. Apabila MATI, akses tanpa log masuk.",
     "currentPassword": "Kata Laluan Semasa",
@@ -7678,6 +7690,20 @@
     "jsonImportError": "Ralat semasa import JSON",
     "storagePurgeData": "Bersihkan Data",
     "storagePurgeDataDesc": "Padamkan semua rekod dengan segera tanpa menggunakan semakan penahanan. Gunakan dengan berhati-hati.",
+    "storageMaintenance": "__MISSING__:Maintenance & cleanup",
+    "storageMaintenanceDesc": "__MISSING__:Background cleanup runs every 6 hours and removes rows past the retention windows configured below.",
+    "storageLastAutoCleanup": "__MISSING__:Last auto-cleanup",
+    "storageCleanupNeverRan": "__MISSING__:Not run yet",
+    "storageCleanupRowsDeleted": "__MISSING__:Rows removed",
+    "storageCleanupErrors": "__MISSING__:{count} errors",
+    "storageCleanupEnabled": "__MISSING__:Auto-cleanup on",
+    "storageCleanupDisabled": "__MISSING__:Auto-cleanup off",
+    "storageWalSize": "__MISSING__:WAL size",
+    "storageProcessRss": "__MISSING__:Process memory (RSS)",
+    "storageCgroupBilled": "__MISSING__:Container memory (billed)",
+    "storageCgroupCache": "__MISSING__:File cache",
+    "storageFtsIndex": "__MISSING__:Memory FTS index / data",
+    "storageTopTables": "__MISSING__:Largest tables",
     "storageRetentionCleanup": "Tetapan Penahanan",
     "storageRetentionCleanupDesc": "Konfigurasikan penahanan rekod operasi dan pembersihan sandaran pangkalan data.",
     "retentionCallDays": "Panggilan {count}h",
@@ -8277,19 +8303,7 @@
     "cliproxyapiHealth": "Kesihatan",
     "cliproxyapiPort": "Pelabuhan",
     "qdrantHost": "Hos",
-    "qdrantCollection": "Koleksi",
-    "presetAll": "All",
-    "presetAllDesc": "Show everything",
-    "presetEssentials": "Essentials",
-    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
-    "presetMinimal": "Minimal",
-    "presetMinimalDesc": "Core pages only",
-    "presetDeveloper": "Developer",
-    "presetDeveloperDesc": "Dev & proxy tools",
-    "presetAdmin": "Admin",
-    "presetAdminDesc": "Monitoring & audit",
-    "settingsSidebarTitle": "Sidebar Customization",
-    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable."
+    "qdrantCollection": "Koleksi"
   },
   "contextRtk": {
     "title": "RTK Engine",
@@ -8654,13 +8668,13 @@
   },
   "omniglyph": {
     "preview": "Pratonton",
-    "description": "Pemampatan konteks-sebagai-imej. Merender gesaan sistem, dokumentasi alatan, dan sejarah padat sebagai halaman PNG kompak yang dibaca oleh Claude Fable 5 berbanding teks. Token imej dibilkan mengikut dimensi berbanding aksara, jadi blok yang ditukar berharga kira-kira 10× kurang. Laluan terus Anthropic sahaja.",
+    "description": "__MISSING__:Context-as-image compression. Renders the system prompt, tool documentation, and dense history as compact PNG pages for the measured Claude Fable 5 path. The published OmniGlyph package also exposes native GPT 5.6 transformers, but OmniRoute keeps those routes fail-closed until provider fidelity and reading receipts exist.",
     "economicsTitle": "Ekonomi",
     "economics": {
       "fewerTokens": "kurang token pada blok yang ditukar",
       "savings": "penjimatan hujung-ke-hujung (diukur)",
       "imageTokens": "token imej untuk halaman 1568×728 (kira-kira 28k aksara)",
-      "accuracy": "ketepatan membaca pada Fable 5 (n=30)"
+      "accuracy": "__MISSING__:scoped Fable 5 reading receipt"
     },
     "beforeAfterTitle": "Sebelum → selepas",
     "blockSavings": "−{percent}% token pada blok ini",
@@ -8673,18 +8687,18 @@
     "gates": {
       "model": {
         "label": "Model",
-        "pass": "claude-fable-5",
-        "why": "Hanya Fable 5 membaca halaman padat pada ketepatan 100% (diukur, n=30). GPT-5.5 dan Gemini 2.5 Flash disekat."
+        "pass": "__MISSING__:claude-fable-5 (measured); gpt-5.6 (HOLD)",
+        "why": "__MISSING__:Only the measured Fable 5 path is enabled in OmniRoute. GPT 5.6 is structurally supported by the package but remains blocked until its provider receipt; unverified families such as Grok stay text-only."
       },
       "transport": {
         "label": "Penghantaran",
-        "pass": "Anthropic terus",
-        "why": "Agregator mensampel semula imej dan merosakkan kebolehbacaan — hanya laluan terus yang sahih."
+        "pass": "__MISSING__:direct provider",
+        "why": "__MISSING__:Aggregators may resample images and destroy legibility — only a direct provider route is authoritative."
       },
       "format": {
         "label": "Format",
-        "pass": "Claude asli",
-        "why": "Badan mesti menggunakan format Claude dan tidak boleh sekali-kali meletakkan peranan sistem di dalam mesej."
+        "pass": "__MISSING__:native Claude/OpenAI",
+        "why": "__MISSING__:The body must match the provider wire: Claude Messages, OpenAI Chat Completions, or native OpenAI Responses input[]."
       },
       "profitable": {
         "label": "Menguntungkan",
@@ -8693,7 +8707,7 @@
       }
     },
     "enableTitle": "Dayakan enjin",
-    "enableDescription": "Berjalan terakhir dalam tindanan (selepas RTK/Caveman membersihkan teks, OmniGlyph menukar baki kepada imej) dan juga berjalan secara bersendirian melalui mod <code>omniglyph</code>. Ini ialah pratonton dan kekal dimatikan secara lalai sehingga pengesahan hujung-ke-hujung selesai.",
+    "enableDescription": "__MISSING__:Runs last in the stack after text engines clean the request, using the native provider wire; OpenAI Chat/Responses requests are compressed after translation so their shape is preserved. It also runs standalone through <code>omniglyph</code> mode. This is a preview and remains off by default until end-to-end validation is complete.",
     "profileTitle": "Compression profile",
     "profileDescription": "The profile is a ceiling, not a floor: a stricter profile cannot be reopened by a per-step override. Measured on this codebase: with coding-safe or balanced, a session that has not accumulated history yet compresses nothing, because both raise the minimum-characters threshold and keep the system prompt, tool schemas and tool results native.",
     "profiles": {
@@ -8722,7 +8736,7 @@
   },
   "embeddedServices": {
     "title": "Perkhidmatan Terbenam",
-    "description": "Enjin tempatan diuruskan atas permintaan — CLIProxyAPI, 9Router, Mux, dan Bifrost. Boleh diakses pada loopback sahaja.",
+    "description": "__MISSING__:Optional helpers that run on your machine. Most users can start without them — install one only when an integration needs it.",
     "stateRunning": "Berjalan",
     "stateStopped": "Dihentikan",
     "stateStarting": "Memulakan",
@@ -8921,7 +8935,7 @@
     "featureMissingToolResponse": "Suntikan Tindak Balas Alat",
     "featureMissingToolResponseDesc": "Menyuntik mesej tool_result kosong apabila pelanggan menghantar tool_calls tanpa respons yang sepadan.",
     "featureThinkingBudget": "Belanjawan Berfikir",
-    "featureThinkingBudgetDesc": "Mengurus konfigurasi pemikiran secara automatik. Mengalih keluar parameter pemikiran apabila mesej terakhir bukan daripada pengguna.",
+    "featureThinkingBudgetDesc": "__MISSING__:Proxy-level control of thinking/reasoning request fields: passthrough (client controls), auto (strip all thinking params), custom (fixed budget), or adaptive (scale by complexity). Independent of compression and routing. Does not decrypt encrypted reasoning content.",
     "featureDirectPaths": "Laluan Terjemahan Terus",
     "featureDirectPathsDesc": "Beberapa pasangan format (Claude→Gemini) mempunyai penterjemah langsung yang memintas hab OpenAI, menghasilkan output yang lebih tepat.",
     "featureImageMapping": "Pemetaan Saiz Imej",
@@ -10691,7 +10705,7 @@
     "continue": "Teruskan"
   },
   "cursorAuthModal": {
-    "title": "Sambungkan IDE Kursor",
+    "title": "__MISSING__:Connect Cursor",
     "tabLogin": "Login with Cursor",
     "tabImport": "Import token",
     "loginDescription": "Opens Cursor's browser login. Works in Docker — approve in your host browser, then return here.",
@@ -10704,7 +10718,7 @@
     "autoDetecting": "Token pengesan automatik...",
     "readingFromCursor": "Membaca daripada Cursor IDE atau cursor-agent",
     "tokensAutoDetected": "Token berjaya dikesan secara automatik daripada Cursor IDE!",
-    "cursorNotDetected": "IDE kursor tidak dikesan. Sila tampal token anda secara manual.",
+    "cursorNotDetected": "__MISSING__:Cursor IDE not detected. Paste your access token (and refresh token if available).",
     "dockerImportHint": "Running in Docker? Prefer Login with Cursor. IDE auto-import and cursor-agent are usually unavailable inside the container. See docs/providers/CURSOR-DOCKER.md.",
     "accessToken": "Token Akses",
     "refreshToken": "Refresh Token",
@@ -12074,10 +12088,10 @@
       },
       "acp": {
         "title": "Ejen ACP",
-        "phrase": "CLI yang dimulakan oleh OmniRoute sebagai backend pelaksanaan (aliran songsang)",
+        "phrase": "__MISSING__:Run complex, long-running logic in the backend",
+        "warning": "Most users can ignore this — use only when an integration requires it.",
         "flow": "Klien → OmniRoute → mulakan CLI (stdio/ACP) → respons",
-        "seeOther": "Lihat →",
-        "warning": "Most users can ignore this — use only when an integration requires it."
+        "seeOther": "Lihat →"
       }
     },
     "comparison": {
@@ -12836,6 +12850,10 @@
       "ALLOW_MULTI_CONNECTIONS_PER_COMPAT_NODE": {
         "description": "Benarkan berbilang sambungan untuk setiap nod keserasian."
       },
+      "DISABLE_CONTEXT_WINDOW_CHECKS": {
+        "label": "Disable Context Window Checks",
+        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
+      },
       "RESPONSES_PASSTHROUGH_DROP_COMMENTARY": {
         "description": "Alih keluar item output fasa ulasan dalaman daripada strim laluan Responses API sebelum memajukannya kepada pelanggan. Nyahdayakan bendera ini untuk menerima ulasan huluan mentah."
       },
@@ -12901,10 +12919,6 @@
       },
       "SKILLS_SANDBOX_NETWORK_ENABLED": {
         "description": "Dayakan akses rangkaian dalam kotak pasir kemahiran."
-      },
-      "DISABLE_CONTEXT_WINDOW_CHECKS": {
-        "label": "Disable Context Window Checks",
-        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
       }
     }
   },
@@ -13383,6 +13397,13 @@
   },
   "resilienceConnections": {
     "title": "Daya Tahan Sambungan",
+    "reassuranceTitle": "Your connections recover automatically",
+    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
+    "plainStates": {
+      "healthy": "Requests can be sent",
+      "coolingDown": "Trying again soon",
+      "lockedOut": "Needs your attention"
+    },
     "table": {
       "status": "Status",
       "provider": "Pembekal",
@@ -13477,16 +13498,10 @@
         "modelLockouts": "Penguncian Model",
         "count": "Bilangan Sambungan"
       }
-    },
-    "reassuranceTitle": "Your connections recover automatically",
-    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
-    "plainStates": {
-      "healthy": "Requests can be sent",
-      "coolingDown": "Trying again soon",
-      "lockedOut": "Needs your attention"
     }
   },
   "featureFlagCapabilityFilterEnabledDescription": "Tolak permintaan sebelum penghantaran apabila model sasaran tidak mempunyai keupayaan yang diperlukan (penglihatan, alat, output terstruktur, tetingkap konteks). Melindungi permintaan penyedia tunggal secara langsung yang mengabaikan penapis keserasian lapisan gabungan.",
+  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "publicSystem": {
     "notFound": {
       "title": "Halaman tidak ditemui",
@@ -13922,7 +13937,6 @@
     "structuredOutputMismatch": "Penyedia tidak menyokong output berstruktur",
     "contextWindowMismatch": "Permintaan melebihi tetingkap konteks penyedia"
   },
-  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "cheaperInferenceSponsorBanner": {
     "title": "Cheaper Inference is an OmniRoute Open Source Friend",
     "description": "A cost-ranked gateway reselling dozens of frontier models behind one OpenAI-compatible endpoint — routing each request to the cheapest eligible provider, never above list price.",

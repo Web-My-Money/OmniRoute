@@ -8,6 +8,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+// WMM fork raised the default heavy-in-flight budget to 4 (chatBodyAdmission.ts);
+// the shed-path tests below pin the saturated-budget invariant, which requires the
+// process-wide slot count to be exactly 1. Read at module top-level, so set before
+// the import.
+process.env.OMNIROUTE_CHAT_MAX_HEAVY_IN_FLIGHT = "1";
+
 const admissionModule = await import("../../src/shared/middleware/chatBodyAdmission.ts");
 const {
   PerConnectionAdmissionController,

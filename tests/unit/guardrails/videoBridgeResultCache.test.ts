@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { VideoBridgeGuardrail } from "../../../src/lib/guardrails/videoBridge.ts";
+import {
+  VideoBridgeGuardrail,
+  type VideoBridgeDependencies,
+} from "../../../src/lib/guardrails/videoBridge.ts";
 import {
   BridgeCache,
   type BridgeCacheEntry,
@@ -64,7 +67,7 @@ test("result cache fingerprints protected bytes instead of trusting a stable HTT
         framesUsed: 1,
       };
     },
-  } as ConstructorParameters<typeof VideoBridgeGuardrail>[0];
+  } as VideoBridgeDependencies;
   const bridge = new VideoBridgeGuardrail({ deps });
 
   const first = await bridge.preCall(remoteVideoPayload(), {});
@@ -186,7 +189,7 @@ test("result cache skips entries that exceed its aggregate byte budget", async (
         framesUsed: 1,
       };
     },
-  } as ConstructorParameters<typeof VideoBridgeGuardrail>[0];
+  } as VideoBridgeDependencies;
   const bridge = new VideoBridgeGuardrail({ deps });
   const payload = {
     model: "example/text-only",
@@ -263,7 +266,7 @@ test("result cache expires complete results at its TTL", async () => {
         framesUsed: 1,
       };
     },
-  } as ConstructorParameters<typeof VideoBridgeGuardrail>[0];
+  } as VideoBridgeDependencies;
   const bridge = new VideoBridgeGuardrail({ deps });
   const payload = {
     model: "example/text-only",
@@ -305,7 +308,7 @@ test("result cache evicts the least-recently-used content at its entry bound", a
         framesUsed: 1,
       };
     },
-  } as ConstructorParameters<typeof VideoBridgeGuardrail>[0];
+  } as VideoBridgeDependencies;
   const bridge = new VideoBridgeGuardrail({ deps });
   const payload = (base64: string) => ({
     model: "example/text-only",
@@ -356,7 +359,7 @@ test("an unavailable result cache fails open to normal video processing", async 
         framesUsed: 1,
       };
     },
-  } as ConstructorParameters<typeof VideoBridgeGuardrail>[0];
+  } as VideoBridgeDependencies;
   const bridge = new VideoBridgeGuardrail({ deps });
   const result = await bridge.preCall(
     {
@@ -487,7 +490,7 @@ test("a corrupt result-cache payload is discarded and recomputed", async () => {
         framesUsed: 1,
       };
     },
-  } as ConstructorParameters<typeof VideoBridgeGuardrail>[0];
+  } as VideoBridgeDependencies;
   const bridge = new VideoBridgeGuardrail({ deps });
   const result = await bridge.preCall(
     {
@@ -863,7 +866,7 @@ test("aborting one singleflight waiter does not cancel another active request", 
       captionCalls += 1;
       return "surviving waiter result";
     },
-  } as ConstructorParameters<typeof VideoBridgeGuardrail>[0];
+  } as VideoBridgeDependencies;
   const bridge = new VideoBridgeGuardrail({ deps });
   const context = {
     apiKeyInfo: { id: "tenant-abort-waiter" },

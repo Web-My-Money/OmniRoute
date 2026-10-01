@@ -805,6 +805,13 @@
     "batchConceptBenefit50pct": "50% discount on input + output tokens",
     "batchConceptAsync24h": "Async with a 24h completion window",
     "batchConceptUseCases": "Best for bulk classification, evaluations, and embeddings",
+    "batchHeaderSubtitle": "Run many requests as one job",
+    "batchStep1": "1 · Upload JSONL",
+    "batchStep1Desc": "Add requests",
+    "batchStep2": "2 · Create batch",
+    "batchStep2Desc": "Run job",
+    "batchStep3": "3 · Get results",
+    "batchStep3Desc": "Download output",
     "filesConceptTitle": "Batch files",
     "filesConceptSubtitle": "JSONL files used by batches: input requests, results, and errors.",
     "filesConceptInput": "Input — your JSONL with one request per line",
@@ -974,14 +981,7 @@
     "batchFileUsedByCount": "{count, plural, one {# बॅच} other {# बॅचेस}}",
     "batchFilePreview": "पूर्वावलोकन",
     "batchFilePreviewTruncated": "पहिल्या {shown} ओळी दाखवत आहे ({total} एकूण ओळी)",
-    "batchFileDownloadFull": "पूर्ण फाइल डाउनलोड करा",
-    "batchHeaderSubtitle": "Run many requests as one job",
-    "batchStep1": "1 · Upload JSONL",
-    "batchStep1Desc": "Add requests",
-    "batchStep2": "2 · Create batch",
-    "batchStep2Desc": "Run job",
-    "batchStep3": "3 · Get results",
-    "batchStep3Desc": "Download output"
+    "batchFileDownloadFull": "पूर्ण फाइल डाउनलोड करा"
   },
   "disabled": "Disabled",
   "featureFlagOmnirouteEmergencyFallbackDescription": "Route budget-exhausted requests to the emergency free fallback provider/model.",
@@ -1019,7 +1019,7 @@
     "apiManager": "API Keys",
     "apiManagerSubtitle": "API की आणि प्रवेश व्यवस्थापित करा",
     "embeddedServices": "एम्बेडेड सेवा",
-    "embeddedServicesSubtitle": "स्थानिक प्रॉक्सी सेवा व्यवस्थापित करा",
+    "embeddedServicesSubtitle": "__MISSING__:Optional local services",
     "logs": "Logs",
     "webhooks": "वेबहुक",
     "webhooksSubtitle": "इव्हेंटची सूचना मिळवा",
@@ -1266,7 +1266,8 @@
     "agentBridge": "एजंट ब्रिज",
     "agentBridgeSubtitle": "IDE एजंट ट्रॅफिक इंटरसेप्ट करा",
     "trafficInspector": "ट्रॅफिक इन्स्पेक्टर",
-    "trafficInspectorSubtitle": "LLM कॉल्स मॉनिटर करा + कोणताही HTTPS ट्रॅफिक डीबग करा",
+    "trafficInspectorSubtitle": "__MISSING__:Inspect request and response traffic from your apps",
+    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client.",
     "cliCode": "CLI कोड",
     "cliCodeSubtitle": "OmniRoute कडे पॉइंट करणारी कोड टूल्स",
     "cliAgents": "CLI एजंट्स",
@@ -1300,8 +1301,7 @@
       "open": "उघडा",
       "close": "बंद करा"
     },
-    "noResults": "कोणतेही परिणाम नाहीत",
-    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client."
+    "noResults": "कोणतेही परिणाम नाहीत"
   },
   "webhooks": {
     "title": "वेबहुक",
@@ -1808,6 +1808,11 @@
     "updateStarted": "Update started...",
     "reloadingPageAutomatically": "पृष्ठ स्वयंचलितपणे रीलोड करत आहे...",
     "providerTopology": "प्रदाता टोपोलॉजी",
+    "recentRequests": "Recent Requests",
+    "recentRequestsEmpty": "No requests yet.",
+    "recentRequestsModel": "Model",
+    "recentRequestsTokens": "In / Out",
+    "recentRequestsWhen": "When",
     "downloadDmg": "DMG डाउनलोड करा (macOS)",
     "downloadDmgDescription": "OmniRoute डेस्कटॉप अॅपचा एक नवीन आवृत्ती उपलब्ध आहे. कृपया अद्यतन करण्यासाठी macOS DMG इंस्टॉलर डाउनलोड आणि स्थापित करा (सध्याचे: v{version}).",
     "downloadExe": "EXE डाउनलोड करा (Windows)",
@@ -1865,11 +1870,6 @@
     "releaseNotes": "रिलीज नोट्स",
     "readMore": "अधिक वाचा",
     "noAuthLabel": "कोणतीही प्रमाणीकरण नाही",
-    "recentRequests": "Recent Requests",
-    "recentRequestsEmpty": "No requests yet.",
-    "recentRequestsModel": "Model",
-    "recentRequestsTokens": "In / Out",
-    "recentRequestsWhen": "When",
     "readinessEyebrow": "Get ready to route",
     "readinessTitle": "Send your first request",
     "readinessSubtitle": "Four small steps. OmniRoute checks readiness as you go.",
@@ -2922,9 +2922,9 @@
       "interpreter": "Open Interpreter ऑटोनॉमस कोडिंग एजंट CLI",
       "omp": "Oh My Pi टर्मिनल कोडिंग एजंट",
       "letta": "पर्सिस्टंट मेमरी आणि टूल वापरासह Letta CLI एजंट",
+      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support",
       "warp": "कस्टम प्रोव्हायडर सपोर्टसह Warp AI टर्मिनल",
-      "agent-deck": "Agent Deck मल्टी-एजंट ऑर्केस्ट्रेटर",
-      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support"
+      "agent-deck": "Agent Deck मल्टी-एजंट ऑर्केस्ट्रेटर"
     },
     "guides": {
       "cursor": {
@@ -3849,6 +3849,9 @@
   },
   "endpoint": {
     "title": "API Endpoint",
+    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
+    "testEndpoint": "Test endpoint →",
+    "advancedProtocols": "Advanced protocols",
     "available": "Available Endpoints",
     "cloudProxy": "Cloud Proxy",
     "disableConfirm": "Are you sure you want to disable cloud proxy?",
@@ -4156,10 +4159,7 @@
     "notionIntegrationHelp": "आतील एकत्रीकरण तयार करा येथे",
     "notionIntegrationToken": "Notion आंतरिक एकत्रीकरण टोकन",
     "notionNotConnected": "कनेक्ट केलेले नाही",
-    "notionTokenConfigured": "टोकन कॉन्फिगर केले आहे. Notion साधने MCP द्वारे उपलब्ध आहेत.",
-    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
-    "testEndpoint": "Test endpoint →",
-    "advancedProtocols": "Advanced protocols"
+    "notionTokenConfigured": "टोकन कॉन्फिगर केले आहे. Notion साधने MCP द्वारे उपलब्ध आहेत."
   },
   "endpoints": {
     "tabProxy": "Endpoint Proxy",
@@ -4632,6 +4632,13 @@
     "retry": "Retry",
     "allOperational": "All systems operational",
     "issuesDetected": "System issues detected",
+    "healthVerdictReady": "OmniRoute is ready",
+    "healthVerdictActionRequired": "Action required to restore full operation",
+    "healthVerdictCoolingDown": "Cooling down after recent changes",
+    "healthSubtitle": "System health check",
+    "advancedDiagnosticsTitle": "Advanced diagnostics",
+    "hide": "Hide",
+    "show": "Show",
     "updatedAt": "Updated {time}",
     "latency": "Latency",
     "latencyP50": "p50",
@@ -4742,14 +4749,7 @@
     "issueCount": "{count} समस्या",
     "score": "स्कोअर",
     "lastRequest": "शेवटची विनंती",
-    "lastError": "शेवटची त्रुटी",
-    "healthVerdictReady": "OmniRoute is ready",
-    "healthVerdictActionRequired": "Action required to restore full operation",
-    "healthVerdictCoolingDown": "Cooling down after recent changes",
-    "healthSubtitle": "System health check",
-    "advancedDiagnosticsTitle": "Advanced diagnostics",
-    "hide": "Hide",
-    "show": "Show"
+    "lastError": "शेवटची त्रुटी"
   },
   "telemetry": {
     "title": "सिस्टम टेलीमेट्री",
@@ -4954,7 +4954,9 @@
     "multiProvider": "Multi-Provider",
     "usageTracking": "Usage Tracking",
     "securityDesc": "Set a password to protect your dashboard, or skip for now.",
+    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
     "providerDesc": "Connect your first AI provider. You can add more later.",
+    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard.",
     "apiKeyRequired": "API Key (required)",
     "customUrlOptional": "Custom URL (optional)",
     "testDesc": "Let's verify your provider connection works.",
@@ -5011,9 +5013,7 @@
         "skipped": "आधीच कॉन्फिगर केले आहे",
         "failed": "अयशस्वी"
       }
-    },
-    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
-    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard."
+    }
   },
   "providers": {
     "title": "Providers",
@@ -5724,8 +5724,8 @@
     "aggregatorsGateways": "Aggregators Gateways",
     "enterpriseCloud": "एंटरप्राइझ आणि क्लाउड",
     "apiFormatLabel": "Api Format Label",
-    "apiKeyOptionalHint": "Api Key Optional Hint",
-    "apiKeyOptionalLabel": "Api Key Optional Label",
+    "apiKeyOptionalHint": "__MISSING__:Leave empty if your local setup or provider does not require authentication.",
+    "apiKeyOptionalLabel": "__MISSING__:API Key (optional)",
     "apiRegionChina": "Api Region China",
     "apiRegionHint": "Api Region Hint",
     "apiRegionInternational": "Api Region International",
@@ -6157,8 +6157,8 @@
       "inception": "Inception Labs हे OpenAI-संगत आहे https://api.inceptionlabs.ai/v1. mercury-2 हा कॅटलॉगमधील पहिला diffusion LLM (dLLM) आहे — तुलनात्मक autoregressive मॉडेल्सपेक्षा 5-10x जलद उत्पादन, टूल कॉलिंग, json_mode, आणि संरचित आउटपुटसह.",
       "inference-net": "साइनअपवर $25 विनामूल्य क्रेडिट्स तसेच संशोधन अनुदान उपलब्ध",
       "internlm": "मोफत मासिक कोटा ~1M इनपुट / 3M आउटपुट टोकन (~10 RPM)",
-      "jina-ai": "Jina AI rerank API साठी Bearer API की.",
-      "jina-reader": "API की सह Jina Reader कनेक्ट करा.",
+      "jina-ai": "__MISSING__:Bearer API key for api.jina.ai (embeddings, rerank, classify, segment, search). Not the Reader / r.jina.ai card. Dashboard keys take precedence over JINA_AI_API_KEY.",
+      "jina-reader": "__MISSING__:Bearer API key for r.jina.ai URL-to-markdown only. Does not serve /v1/embeddings or /v1/rerank. The same Jina token as Foundation API works.",
       "kenari": "Kenari https://kenari.id/v1/chat/completions वर OpenAI-सुसंगत चॅट कंप्लिशन एंडपॉइंट प्रदान करते, तसेच Claude, GPT, DeepSeek, GLM, Kimi आणि इतर मॉडेल्स समाविष्ट करणारी थेट /v1/models कॅटलॉग प्रदान करते. OmniRoute OpenAI प्रोटोकॉल वापरते आणि passthrough द्वारे मॉडेल्सची सूची दाखवते.",
       "kie": "KIE.AI ला API की सह कनेक्ट करा.",
       "kilo-gateway": "Kilo Gateway ला API की सह कनेक्ट करा.",
@@ -6271,7 +6271,7 @@
       "cursor": "सध्याच्या OAuth फ्लोसह Cursor IDE कनेक्ट करा.",
       "cursor-api": "Connect Cursor with a user API key (crsr_...) from cursor.com/dashboard/api; no IDE session needed.",
       "github": "सध्याच्या OAuth फ्लोसह GitHub Copilot कनेक्ट करा.",
-      "gitlab-duo": "ai_features + read_user स्कोप्ससह OAuth ॲप्लिकेशन. या OmniRoute इन्स्टन्सवर GITLAB_DUO_OAUTH_CLIENT_ID आणि पर्यायीपणे GITLAB_DUO_OAUTH_CLIENT_SECRET कॉन्फिगर करा.",
+      "gitlab-duo": "__MISSING__:OAuth application with ai_features + read_user scopes. Configure GITLAB_DUO_OAUTH_CLIENT_ID and optionally GITLAB_DUO_OAUTH_CLIENT_SECRET on this OmniRoute instance.",
       "kilocode": "सध्याच्या OAuth फ्लोसह Kilo Code कनेक्ट करा.",
       "kimi-coding": "सध्याच्या OAuth फ्लोसह Kimi Coding कनेक्ट करा.",
       "kiro": "मोफत स्तर: 50 क्रेडिट्स/महिना (~25K–100K टोकन्स). ⚠️ Kiro ToS तृतीय-पक्ष प्रॉक्सी/हार्नेसच्या वापरावर बंदी घालते.",
@@ -6302,6 +6302,20 @@
     "webSessionGuideStep3": "प्रदात्याच्या स्वतःच्या डोमेनवरून आवश्यक क्रेडेंशियल कॉपी करा. कुकीजसाठी, फक्त कुकी हेडर मूल्य कॉपी करा आणि कुकी वगळा:.",
     "webSessionGuideStep3Manual": "हाताने मार्ग: ब्राउझर डेव्हलपर टूल्स उघडा (F12 → नेटवर्क), पृष्ठ ताजे करा, एक प्रमाणित विनंती उघडा, आणि विनंती हेडर्समधून कुकी हेडर मूल्य कॉपी करा — कुकी: प्रीफिक्स वगळा.",
     "webSessionGuideStep4": "ते येथे पेस्ट करा आणि कनेक्शन तपासा. ते काम करणे थांबवल्यास, पुन्हा साइन इन करा आणि नवीन मूल्यासह बदला.",
+    "harImportButtonLabel": "Import .har file",
+    "harImportButtonBusy": "Importing…",
+    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
+    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
+    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
+    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
+    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
+    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
+    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
+    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
+    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
+    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
+    "harImportErrorReadFailed": "Couldn't read that file.",
+    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file.",
     "webSessionSecurityHint": "याला पासवर्डप्रमाणे वागवा: ते कालबाह्य होईपर्यंत किंवा रद्द होईपर्यंत ते तुमच्या साइन-इन केलेल्या वेब खात्यात प्रवेश करू शकते.",
     "webNoAuthGuideTitle": "क्रेडेंशियल आवश्यक नाही",
     "webNoAuthGuideBody": "{provider} ला API की किंवा कुकीची आवश्यकता नाही. विनामूल्य वेब एंडपॉइंट वापरण्यासाठी कनेक्शन जतन करा.",
@@ -6327,8 +6341,8 @@
     "apiProtocolHint": "काही प्रदाते एकाच मॉडेल्सना एकापेक्षा जास्त प्रोटोकॉलवर प्रकाशित करतात. पर्यायी आवश्यक नसल्यास डिफॉल्ट सोडा.",
     "bulkAddFormatHintCloudflare": "प्रति ओळ एक की. स्वरूप: name|accountId|apiKey (Cloudflare खाते ID + API टोकन).",
     "lmarenaWebCookieHint": "arena.ai उघडा, साइन इन करा, नंतर नेटवर्क विनंतीवरून (Network request) संपूर्ण Cookie हेडर कॉपी करा. arena-auth-prod-v1.0 आणि arena-auth-prod-v1.1 (आणि उपस्थित असल्यास पुढील भाग) समाविष्ट करा, शक्यतो cf_clearance सह. केवळ रिकामी arena-auth-prod-v1 कुकी पेस्ट करू नका. पर्यायी: create-evaluation अजूनही 403 परत करत असल्यास providerSpecificData.recaptchaV3Token.",
-    "kimiOfficialSupporterBadge": "संस्थापक मित्र",
-    "kimiOfficialSupporterTooltip": "Kimi (Moonshot AI) हा OmniRoute चा संस्थापक ओपन सोर्स मित्र आहे",
+    "kimiOfficialSupporterBadge": "__MISSING__:Official Supporter",
+    "kimiOfficialSupporterTooltip": "__MISSING__:Kimi (Moonshot AI) is an official OmniRoute launch partner",
     "cheaperInferenceSupporterBadge": "ओपन सोर्स मित्र",
     "cheaperInferenceSupporterTooltip": "Cheaper Inference ओपन सोर्स मित्र म्हणून OmniRoute ला पाठिंबा देते",
     "kimiPartnerLinkNote": "भागीदार लिंक — तुमच्यासाठी कोणत्याही अतिरिक्त खर्चाशिवाय OmniRoute ला सपोर्ट करते",
@@ -6416,21 +6430,7 @@
     "savedModelEndpointSettings": "सुरक्षित केलेल्या मॉडेल एंडपॉइंट सेटिंग्ज",
     "searchByModelAria": "मॉडेलद्वारे शोधा",
     "selectSupportedEndpoint": "किमान एक समर्थित एंडपॉइंट निवडा",
-    "antigravityClientProfileHarness": "Harness / CLI",
-    "harImportButtonLabel": "Import .har file",
-    "harImportButtonBusy": "Importing…",
-    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
-    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
-    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
-    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
-    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
-    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
-    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
-    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
-    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
-    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
-    "harImportErrorReadFailed": "Couldn't read that file.",
-    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file."
+    "antigravityClientProfileHarness": "Harness / CLI"
   },
   "settings": {
     "title": "Settings",
@@ -6710,6 +6710,18 @@
     "sidebarVisibility": "Hide sidebar items",
     "sidebarVisibilityDesc": "Hide any sidebar navigation entry to reduce visual clutter without disabling any features",
     "sidebarVisibilityHint": "Any sidebar section is hidden automatically when all of its entries are hidden",
+    "presetAll": "All",
+    "presetAllDesc": "Show everything",
+    "presetEssentials": "Essentials",
+    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
+    "presetMinimal": "Minimal",
+    "presetMinimalDesc": "Core pages only",
+    "presetDeveloper": "Developer",
+    "presetDeveloperDesc": "Dev & proxy tools",
+    "presetAdmin": "Admin",
+    "presetAdminDesc": "Monitoring & audit",
+    "settingsSidebarTitle": "Sidebar Customization",
+    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable.",
     "hideHealthLogs": "Hide Health Check Logs",
     "hideHealthLogsDesc": "When ON, suppress [HealthCheck] messages in server console",
     "themeAccent": "Theme color",
@@ -6921,7 +6933,7 @@
     "afterPromptPlaceholder": "एजंट/प्रदाता प्रॉम्प्टनंतर समाविष्ट केलेल्या सूचना...",
     "chars": "{count} chars",
     "thinkingBudgetTitle": "Thinking Budget",
-    "thinkingBudgetDesc": "Control AI reasoning token usage across all requests",
+    "thinkingBudgetDesc": "__MISSING__:Controls whether OmniRoute rewrites client thinking/reasoning parameters before requests go upstream. This is separate from compression, prompt cache, and API-key token limits.",
     "thinkingBudgetIndependenceHint": "संकुचन, मार्गनिर्देशन, आणि टोकन-सीमा वैशिष्ट्ये प्रत्येक मोडमध्ये कार्यरत राहतात. ऑटो म्हणजे \"ऑटो-शो विचार\" नाही — हे क्लायंट विचार क्षेत्रे काढून टाकते.",
     "passthrough": "Passthrough",
     "passthroughDesc": "No changes — client controls thinking budget",
@@ -6946,7 +6958,7 @@
     "tokenBudget": "Token Budget",
     "tokens": "tokens",
     "baseEffortLevel": "Base Effort Level",
-    "adaptiveHint": "Adaptive mode scales from this base level based on message count, tool usage, and prompt length.",
+    "adaptiveHint": "__MISSING__:Adaptive mode scales from this base level based on message count, tool usage, and prompt length. Does not decrypt provider encrypted reasoning blobs.",
     "requireLogin": "Require login",
     "requireLoginDesc": "When ON, dashboard requires password. When OFF, access without login.",
     "currentPassword": "Current Password",
@@ -7678,6 +7690,20 @@
     "jsonImportError": "JSON आयात करताना त्रुटी आली",
     "storagePurgeData": "डेटा शुद्ध करा",
     "storagePurgeDataDesc": "रिटेंशन तपासण्या लागू न करता सर्व रेकॉर्ड त्वरित हटवा. सावधगिरीने वापरा.",
+    "storageMaintenance": "__MISSING__:Maintenance & cleanup",
+    "storageMaintenanceDesc": "__MISSING__:Background cleanup runs every 6 hours and removes rows past the retention windows configured below.",
+    "storageLastAutoCleanup": "__MISSING__:Last auto-cleanup",
+    "storageCleanupNeverRan": "__MISSING__:Not run yet",
+    "storageCleanupRowsDeleted": "__MISSING__:Rows removed",
+    "storageCleanupErrors": "__MISSING__:{count} errors",
+    "storageCleanupEnabled": "__MISSING__:Auto-cleanup on",
+    "storageCleanupDisabled": "__MISSING__:Auto-cleanup off",
+    "storageWalSize": "__MISSING__:WAL size",
+    "storageProcessRss": "__MISSING__:Process memory (RSS)",
+    "storageCgroupBilled": "__MISSING__:Container memory (billed)",
+    "storageCgroupCache": "__MISSING__:File cache",
+    "storageFtsIndex": "__MISSING__:Memory FTS index / data",
+    "storageTopTables": "__MISSING__:Largest tables",
     "storageRetentionCleanup": "रिटेंशन सेटिंग्ज",
     "storageRetentionCleanupDesc": "ऑपरेशनल रेकॉर्ड रिटेंशन आणि डेटाबेस बॅकअप क्लीनअप कॉन्फिगर करा.",
     "retentionCallDays": "कॉल {count}d",
@@ -8277,19 +8303,7 @@
     "cliproxyapiHealth": "आरोग्य",
     "cliproxyapiPort": "पोर्ट",
     "qdrantHost": "होस्ट",
-    "qdrantCollection": "संग्रह",
-    "presetAll": "All",
-    "presetAllDesc": "Show everything",
-    "presetEssentials": "Essentials",
-    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
-    "presetMinimal": "Minimal",
-    "presetMinimalDesc": "Core pages only",
-    "presetDeveloper": "Developer",
-    "presetDeveloperDesc": "Dev & proxy tools",
-    "presetAdmin": "Admin",
-    "presetAdminDesc": "Monitoring & audit",
-    "settingsSidebarTitle": "Sidebar Customization",
-    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable."
+    "qdrantCollection": "संग्रह"
   },
   "contextRtk": {
     "title": "RTK Engine",
@@ -8654,13 +8668,13 @@
   },
   "omniglyph": {
     "preview": "पूर्वावलोकन",
-    "description": "Context-as-image कॉम्प्रेशन. सिस्टम प्रॉम्प्ट, टूल डॉक्युमेंटेशन आणि दाट इतिहास कॉम्पॅक्ट PNG पेजेस म्हणून रेंडर करते जे Claude Fable 5 मजकुराऐवजी वाचते. इमेज टोकन्सचे बिलिंग अक्षरांऐवजी आकारांनुसार केले जाते, त्यामुळे रूपांतरित ब्लॉकचा खर्च सुमारे 10× कमी होतो. केवळ थेट Anthropic मार्ग.",
+    "description": "__MISSING__:Context-as-image compression. Renders the system prompt, tool documentation, and dense history as compact PNG pages for the measured Claude Fable 5 path. The published OmniGlyph package also exposes native GPT 5.6 transformers, but OmniRoute keeps those routes fail-closed until provider fidelity and reading receipts exist.",
     "economicsTitle": "अर्थशास्त्र",
     "economics": {
       "fewerTokens": "रूपांतरित ब्लॉकवर कमी टोकन्स",
       "savings": "एंड-टू-एंड बचत (मोजलेली)",
       "imageTokens": "1568×728 पेजसाठी इमेज टोकन्स (सुमारे 28k अक्षरे)",
-      "accuracy": "Fable 5 वरील वाचन अचूकता (n=30)"
+      "accuracy": "__MISSING__:scoped Fable 5 reading receipt"
     },
     "beforeAfterTitle": "आधी → नंतर",
     "blockSavings": "या ब्लॉकवर −{percent}% टोकन्स",
@@ -8673,18 +8687,18 @@
     "gates": {
       "model": {
         "label": "मॉडेल",
-        "pass": "claude-fable-5",
-        "why": "केवळ Fable 5 दाट पेजेस 100% अचूकतेने वाचते (मोजलेले, n=30). GPT-5.5 आणि Gemini 2.5 Flash ब्लॉक केले आहेत."
+        "pass": "__MISSING__:claude-fable-5 (measured); gpt-5.6 (HOLD)",
+        "why": "__MISSING__:Only the measured Fable 5 path is enabled in OmniRoute. GPT 5.6 is structurally supported by the package but remains blocked until its provider receipt; unverified families such as Grok stay text-only."
       },
       "transport": {
         "label": "ट्रान्सपोर्ट",
-        "pass": "थेट Anthropic",
-        "why": "ॲग्रीगेटर्स इमेजेस रीसॅम्पल करतात आणि वाचनीयता नष्ट करतात — केवळ थेट मार्गच अधिकृत आहे."
+        "pass": "__MISSING__:direct provider",
+        "why": "__MISSING__:Aggregators may resample images and destroy legibility — only a direct provider route is authoritative."
       },
       "format": {
         "label": "फॉर्मॅट",
-        "pass": "नेटिव्ह Claude",
-        "why": "बॉडीने Claude फॉर्मॅट वापरणे आवश्यक आहे आणि मेसेजमध्ये कधीही सिस्टम रोल समाविष्ट करू नये."
+        "pass": "__MISSING__:native Claude/OpenAI",
+        "why": "__MISSING__:The body must match the provider wire: Claude Messages, OpenAI Chat Completions, or native OpenAI Responses input[]."
       },
       "profitable": {
         "label": "फायदेशीर",
@@ -8693,7 +8707,7 @@
       }
     },
     "enableTitle": "इंजिन सक्षम करा",
-    "enableDescription": "स्टॅकमध्ये शेवटी चालते (RTK/Caveman मजकूर साफ केल्यानंतर, OmniGlyph उर्वरित मजकूर इमेजेसमध्ये रूपांतरित करते) आणि <code>omniglyph</code> मोडद्वारे स्वतंत्रपणे देखील चालते. हे एक पूर्वावलोकन आहे आणि एंड-टू-एंड प्रमाणीकरण पूर्ण होईपर्यंत डीफॉल्टनुसार बंद राहते.",
+    "enableDescription": "__MISSING__:Runs last in the stack after text engines clean the request, using the native provider wire; OpenAI Chat/Responses requests are compressed after translation so their shape is preserved. It also runs standalone through <code>omniglyph</code> mode. This is a preview and remains off by default until end-to-end validation is complete.",
     "profileTitle": "Compression profile",
     "profileDescription": "The profile is a ceiling, not a floor: a stricter profile cannot be reopened by a per-step override. Measured on this codebase: with coding-safe or balanced, a session that has not accumulated history yet compresses nothing, because both raise the minimum-characters threshold and keep the system prompt, tool schemas and tool results native.",
     "profiles": {
@@ -8722,7 +8736,7 @@
   },
   "embeddedServices": {
     "title": "एम्बेडेड सेवा",
-    "description": "मागणीनुसार व्यवस्थापित केलेली स्थानिक इंजिने — CLIProxyAPI, 9Router, Mux, आणि Bifrost. केवळ लूपबॅकवर ॲक्सेस करण्यायोग्य.",
+    "description": "__MISSING__:Optional helpers that run on your machine. Most users can start without them — install one only when an integration needs it.",
     "stateRunning": "सुरू आहे",
     "stateStopped": "थांबवले",
     "stateStarting": "सुरू होत आहे",
@@ -8921,7 +8935,7 @@
     "featureMissingToolResponse": "साधन प्रतिसाद इंजेक्शन",
     "featureMissingToolResponseDesc": "जेव्हा क्लायंट संबंधित प्रतिसादांशिवाय टूल_कॉल पाठवतात तेव्हा रिक्त टूल_रिझल्ट संदेश इंजेक्ट करते.",
     "featureThinkingBudget": "विचार करणारे बजेट",
-    "featureThinkingBudgetDesc": "विचार कॉन्फिगरेशन स्वयंचलितपणे व्यवस्थापित करते. जेव्हा शेवटचा संदेश वापरकर्त्याकडून येत नाही तेव्हा विचार मापदंड काढून टाकते.",
+    "featureThinkingBudgetDesc": "__MISSING__:Proxy-level control of thinking/reasoning request fields: passthrough (client controls), auto (strip all thinking params), custom (fixed budget), or adaptive (scale by complexity). Independent of compression and routing. Does not decrypt encrypted reasoning content.",
     "featureDirectPaths": "थेट भाषांतराचे मार्ग",
     "featureDirectPathsDesc": "काही फॉरमॅट जोड्या (क्लॉड→जेमिनी) मध्ये थेट अनुवादक असतात जे OpenAI हबला बायपास करतात, अधिक अचूक आउटपुट देतात.",
     "featureImageMapping": "प्रतिमा आकार मॅपिंग",
@@ -10691,7 +10705,7 @@
     "continue": "सुरू ठेवा"
   },
   "cursorAuthModal": {
-    "title": "Connect Cursor IDE",
+    "title": "__MISSING__:Connect Cursor",
     "tabLogin": "Login with Cursor",
     "tabImport": "Import token",
     "loginDescription": "Opens Cursor's browser login. Works in Docker — approve in your host browser, then return here.",
@@ -10704,7 +10718,7 @@
     "autoDetecting": "Auto-detecting tokens...",
     "readingFromCursor": "Reading from Cursor IDE or cursor-agent",
     "tokensAutoDetected": "Tokens successfully auto-detected from Cursor IDE!",
-    "cursorNotDetected": "Cursor IDE not detected. Please manually paste your token.",
+    "cursorNotDetected": "__MISSING__:Cursor IDE not detected. Paste your access token (and refresh token if available).",
     "dockerImportHint": "Running in Docker? Prefer Login with Cursor. IDE auto-import and cursor-agent are usually unavailable inside the container. See docs/providers/CURSOR-DOCKER.md.",
     "accessToken": "Access Token",
     "refreshToken": "Refresh Token",
@@ -12074,10 +12088,10 @@
       },
       "acp": {
         "title": "ACP एजंट्स",
-        "phrase": "OmniRoute एक्झिक्यूशन बॅकएंड म्हणून स्पॉन करत असलेले CLIs (रिव्हर्स फ्लो)",
+        "phrase": "__MISSING__:Run complex, long-running logic in the backend",
+        "warning": "Most users can ignore this — use only when an integration requires it.",
         "flow": "क्लायंट → OmniRoute → spawn CLI (stdio/ACP) → रिस्पॉन्स",
-        "seeOther": "पहा →",
-        "warning": "Most users can ignore this — use only when an integration requires it."
+        "seeOther": "पहा →"
       }
     },
     "comparison": {
@@ -12836,6 +12850,10 @@
       "ALLOW_MULTI_CONNECTIONS_PER_COMPAT_NODE": {
         "description": "प्रत्येक सुसंगतता नोडसाठी एकाधिक कनेक्शन्सना अनुमती द्या."
       },
+      "DISABLE_CONTEXT_WINDOW_CHECKS": {
+        "label": "Disable Context Window Checks",
+        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
+      },
       "RESPONSES_PASSTHROUGH_DROP_COMMENTARY": {
         "description": "क्लायंटकडे फॉरवर्ड करण्यापूर्वी Responses API पासथ्रू स्ट्रीम्समधून अंतर्गत समालोचन-टप्पा आउटपुट आयटम्स काढा. कच्चा अपस्ट्रीम समालोचन प्राप्त करण्यासाठी हा फ्लॅग अक्षम करा."
       },
@@ -12901,10 +12919,6 @@
       },
       "SKILLS_SANDBOX_NETWORK_ENABLED": {
         "description": "स्किल्स सँडबॉक्समध्ये नेटवर्क ॲक्सेस सक्षम करा."
-      },
-      "DISABLE_CONTEXT_WINDOW_CHECKS": {
-        "label": "Disable Context Window Checks",
-        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
       }
     }
   },
@@ -13383,6 +13397,13 @@
   },
   "resilienceConnections": {
     "title": "कनेक्शन लवचिकता",
+    "reassuranceTitle": "Your connections recover automatically",
+    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
+    "plainStates": {
+      "healthy": "Requests can be sent",
+      "coolingDown": "Trying again soon",
+      "lockedOut": "Needs your attention"
+    },
     "table": {
       "status": "स्थिती",
       "provider": "प्रदाता",
@@ -13477,16 +13498,10 @@
         "modelLockouts": "मॉडेल लॉकआउट",
         "count": "कनेक्शन संख्या"
       }
-    },
-    "reassuranceTitle": "Your connections recover automatically",
-    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
-    "plainStates": {
-      "healthy": "Requests can be sent",
-      "coolingDown": "Trying again soon",
-      "lockedOut": "Needs your attention"
     }
   },
   "featureFlagCapabilityFilterEnabledDescription": "डिस्पॅच करण्यापूर्वी विनंत्या नाकारल्या जातात जेव्हा लक्ष्य मॉडेल आवश्यक क्षमतांचा अभाव असतो (दृष्टी, साधने, संरचित आउटपुट, संदर्भ विंडो). कॉम्बो-लेयर सुसंगतता फिल्टरला बायपास करणाऱ्या थेट एकल-प्रदात्याच्या विनंत्यांचे संरक्षण करते.",
+  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "publicSystem": {
     "notFound": {
       "title": "पृष्ठ सापडले नाही",
@@ -13922,7 +13937,6 @@
     "structuredOutputMismatch": "प्रदायक संरचित आउटपुटला समर्थन करत नाही",
     "contextWindowMismatch": "विनंती प्रदाता संदर्भ विंडो ओलांडते"
   },
-  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "cheaperInferenceSponsorBanner": {
     "title": "Cheaper Inference is an OmniRoute Open Source Friend",
     "description": "A cost-ranked gateway reselling dozens of frontier models behind one OpenAI-compatible endpoint — routing each request to the cheapest eligible provider, never above list price.",
