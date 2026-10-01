@@ -495,7 +495,7 @@ export function supportsTokenRefresh(provider) {
 export async function getAccessToken(
   provider,
   credentials,
-  log = undefined,
+  log?: import("../executors/base.ts").ExecutorLog | null,
   proxyConfig: unknown = null,
   onPersist?: RefreshPersistFn
 ) {
