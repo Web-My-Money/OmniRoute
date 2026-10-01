@@ -805,6 +805,13 @@
     "batchConceptBenefit50pct": "50% discount on input + output tokens",
     "batchConceptAsync24h": "Async with a 24h completion window",
     "batchConceptUseCases": "Best for bulk classification, evaluations, and embeddings",
+    "batchHeaderSubtitle": "Run many requests as one job",
+    "batchStep1": "1 · Upload JSONL",
+    "batchStep1Desc": "Add requests",
+    "batchStep2": "2 · Create batch",
+    "batchStep2Desc": "Run job",
+    "batchStep3": "3 · Get results",
+    "batchStep3Desc": "Download output",
     "filesConceptTitle": "Batch files",
     "filesConceptSubtitle": "JSONL files used by batches: input requests, results, and errors.",
     "filesConceptInput": "Input — your JSONL with one request per line",
@@ -974,14 +981,7 @@
     "batchFileUsedByCount": "Används av {count, plural, one {# batch} other {# batches}}",
     "batchFilePreview": "Förhandsgranskning",
     "batchFilePreviewTruncated": "Visar de första {shown} raderna ({total} totalt rader)",
-    "batchFileDownloadFull": "Ladda Ner Hela Filen",
-    "batchHeaderSubtitle": "Run many requests as one job",
-    "batchStep1": "1 · Upload JSONL",
-    "batchStep1Desc": "Add requests",
-    "batchStep2": "2 · Create batch",
-    "batchStep2Desc": "Run job",
-    "batchStep3": "3 · Get results",
-    "batchStep3Desc": "Download output"
+    "batchFileDownloadFull": "Ladda Ner Hela Filen"
   },
   "disabled": "Inaktiverad",
   "featureFlagOmnirouteEmergencyFallbackDescription": "Dirigera anrop med förbrukad budget till den kostnadsfria reservleverantören/-modellen för nödfall.",
@@ -1019,7 +1019,7 @@
     "apiManager": "API-hanterare",
     "apiManagerSubtitle": "Hantera API-nycklar och åtkomst",
     "embeddedServices": "Inbäddade Tjänster",
-    "embeddedServicesSubtitle": "Hantera lokala proxytjänster",
+    "embeddedServicesSubtitle": "__MISSING__:Optional local services",
     "logs": "Loggar",
     "webhooks": "Webhooks",
     "webhooksSubtitle": "Få besked om händelser",
@@ -1267,6 +1267,7 @@
     "agentBridgeSubtitle": "Fånga upp IDE-agenttrafik",
     "trafficInspector": "Trafikinspektör",
     "trafficInspectorSubtitle": "__MISSING__:Inspect request and response traffic from your apps",
+    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client.",
     "cliCode": "CLI-kod",
     "cliCodeSubtitle": "Kodverktyg som pekar på OmniRoute",
     "cliAgents": "CLI-agenter",
@@ -1300,8 +1301,7 @@
       "open": "öppna",
       "close": "stäng"
     },
-    "noResults": "Inga resultat",
-    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client."
+    "noResults": "Inga resultat"
   },
   "webhooks": {
     "title": "Webhooks",
@@ -1808,6 +1808,11 @@
     "updateStarted": "Uppdatering startade...",
     "reloadingPageAutomatically": "Laddar om sidan automatiskt...",
     "providerTopology": "Leverantörstopologi",
+    "recentRequests": "Recent Requests",
+    "recentRequestsEmpty": "No requests yet.",
+    "recentRequestsModel": "Model",
+    "recentRequestsTokens": "In / Out",
+    "recentRequestsWhen": "When",
     "downloadDmg": "Ladda ner DMG (macOS)",
     "downloadDmgDescription": "En ny version av OmniRoute-skrivbordsappen är tillgänglig. Vänligen ladda ner och installera macOS DMG-installationsprogrammet för att uppdatera (nuvarande: v{version}).",
     "downloadExe": "Ladda ner EXE (Windows)",
@@ -1865,11 +1870,6 @@
     "releaseNotes": "Versionsinformation",
     "readMore": "Läs Mer",
     "noAuthLabel": "Ingen autentisering",
-    "recentRequests": "Recent Requests",
-    "recentRequestsEmpty": "No requests yet.",
-    "recentRequestsModel": "Model",
-    "recentRequestsTokens": "In / Out",
-    "recentRequestsWhen": "When",
     "readinessEyebrow": "Get ready to route",
     "readinessTitle": "Send your first request",
     "readinessSubtitle": "Four small steps. OmniRoute checks readiness as you go.",
@@ -2922,9 +2922,9 @@
       "interpreter": "Open Interpreter autonom kodningsagent-CLI",
       "omp": "Oh My Pi terminal-kodningsagent",
       "letta": "Letta CLI-agent med persistent minne och verktygsanvändning",
+      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support",
       "warp": "Warp AI-terminal med stöd för anpassad leverantör",
-      "agent-deck": "Agent Deck multi-agent-orkestrerare",
-      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support"
+      "agent-deck": "Agent Deck multi-agent-orkestrerare"
     },
     "guides": {
       "cursor": {
@@ -3849,6 +3849,9 @@
   },
   "endpoint": {
     "title": "API-slutpunkt",
+    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
+    "testEndpoint": "Test endpoint →",
+    "advancedProtocols": "Advanced protocols",
     "available": "Tillgängliga slutpunkter",
     "cloudProxy": "Molnproxy",
     "disableConfirm": "Är du säker på att du vill inaktivera molnproxy?",
@@ -4156,10 +4159,7 @@
     "notionIntegrationHelp": "Skapa en Intern Integration på",
     "notionIntegrationToken": "Notion Interna Integrations Token",
     "notionNotConnected": "Inte ansluten",
-    "notionTokenConfigured": "Token konfigurerad. Notion-verktyg är tillgängliga via MCP.",
-    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
-    "testEndpoint": "Test endpoint →",
-    "advancedProtocols": "Advanced protocols"
+    "notionTokenConfigured": "Token konfigurerad. Notion-verktyg är tillgängliga via MCP."
   },
   "endpoints": {
     "tabProxy": "Endpoint Proxy",
@@ -4632,6 +4632,13 @@
     "retry": "Försök igen",
     "allOperational": "Alla system i drift",
     "issuesDetected": "Systemproblem upptäcktes",
+    "healthVerdictReady": "OmniRoute is ready",
+    "healthVerdictActionRequired": "Action required to restore full operation",
+    "healthVerdictCoolingDown": "Cooling down after recent changes",
+    "healthSubtitle": "System health check",
+    "advancedDiagnosticsTitle": "Advanced diagnostics",
+    "hide": "Hide",
+    "show": "Show",
     "updatedAt": "Uppdaterad {time}",
     "latency": "Latens",
     "latencyP50": "p50",
@@ -4742,14 +4749,7 @@
     "issueCount": "{count} problem",
     "score": "Poäng",
     "lastRequest": "Senaste anrop",
-    "lastError": "Senaste fel",
-    "healthVerdictReady": "OmniRoute is ready",
-    "healthVerdictActionRequired": "Action required to restore full operation",
-    "healthVerdictCoolingDown": "Cooling down after recent changes",
-    "healthSubtitle": "System health check",
-    "advancedDiagnosticsTitle": "Advanced diagnostics",
-    "hide": "Hide",
-    "show": "Show"
+    "lastError": "Senaste fel"
   },
   "telemetry": {
     "title": "Systemtelemetri",
@@ -4954,7 +4954,9 @@
     "multiProvider": "Flera leverantörer",
     "usageTracking": "Användningsspårning",
     "securityDesc": "Ställ in ett lösenord för att skydda din instrumentpanel, eller hoppa över nu.",
+    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
     "providerDesc": "Anslut din första AI-leverantör. Du kan lägga till mer senare.",
+    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard.",
     "apiKeyRequired": "API-nyckel (krävs)",
     "customUrlOptional": "Anpassad webbadress (valfritt)",
     "testDesc": "Låt oss verifiera att din leverantörsanslutning fungerar.",
@@ -5011,9 +5013,7 @@
         "skipped": "redan konfigurerad",
         "failed": "misslyckades"
       }
-    },
-    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
-    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard."
+    }
   },
   "providers": {
     "title": "Leverantörer",
@@ -5724,8 +5724,8 @@
     "aggregatorsGateways": "Aggregators Gateways",
     "enterpriseCloud": "Enterprise & Cloud",
     "apiFormatLabel": "Api Format Label",
-    "apiKeyOptionalHint": "Api Key Optional Hint",
-    "apiKeyOptionalLabel": "Api Key Optional Label",
+    "apiKeyOptionalHint": "__MISSING__:Leave empty if your local setup or provider does not require authentication.",
+    "apiKeyOptionalLabel": "__MISSING__:API Key (optional)",
     "apiRegionChina": "Api Region China",
     "apiRegionHint": "Api Region Hint",
     "apiRegionInternational": "Api Region International",
@@ -6157,8 +6157,8 @@
       "inception": "Inception Labs är OpenAI-kompatibelt på https://api.inceptionlabs.ai/v1. mercury-2 är den första diffusion LLM (dLLM) i katalogen — 5-10x snabbare generation än jämförbara autoregressiva modeller, med verktygsanrop, json_mode och strukturerade utdata.",
       "inference-net": "$25 i gratis krediter vid registrering plus forskningsanslag tillgängliga",
       "internlm": "Gratis månatlig kvot ~1M indata / 3M utdata tokens (~10 RPM)",
-      "jina-ai": "Bearer-API-nyckel för Jina AI rerank-API.",
-      "jina-reader": "Anslut Jina Reader med en API-nyckel.",
+      "jina-ai": "__MISSING__:Bearer API key for api.jina.ai (embeddings, rerank, classify, segment, search). Not the Reader / r.jina.ai card. Dashboard keys take precedence over JINA_AI_API_KEY.",
+      "jina-reader": "__MISSING__:Bearer API key for r.jina.ai URL-to-markdown only. Does not serve /v1/embeddings or /v1/rerank. The same Jina token as Foundation API works.",
       "kenari": "Kenari exponerar en OpenAI-kompatibel chattkompletteringsslutpunkt på https://kenari.id/v1/chat/completions, plus en live /v1/models-katalog som täcker Claude, GPT, DeepSeek, GLM, Kimi med flera. OmniRoute använder OpenAI-protokollet och listar modeller via passthrough.",
       "kie": "Anslut KIE.AI med en API-nyckel.",
       "kilo-gateway": "Anslut Kilo Gateway med en API-nyckel.",
@@ -6271,7 +6271,7 @@
       "cursor": "Anslut Cursor IDE med det befintliga OAuth-flödet.",
       "cursor-api": "Connect Cursor with a user API key (crsr_...) from cursor.com/dashboard/api; no IDE session needed.",
       "github": "Anslut GitHub Copilot med det befintliga OAuth-flödet.",
-      "gitlab-duo": "OAuth-applikation med ai_features + read_user-omfång. Konfigurera GITLAB_DUO_OAUTH_CLIENT_ID och valfritt GITLAB_DUO_OAUTH_CLIENT_SECRET på denna OmniRoute-instans.",
+      "gitlab-duo": "__MISSING__:OAuth application with ai_features + read_user scopes. Configure GITLAB_DUO_OAUTH_CLIENT_ID and optionally GITLAB_DUO_OAUTH_CLIENT_SECRET on this OmniRoute instance.",
       "kilocode": "Anslut Kilo Code med det befintliga OAuth-flödet.",
       "kimi-coding": "Anslut Kimi Coding med det befintliga OAuth-flödet.",
       "kiro": "Gratisnivå: 50 krediter/månad (~25K–100K tokens). ⚠️ Kiros användarvillkor förbjuder användning av tredjepartsproxy/harness.",
@@ -6302,6 +6302,20 @@
     "webSessionGuideStep3": "Kopiera den nödvändiga referensen från leverantörens egen domän. För cookies, kopiera endast värdet för Cookie-huvudet och utelämna Cookie:.",
     "webSessionGuideStep3Manual": "Manuell väg: öppna webbläsarens utvecklarverktyg (F12 → Nätverk), uppdatera sidan, öppna en autentiserad begäran och kopiera värdet för Cookie-huvudet från Begärningshuvuden — utelämna prefixet Cookie:.",
     "webSessionGuideStep4": "Klistra in den här och kontrollera anslutningen. Om det slutar fungera, logga in igen och ersätt det med ett nytt värde.",
+    "harImportButtonLabel": "Import .har file",
+    "harImportButtonBusy": "Importing…",
+    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
+    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
+    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
+    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
+    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
+    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
+    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
+    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
+    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
+    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
+    "harImportErrorReadFailed": "Couldn't read that file.",
+    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file.",
     "webSessionSecurityHint": "Behandla detta som ett lösenord: det kan komma åt ditt inloggade webbkonto tills det löper ut eller återkallas.",
     "webNoAuthGuideTitle": "Ingen legitimation krävs",
     "webNoAuthGuideBody": "{provider} behöver ingen API-nyckel eller cookie. Spara anslutningen för att använda dess kostnadsfria webbslutpunkt.",
@@ -6327,8 +6341,8 @@
     "apiProtocolHint": "Vissa leverantörer publicerar samma modeller över mer än ett protokoll. Lämna standardinställningen om du inte behöver alternativet.",
     "bulkAddFormatHintCloudflare": "En nyckel per rad. Format: namn|accountId|apiKey (Cloudflare-konto-ID + API-token).",
     "lmarenaWebCookieHint": "Öppna arena.ai, logga in och kopiera sedan hela Cookie-headern från en nätverksbegäran. Inkludera arena-auth-prod-v1.0 och arena-auth-prod-v1.1 (och ytterligare delar om de finns), helst med cf_clearance. Klistra inte in bara den tomma arena-auth-prod-v1-cookien. Valfritt: providerSpecificData.recaptchaV3Token om create-evaluation fortfarande returnerar 403.",
-    "kimiOfficialSupporterBadge": "Grundande vän",
-    "kimiOfficialSupporterTooltip": "Kimi (Moonshot AI) är OmniRoutes grundande öppen källkod-vän",
+    "kimiOfficialSupporterBadge": "__MISSING__:Official Supporter",
+    "kimiOfficialSupporterTooltip": "__MISSING__:Kimi (Moonshot AI) is an official OmniRoute launch partner",
     "cheaperInferenceSupporterBadge": "Öppen källkod-vän",
     "cheaperInferenceSupporterTooltip": "Cheaper Inference stödjer OmniRoute som öppen källkod-vän",
     "kimiPartnerLinkNote": "Partnerlänk — stöder OmniRoute utan extra kostnad för dig",
@@ -6416,21 +6430,7 @@
     "savedModelEndpointSettings": "Inställningar för sparad modellslutpunkt",
     "searchByModelAria": "Sök efter modell",
     "selectSupportedEndpoint": "Välj minst en stödd slutpunkt",
-    "antigravityClientProfileHarness": "Harness / CLI",
-    "harImportButtonLabel": "Import .har file",
-    "harImportButtonBusy": "Importing…",
-    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
-    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
-    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
-    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
-    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
-    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
-    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
-    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
-    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
-    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
-    "harImportErrorReadFailed": "Couldn't read that file.",
-    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file."
+    "antigravityClientProfileHarness": "Harness / CLI"
   },
   "settings": {
     "title": "Inställningar",
@@ -6710,6 +6710,18 @@
     "sidebarVisibility": "Hide sidebar items",
     "sidebarVisibilityDesc": "Hide any sidebar navigation entry to reduce visual clutter.",
     "sidebarVisibilityHint": "Any sidebar section is hidden automatically when a...",
+    "presetAll": "All",
+    "presetAllDesc": "Show everything",
+    "presetEssentials": "Essentials",
+    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
+    "presetMinimal": "Minimal",
+    "presetMinimalDesc": "Core pages only",
+    "presetDeveloper": "Developer",
+    "presetDeveloperDesc": "Dev & proxy tools",
+    "presetAdmin": "Admin",
+    "presetAdminDesc": "Monitoring & audit",
+    "settingsSidebarTitle": "Sidebar Customization",
+    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable.",
     "hideHealthLogs": "Dölj loggar för hälsokontroll",
     "hideHealthLogsDesc": "När PÅ, dämpa [HealthCheck]-meddelanden i serverkonsolen",
     "themeAccent": "Temafärg",
@@ -6921,7 +6933,7 @@
     "afterPromptPlaceholder": "Instruktioner infogade efter agentens/leverantörens prompt...",
     "chars": "{count} tecken",
     "thinkingBudgetTitle": "Tänkande budget",
-    "thinkingBudgetDesc": "Kontrollera användningen av AI-resonemangstoken över alla förfrågningar",
+    "thinkingBudgetDesc": "__MISSING__:Controls whether OmniRoute rewrites client thinking/reasoning parameters before requests go upstream. This is separate from compression, prompt cache, and API-key token limits.",
     "thinkingBudgetIndependenceHint": "Komprimering, routing och token-gränsfunktioner fortsätter att fungera i varje läge. Auto betyder inte \"auto-visar tänkande\" — det tar bort klientens resonemangsfält.",
     "passthrough": "Genomgång",
     "passthroughDesc": "Inga förändringar – kunden styr tankebudgeten",
@@ -6946,7 +6958,7 @@
     "tokenBudget": "Token budget",
     "tokens": "polletter",
     "baseEffortLevel": "Basinsatsnivå",
-    "adaptiveHint": "Adaptivt läge skalas från denna basnivå baserat på antal meddelanden, verktygsanvändning och promptlängd.",
+    "adaptiveHint": "__MISSING__:Adaptive mode scales from this base level based on message count, tool usage, and prompt length. Does not decrypt provider encrypted reasoning blobs.",
     "requireLogin": "Kräv inloggning",
     "requireLoginDesc": "När PÅ kräver instrumentpanelen lösenord. När AV, åtkomst utan inloggning.",
     "currentPassword": "Aktuellt lösenord",
@@ -7678,6 +7690,20 @@
     "jsonImportError": "Fel vid JSON-import",
     "storagePurgeData": "Rensa data",
     "storagePurgeDataDesc": "Ta omedelbart bort alla poster utan att tillämpa kvarhållningskontroller. Använd med försiktighet.",
+    "storageMaintenance": "__MISSING__:Maintenance & cleanup",
+    "storageMaintenanceDesc": "__MISSING__:Background cleanup runs every 6 hours and removes rows past the retention windows configured below.",
+    "storageLastAutoCleanup": "__MISSING__:Last auto-cleanup",
+    "storageCleanupNeverRan": "__MISSING__:Not run yet",
+    "storageCleanupRowsDeleted": "__MISSING__:Rows removed",
+    "storageCleanupErrors": "__MISSING__:{count} errors",
+    "storageCleanupEnabled": "__MISSING__:Auto-cleanup on",
+    "storageCleanupDisabled": "__MISSING__:Auto-cleanup off",
+    "storageWalSize": "__MISSING__:WAL size",
+    "storageProcessRss": "__MISSING__:Process memory (RSS)",
+    "storageCgroupBilled": "__MISSING__:Container memory (billed)",
+    "storageCgroupCache": "__MISSING__:File cache",
+    "storageFtsIndex": "__MISSING__:Memory FTS index / data",
+    "storageTopTables": "__MISSING__:Largest tables",
     "storageRetentionCleanup": "Kvarhållningsinställningar",
     "storageRetentionCleanupDesc": "Konfigurera kvarhållning av driftposter och rensning av databassäkerhetskopior.",
     "retentionCallDays": "Anrop {count}d",
@@ -8277,19 +8303,7 @@
     "cliproxyapiHealth": "Hälsa",
     "cliproxyapiPort": "Port",
     "qdrantHost": "Värd",
-    "qdrantCollection": "Samling",
-    "presetAll": "All",
-    "presetAllDesc": "Show everything",
-    "presetEssentials": "Essentials",
-    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
-    "presetMinimal": "Minimal",
-    "presetMinimalDesc": "Core pages only",
-    "presetDeveloper": "Developer",
-    "presetDeveloperDesc": "Dev & proxy tools",
-    "presetAdmin": "Admin",
-    "presetAdminDesc": "Monitoring & audit",
-    "settingsSidebarTitle": "Sidebar Customization",
-    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable."
+    "qdrantCollection": "Samling"
   },
   "contextRtk": {
     "title": "RTK Engine",
@@ -8654,13 +8668,13 @@
   },
   "omniglyph": {
     "preview": "Förhandsgranskning",
-    "description": "Kontext-som-bild-komprimering. Renderar systemprompten, verktygsdokumentationen och tät historik som kompakta PNG-sidor som Claude Fable 5 läser istället för text. Bildtokens debiteras efter dimensioner snarare än tecken, så det konverterade blocket kostar ungefär 10× mindre. Endast direkt Anthropic-rutt.",
+    "description": "__MISSING__:Context-as-image compression. Renders the system prompt, tool documentation, and dense history as compact PNG pages for the measured Claude Fable 5 path. The published OmniGlyph package also exposes native GPT 5.6 transformers, but OmniRoute keeps those routes fail-closed until provider fidelity and reading receipts exist.",
     "economicsTitle": "Ekonomin",
     "economics": {
       "fewerTokens": "färre tokens på det konverterade blocket",
       "savings": "end-to-end-besparingar (uppmätt)",
       "imageTokens": "bildtokens för en sida på 1568×728 (cirka 28k tecken)",
-      "accuracy": "läsnoggrannhet på Fable 5 (n=30)"
+      "accuracy": "__MISSING__:scoped Fable 5 reading receipt"
     },
     "beforeAfterTitle": "Före → efter",
     "blockSavings": "−{percent}% tokens på detta block",
@@ -8673,18 +8687,18 @@
     "gates": {
       "model": {
         "label": "Modell",
-        "pass": "claude-fable-5",
-        "why": "Endast Fable 5 läser täta sidor med 100% noggrannhet (uppmätt, n=30). GPT-5.5 och Gemini 2.5 Flash blockeras."
+        "pass": "__MISSING__:claude-fable-5 (measured); gpt-5.6 (HOLD)",
+        "why": "__MISSING__:Only the measured Fable 5 path is enabled in OmniRoute. GPT 5.6 is structurally supported by the package but remains blocked until its provider receipt; unverified families such as Grok stay text-only."
       },
       "transport": {
         "label": "Transport",
-        "pass": "direkt Anthropic",
-        "why": "Aggregatorer samplar om bilder och förstör läsbarheten — endast den direkta rutten är auktoritativ."
+        "pass": "__MISSING__:direct provider",
+        "why": "__MISSING__:Aggregators may resample images and destroy legibility — only a direct provider route is authoritative."
       },
       "format": {
         "label": "Format",
-        "pass": "native Claude",
-        "why": "Bodyn måste använda Claude-format och får aldrig placera en systemroll inuti meddelanden."
+        "pass": "__MISSING__:native Claude/OpenAI",
+        "why": "__MISSING__:The body must match the provider wire: Claude Messages, OpenAI Chat Completions, or native OpenAI Responses input[]."
       },
       "profitable": {
         "label": "Lönsam",
@@ -8693,7 +8707,7 @@
       }
     },
     "enableTitle": "Aktivera motorn",
-    "enableDescription": "Körs sist i stacken (efter att RTK/Caveman rensar texten konverterar OmniGlyph resten till bilder) och körs även fristående via <code>omniglyph</code>-läge. Detta är en förhandsgranskning och förblir inaktiverad som standard tills end-to-end-valideringen är slutförd.",
+    "enableDescription": "__MISSING__:Runs last in the stack after text engines clean the request, using the native provider wire; OpenAI Chat/Responses requests are compressed after translation so their shape is preserved. It also runs standalone through <code>omniglyph</code> mode. This is a preview and remains off by default until end-to-end validation is complete.",
     "profileTitle": "Compression profile",
     "profileDescription": "The profile is a ceiling, not a floor: a stricter profile cannot be reopened by a per-step override. Measured on this codebase: with coding-safe or balanced, a session that has not accumulated history yet compresses nothing, because both raise the minimum-characters threshold and keep the system prompt, tool schemas and tool results native.",
     "profiles": {
@@ -8722,7 +8736,7 @@
   },
   "embeddedServices": {
     "title": "Inbäddade tjänster",
-    "description": "Lokala motorer som hanteras vid behov — CLIProxyAPI, 9Router, Mux och Bifrost. Endast tillgängliga via loopback.",
+    "description": "__MISSING__:Optional helpers that run on your machine. Most users can start without them — install one only when an integration needs it.",
     "stateRunning": "Körs",
     "stateStopped": "Stoppad",
     "stateStarting": "Startar",
@@ -8921,7 +8935,7 @@
     "featureMissingToolResponse": "Tool Response Injection",
     "featureMissingToolResponseDesc": "Injicerar tomma tool_result-meddelanden när klienter skickar tool_calls utan motsvarande svar.",
     "featureThinkingBudget": "Tänkande budget",
-    "featureThinkingBudgetDesc": "Hanterar automatiskt tankekonfiguration. Tar bort tankeparametrar när det sista meddelandet inte kommer från användaren.",
+    "featureThinkingBudgetDesc": "__MISSING__:Proxy-level control of thinking/reasoning request fields: passthrough (client controls), auto (strip all thinking params), custom (fixed budget), or adaptive (scale by complexity). Independent of compression and routing. Does not decrypt encrypted reasoning content.",
     "featureDirectPaths": "Direkta översättningsvägar",
     "featureDirectPathsDesc": "Vissa formatpar (Claude→Gemini) har direkta översättare som kringgår OpenAI-hubben, vilket ger mer exakt utdata.",
     "featureImageMapping": "Kartläggning av bildstorlek",
@@ -10691,7 +10705,7 @@
     "continue": "Fortsätt"
   },
   "cursorAuthModal": {
-    "title": "Anslut Cursor IDE",
+    "title": "__MISSING__:Connect Cursor",
     "tabLogin": "Login with Cursor",
     "tabImport": "Import token",
     "loginDescription": "Opens Cursor's browser login. Works in Docker — approve in your host browser, then return here.",
@@ -10704,7 +10718,7 @@
     "autoDetecting": "Identifierar tokens automatiskt...",
     "readingFromCursor": "Läser från Cursor IDE eller cursor-agent",
     "tokensAutoDetected": "Tokens har framgångsrikt identifierats automatiskt från Cursor IDE!",
-    "cursorNotDetected": "Markör-IDE upptäcktes inte. Vänligen klistra in din token manuellt.",
+    "cursorNotDetected": "__MISSING__:Cursor IDE not detected. Paste your access token (and refresh token if available).",
     "dockerImportHint": "Running in Docker? Prefer Login with Cursor. IDE auto-import and cursor-agent are usually unavailable inside the container. See docs/providers/CURSOR-DOCKER.md.",
     "accessToken": "Access Token",
     "refreshToken": "Refresh Token",
@@ -12074,10 +12088,10 @@
       },
       "acp": {
         "title": "ACP-agenter",
-        "phrase": "CLI:er som OmniRoute startar som exekveringsbackend (omvänt flöde)",
+        "phrase": "__MISSING__:Run complex, long-running logic in the backend",
+        "warning": "Most users can ignore this — use only when an integration requires it.",
         "flow": "Klient → OmniRoute → starta CLI (stdio/ACP) → svar",
-        "seeOther": "Se →",
-        "warning": "Most users can ignore this — use only when an integration requires it."
+        "seeOther": "Se →"
       }
     },
     "comparison": {
@@ -12836,6 +12850,10 @@
       "ALLOW_MULTI_CONNECTIONS_PER_COMPAT_NODE": {
         "description": "Tillåt flera anslutningar för varje kompatibilitetsnod."
       },
+      "DISABLE_CONTEXT_WINDOW_CHECKS": {
+        "label": "Disable Context Window Checks",
+        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
+      },
       "RESPONSES_PASSTHROUGH_DROP_COMMENTARY": {
         "description": "Ta bort interna utdataobjekt från kommentarsfasen från Responses API-genomströmningsströmmar innan de vidarebefordras till klienter. Inaktivera denna flagga för att ta emot råa uppströmskommentarer."
       },
@@ -12901,10 +12919,6 @@
       },
       "SKILLS_SANDBOX_NETWORK_ENABLED": {
         "description": "Aktivera nätverksåtkomst i kompetenssandlådan."
-      },
-      "DISABLE_CONTEXT_WINDOW_CHECKS": {
-        "label": "Disable Context Window Checks",
-        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
       }
     }
   },
@@ -13383,6 +13397,13 @@
   },
   "resilienceConnections": {
     "title": "Anslutningsresiliens",
+    "reassuranceTitle": "Your connections recover automatically",
+    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
+    "plainStates": {
+      "healthy": "Requests can be sent",
+      "coolingDown": "Trying again soon",
+      "lockedOut": "Needs your attention"
+    },
     "table": {
       "status": "Status",
       "provider": "Leverantör",
@@ -13477,16 +13498,10 @@
         "modelLockouts": "Modellåsningar",
         "count": "Antal Anslutningar"
       }
-    },
-    "reassuranceTitle": "Your connections recover automatically",
-    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
-    "plainStates": {
-      "healthy": "Requests can be sent",
-      "coolingDown": "Trying again soon",
-      "lockedOut": "Needs your attention"
     }
   },
   "featureFlagCapabilityFilterEnabledDescription": "Avvisa förfrågningar innan de skickas när målmodellen saknar nödvändiga funktioner (vision, verktyg, strukturerad utdata, kontextfönster). Skyddar direkta förfrågningar från en enda leverantör som kringgår kompatibilitetsfiltret för kombinationslager.",
+  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "publicSystem": {
     "notFound": {
       "title": "Sidan kunde inte hittas",
@@ -13922,7 +13937,6 @@
     "structuredOutputMismatch": "Leverantören stöder inte strukturerad utdata",
     "contextWindowMismatch": "Begäran överskrider leverantörens kontextfönster"
   },
-  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "cheaperInferenceSponsorBanner": {
     "title": "Cheaper Inference is an OmniRoute Open Source Friend",
     "description": "A cost-ranked gateway reselling dozens of frontier models behind one OpenAI-compatible endpoint — routing each request to the cheapest eligible provider, never above list price.",

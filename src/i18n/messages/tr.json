@@ -805,6 +805,13 @@
     "batchConceptBenefit50pct": "50% discount on input + output tokens",
     "batchConceptAsync24h": "Async with a 24h completion window",
     "batchConceptUseCases": "Best for bulk classification, evaluations, and embeddings",
+    "batchHeaderSubtitle": "Run many requests as one job",
+    "batchStep1": "1 · Upload JSONL",
+    "batchStep1Desc": "Add requests",
+    "batchStep2": "2 · Create batch",
+    "batchStep2Desc": "Run job",
+    "batchStep3": "3 · Get results",
+    "batchStep3Desc": "Download output",
     "filesConceptTitle": "Batch files",
     "filesConceptSubtitle": "JSONL files used by batches: input requests, results, and errors.",
     "filesConceptInput": "Input — your JSONL with one request per line",
@@ -974,14 +981,7 @@
     "batchFileUsedByCount": "{count, plural, one {# parti} other {# parti}}",
     "batchFilePreview": "Önizleme",
     "batchFilePreviewTruncated": "İlk {shown} satır gösteriliyor ({total} toplam satır)",
-    "batchFileDownloadFull": "Tam Dosyayı İndir",
-    "batchHeaderSubtitle": "Run many requests as one job",
-    "batchStep1": "1 · Upload JSONL",
-    "batchStep1Desc": "Add requests",
-    "batchStep2": "2 · Create batch",
-    "batchStep2Desc": "Run job",
-    "batchStep3": "3 · Get results",
-    "batchStep3Desc": "Download output"
+    "batchFileDownloadFull": "Tam Dosyayı İndir"
   },
   "disabled": "Devre dışı",
   "featureFlagOmnirouteEmergencyFallbackDescription": "Bütçesi tükenmiş istekleri acil durum ücretsiz yedek sağlayıcıya/modele yönlendirin.",
@@ -1019,7 +1019,7 @@
     "apiManager": "API Yöneticisi",
     "apiManagerSubtitle": "API anahtarlarını ve erişimi yönetin",
     "embeddedServices": "Gömülü Hizmetler",
-    "embeddedServicesSubtitle": "Yerel proxy hizmetlerini yönetin",
+    "embeddedServicesSubtitle": "__MISSING__:Optional local services",
     "logs": "Günlükler",
     "webhooks": "Web kancaları",
     "webhooksSubtitle": "Etkinliklerden haberdar olun",
@@ -1267,6 +1267,7 @@
     "agentBridgeSubtitle": "IDE ajan trafiğini yakalayın",
     "trafficInspector": "Trafik Denetleyicisi",
     "trafficInspectorSubtitle": "__MISSING__:Inspect request and response traffic from your apps",
+    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client.",
     "cliCode": "CLI Kodu",
     "cliCodeSubtitle": "OmniRoute'a yönlendiren kod araçları",
     "cliAgents": "CLI Ajanları",
@@ -1300,8 +1301,7 @@
       "open": "açık",
       "close": "kapat"
     },
-    "noResults": "Sonuç yok",
-    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client."
+    "noResults": "Sonuç yok"
   },
   "webhooks": {
     "title": "Web kancaları",
@@ -1808,6 +1808,11 @@
     "updateStarted": "Güncelleme başladı...",
     "reloadingPageAutomatically": "Sayfa otomatik olarak yeniden yükleniyor...",
     "providerTopology": "Sağlayıcı Topolojisi",
+    "recentRequests": "Recent Requests",
+    "recentRequestsEmpty": "No requests yet.",
+    "recentRequestsModel": "Model",
+    "recentRequestsTokens": "In / Out",
+    "recentRequestsWhen": "When",
     "downloadDmg": "DMG İndir (macOS)",
     "downloadDmgDescription": "OmniRoute masaüstü uygulamasının yeni bir sürümü mevcut. Lütfen güncellemek için macOS DMG yükleyicisini indirin ve kurun (mevcut: v{version}).",
     "downloadExe": "EXE İndir (Windows)",
@@ -1865,11 +1870,6 @@
     "releaseNotes": "Sürüm Notları",
     "readMore": "Daha Fazla Oku",
     "noAuthLabel": "Yetkisiz",
-    "recentRequests": "Recent Requests",
-    "recentRequestsEmpty": "No requests yet.",
-    "recentRequestsModel": "Model",
-    "recentRequestsTokens": "In / Out",
-    "recentRequestsWhen": "When",
     "readinessEyebrow": "Get ready to route",
     "readinessTitle": "Send your first request",
     "readinessSubtitle": "Four small steps. OmniRoute checks readiness as you go.",
@@ -2922,9 +2922,9 @@
       "interpreter": "Open Interpreter otonom kodlama aracısı CLI'sı",
       "omp": "Oh My Pi terminal kodlama aracısı",
       "letta": "Kalıcı bellek ve araç kullanımına sahip Letta CLI aracısı",
+      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support",
       "warp": "Özel sağlayıcı desteğine sahip Warp AI terminali",
-      "agent-deck": "Agent Deck çoklu aracı orkestratörü",
-      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support"
+      "agent-deck": "Agent Deck çoklu aracı orkestratörü"
     },
     "guides": {
       "cursor": {
@@ -3849,6 +3849,9 @@
   },
   "endpoint": {
     "title": "API Uç Noktası",
+    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
+    "testEndpoint": "Test endpoint →",
+    "advancedProtocols": "Advanced protocols",
     "available": "Kullanılabilir Uç Noktalar",
     "cloudProxy": "Cloud Proxy",
     "disableConfirm": "Bulut proxy'sini devre dışı bırakmak istediğinizden emin misiniz?",
@@ -4156,10 +4159,7 @@
     "notionIntegrationHelp": "İç Entegrasyon Oluşturun at",
     "notionIntegrationToken": "Notion Dahili Entegrasyon Tokeni",
     "notionNotConnected": "Bağlı değil",
-    "notionTokenConfigured": "Token yapılandırıldı. Notion araçları MCP üzerinden mevcuttur.",
-    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
-    "testEndpoint": "Test endpoint →",
-    "advancedProtocols": "Advanced protocols"
+    "notionTokenConfigured": "Token yapılandırıldı. Notion araçları MCP üzerinden mevcuttur."
   },
   "endpoints": {
     "tabProxy": "Uç Nokta Proxy",
@@ -4632,6 +4632,13 @@
     "retry": "Yeniden dene",
     "allOperational": "Tüm sistemler çalışır durumda",
     "issuesDetected": "Sistem sorunları algılandı",
+    "healthVerdictReady": "OmniRoute is ready",
+    "healthVerdictActionRequired": "Action required to restore full operation",
+    "healthVerdictCoolingDown": "Cooling down after recent changes",
+    "healthSubtitle": "System health check",
+    "advancedDiagnosticsTitle": "Advanced diagnostics",
+    "hide": "Hide",
+    "show": "Show",
     "updatedAt": "Güncellendi {time}",
     "latency": "Gecikme",
     "latencyP50": "p50",
@@ -4742,14 +4749,7 @@
     "issueCount": "{count} sorun",
     "score": "Skor",
     "lastRequest": "Son istek",
-    "lastError": "Son hata",
-    "healthVerdictReady": "OmniRoute is ready",
-    "healthVerdictActionRequired": "Action required to restore full operation",
-    "healthVerdictCoolingDown": "Cooling down after recent changes",
-    "healthSubtitle": "System health check",
-    "advancedDiagnosticsTitle": "Advanced diagnostics",
-    "hide": "Hide",
-    "show": "Show"
+    "lastError": "Son hata"
   },
   "telemetry": {
     "title": "Sistem Telemetrisi",
@@ -4954,7 +4954,9 @@
     "multiProvider": "Çoklu Sağlayıcı",
     "usageTracking": "Kullanım Takibi",
     "securityDesc": "Kontrol panelini korumak için bir şifre belirle veya şimdilik atla.",
+    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
     "providerDesc": "İlk AI sağlayıcını bağla. Daha sonra daha fazlasını ekleyebilirsin.",
+    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard.",
     "apiKeyRequired": "API Anahtarı (gerekli)",
     "customUrlOptional": "Özel URL (isteğe bağlı)",
     "testDesc": "Sağlayıcı bağlantının çalıştığını doğrulayalım.",
@@ -5011,9 +5013,7 @@
         "skipped": "zaten yapılandırılmış",
         "failed": "başarısız"
       }
-    },
-    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
-    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard."
+    }
   },
   "providers": {
     "title": "Sağlayıcılar",
@@ -5724,8 +5724,8 @@
     "aggregatorsGateways": "Aggregators Gateways",
     "enterpriseCloud": "Kurumsal ve Bulut",
     "apiFormatLabel": "Api Format Label",
-    "apiKeyOptionalHint": "Api Key Optional Hint",
-    "apiKeyOptionalLabel": "Api Key Optional Label",
+    "apiKeyOptionalHint": "__MISSING__:Leave empty if your local setup or provider does not require authentication.",
+    "apiKeyOptionalLabel": "__MISSING__:API Key (optional)",
     "apiRegionChina": "Api Region China",
     "apiRegionHint": "Api Region Hint",
     "apiRegionInternational": "Api Region International",
@@ -6157,8 +6157,8 @@
       "inception": "Inception Labs, OpenAI uyumlu olup https://api.inceptionlabs.ai/v1 adresindedir. mercury-2, katalogdaki ilk difüzyon LLM (dLLM) olup, karşılaştırılabilir otoregresif modellere göre 5-10 kat daha hızlı üretim, araç çağırma, json_mode ve yapılandırılmış çıktılar sunmaktadır.",
       "inference-net": "Kayıtta 25 $ ücretsiz kredi ve ayrıca araştırma hibeleri mevcuttur",
       "internlm": "Ücretsiz aylık kota ~1M girdi / 3M çıktı tokeni (~10 RPM)",
-      "jina-ai": "Jina AI rerank API'si için Bearer API anahtarı.",
-      "jina-reader": "Jina Reader'ı bir API anahtarı ile bağlayın.",
+      "jina-ai": "__MISSING__:Bearer API key for api.jina.ai (embeddings, rerank, classify, segment, search). Not the Reader / r.jina.ai card. Dashboard keys take precedence over JINA_AI_API_KEY.",
+      "jina-reader": "__MISSING__:Bearer API key for r.jina.ai URL-to-markdown only. Does not serve /v1/embeddings or /v1/rerank. The same Jina token as Foundation API works.",
       "kenari": "Kenari, https://kenari.id/v1/chat/completions adresinde OpenAI uyumlu bir sohbet tamamlama uç noktası ve ayrıca Claude, GPT, DeepSeek, GLM, Kimi ve daha fazlasını kapsayan canlı bir /v1/models kataloğu sunar. OmniRoute, OpenAI protokolünü kullanır ve modelleri doğrudan geçiş (passthrough) ile listeler.",
       "kie": "KIE.AI'ı bir API anahtarı ile bağlayın.",
       "kilo-gateway": "Kilo Gateway'i bir API anahtarı ile bağlayın.",
@@ -6271,7 +6271,7 @@
       "cursor": "Mevcut OAuth akışıyla Cursor IDE'yi bağlayın.",
       "cursor-api": "Connect Cursor with a user API key (crsr_...) from cursor.com/dashboard/api; no IDE session needed.",
       "github": "Mevcut OAuth akışıyla GitHub Copilot'ı bağlayın.",
-      "gitlab-duo": "ai_features + read_user kapsamlarına sahip OAuth uygulaması. Bu OmniRoute örneğinde GITLAB_DUO_OAUTH_CLIENT_ID ve isteğe bağlı olarak GITLAB_DUO_OAUTH_CLIENT_SECRET yapılandırın.",
+      "gitlab-duo": "__MISSING__:OAuth application with ai_features + read_user scopes. Configure GITLAB_DUO_OAUTH_CLIENT_ID and optionally GITLAB_DUO_OAUTH_CLIENT_SECRET on this OmniRoute instance.",
       "kilocode": "Mevcut OAuth akışıyla Kilo Code'u bağlayın.",
       "kimi-coding": "Mevcut OAuth akışıyla Kimi Coding'i bağlayın.",
       "kiro": "Free tier: 50 credits/month (~25K–100K tokens). ⚠️ Kiro ToS prohibits third-party proxy/harness use.",
@@ -6302,6 +6302,20 @@
     "webSessionGuideStep3": "Gerekli kimlik bilgilerini sağlayıcının kendi alanından kopyalayın. Çerezler için yalnızca Cookie başlık değerini kopyalayın ve Cookie:'yi çıkartın.",
     "webSessionGuideStep3Manual": "Manuel yol: tarayıcı geliştirici araçlarını açın (F12 → Ağ), sayfayı yenileyin, kimlik doğrulamalı bir isteği açın ve İstek Başlıkları'ndan Cookie başlık değerini kopyalayın — Cookie: ön ekini atlayın.",
     "webSessionGuideStep4": "Buraya yapıştırın ve bağlantıyı kontrol edin. Çalışmayı durdurursa tekrar oturum açın ve yeni bir değerle değiştirin.",
+    "harImportButtonLabel": "Import .har file",
+    "harImportButtonBusy": "Importing…",
+    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
+    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
+    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
+    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
+    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
+    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
+    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
+    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
+    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
+    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
+    "harImportErrorReadFailed": "Couldn't read that file.",
+    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file.",
     "webSessionSecurityHint": "Buna bir şifre gibi davranın: Süresi dolana veya iptal edilene kadar oturum açmış olduğunuz web hesabınıza erişebilir.",
     "webNoAuthGuideTitle": "Kimlik bilgisi gerekmez",
     "webNoAuthGuideBody": "{provider} bir API anahtarına veya çereze ihtiyaç duymaz. Ücretsiz web uç noktasını kullanmak için bağlantıyı kaydedin.",
@@ -6327,8 +6341,8 @@
     "apiProtocolHint": "Bazı sağlayıcılar aynı modelleri birden fazla protokol üzerinden yayınlar. Alternatifi gerektirmedikçe varsayılanı bırakın.",
     "bulkAddFormatHintCloudflare": "Satır başına bir anahtar. Biçim: name|accountId|apiKey (Cloudflare hesap kimliği + API belirteci).",
     "lmarenaWebCookieHint": "arena.ai adresini açın, oturum açın ve ardından bir Ağ isteğinden tam Cookie başlığını kopyalayın. Tercihen cf_clearance ile birlikte arena-auth-prod-v1.0 ve arena-auth-prod-v1.1 (ve varsa diğer parçaları) ekleyin. Yalnızca boş arena-auth-prod-v1 çerezini yapıştırmayın. İsteğe bağlı: create-evaluation hala 403 döndürüyorsa providerSpecificData.recaptchaV3Token.",
-    "kimiOfficialSupporterBadge": "Kurucu Dost",
-    "kimiOfficialSupporterTooltip": "Kimi (Moonshot AI), OmniRoute'un kurucu açık kaynak dostu",
+    "kimiOfficialSupporterBadge": "__MISSING__:Official Supporter",
+    "kimiOfficialSupporterTooltip": "__MISSING__:Kimi (Moonshot AI) is an official OmniRoute launch partner",
     "cheaperInferenceSupporterBadge": "Açık Kaynak Dostu",
     "cheaperInferenceSupporterTooltip": "Cheaper Inference, OmniRoute'u Açık Kaynak Dostu olarak destekliyor",
     "kimiPartnerLinkNote": "Ortaklık bağlantısı — size hiçbir ek ücret ödetmeden OmniRoute'u destekler",
@@ -6416,21 +6430,7 @@
     "savedModelEndpointSettings": "Kaydedilmiş model uç noktası ayarları",
     "searchByModelAria": "Model ile ara",
     "selectSupportedEndpoint": "En az bir desteklenen uç noktayı seçin",
-    "antigravityClientProfileHarness": "Harness / CLI",
-    "harImportButtonLabel": "Import .har file",
-    "harImportButtonBusy": "Importing…",
-    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
-    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
-    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
-    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
-    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
-    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
-    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
-    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
-    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
-    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
-    "harImportErrorReadFailed": "Couldn't read that file.",
-    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file."
+    "antigravityClientProfileHarness": "Harness / CLI"
   },
   "settings": {
     "title": "Ayarlar",
@@ -6710,6 +6710,18 @@
     "sidebarVisibility": "Hide sidebar items",
     "sidebarVisibilityDesc": "Hide any sidebar navigation entry to reduce visual clutter.",
     "sidebarVisibilityHint": "Any sidebar section is hidden automatically when a...",
+    "presetAll": "All",
+    "presetAllDesc": "Show everything",
+    "presetEssentials": "Essentials",
+    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
+    "presetMinimal": "Minimal",
+    "presetMinimalDesc": "Core pages only",
+    "presetDeveloper": "Developer",
+    "presetDeveloperDesc": "Dev & proxy tools",
+    "presetAdmin": "Admin",
+    "presetAdminDesc": "Monitoring & audit",
+    "settingsSidebarTitle": "Sidebar Customization",
+    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable.",
     "hideHealthLogs": "Sağlık Kontrolü Günlüklerini Gizle",
     "hideHealthLogsDesc": "Açıkken, sunucu konsolundaki [HealthCheck] mesajlarını gizler.",
     "themeAccent": "Tema rengi",
@@ -6921,7 +6933,7 @@
     "afterPromptPlaceholder": "Ajan/sağlayıcı isteminden sonra eklenen talimatlar...",
     "chars": "{count} karakter",
     "thinkingBudgetTitle": "Düşünme Bütçesi",
-    "thinkingBudgetDesc": "Tüm isteklerde yapay zeka akıl yürütme jetonu kullanımını kontrol edin",
+    "thinkingBudgetDesc": "__MISSING__:Controls whether OmniRoute rewrites client thinking/reasoning parameters before requests go upstream. This is separate from compression, prompt cache, and API-key token limits.",
     "thinkingBudgetIndependenceHint": "Sıkıştırma, yönlendirme ve token-limit özellikleri her modda çalışmaya devam eder. Otomatik, “otomatik-göster düşüncesi” anlamına gelmez — istemci akıl yürütme alanlarını kaldırır.",
     "passthrough": "Passthrough Modu",
     "passthroughDesc": "Değişiklik yapma — düşünme bütçesini istemci kontrol etsin",
@@ -6946,7 +6958,7 @@
     "tokenBudget": "Jeton Bütçesi",
     "tokens": "jeton",
     "baseEffortLevel": "Temel Çaba Seviyesi",
-    "adaptiveHint": "Uyarlamalı mod, mesaj sayısı, araç kullanımı ve istem uzunluğuna göre bu temel düzeyden ölçeklenir.",
+    "adaptiveHint": "__MISSING__:Adaptive mode scales from this base level based on message count, tool usage, and prompt length. Does not decrypt provider encrypted reasoning blobs.",
     "requireLogin": "Oturum açmayı zorunlu kıl",
     "requireLoginDesc": "Açıkken kontrol paneli şifre ister. Kapalıyken giriş yapmadan erişim sağlanır.",
     "currentPassword": "Mevcut Şifre",
@@ -7678,6 +7690,20 @@
     "jsonImportError": "JSON içe aktarma sırasında hata oluştu",
     "storagePurgeData": "Verileri Temizle",
     "storagePurgeDataDesc": "Saklama kontrollerini uygulamadan tüm kayıtları hemen silin. Dikkatli kullanın.",
+    "storageMaintenance": "__MISSING__:Maintenance & cleanup",
+    "storageMaintenanceDesc": "__MISSING__:Background cleanup runs every 6 hours and removes rows past the retention windows configured below.",
+    "storageLastAutoCleanup": "__MISSING__:Last auto-cleanup",
+    "storageCleanupNeverRan": "__MISSING__:Not run yet",
+    "storageCleanupRowsDeleted": "__MISSING__:Rows removed",
+    "storageCleanupErrors": "__MISSING__:{count} errors",
+    "storageCleanupEnabled": "__MISSING__:Auto-cleanup on",
+    "storageCleanupDisabled": "__MISSING__:Auto-cleanup off",
+    "storageWalSize": "__MISSING__:WAL size",
+    "storageProcessRss": "__MISSING__:Process memory (RSS)",
+    "storageCgroupBilled": "__MISSING__:Container memory (billed)",
+    "storageCgroupCache": "__MISSING__:File cache",
+    "storageFtsIndex": "__MISSING__:Memory FTS index / data",
+    "storageTopTables": "__MISSING__:Largest tables",
     "storageRetentionCleanup": "Saklama Ayarları",
     "storageRetentionCleanupDesc": "İşlem kaydı saklama ve veritabanı yedeği temizleme ayarlarını yapılandırın.",
     "retentionCallDays": "Çağrı {count}g",
@@ -8277,19 +8303,7 @@
     "cliproxyapiHealth": "Sağlık",
     "cliproxyapiPort": "Port",
     "qdrantHost": "Ana Bilgisayar",
-    "qdrantCollection": "Koleksiyon",
-    "presetAll": "All",
-    "presetAllDesc": "Show everything",
-    "presetEssentials": "Essentials",
-    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
-    "presetMinimal": "Minimal",
-    "presetMinimalDesc": "Core pages only",
-    "presetDeveloper": "Developer",
-    "presetDeveloperDesc": "Dev & proxy tools",
-    "presetAdmin": "Admin",
-    "presetAdminDesc": "Monitoring & audit",
-    "settingsSidebarTitle": "Sidebar Customization",
-    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable."
+    "qdrantCollection": "Koleksiyon"
   },
   "contextRtk": {
     "title": "RTK Engine",
@@ -8654,13 +8668,13 @@
   },
   "omniglyph": {
     "preview": "Önizleme",
-    "description": "Görsel formatında bağlam sıkıştırması. Sistem istemini, araç belgelerini ve yoğun geçmişi, Claude Fable 5'in metin yerine okuduğu kompakt PNG sayfaları olarak işler. Görsel token'ları karakterler yerine boyutlara göre faturalandırılır, bu nedenle dönüştürülen blok yaklaşık 10 kat daha az maliyetlidir. Yalnızca doğrudan Anthropic rotası.",
+    "description": "__MISSING__:Context-as-image compression. Renders the system prompt, tool documentation, and dense history as compact PNG pages for the measured Claude Fable 5 path. The published OmniGlyph package also exposes native GPT 5.6 transformers, but OmniRoute keeps those routes fail-closed until provider fidelity and reading receipts exist.",
     "economicsTitle": "Ekonomi",
     "economics": {
       "fewerTokens": "dönüştürülen blokta daha az token",
       "savings": "uçtan uca tasarruf (ölçülen)",
       "imageTokens": "1568×728 sayfa için görsel token'ları (yaklaşık 28 bin karakter)",
-      "accuracy": "Fable 5'te okuma doğruluğu (n=30)"
+      "accuracy": "__MISSING__:scoped Fable 5 reading receipt"
     },
     "beforeAfterTitle": "Önce → sonra",
     "blockSavings": "Bu blokta −%{percent} token",
@@ -8673,18 +8687,18 @@
     "gates": {
       "model": {
         "label": "Model",
-        "pass": "claude-fable-5",
-        "why": "Yalnızca Fable 5 yoğun sayfaları %100 doğrulukla okur (ölçülen, n=30). GPT-5.5 ve Gemini 2.5 Flash engellenir."
+        "pass": "__MISSING__:claude-fable-5 (measured); gpt-5.6 (HOLD)",
+        "why": "__MISSING__:Only the measured Fable 5 path is enabled in OmniRoute. GPT 5.6 is structurally supported by the package but remains blocked until its provider receipt; unverified families such as Grok stay text-only."
       },
       "transport": {
         "label": "Aktarım",
-        "pass": "doğrudan Anthropic",
-        "why": "Toplayıcılar görselleri yeniden örnekler ve okunabilirliği bozar — yalnızca doğrudan rota yetkilidir."
+        "pass": "__MISSING__:direct provider",
+        "why": "__MISSING__:Aggregators may resample images and destroy legibility — only a direct provider route is authoritative."
       },
       "format": {
         "label": "Biçim",
-        "pass": "yerel Claude",
-        "why": "Gövde Claude biçimini kullanmalı ve mesajların içine asla bir sistem rolü yerleştirmemelidir."
+        "pass": "__MISSING__:native Claude/OpenAI",
+        "why": "__MISSING__:The body must match the provider wire: Claude Messages, OpenAI Chat Completions, or native OpenAI Responses input[]."
       },
       "profitable": {
         "label": "Kârlı",
@@ -8693,7 +8707,7 @@
       }
     },
     "enableTitle": "Motoru etkinleştir",
-    "enableDescription": "Yığında en son çalışır (RTK/Caveman metni temizledikten sonra OmniGlyph geri kalanını görüntülere dönüştürür) ve ayrıca <code>omniglyph</code> modu aracılığıyla bağımsız olarak çalışır. Bu bir önizlemedir ve uçtan uca doğrulama tamamlanana kadar varsayılan olarak kapalı kalır.",
+    "enableDescription": "__MISSING__:Runs last in the stack after text engines clean the request, using the native provider wire; OpenAI Chat/Responses requests are compressed after translation so their shape is preserved. It also runs standalone through <code>omniglyph</code> mode. This is a preview and remains off by default until end-to-end validation is complete.",
     "profileTitle": "Compression profile",
     "profileDescription": "The profile is a ceiling, not a floor: a stricter profile cannot be reopened by a per-step override. Measured on this codebase: with coding-safe or balanced, a session that has not accumulated history yet compresses nothing, because both raise the minimum-characters threshold and keep the system prompt, tool schemas and tool results native.",
     "profiles": {
@@ -8722,7 +8736,7 @@
   },
   "embeddedServices": {
     "title": "Gömülü Servisler",
-    "description": "İsteğe bağlı olarak yönetilen yerel motorlar — CLIProxyAPI, 9Router, Mux ve Bifrost. Yalnızca loopback üzerinden erişilebilir.",
+    "description": "__MISSING__:Optional helpers that run on your machine. Most users can start without them — install one only when an integration needs it.",
     "stateRunning": "Çalışıyor",
     "stateStopped": "Durduruldu",
     "stateStarting": "Başlatılıyor",
@@ -8921,7 +8935,7 @@
     "featureMissingToolResponse": "Araç Yanıt Enjeksiyonu",
     "featureMissingToolResponseDesc": "İstemciler karşılık gelen yanıtlar olmadan tool_calls gönderdiğinde boş tool_result mesajlarını enjekte eder.",
     "featureThinkingBudget": "Bütçeyi Düşünmek",
-    "featureThinkingBudgetDesc": "Düşünme yapılandırmasını otomatik olarak yönetir. Son mesaj kullanıcıdan gelmediğinde düşünme parametrelerini kaldırır.",
+    "featureThinkingBudgetDesc": "__MISSING__:Proxy-level control of thinking/reasoning request fields: passthrough (client controls), auto (strip all thinking params), custom (fixed budget), or adaptive (scale by complexity). Independent of compression and routing. Does not decrypt encrypted reasoning content.",
     "featureDirectPaths": "Doğrudan Çeviri Yolları",
     "featureDirectPathsDesc": "Bazı format çiftleri (Claude → Gemini), OpenAI merkezini atlayan ve daha doğru çıktı üreten doğrudan çeviricilere sahiptir.",
     "featureImageMapping": "Görüntü Boyutu Eşleme",
@@ -10691,7 +10705,7 @@
     "continue": "Devam Et"
   },
   "cursorAuthModal": {
-    "title": "İmleç IDE'sini bağlayın",
+    "title": "__MISSING__:Connect Cursor",
     "tabLogin": "Login with Cursor",
     "tabImport": "Import token",
     "loginDescription": "Opens Cursor's browser login. Works in Docker — approve in your host browser, then return here.",
@@ -10704,7 +10718,7 @@
     "autoDetecting": "Belirteçler otomatik olarak algılanıyor...",
     "readingFromCursor": "İmleç IDE'sinden veya imleç aracısından okuma",
     "tokensAutoDetected": "Belirteçler Cursor IDE'den başarıyla otomatik olarak algılandı!",
-    "cursorNotDetected": "İmleç IDE'si algılanmadı. Lütfen jetonunuzu manuel olarak yapıştırın.",
+    "cursorNotDetected": "__MISSING__:Cursor IDE not detected. Paste your access token (and refresh token if available).",
     "dockerImportHint": "Running in Docker? Prefer Login with Cursor. IDE auto-import and cursor-agent are usually unavailable inside the container. See docs/providers/CURSOR-DOCKER.md.",
     "accessToken": "Erişim Jetonu",
     "refreshToken": "Refresh Token",
@@ -12074,10 +12088,10 @@
       },
       "acp": {
         "title": "ACP Ajanları",
-        "phrase": "OmniRoute'un yürütme arka ucu olarak başlattığı CLI'lar (ters akış)",
+        "phrase": "__MISSING__:Run complex, long-running logic in the backend",
+        "warning": "Most users can ignore this — use only when an integration requires it.",
         "flow": "İstemci → OmniRoute → CLI başlat (stdio/ACP) → yanıt",
-        "seeOther": "Gör →",
-        "warning": "Most users can ignore this — use only when an integration requires it."
+        "seeOther": "Gör →"
       }
     },
     "comparison": {
@@ -12836,6 +12850,10 @@
       "ALLOW_MULTI_CONNECTIONS_PER_COMPAT_NODE": {
         "description": "Her uyumluluk düğümü için birden fazla bağlantıya izin verin."
       },
+      "DISABLE_CONTEXT_WINDOW_CHECKS": {
+        "label": "Disable Context Window Checks",
+        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
+      },
       "RESPONSES_PASSTHROUGH_DROP_COMMENTARY": {
         "description": "İstemcilere iletmeden önce Responses API doğrudan geçiş akışlarından dahili yorum aşaması çıktı öğelerini kaldırın. Ham kaynak yorumlarını almak için bu bayrağı devre dışı bırakın."
       },
@@ -12901,10 +12919,6 @@
       },
       "SKILLS_SANDBOX_NETWORK_ENABLED": {
         "description": "Yetenekler korumalı alanında (skills sandbox) ağ erişimini etkinleştirin."
-      },
-      "DISABLE_CONTEXT_WINDOW_CHECKS": {
-        "label": "Disable Context Window Checks",
-        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
       }
     }
   },
@@ -13383,6 +13397,13 @@
   },
   "resilienceConnections": {
     "title": "Bağlantı Dayanıklılığı",
+    "reassuranceTitle": "Your connections recover automatically",
+    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
+    "plainStates": {
+      "healthy": "Requests can be sent",
+      "coolingDown": "Trying again soon",
+      "lockedOut": "Needs your attention"
+    },
     "table": {
       "status": "Durum",
       "provider": "Sağlayıcı",
@@ -13477,16 +13498,10 @@
         "modelLockouts": "Model Kilitleri",
         "count": "Bağlantı Sayısı"
       }
-    },
-    "reassuranceTitle": "Your connections recover automatically",
-    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
-    "plainStates": {
-      "healthy": "Requests can be sent",
-      "coolingDown": "Trying again soon",
-      "lockedOut": "Needs your attention"
     }
   },
   "featureFlagCapabilityFilterEnabledDescription": "Hedef model gerekli yeteneklere (görüş, araçlar, yapılandırılmış çıktı, bağlam penceresi) sahip olmadığında, gönderimden önce istekleri reddedin. Kombinasyon katmanı uyumluluk filtresini atlayan doğrudan tek sağlayıcı isteklerini korur.",
+  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "publicSystem": {
     "notFound": {
       "title": "Sayfa bulunamadı",
@@ -13922,7 +13937,6 @@
     "structuredOutputMismatch": "Sağlayıcı yapılandırılmış çıktıyı desteklemiyor",
     "contextWindowMismatch": "Talep sağlayıcı bağlam penceresini aşıyor"
   },
-  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "cheaperInferenceSponsorBanner": {
     "title": "Cheaper Inference is an OmniRoute Open Source Friend",
     "description": "A cost-ranked gateway reselling dozens of frontier models behind one OpenAI-compatible endpoint — routing each request to the cheapest eligible provider, never above list price.",

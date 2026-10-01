@@ -25,7 +25,9 @@ test("ttft() measures first-forwarded-chunk latency (byte vs forward distinguish
   await new Promise((r) => setTimeout(r, 20));
   t.markForward(); // first chunk forwarded 20ms later
   const ttft = t.ttftMs();
-  assert.ok(ttft !== null && ttft >= 20 && ttft < 5000, `ttft=${ttft}`);
+  // Lower bound is 18, not 20: timers may fire ~1-2ms early under clock
+  // granularity on loaded CI runners; ~0 (byte-time confusion) is still excluded.
+  assert.ok(ttft !== null && ttft >= 18 && ttft < 5000, `ttft=${ttft}`);
   assert.ok(t.firstByteAt !== null);
   assert.ok(t.firstByteAt! < t.firstForwardAt!, "first byte precedes first forward");
 });

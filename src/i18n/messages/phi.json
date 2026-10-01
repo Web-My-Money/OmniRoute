@@ -805,6 +805,13 @@
     "batchConceptBenefit50pct": "50% discount on input + output tokens",
     "batchConceptAsync24h": "Async with a 24h completion window",
     "batchConceptUseCases": "Best for bulk classification, evaluations, and embeddings",
+    "batchHeaderSubtitle": "Run many requests as one job",
+    "batchStep1": "1 · Upload JSONL",
+    "batchStep1Desc": "Add requests",
+    "batchStep2": "2 · Create batch",
+    "batchStep2Desc": "Run job",
+    "batchStep3": "3 · Get results",
+    "batchStep3Desc": "Download output",
     "filesConceptTitle": "Batch files",
     "filesConceptSubtitle": "JSONL files used by batches: input requests, results, and errors.",
     "filesConceptInput": "Input — your JSONL with one request per line",
@@ -974,14 +981,7 @@
     "batchFileUsedByCount": "Ginagamit ng {count, plural, one {# batch} other {# batches}}",
     "batchFilePreview": "I-preview",
     "batchFilePreviewTruncated": "Ipinapakita ang unang {shown} linya ({total} kabuuang linya)",
-    "batchFileDownloadFull": "I-download ang Buong File",
-    "batchHeaderSubtitle": "Run many requests as one job",
-    "batchStep1": "1 · Upload JSONL",
-    "batchStep1Desc": "Add requests",
-    "batchStep2": "2 · Create batch",
-    "batchStep2Desc": "Run job",
-    "batchStep3": "3 · Get results",
-    "batchStep3Desc": "Download output"
+    "batchFileDownloadFull": "I-download ang Buong File"
   },
   "disabled": "Naka-disable",
   "featureFlagOmnirouteEmergencyFallbackDescription": "I-route ang mga request na naubusan ng budget sa emergency free fallback provider/model.",
@@ -1019,7 +1019,7 @@
     "apiManager": "Tagapamahala ng API",
     "apiManagerSubtitle": "Pamahalaan ang mga API key at access",
     "embeddedServices": "Mga Naka-embed na Serbisyo",
-    "embeddedServicesSubtitle": "Pamahalaan ang mga lokal na proxy na serbisyo",
+    "embeddedServicesSubtitle": "__MISSING__:Optional local services",
     "logs": "Mga log",
     "webhooks": "Mga Webhook",
     "webhooksSubtitle": "Maabisuhan ng mga kaganapan",
@@ -1267,6 +1267,7 @@
     "agentBridgeSubtitle": "I-intercept ang traffic ng IDE agent",
     "trafficInspector": "Traffic Inspector",
     "trafficInspectorSubtitle": "__MISSING__:Inspect request and response traffic from your apps",
+    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client.",
     "cliCode": "CLI Code",
     "cliCodeSubtitle": "Mga code tool na nakaturo sa OmniRoute",
     "cliAgents": "Mga CLI Agent",
@@ -1300,8 +1301,7 @@
       "open": "buksan",
       "close": "isara"
     },
-    "noResults": "Walang resulta",
-    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client."
+    "noResults": "Walang resulta"
   },
   "webhooks": {
     "title": "Mga Webhook",
@@ -1808,6 +1808,11 @@
     "updateStarted": "Nagsimula ang pag-update...",
     "reloadingPageAutomatically": "Awtomatikong nire-reload ang page...",
     "providerTopology": "Topology ng Provider",
+    "recentRequests": "Recent Requests",
+    "recentRequestsEmpty": "No requests yet.",
+    "recentRequestsModel": "Model",
+    "recentRequestsTokens": "In / Out",
+    "recentRequestsWhen": "When",
     "downloadDmg": "I-download ang DMG (macOS)",
     "downloadDmgDescription": "Isang bagong bersyon ng OmniRoute desktop app ang available. Mangyaring i-download at i-install ang macOS DMG installer upang mag-update (kasalukuyan: v{version}).",
     "downloadExe": "I-download ang EXE (Windows)",
@@ -1865,11 +1870,6 @@
     "releaseNotes": "Mga Tala ng Paglabas",
     "readMore": "Magbasa Pa Nang Higit",
     "noAuthLabel": "Walang Awtorisasyon",
-    "recentRequests": "Recent Requests",
-    "recentRequestsEmpty": "No requests yet.",
-    "recentRequestsModel": "Model",
-    "recentRequestsTokens": "In / Out",
-    "recentRequestsWhen": "When",
     "readinessEyebrow": "Get ready to route",
     "readinessTitle": "Send your first request",
     "readinessSubtitle": "Four small steps. OmniRoute checks readiness as you go.",
@@ -2922,9 +2922,9 @@
       "interpreter": "Open Interpreter autonomous coding agent CLI",
       "omp": "Oh My Pi terminal coding agent",
       "letta": "Letta CLI agent na may persistent memory at paggamit ng tool",
+      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support",
       "warp": "Warp AI terminal na may suporta sa custom provider",
-      "agent-deck": "Agent Deck multi-agent orchestrator",
-      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support"
+      "agent-deck": "Agent Deck multi-agent orchestrator"
     },
     "guides": {
       "cursor": {
@@ -3849,6 +3849,9 @@
   },
   "endpoint": {
     "title": "Endpoint ng API",
+    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
+    "testEndpoint": "Test endpoint →",
+    "advancedProtocols": "Advanced protocols",
     "available": "Magagamit na Mga Endpoint",
     "cloudProxy": "Cloud Proxy",
     "disableConfirm": "Sigurado ka bang gusto mong i-disable ang cloud proxy?",
@@ -4156,10 +4159,7 @@
     "notionIntegrationHelp": "Gumawa ng Panloob na Pagsasama sa",
     "notionIntegrationToken": "Notion Internal Integration Token",
     "notionNotConnected": "Hindi nakakonekta",
-    "notionTokenConfigured": "Naka-configure ang token. Ang mga tool ng Notion ay available sa pamamagitan ng MCP.",
-    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
-    "testEndpoint": "Test endpoint →",
-    "advancedProtocols": "Advanced protocols"
+    "notionTokenConfigured": "Naka-configure ang token. Ang mga tool ng Notion ay available sa pamamagitan ng MCP."
   },
   "endpoints": {
     "tabProxy": "Endpoint Proxy",
@@ -4632,6 +4632,13 @@
     "retry": "Subukan muli",
     "allOperational": "Ang lahat ng mga sistema ay gumagana",
     "issuesDetected": "May nakitang mga isyu sa system",
+    "healthVerdictReady": "OmniRoute is ready",
+    "healthVerdictActionRequired": "Action required to restore full operation",
+    "healthVerdictCoolingDown": "Cooling down after recent changes",
+    "healthSubtitle": "System health check",
+    "advancedDiagnosticsTitle": "Advanced diagnostics",
+    "hide": "Hide",
+    "show": "Show",
     "updatedAt": "Na-update {time}",
     "latency": "Latency",
     "latencyP50": "p50",
@@ -4742,14 +4749,7 @@
     "issueCount": "{count} isyu",
     "score": "Iskor",
     "lastRequest": "Huling kahilingan",
-    "lastError": "Huling error",
-    "healthVerdictReady": "OmniRoute is ready",
-    "healthVerdictActionRequired": "Action required to restore full operation",
-    "healthVerdictCoolingDown": "Cooling down after recent changes",
-    "healthSubtitle": "System health check",
-    "advancedDiagnosticsTitle": "Advanced diagnostics",
-    "hide": "Hide",
-    "show": "Show"
+    "lastError": "Huling error"
   },
   "telemetry": {
     "title": "System Telemetry",
@@ -4954,7 +4954,9 @@
     "multiProvider": "Multi-Provider",
     "usageTracking": "Pagsubaybay sa Paggamit",
     "securityDesc": "Magtakda ng password para protektahan ang iyong dashboard, o laktawan muna.",
+    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
     "providerDesc": "Ikonekta ang iyong unang AI provider. Maaari kang magdagdag ng higit pa sa ibang pagkakataon.",
+    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard.",
     "apiKeyRequired": "API Key (kinakailangan)",
     "customUrlOptional": "Custom na URL (opsyonal)",
     "testDesc": "I-verify natin na gumagana ang iyong koneksyon sa provider.",
@@ -5011,9 +5013,7 @@
         "skipped": "naka-configure na",
         "failed": "nabigo"
       }
-    },
-    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
-    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard."
+    }
   },
   "providers": {
     "title": "Mga provider",
@@ -5724,8 +5724,8 @@
     "aggregatorsGateways": "Aggregators Gateways",
     "enterpriseCloud": "Enterprise at Cloud",
     "apiFormatLabel": "Api Format Label",
-    "apiKeyOptionalHint": "Api Key Optional Hint",
-    "apiKeyOptionalLabel": "Api Key Optional Label",
+    "apiKeyOptionalHint": "__MISSING__:Leave empty if your local setup or provider does not require authentication.",
+    "apiKeyOptionalLabel": "__MISSING__:API Key (optional)",
     "apiRegionChina": "Api Region China",
     "apiRegionHint": "Api Region Hint",
     "apiRegionInternational": "Api Region International",
@@ -6157,8 +6157,8 @@
       "inception": "Ang Inception Labs ay katugma ng OpenAI sa https://api.inceptionlabs.ai/v1. Ang mercury-2 ang unang diffusion LLM (dLLM) sa katalogo — 5-10x na mas mabilis na pagbuo kaysa sa mga katulad na autoregressive na modelo, na may tool calling, json_mode, at structured outputs.",
       "inference-net": "$25 libreng credits sa pag-signup at may available ding mga research grant",
       "internlm": "Libreng buwanang quota ~1M input / 3M output tokens (~10 RPM)",
-      "jina-ai": "Bearer API key para sa Jina AI rerank API.",
-      "jina-reader": "Ikonekta ang Jina Reader gamit ang isang API key.",
+      "jina-ai": "__MISSING__:Bearer API key for api.jina.ai (embeddings, rerank, classify, segment, search). Not the Reader / r.jina.ai card. Dashboard keys take precedence over JINA_AI_API_KEY.",
+      "jina-reader": "__MISSING__:Bearer API key for r.jina.ai URL-to-markdown only. Does not serve /v1/embeddings or /v1/rerank. The same Jina token as Foundation API works.",
       "kenari": "Kenari exposes an OpenAI-compatible chat completions endpoint at https://kenari.id/v1/chat/completions, plus a live /v1/models catalog covering Claude, GPT, DeepSeek, GLM, Kimi and more. OmniRoute uses the OpenAI protocol and lists models via passthrough.",
       "kie": "Ikonekta ang KIE.AI gamit ang isang API key.",
       "kilo-gateway": "Ikonekta ang Kilo Gateway gamit ang isang API key.",
@@ -6271,7 +6271,7 @@
       "cursor": "Ikonekta ang Cursor IDE gamit ang umiiral na OAuth flow.",
       "cursor-api": "Connect Cursor with a user API key (crsr_...) from cursor.com/dashboard/api; no IDE session needed.",
       "github": "Ikonekta ang GitHub Copilot gamit ang umiiral na OAuth flow.",
-      "gitlab-duo": "OAuth application na may ai_features + read_user scopes. I-configure ang GITLAB_DUO_OAUTH_CLIENT_ID at opsyonal ang GITLAB_DUO_OAUTH_CLIENT_SECRET sa OmniRoute instance na ito.",
+      "gitlab-duo": "__MISSING__:OAuth application with ai_features + read_user scopes. Configure GITLAB_DUO_OAUTH_CLIENT_ID and optionally GITLAB_DUO_OAUTH_CLIENT_SECRET on this OmniRoute instance.",
       "kilocode": "Ikonekta ang Kilo Code gamit ang umiiral na OAuth flow.",
       "kimi-coding": "Ikonekta ang Kimi Coding gamit ang umiiral na OAuth flow.",
       "kiro": "Libreng tier: 50 credits/buwan (~25K–100K tokens). ⚠️ Ipinagbabawal ng Kiro ToS ang paggamit ng third-party proxy/harness.",
@@ -6302,6 +6302,20 @@
     "webSessionGuideStep3": "Kopyahin ang kinakailangang kredensyal mula sa sariling domain ng provider. Para sa cookies, kopyahin lang ang value ng Cookie header at alisin ang Cookie:.",
     "webSessionGuideStep3Manual": "Manwal na landas: buksan ang mga developer tools ng browser (F12 → Network), i-refresh ang pahina, buksan ang isang authenticated na request, at kopyahin ang halaga ng Cookie header mula sa Request Headers — alisin ang prefix na Cookie:.",
     "webSessionGuideStep4": "I-paste ito dito at suriin ang koneksyon. Kung huminto ito sa paggana, mag-sign in muli at palitan ito ng bagong halaga.",
+    "harImportButtonLabel": "Import .har file",
+    "harImportButtonBusy": "Importing…",
+    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
+    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
+    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
+    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
+    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
+    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
+    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
+    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
+    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
+    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
+    "harImportErrorReadFailed": "Couldn't read that file.",
+    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file.",
     "webSessionSecurityHint": "Tratuhin ito bilang isang password: maaari nitong i-access ang iyong naka-sign-in na web account hanggang sa mag-expire o mabawi ito.",
     "webNoAuthGuideTitle": "Walang kinakailangang kredensyal",
     "webNoAuthGuideBody": "Hindi kailangan ng {provider} ng API key o cookie. I-save ang koneksyon upang magamit ang libreng web endpoint nito.",
@@ -6327,8 +6341,8 @@
     "apiProtocolHint": "Ang ilang mga provider ay naglalathala ng parehong mga modelo sa higit sa isang protocol. Iwanan ang default maliban kung kailangan mo ang alternatibo.",
     "bulkAddFormatHintCloudflare": "Isang key bawat linya. Format: name|accountId|apiKey (Cloudflare account ID + API token).",
     "lmarenaWebCookieHint": "Buksan ang arena.ai, mag-sign in, pagkatapos ay kopyahin ang buong Cookie header mula sa isang Network request. Isama ang arena-auth-prod-v1.0 at arena-auth-prod-v1.1 (at iba pang mga chunk kung mayroon), mas mainam kung may cf_clearance. Huwag i-paste ang walang lamang arena-auth-prod-v1 cookie lamang. Opsyonal: providerSpecificData.recaptchaV3Token kung nagbabalik pa rin ng 403 ang create-evaluation.",
-    "kimiOfficialSupporterBadge": "Tagapagtatag na Kaibigan",
-    "kimiOfficialSupporterTooltip": "Ang Kimi (Moonshot AI) ang tagapagtatag na open source na kaibigan ng OmniRoute",
+    "kimiOfficialSupporterBadge": "__MISSING__:Official Supporter",
+    "kimiOfficialSupporterTooltip": "__MISSING__:Kimi (Moonshot AI) is an official OmniRoute launch partner",
     "cheaperInferenceSupporterBadge": "Kaibigan ng Open Source",
     "cheaperInferenceSupporterTooltip": "Sinusuportahan ng Cheaper Inference ang OmniRoute bilang Kaibigan ng Open Source",
     "kimiPartnerLinkNote": "Link ng kasosyo — sumusuporta sa OmniRoute nang walang karagdagang gastos sa iyo",
@@ -6416,21 +6430,7 @@
     "savedModelEndpointSettings": "Naka-save na mga setting ng endpoint ng modelo",
     "searchByModelAria": "Maghanap ayon sa modelo",
     "selectSupportedEndpoint": "Pumili ng hindi bababa sa isang sinusuportahang endpoint",
-    "antigravityClientProfileHarness": "Harness / CLI",
-    "harImportButtonLabel": "Import .har file",
-    "harImportButtonBusy": "Importing…",
-    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
-    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
-    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
-    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
-    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
-    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
-    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
-    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
-    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
-    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
-    "harImportErrorReadFailed": "Couldn't read that file.",
-    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file."
+    "antigravityClientProfileHarness": "Harness / CLI"
   },
   "settings": {
     "title": "Mga setting",
@@ -6710,6 +6710,18 @@
     "sidebarVisibility": "Hide sidebar items",
     "sidebarVisibilityDesc": "Hide any sidebar navigation entry to reduce visual clutter.",
     "sidebarVisibilityHint": "Any sidebar section is hidden automatically when a...",
+    "presetAll": "All",
+    "presetAllDesc": "Show everything",
+    "presetEssentials": "Essentials",
+    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
+    "presetMinimal": "Minimal",
+    "presetMinimalDesc": "Core pages only",
+    "presetDeveloper": "Developer",
+    "presetDeveloperDesc": "Dev & proxy tools",
+    "presetAdmin": "Admin",
+    "presetAdminDesc": "Monitoring & audit",
+    "settingsSidebarTitle": "Sidebar Customization",
+    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable.",
     "hideHealthLogs": "Itago ang Health Check Logs",
     "hideHealthLogsDesc": "Kapag NAKA-ON, sugpuin ang mga mensahe ng [HealthCheck] sa server console",
     "themeAccent": "Kulay ng tema",
@@ -6921,7 +6933,7 @@
     "afterPromptPlaceholder": "Mga tagubiling isiningit pagkatapos ng prompt ng agent/provider...",
     "chars": "{count} character",
     "thinkingBudgetTitle": "Pag-iisip na Badyet",
-    "thinkingBudgetDesc": "Kontrolin ang paggamit ng token ng pangangatwiran ng AI sa lahat ng kahilingan",
+    "thinkingBudgetDesc": "__MISSING__:Controls whether OmniRoute rewrites client thinking/reasoning parameters before requests go upstream. This is separate from compression, prompt cache, and API-key token limits.",
     "thinkingBudgetIndependenceHint": "Ang mga tampok ng compression, routing, at token-limit ay patuloy na gumagana sa bawat mode. Ang Auto ay hindi nangangahulugang \"auto-show thinking\" — inaalis nito ang mga field ng pag-iisip ng kliyente.",
     "passthrough": "Passthrough",
     "passthroughDesc": "Walang pagbabago — kinokontrol ng kliyente ang pag-iisip na badyet",
@@ -6946,7 +6958,7 @@
     "tokenBudget": "Token Budget",
     "tokens": "mga token",
     "baseEffortLevel": "Batayang Antas ng Pagsisikap",
-    "adaptiveHint": "Ang adaptive mode ay sumusukat mula sa base level na ito batay sa bilang ng mensahe, paggamit ng tool, at haba ng prompt.",
+    "adaptiveHint": "__MISSING__:Adaptive mode scales from this base level based on message count, tool usage, and prompt length. Does not decrypt provider encrypted reasoning blobs.",
     "requireLogin": "Nangangailangan ng pag-login",
     "requireLoginDesc": "Kapag NAKA-ON, nangangailangan ng password ang dashboard. Kapag NAKA-OFF, i-access nang walang login.",
     "currentPassword": "Kasalukuyang Password",
@@ -7678,6 +7690,20 @@
     "jsonImportError": "Error habang nag-i-import ng JSON",
     "storagePurgeData": "Purge Data",
     "storagePurgeDataDesc": "Agad na burahin ang lahat ng record nang hindi inilalapat ang mga pagsusuri sa pagpapanatili. Gamitin nang may pag-iingat.",
+    "storageMaintenance": "__MISSING__:Maintenance & cleanup",
+    "storageMaintenanceDesc": "__MISSING__:Background cleanup runs every 6 hours and removes rows past the retention windows configured below.",
+    "storageLastAutoCleanup": "__MISSING__:Last auto-cleanup",
+    "storageCleanupNeverRan": "__MISSING__:Not run yet",
+    "storageCleanupRowsDeleted": "__MISSING__:Rows removed",
+    "storageCleanupErrors": "__MISSING__:{count} errors",
+    "storageCleanupEnabled": "__MISSING__:Auto-cleanup on",
+    "storageCleanupDisabled": "__MISSING__:Auto-cleanup off",
+    "storageWalSize": "__MISSING__:WAL size",
+    "storageProcessRss": "__MISSING__:Process memory (RSS)",
+    "storageCgroupBilled": "__MISSING__:Container memory (billed)",
+    "storageCgroupCache": "__MISSING__:File cache",
+    "storageFtsIndex": "__MISSING__:Memory FTS index / data",
+    "storageTopTables": "__MISSING__:Largest tables",
     "storageRetentionCleanup": "Mga Setting ng Pagpapanatili",
     "storageRetentionCleanupDesc": "I-configure ang pagpapanatili ng operational record at paglilinis ng backup ng database.",
     "retentionCallDays": "Tawag {count}d",
@@ -8277,19 +8303,7 @@
     "cliproxyapiHealth": "Kalusugan",
     "cliproxyapiPort": "Port",
     "qdrantHost": "Host",
-    "qdrantCollection": "Koleksyon",
-    "presetAll": "All",
-    "presetAllDesc": "Show everything",
-    "presetEssentials": "Essentials",
-    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
-    "presetMinimal": "Minimal",
-    "presetMinimalDesc": "Core pages only",
-    "presetDeveloper": "Developer",
-    "presetDeveloperDesc": "Dev & proxy tools",
-    "presetAdmin": "Admin",
-    "presetAdminDesc": "Monitoring & audit",
-    "settingsSidebarTitle": "Sidebar Customization",
-    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable."
+    "qdrantCollection": "Koleksyon"
   },
   "contextRtk": {
     "title": "RTK Engine",
@@ -8654,13 +8668,13 @@
   },
   "omniglyph": {
     "preview": "Preview",
-    "description": "Context-as-image compression. Nire-render ang system prompt, dokumentasyon ng tool, at siksik na history bilang mga compact na PNG page na binabasa ng Claude Fable 5 sa halip na text. Ang mga image token ay sinisingil ayon sa mga dimensyon sa halip na mga character, kaya ang na-convert na block ay nagkakahalaga ng humigit-kumulang 10× na mas mababa. Direktang Anthropic route lamang.",
+    "description": "__MISSING__:Context-as-image compression. Renders the system prompt, tool documentation, and dense history as compact PNG pages for the measured Claude Fable 5 path. The published OmniGlyph package also exposes native GPT 5.6 transformers, but OmniRoute keeps those routes fail-closed until provider fidelity and reading receipts exist.",
     "economicsTitle": "Ang ekonomiks",
     "economics": {
       "fewerTokens": "mas kaunting mga token sa na-convert na block",
       "savings": "end-to-end na natipid (nasukat)",
       "imageTokens": "mga image token para sa isang 1568×728 na page (humigit-kumulang 28k na character)",
-      "accuracy": "katumpakan sa pagbabasa sa Fable 5 (n=30)"
+      "accuracy": "__MISSING__:scoped Fable 5 reading receipt"
     },
     "beforeAfterTitle": "Bago → pagkatapos",
     "blockSavings": "−{percent}% na token sa block na ito",
@@ -8673,18 +8687,18 @@
     "gates": {
       "model": {
         "label": "Modelo",
-        "pass": "claude-fable-5",
-        "why": "Tanging Fable 5 lamang ang nagbabasa ng mga siksik na page sa 100% katumpakan (nasukat, n=30). Naka-block ang GPT-5.5 at Gemini 2.5 Flash."
+        "pass": "__MISSING__:claude-fable-5 (measured); gpt-5.6 (HOLD)",
+        "why": "__MISSING__:Only the measured Fable 5 path is enabled in OmniRoute. GPT 5.6 is structurally supported by the package but remains blocked until its provider receipt; unverified families such as Grok stay text-only."
       },
       "transport": {
         "label": "Transport",
-        "pass": "direktang Anthropic",
-        "why": "Muling nire-resample ng mga aggregator ang mga imahe at sinisira ang pagiging nababasa — ang direktang ruta lamang ang may awtoridad."
+        "pass": "__MISSING__:direct provider",
+        "why": "__MISSING__:Aggregators may resample images and destroy legibility — only a direct provider route is authoritative."
       },
       "format": {
         "label": "Format",
-        "pass": "native na Claude",
-        "why": "Dapat gamitin ng body ang format ng Claude at hindi kailanman dapat maglagay ng system role sa loob ng mga mensahe."
+        "pass": "__MISSING__:native Claude/OpenAI",
+        "why": "__MISSING__:The body must match the provider wire: Claude Messages, OpenAI Chat Completions, or native OpenAI Responses input[]."
       },
       "profitable": {
         "label": "Sulit",
@@ -8693,7 +8707,7 @@
       }
     },
     "enableTitle": "I-enable ang engine",
-    "enableDescription": "Tumatakbo nang huli sa stack (pagkatapos linisin ng RTK/Caveman ang text, kino-convert ng OmniGlyph ang natitira sa mga imahe) at tumatakbo rin nang standalone sa pamamagitan ng <code>omniglyph</code> mode. Ito ay isang preview at nananatiling naka-off by default hanggang sa makumpleto ang end-to-end na pagpapatunay.",
+    "enableDescription": "__MISSING__:Runs last in the stack after text engines clean the request, using the native provider wire; OpenAI Chat/Responses requests are compressed after translation so their shape is preserved. It also runs standalone through <code>omniglyph</code> mode. This is a preview and remains off by default until end-to-end validation is complete.",
     "profileTitle": "Compression profile",
     "profileDescription": "The profile is a ceiling, not a floor: a stricter profile cannot be reopened by a per-step override. Measured on this codebase: with coding-safe or balanced, a session that has not accumulated history yet compresses nothing, because both raise the minimum-characters threshold and keep the system prompt, tool schemas and tool results native.",
     "profiles": {
@@ -8722,7 +8736,7 @@
   },
   "embeddedServices": {
     "title": "Mga Naka-embed na Serbisyo",
-    "description": "Mga lokal na engine na pinamamahalaan kapag kinakailangan — CLIProxyAPI, 9Router, Mux, at Bifrost. Maa-access sa loopback lamang.",
+    "description": "__MISSING__:Optional helpers that run on your machine. Most users can start without them — install one only when an integration needs it.",
     "stateRunning": "Tumatakbo",
     "stateStopped": "Nakahinto",
     "stateStarting": "Nagsisimula",
@@ -8921,7 +8935,7 @@
     "featureMissingToolResponse": "Tool Response Injection",
     "featureMissingToolResponseDesc": "Nag-iiniksyon ng mga walang laman na tool_result na mensahe kapag ang mga kliyente ay nagpadala ng mga tool_call nang walang kaukulang mga tugon.",
     "featureThinkingBudget": "Pag-iisip na Badyet",
-    "featureThinkingBudgetDesc": "Awtomatikong pinamamahalaan ang thinking config. Inaalis ang mga parameter ng pag-iisip kapag ang huling mensahe ay hindi mula sa user.",
+    "featureThinkingBudgetDesc": "__MISSING__:Proxy-level control of thinking/reasoning request fields: passthrough (client controls), auto (strip all thinking params), custom (fixed budget), or adaptive (scale by complexity). Independent of compression and routing. Does not decrypt encrypted reasoning content.",
     "featureDirectPaths": "Direktang Path sa Pagsasalin",
     "featureDirectPathsDesc": "Ang ilang mga pares ng format (Claude→Gemini) ay may mga direktang tagasalin na lumalampas sa OpenAI hub, na gumagawa ng mas tumpak na output.",
     "featureImageMapping": "Pagmamapa ng Laki ng Larawan",
@@ -10691,7 +10705,7 @@
     "continue": "Magpatuloy"
   },
   "cursorAuthModal": {
-    "title": "Ikonekta ang Cursor IDE",
+    "title": "__MISSING__:Connect Cursor",
     "tabLogin": "Login with Cursor",
     "tabImport": "Import token",
     "loginDescription": "Opens Cursor's browser login. Works in Docker — approve in your host browser, then return here.",
@@ -10704,7 +10718,7 @@
     "autoDetecting": "Awtomatikong pagtukoy ng mga token...",
     "readingFromCursor": "Pagbabasa mula sa Cursor IDE o cursor-agent",
     "tokensAutoDetected": "Ang mga token ay matagumpay na na-auto-detect mula sa Cursor IDE!",
-    "cursorNotDetected": "Hindi nakita ang cursor IDE. Mangyaring manu-manong i-paste ang iyong token.",
+    "cursorNotDetected": "__MISSING__:Cursor IDE not detected. Paste your access token (and refresh token if available).",
     "dockerImportHint": "Running in Docker? Prefer Login with Cursor. IDE auto-import and cursor-agent are usually unavailable inside the container. See docs/providers/CURSOR-DOCKER.md.",
     "accessToken": "Access Token",
     "refreshToken": "Refresh Token",
@@ -12074,10 +12088,10 @@
       },
       "acp": {
         "title": "ACP Agents",
-        "phrase": "Mga CLI na ini-spawn ng OmniRoute bilang execution backend (reverse flow)",
+        "phrase": "__MISSING__:Run complex, long-running logic in the backend",
+        "warning": "Most users can ignore this — use only when an integration requires it.",
         "flow": "Client → OmniRoute → spawn CLI (stdio/ACP) → response",
-        "seeOther": "Tingnan →",
-        "warning": "Most users can ignore this — use only when an integration requires it."
+        "seeOther": "Tingnan →"
       }
     },
     "comparison": {
@@ -12836,6 +12850,10 @@
       "ALLOW_MULTI_CONNECTIONS_PER_COMPAT_NODE": {
         "description": "Payagan ang maraming koneksyon para sa bawat compatibility node."
       },
+      "DISABLE_CONTEXT_WINDOW_CHECKS": {
+        "label": "Disable Context Window Checks",
+        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
+      },
       "RESPONSES_PASSTHROUGH_DROP_COMMENTARY": {
         "description": "Alisin ang mga panloob na output item ng commentary-phase mula sa mga passthrough stream ng Responses API bago ipasa ang mga ito sa mga client. I-disable ang flag na ito upang makatanggap ng raw upstream commentary."
       },
@@ -12901,10 +12919,6 @@
       },
       "SKILLS_SANDBOX_NETWORK_ENABLED": {
         "description": "I-enable ang access sa network sa skills sandbox."
-      },
-      "DISABLE_CONTEXT_WINDOW_CHECKS": {
-        "label": "Disable Context Window Checks",
-        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
       }
     }
   },
@@ -13383,6 +13397,13 @@
   },
   "resilienceConnections": {
     "title": "Katatagan ng Koneksyon",
+    "reassuranceTitle": "Your connections recover automatically",
+    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
+    "plainStates": {
+      "healthy": "Requests can be sent",
+      "coolingDown": "Trying again soon",
+      "lockedOut": "Needs your attention"
+    },
     "table": {
       "status": "Katayuan",
       "provider": "Provider",
@@ -13477,16 +13498,10 @@
         "modelLockouts": "Mga Lockout ng Modelo",
         "count": "Bilang ng Koneksyon"
       }
-    },
-    "reassuranceTitle": "Your connections recover automatically",
-    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
-    "plainStates": {
-      "healthy": "Requests can be sent",
-      "coolingDown": "Trying again soon",
-      "lockedOut": "Needs your attention"
     }
   },
   "featureFlagCapabilityFilterEnabledDescription": "Tanggihan ang mga kahilingan bago ang pagpapadala kapag ang target na modelo ay kulang sa mga kinakailangang kakayahan (paningin, mga tool, nakabalangkas na output, bintana ng konteksto). Pinoprotektahan ang mga direktang kahilingan mula sa isang tagapagbigay na lumalampas sa filter ng pagiging tugma ng combo-layer.",
+  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "publicSystem": {
     "notFound": {
       "title": "Hindi matagpuan ang pahina",
@@ -13922,7 +13937,6 @@
     "structuredOutputMismatch": "Hindi sinusuportahan ng provider ang nakabalangkas na output",
     "contextWindowMismatch": "Lumampas ang kahilingan sa konteksto ng tagapagbigay"
   },
-  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "cheaperInferenceSponsorBanner": {
     "title": "Cheaper Inference is an OmniRoute Open Source Friend",
     "description": "A cost-ranked gateway reselling dozens of frontier models behind one OpenAI-compatible endpoint — routing each request to the cheapest eligible provider, never above list price.",

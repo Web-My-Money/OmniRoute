@@ -143,9 +143,9 @@
     },
     "config/quality/eslint-suppressions.json": {
       "sentinels": [
-        "\"src/app/(dashboard)/dashboard/resilience/connections/components/ResilienceConnectionsClient.tsx\": {",
-        "\"src/app/(dashboard)/dashboard/usage/components/ProviderLimits/useCodexResetCreditRedemption.ts\": {",
-        "\"src/app/(dashboard)/dashboard/providers/[id]/components/modals/EditCompatibleNodeModal.tsx\": {"
+        "\"open-sse/config/cliFingerprints.ts\": {",
+        "\"open-sse/config/credentialLoader.ts\": {",
+        "\"open-sse/config/providerRegistry.ts\": {"
       ]
     },
     "config/quality/file-size-baseline.json": {
@@ -361,14 +361,14 @@
       ]
     },
     "open-sse/services/tokenRefresh.ts": {
-      "sentinels": ["log = undefined,"]
+      "sentinels": ["log?: import(\"../executors/base.ts\").ExecutorLog | null,"]
     },
     "open-sse/transformer/responsesTransformer.ts": {
       "sentinels": ["} as unknown as Transformer,"]
     },
     "open-sse/translator/response/openai-responses/pureHelpers.ts": {
       "sentinels": [
-        "export function stripEmptyOptionalToolArgs(value, toolName, schema = undefined) {"
+        "export function stripEmptyOptionalToolArgs(value, toolName, schema?: Record<string, unknown>) {"
       ]
     },
     "open-sse/utils/cacheControlPolicy.ts": {
@@ -6372,7 +6372,7 @@
     },
     "tests/unit/combo/image-combo.test.ts": {
       "sentinels": [
-        "log as unknown as typeof import(\"D:/WMM_DEV_HUB/APPS_WORKSPACE/wmm-omniroute/src/sse/utils/logger\")",
+        "log as unknown as typeof import(\"@/sse/utils/logger\")",
         "fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });",
         "bodyStr.includes(\"not found\") || bodyStr.includes(\"not a valid\"),"
       ]
@@ -6403,7 +6403,7 @@
     },
     "tests/unit/combo/video-combo.test.ts": {
       "sentinels": [
-        "log as unknown as typeof import(\"D:/WMM_DEV_HUB/APPS_WORKSPACE/wmm-omniroute/src/sse/utils/logger\")",
+        "log as unknown as typeof import(\"@/sse/utils/logger\")",
         "fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });"
       ]
     },

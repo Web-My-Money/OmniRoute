@@ -39,9 +39,20 @@ async function renderProviderModels(providerId = "custom-provider") {
   };
 }
 
-async function flushQueuedSync() {
-  await new Promise<void>((resolve) => setTimeout(resolve, 10));
-  await Promise.resolve();
+async function flushQueuedSync(fetchMock?: ReturnType<typeof vi.fn>, expectedCall?: string) {
+  // Poll instead of a fixed sleep: the hook schedules the auto-sync on a
+  // setTimeout, and under CI load a bare 10ms sleep finishes before the timer
+  // callback (and its awaited fetches) complete. Positive tests pass a
+  // `fetchMock` + URL so we wait for the call to actually appear; the negative
+  // test keeps a bounded settle window.
+  const deadline = Date.now() + 2000;
+  do {
+    await new Promise<void>((resolve) => setTimeout(resolve, 5));
+    await Promise.resolve();
+    if (fetchMock && expectedCall) {
+      if (fetchMock.mock.calls.some(([input]) => input === expectedCall)) return;
+    }
+  } while (Date.now() < deadline);
 }
 
 describe("useProviderModels upstream auto-fetch", () => {
@@ -108,7 +119,7 @@ describe("useProviderModels upstream auto-fetch", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const mounted = await renderProviderModels();
-    await flushQueuedSync();
+    await flushQueuedSync(fetchMock, "/api/providers/connection-1/sync-models?mode=sync");
 
     // Mesmo motivo do teste acima: desmontar fecha a janela do timer vazado.
     mounted.unmount();

@@ -1633,3 +1633,9 @@ Used by `open-sse/services/combo.ts` and `src/lib/quota/quotaScheduler.ts` for p
 | Variable                          | Default  | Source File                       | Description                                                                                                      |
 | --------------------------------- | -------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `OMNIROUTE_QUOTA_AWARE_ROUTING`   | `0`      | `open-sse/services/combo.ts`      | When `1`, skip connections whose per-window token budget (`rateLimitOverrides.tpm`, table `provider_quota_state`) cannot afford the estimated request cost before dispatch. Fail-open when no budget configured. |
+
+### Release-green validator (CI only)
+
+| Variable               | Default | Source File                               | Description                                                                                                                          |
+| ---------------------- | ------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `RELEASE_GREEN_SERIAL` | unset   | `scripts/quality/validate-release-green.mjs` | When `1`, run the slow release-green gates sequentially instead of in parallel. Used by nightly-release-green on GitHub-hosted runners to avoid OOM reclaim. Equivalent to `--serial`. |

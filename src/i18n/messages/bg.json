@@ -805,6 +805,13 @@
     "batchConceptBenefit50pct": "50% discount on input + output tokens",
     "batchConceptAsync24h": "Async with a 24h completion window",
     "batchConceptUseCases": "Best for bulk classification, evaluations, and embeddings",
+    "batchHeaderSubtitle": "Run many requests as one job",
+    "batchStep1": "1 · Upload JSONL",
+    "batchStep1Desc": "Add requests",
+    "batchStep2": "2 · Create batch",
+    "batchStep2Desc": "Run job",
+    "batchStep3": "3 · Get results",
+    "batchStep3Desc": "Download output",
     "filesConceptTitle": "Batch files",
     "filesConceptSubtitle": "JSONL files used by batches: input requests, results, and errors.",
     "filesConceptInput": "Input — your JSONL with one request per line",
@@ -974,14 +981,7 @@
     "batchFileUsedByCount": "Използвано от {count, plural, one {# партида} other {# партиди}}",
     "batchFilePreview": "Преглед",
     "batchFilePreviewTruncated": "Показване на първите {shown} реда ({total} общо реда)",
-    "batchFileDownloadFull": "Изтеглете целия файл",
-    "batchHeaderSubtitle": "Run many requests as one job",
-    "batchStep1": "1 · Upload JSONL",
-    "batchStep1Desc": "Add requests",
-    "batchStep2": "2 · Create batch",
-    "batchStep2Desc": "Run job",
-    "batchStep3": "3 · Get results",
-    "batchStep3Desc": "Download output"
+    "batchFileDownloadFull": "Изтеглете целия файл"
   },
   "disabled": "Деактивирано",
   "featureFlagOmnirouteEmergencyFallbackDescription": "Маршрутизиране на заявки с изчерпан бюджет към аварийния безплатен резервен доставчик/модел.",
@@ -1019,7 +1019,7 @@
     "apiManager": "API мениджър",
     "apiManagerSubtitle": "Управление на API ключове и достъп",
     "embeddedServices": "Вградени услуги",
-    "embeddedServicesSubtitle": "Управление на локални прокси услуги",
+    "embeddedServicesSubtitle": "__MISSING__:Optional local services",
     "logs": "трупи",
     "webhooks": "Уеб кукички",
     "webhooksSubtitle": "Получавайте известия за събития",
@@ -1266,7 +1266,8 @@
     "agentBridge": "Agent Bridge",
     "agentBridgeSubtitle": "Прихващане на трафик от IDE агенти",
     "trafficInspector": "Инспектор на трафика",
-    "trafficInspectorSubtitle": "Мониторинг на LLM повиквания + дебъгване на всякакъв HTTPS трафик",
+    "trafficInspectorSubtitle": "__MISSING__:Inspect request and response traffic from your apps",
+    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client.",
     "cliCode": "CLI код",
     "cliCodeSubtitle": "Инструменти за код, насочени към OmniRoute",
     "cliAgents": "CLI агенти",
@@ -1300,8 +1301,7 @@
       "open": "отвори",
       "close": "затвори"
     },
-    "noResults": "Няма резултати",
-    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client."
+    "noResults": "Няма резултати"
   },
   "webhooks": {
     "title": "Уеб кукички",
@@ -1808,6 +1808,11 @@
     "updateStarted": "Актуализацията започна...",
     "reloadingPageAutomatically": "Страницата се презарежда автоматично...",
     "providerTopology": "Топология на доставчика",
+    "recentRequests": "Recent Requests",
+    "recentRequestsEmpty": "No requests yet.",
+    "recentRequestsModel": "Model",
+    "recentRequestsTokens": "In / Out",
+    "recentRequestsWhen": "When",
     "downloadDmg": "Изтеглете DMG (macOS)",
     "downloadDmgDescription": "Налична е нова версия на настолната апликация OmniRoute. Моля, изтеглете и инсталирайте DMG инсталатора за macOS, за да актуализирате (текуща: v{version}).",
     "downloadExe": "Изтеглете EXE (Windows)",
@@ -1865,11 +1870,6 @@
     "releaseNotes": "Бележки за изданието",
     "readMore": "Прочетете повече",
     "noAuthLabel": "Без удостоверяване",
-    "recentRequests": "Recent Requests",
-    "recentRequestsEmpty": "No requests yet.",
-    "recentRequestsModel": "Model",
-    "recentRequestsTokens": "In / Out",
-    "recentRequestsWhen": "When",
     "readinessEyebrow": "Get ready to route",
     "readinessTitle": "Send your first request",
     "readinessSubtitle": "Four small steps. OmniRoute checks readiness as you go.",
@@ -2922,9 +2922,9 @@
       "interpreter": "Open Interpreter CLI автономен агент за програмиране",
       "omp": "Oh My Pi терминален агент за програмиране",
       "letta": "Letta CLI агент с постоянна памет и използване на инструменти",
+      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support",
       "warp": "Warp AI терминал с поддръжка на персонализиран доставчик",
-      "agent-deck": "Agent Deck мултиагентен оркестратор",
-      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support"
+      "agent-deck": "Agent Deck мултиагентен оркестратор"
     },
     "guides": {
       "cursor": {
@@ -3849,6 +3849,9 @@
   },
   "endpoint": {
     "title": "Крайна точка на API",
+    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
+    "testEndpoint": "Test endpoint →",
+    "advancedProtocols": "Advanced protocols",
     "available": "Налични крайни точки",
     "cloudProxy": "Облачен прокси",
     "disableConfirm": "Сигурни ли сте, че искате да деактивирате облачното прокси?",
@@ -4156,10 +4159,7 @@
     "notionIntegrationHelp": "Създайте вътрешна интеграция на",
     "notionIntegrationToken": "Токен за вътрешна интеграция на Notion",
     "notionNotConnected": "Не е свързано",
-    "notionTokenConfigured": "Токенът е конфигуриран. Инструментите на Notion са налични чрез MCP.",
-    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
-    "testEndpoint": "Test endpoint →",
-    "advancedProtocols": "Advanced protocols"
+    "notionTokenConfigured": "Токенът е конфигуриран. Инструментите на Notion са налични чрез MCP."
   },
   "endpoints": {
     "tabProxy": "Endpoint Proxy",
@@ -4632,6 +4632,13 @@
     "retry": "Опитайте отново",
     "allOperational": "Всички системи работят",
     "issuesDetected": "Открити са системни проблеми",
+    "healthVerdictReady": "OmniRoute is ready",
+    "healthVerdictActionRequired": "Action required to restore full operation",
+    "healthVerdictCoolingDown": "Cooling down after recent changes",
+    "healthSubtitle": "System health check",
+    "advancedDiagnosticsTitle": "Advanced diagnostics",
+    "hide": "Hide",
+    "show": "Show",
     "updatedAt": "Актуализиран {time}",
     "latency": "Латентност",
     "latencyP50": "p50",
@@ -4742,14 +4749,7 @@
     "issueCount": "{count} проблема",
     "score": "Оценка",
     "lastRequest": "Последна заявка",
-    "lastError": "Последна грешка",
-    "healthVerdictReady": "OmniRoute is ready",
-    "healthVerdictActionRequired": "Action required to restore full operation",
-    "healthVerdictCoolingDown": "Cooling down after recent changes",
-    "healthSubtitle": "System health check",
-    "advancedDiagnosticsTitle": "Advanced diagnostics",
-    "hide": "Hide",
-    "show": "Show"
+    "lastError": "Последна грешка"
   },
   "telemetry": {
     "title": "Системна телеметрия",
@@ -4954,7 +4954,9 @@
     "multiProvider": "Мулти-доставчик",
     "usageTracking": "Проследяване на използването",
     "securityDesc": "Задайте парола, за да защитите таблото си за управление, или пропуснете засега.",
+    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
     "providerDesc": "Свържете първия си доставчик на AI. Можете да добавите още по-късно.",
+    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard.",
     "apiKeyRequired": "API ключ (задължително)",
     "customUrlOptional": "Персонализиран URL (по избор)",
     "testDesc": "Нека проверим дали връзката ви с доставчика работи.",
@@ -5011,9 +5013,7 @@
         "skipped": "вече конфигурирано",
         "failed": "неуспешно"
       }
-    },
-    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
-    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard."
+    }
   },
   "providers": {
     "title": "Доставчици",
@@ -5724,8 +5724,8 @@
     "aggregatorsGateways": "Aggregators Gateways",
     "enterpriseCloud": "Предприятие и облак",
     "apiFormatLabel": "Api Format Label",
-    "apiKeyOptionalHint": "Api Key Optional Hint",
-    "apiKeyOptionalLabel": "Api Key Optional Label",
+    "apiKeyOptionalHint": "__MISSING__:Leave empty if your local setup or provider does not require authentication.",
+    "apiKeyOptionalLabel": "__MISSING__:API Key (optional)",
     "apiRegionChina": "Api Region China",
     "apiRegionHint": "Api Region Hint",
     "apiRegionInternational": "Api Region International",
@@ -6157,8 +6157,8 @@
       "inception": "Inception Labs е съвместим с OpenAI на https://api.inceptionlabs.ai/v1. mercury-2 е първият дифузионен LLM (dLLM) в каталога — 5-10x по-бързо генериране от сравними авторегресивни модели, с извикване на инструменти, json_mode и структурирани изходи.",
       "inference-net": "$25 безплатни кредити при регистрация плюс налични изследователски грантове",
       "internlm": "Безплатна месечна квота ~1M входни / 3M изходни токена (~10 RPM)",
-      "jina-ai": "Bearer API ключ за Jina AI rerank API.",
-      "jina-reader": "Свържете Jina Reader с API ключ.",
+      "jina-ai": "__MISSING__:Bearer API key for api.jina.ai (embeddings, rerank, classify, segment, search). Not the Reader / r.jina.ai card. Dashboard keys take precedence over JINA_AI_API_KEY.",
+      "jina-reader": "__MISSING__:Bearer API key for r.jina.ai URL-to-markdown only. Does not serve /v1/embeddings or /v1/rerank. The same Jina token as Foundation API works.",
       "kenari": "Kenari предоставя съвместима с OpenAI крайна точка за chat completions на https://kenari.id/v1/chat/completions, плюс каталог /v1/models в реално време, покриващ Claude, GPT, DeepSeek, GLM, Kimi и други. OmniRoute използва протокола на OpenAI и изброява моделите чрез passthrough.",
       "kie": "Свържете KIE.AI с API ключ.",
       "kilo-gateway": "Свържете Kilo Gateway с API ключ.",
@@ -6271,7 +6271,7 @@
       "cursor": "Свържете Cursor IDE със съществуващия OAuth поток.",
       "cursor-api": "Connect Cursor with a user API key (crsr_...) from cursor.com/dashboard/api; no IDE session needed.",
       "github": "Свържете GitHub Copilot със съществуващия OAuth поток.",
-      "gitlab-duo": "OAuth приложение с обхвати ai_features + read_user. Конфигурирайте GITLAB_DUO_OAUTH_CLIENT_ID и по избор GITLAB_DUO_OAUTH_CLIENT_SECRET на тази инстанция на OmniRoute.",
+      "gitlab-duo": "__MISSING__:OAuth application with ai_features + read_user scopes. Configure GITLAB_DUO_OAUTH_CLIENT_ID and optionally GITLAB_DUO_OAUTH_CLIENT_SECRET on this OmniRoute instance.",
       "kilocode": "Свържете Kilo Code със съществуващия OAuth поток.",
       "kimi-coding": "Свържете Kimi Coding със съществуващия OAuth поток.",
       "kiro": "Безплатен план: 50 кредита/месец (~25K–100K токена). ⚠️ Условията за ползване на Kiro забраняват използването на прокси/инструменти от трети страни.",
@@ -6302,6 +6302,20 @@
     "webSessionGuideStep3": "Копирайте необходимите идентификационни данни от собствения домейн на доставчика. За бисквитки копирайте само стойността на заглавката на бисквитката и пропуснете Cookie:.",
     "webSessionGuideStep3Manual": "Ръчен път: отворете инструментите за разработчици на браузъра (F12 → Network), обновете страницата, отворете удостоверена заявка и копирайте стойността на заглавката Cookie от заглавките на заявката — пропуснете префикса Cookie:.",
     "webSessionGuideStep4": "Поставете го тук и проверете връзката. Ако спре да работи, влезте отново и го заменете с нова стойност.",
+    "harImportButtonLabel": "Import .har file",
+    "harImportButtonBusy": "Importing…",
+    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
+    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
+    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
+    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
+    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
+    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
+    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
+    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
+    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
+    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
+    "harImportErrorReadFailed": "Couldn't read that file.",
+    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file.",
     "webSessionSecurityHint": "Отнасяйте се към това като към парола: тя може да осъществява достъп до вашия уеб акаунт, в който сте влезли, докато не изтече или бъде отменена.",
     "webNoAuthGuideTitle": "Не се изискват идентификационни данни",
     "webNoAuthGuideBody": "{provider} не се нуждае от API ключ или бисквитка. Запазете връзката, за да използвате нейната безплатна уеб крайна точка.",
@@ -6327,8 +6341,8 @@
     "apiProtocolHint": "Някои доставчици публикуват същите модели по повече от един протокол. Оставете по подразбиране, освен ако не се нуждаете от алтернативата.",
     "bulkAddFormatHintCloudflare": "По един ключ на ред. Формат: name|accountId|apiKey (Cloudflare ID на акаунт + API токен).",
     "lmarenaWebCookieHint": "Отворете arena.ai, влезте в профила си, след което копирайте пълната заглавка Cookie от мрежова заявка (Network request). Включете arena-auth-prod-v1.0 и arena-auth-prod-v1.1 (и следващите части, ако има такива), за предпочитане с cf_clearance. Не поставяйте само празната бисквитка arena-auth-prod-v1. По избор: providerSpecificData.recaptchaV3Token, ако create-evaluation все още връща 403.",
-    "kimiOfficialSupporterBadge": "Учредяващ приятел",
-    "kimiOfficialSupporterTooltip": "Kimi (Moonshot AI) е основаващият приятел на отворения код на OmniRoute",
+    "kimiOfficialSupporterBadge": "__MISSING__:Official Supporter",
+    "kimiOfficialSupporterTooltip": "__MISSING__:Kimi (Moonshot AI) is an official OmniRoute launch partner",
     "cheaperInferenceSupporterBadge": "Приятел на отворения код",
     "cheaperInferenceSupporterTooltip": "Cheaper Inference подкрепя OmniRoute като приятел на отворения код",
     "kimiPartnerLinkNote": "Партньорска връзка — поддържа OmniRoute без допълнителни разходи за вас",
@@ -6416,21 +6430,7 @@
     "savedModelEndpointSettings": "Настройки на крайна точка на запазен модел",
     "searchByModelAria": "Търсене по модел",
     "selectSupportedEndpoint": "Изберете поне една поддържана крайна точка",
-    "antigravityClientProfileHarness": "Harness / CLI",
-    "harImportButtonLabel": "Import .har file",
-    "harImportButtonBusy": "Importing…",
-    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
-    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
-    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
-    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
-    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
-    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
-    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
-    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
-    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
-    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
-    "harImportErrorReadFailed": "Couldn't read that file.",
-    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file."
+    "antigravityClientProfileHarness": "Harness / CLI"
   },
   "settings": {
     "title": "Настройки",
@@ -6710,6 +6710,18 @@
     "sidebarVisibility": "Hide sidebar items",
     "sidebarVisibilityDesc": "Hide any sidebar navigation entry to reduce visual clutter.",
     "sidebarVisibilityHint": "Any sidebar section is hidden automatically when a...",
+    "presetAll": "All",
+    "presetAllDesc": "Show everything",
+    "presetEssentials": "Essentials",
+    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
+    "presetMinimal": "Minimal",
+    "presetMinimalDesc": "Core pages only",
+    "presetDeveloper": "Developer",
+    "presetDeveloperDesc": "Dev & proxy tools",
+    "presetAdmin": "Admin",
+    "presetAdminDesc": "Monitoring & audit",
+    "settingsSidebarTitle": "Sidebar Customization",
+    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable.",
     "hideHealthLogs": "Скриване на журналите за проверка на здравето",
     "hideHealthLogsDesc": "Когато е ВКЛЮЧЕНО, потиска съобщенията [HealthCheck] в сървърната конзола",
     "themeAccent": "Цвят на темата",
@@ -6921,7 +6933,7 @@
     "afterPromptPlaceholder": "Инструкции, вмъкнати след подканата на агента/доставчика...",
     "chars": "{count} знака",
     "thinkingBudgetTitle": "Мислен бюджет",
-    "thinkingBudgetDesc": "Контролирайте използването на токен за мотивиране на AI във всички заявки",
+    "thinkingBudgetDesc": "__MISSING__:Controls whether OmniRoute rewrites client thinking/reasoning parameters before requests go upstream. This is separate from compression, prompt cache, and API-key token limits.",
     "thinkingBudgetIndependenceHint": "Функциите за компресия, маршрутизиране и лимит на токени продължават да работят във всеки режим. Авто не означава \"авто-показване на мислене\" — той премахва полетата за разсъждения на клиента.",
     "passthrough": "Преминаване",
     "passthroughDesc": "Без промени — клиентът контролира мислещия бюджет",
@@ -6946,7 +6958,7 @@
     "tokenBudget": "Токен бюджет",
     "tokens": "токени",
     "baseEffortLevel": "Базово ниво на усилие",
-    "adaptiveHint": "Адаптивният режим се мащабира от това базово ниво въз основа на броя на съобщенията, използването на инструмента и дължината на подканата.",
+    "adaptiveHint": "__MISSING__:Adaptive mode scales from this base level based on message count, tool usage, and prompt length. Does not decrypt provider encrypted reasoning blobs.",
     "requireLogin": "Изискване за влизане",
     "requireLoginDesc": "Когато е ВКЛЮЧЕНО, таблото за управление изисква парола. Когато е ИЗКЛЮЧЕНО, достъп без влизане.",
     "currentPassword": "Текуща парола",
@@ -7678,6 +7690,20 @@
     "jsonImportError": "Грешка при импортирането на JSON",
     "storagePurgeData": "Изчистване на данни",
     "storagePurgeDataDesc": "Незабавно изтриване на всички записи без прилагане на проверки за съхранение. Използвайте с повишено внимание.",
+    "storageMaintenance": "__MISSING__:Maintenance & cleanup",
+    "storageMaintenanceDesc": "__MISSING__:Background cleanup runs every 6 hours and removes rows past the retention windows configured below.",
+    "storageLastAutoCleanup": "__MISSING__:Last auto-cleanup",
+    "storageCleanupNeverRan": "__MISSING__:Not run yet",
+    "storageCleanupRowsDeleted": "__MISSING__:Rows removed",
+    "storageCleanupErrors": "__MISSING__:{count} errors",
+    "storageCleanupEnabled": "__MISSING__:Auto-cleanup on",
+    "storageCleanupDisabled": "__MISSING__:Auto-cleanup off",
+    "storageWalSize": "__MISSING__:WAL size",
+    "storageProcessRss": "__MISSING__:Process memory (RSS)",
+    "storageCgroupBilled": "__MISSING__:Container memory (billed)",
+    "storageCgroupCache": "__MISSING__:File cache",
+    "storageFtsIndex": "__MISSING__:Memory FTS index / data",
+    "storageTopTables": "__MISSING__:Largest tables",
     "storageRetentionCleanup": "Настройки за съхранение",
     "storageRetentionCleanupDesc": "Конфигуриране на съхранението на оперативни записи и почистването на резервни копия на базата данни.",
     "retentionCallDays": "Повиквания {count}д.",
@@ -8277,19 +8303,7 @@
     "cliproxyapiHealth": "Здраве",
     "cliproxyapiPort": "Порт",
     "qdrantHost": "Хост",
-    "qdrantCollection": "Колекция",
-    "presetAll": "All",
-    "presetAllDesc": "Show everything",
-    "presetEssentials": "Essentials",
-    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
-    "presetMinimal": "Minimal",
-    "presetMinimalDesc": "Core pages only",
-    "presetDeveloper": "Developer",
-    "presetDeveloperDesc": "Dev & proxy tools",
-    "presetAdmin": "Admin",
-    "presetAdminDesc": "Monitoring & audit",
-    "settingsSidebarTitle": "Sidebar Customization",
-    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable."
+    "qdrantCollection": "Колекция"
   },
   "contextRtk": {
     "title": "RTK Engine",
@@ -8654,13 +8668,13 @@
   },
   "omniglyph": {
     "preview": "Преглед",
-    "description": "Компресиране на контекст като изображение. Рендерира системната подкана, документацията на инструментите и плътната история като компактни PNG страници, които Claude Fable 5 чете вместо текст. Токените за изображения се таксуват според размерите, а не според знаците, така че конвертираният блок струва около 10 пъти по-малко. Само директен маршрут на Anthropic.",
+    "description": "__MISSING__:Context-as-image compression. Renders the system prompt, tool documentation, and dense history as compact PNG pages for the measured Claude Fable 5 path. The published OmniGlyph package also exposes native GPT 5.6 transformers, but OmniRoute keeps those routes fail-closed until provider fidelity and reading receipts exist.",
     "economicsTitle": "Икономиката",
     "economics": {
       "fewerTokens": "по-малко токени в конвертирания блок",
       "savings": "крайни спестявания (измерени)",
       "imageTokens": "токени за изображение за страница 1568×728 (около 28 хил. знака)",
-      "accuracy": "точност на четене при Fable 5 (n=30)"
+      "accuracy": "__MISSING__:scoped Fable 5 reading receipt"
     },
     "beforeAfterTitle": "Преди → след",
     "blockSavings": "−{percent}% токени в този блок",
@@ -8673,18 +8687,18 @@
     "gates": {
       "model": {
         "label": "Модел",
-        "pass": "claude-fable-5",
-        "why": "Само Fable 5 чете плътни страници със 100% точност (измерено, n=30). GPT-5.5 и Gemini 2.5 Flash са блокирани."
+        "pass": "__MISSING__:claude-fable-5 (measured); gpt-5.6 (HOLD)",
+        "why": "__MISSING__:Only the measured Fable 5 path is enabled in OmniRoute. GPT 5.6 is structurally supported by the package but remains blocked until its provider receipt; unverified families such as Grok stay text-only."
       },
       "transport": {
         "label": "Транспорт",
-        "pass": "директен Anthropic",
-        "why": "Агрегаторите преоразмеряват изображенията и съсипват четливостта — само директният маршрут е меродавен."
+        "pass": "__MISSING__:direct provider",
+        "why": "__MISSING__:Aggregators may resample images and destroy legibility — only a direct provider route is authoritative."
       },
       "format": {
         "label": "Формат",
-        "pass": "нативен Claude",
-        "why": "Тялото трябва да използва формата на Claude и никога не трябва да поставя системна роля в съобщенията."
+        "pass": "__MISSING__:native Claude/OpenAI",
+        "why": "__MISSING__:The body must match the provider wire: Claude Messages, OpenAI Chat Completions, or native OpenAI Responses input[]."
       },
       "profitable": {
         "label": "Рентабилен",
@@ -8693,7 +8707,7 @@
       }
     },
     "enableTitle": "Активиране на енджина",
-    "enableDescription": "Изпълнява се последен в стека (след като RTK/Caveman изчисти текста, OmniGlyph конвертира остатъка в изображения) и също така работи самостоятелно чрез режим <code>omniglyph</code>. Това е предварителна версия и остава изключена по подразбиране, докато не приключи цялостната валидация.",
+    "enableDescription": "__MISSING__:Runs last in the stack after text engines clean the request, using the native provider wire; OpenAI Chat/Responses requests are compressed after translation so their shape is preserved. It also runs standalone through <code>omniglyph</code> mode. This is a preview and remains off by default until end-to-end validation is complete.",
     "profileTitle": "Compression profile",
     "profileDescription": "The profile is a ceiling, not a floor: a stricter profile cannot be reopened by a per-step override. Measured on this codebase: with coding-safe or balanced, a session that has not accumulated history yet compresses nothing, because both raise the minimum-characters threshold and keep the system prompt, tool schemas and tool results native.",
     "profiles": {
@@ -8722,7 +8736,7 @@
   },
   "embeddedServices": {
     "title": "Вградени услуги",
-    "description": "Локални енджини, управлявани при поискване — CLIProxyAPI, 9Router, Mux и Bifrost. Достъпни само през loopback.",
+    "description": "__MISSING__:Optional helpers that run on your machine. Most users can start without them — install one only when an integration needs it.",
     "stateRunning": "Работи",
     "stateStopped": "Спрян",
     "stateStarting": "Стартиране",
@@ -8921,7 +8935,7 @@
     "featureMissingToolResponse": "Инжектиране на отговор на инструмента",
     "featureMissingToolResponseDesc": "Вмъква празни съобщения tool_result, когато клиентите изпращат tool_calls без съответни отговори.",
     "featureThinkingBudget": "Мислен бюджет",
-    "featureThinkingBudgetDesc": "Автоматично управлява конфигурацията на мисленето. Премахва параметрите на мислене, когато последното съобщение не е от потребителя.",
+    "featureThinkingBudgetDesc": "__MISSING__:Proxy-level control of thinking/reasoning request fields: passthrough (client controls), auto (strip all thinking params), custom (fixed budget), or adaptive (scale by complexity). Independent of compression and routing. Does not decrypt encrypted reasoning content.",
     "featureDirectPaths": "Пътища за директен превод",
     "featureDirectPathsDesc": "Някои двойки формати (Claude→Gemini) имат директни преводачи, които заобикалят центъра OpenAI, създавайки по-точен изход.",
     "featureImageMapping": "Картографиране на размера на изображението",
@@ -10691,7 +10705,7 @@
     "continue": "Продължи"
   },
   "cursorAuthModal": {
-    "title": "Свържете Cursor IDE",
+    "title": "__MISSING__:Connect Cursor",
     "tabLogin": "Login with Cursor",
     "tabImport": "Import token",
     "loginDescription": "Opens Cursor's browser login. Works in Docker — approve in your host browser, then return here.",
@@ -10704,7 +10718,7 @@
     "autoDetecting": "Автоматично откриване на токени...",
     "readingFromCursor": "Четене от Cursor IDE или cursor-agent",
     "tokensAutoDetected": "Токените са успешно автоматично открити от Cursor IDE!",
-    "cursorNotDetected": "IDE на курсора не е открит. Моля, поставете ръчно вашето означение.",
+    "cursorNotDetected": "__MISSING__:Cursor IDE not detected. Paste your access token (and refresh token if available).",
     "dockerImportHint": "Running in Docker? Prefer Login with Cursor. IDE auto-import and cursor-agent are usually unavailable inside the container. See docs/providers/CURSOR-DOCKER.md.",
     "accessToken": "Токен за достъп",
     "refreshToken": "Refresh Token",
@@ -12074,10 +12088,10 @@
       },
       "acp": {
         "title": "ACP агенти",
-        "phrase": "CLI, които OmniRoute стартира като бекенд за изпълнение (обратен поток)",
+        "phrase": "__MISSING__:Run complex, long-running logic in the backend",
+        "warning": "Most users can ignore this — use only when an integration requires it.",
         "flow": "Клиент → OmniRoute → стартиране на CLI (stdio/ACP) → отговор",
-        "seeOther": "Вижте →",
-        "warning": "Most users can ignore this — use only when an integration requires it."
+        "seeOther": "Вижте →"
       }
     },
     "comparison": {
@@ -12836,6 +12850,10 @@
       "ALLOW_MULTI_CONNECTIONS_PER_COMPAT_NODE": {
         "description": "Разрешаване на множество връзки за всеки възел за съвместимост."
       },
+      "DISABLE_CONTEXT_WINDOW_CHECKS": {
+        "label": "Disable Context Window Checks",
+        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
+      },
       "RESPONSES_PASSTHROUGH_DROP_COMMENTARY": {
         "description": "Премахване на вътрешните изходни елементи от фазата на коментари от транзитните потоци на Responses API, преди да бъдат препратени към клиентите. Деактивирайте този флаг, за да получавате необработени коментари от източника."
       },
@@ -12901,10 +12919,6 @@
       },
       "SKILLS_SANDBOX_NETWORK_ENABLED": {
         "description": "Активиране на мрежов достъп в пясъчника за умения."
-      },
-      "DISABLE_CONTEXT_WINDOW_CHECKS": {
-        "label": "Disable Context Window Checks",
-        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
       }
     }
   },
@@ -13383,6 +13397,13 @@
   },
   "resilienceConnections": {
     "title": "Устойчивост на Връзката",
+    "reassuranceTitle": "Your connections recover automatically",
+    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
+    "plainStates": {
+      "healthy": "Requests can be sent",
+      "coolingDown": "Trying again soon",
+      "lockedOut": "Needs your attention"
+    },
     "table": {
       "status": "Статус",
       "provider": "Доставчик",
@@ -13477,16 +13498,10 @@
         "modelLockouts": "Заключвания на Модел",
         "count": "Брой Връзки"
       }
-    },
-    "reassuranceTitle": "Your connections recover automatically",
-    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
-    "plainStates": {
-      "healthy": "Requests can be sent",
-      "coolingDown": "Trying again soon",
-      "lockedOut": "Needs your attention"
     }
   },
   "featureFlagCapabilityFilterEnabledDescription": "Отхвърлете заявките преди изпращане, когато целевият модел няма необходимите възможности (визия, инструменти, структурирани изходи, контекстен прозорец). Защитава директните заявки от един доставчик, които заобикалят филтъра за съвместимост на комбинирания слой.",
+  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "publicSystem": {
     "notFound": {
       "title": "Страницата не е намерена",
@@ -13922,7 +13937,6 @@
     "structuredOutputMismatch": "Доставчикът не поддържа структурирано изходно съдържание",
     "contextWindowMismatch": "Заявката надвишава контекстния прозорец на доставчика"
   },
-  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "cheaperInferenceSponsorBanner": {
     "title": "Cheaper Inference is an OmniRoute Open Source Friend",
     "description": "A cost-ranked gateway reselling dozens of frontier models behind one OpenAI-compatible endpoint — routing each request to the cheapest eligible provider, never above list price.",

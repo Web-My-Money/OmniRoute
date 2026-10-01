@@ -58,6 +58,7 @@ export const INTENTIONALLY_INTERNAL = new Set([
   "encryption", // intentionally-internal: 8+ callers (container, webhookDispatcher, cloudAgent/credentials, services/apiKey, 4+ routes, open-sse)
   "healthCheck", // db-internal: importado por db/core.ts (runDbHealthCheck)
   "jsonMigration", // intentionally-internal: src/app/api/settings/import-json/route.ts
+  "memoryFtsMaintenance", // intentionally-internal: importado por db/cleanup.ts (maintainMemoryFts) e /api/storage/health (measureMemoryFts) via import direto — WMM fork, FTS memory maintenance split
   "migrationRunner", // db-internal: importado por db/core.ts (runMigrations ao inicializar o DB)
   "modelCapabilityOverrides", // intentionally-internal: src/app/api/model-capability-overrides/route.ts via import direto "@/lib/db/modelCapabilityOverrides" (#6727 — evita empurrar localDb.ts para o cap de 800 linhas)
   "notion", // intentionally-internal: settings/notion API route + open-sse/mcp-server/tools/notionTools.ts

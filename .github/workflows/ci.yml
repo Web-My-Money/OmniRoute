@@ -627,6 +627,20 @@ jobs:
     needs: changes
     if: ${{ github.event_name != 'pull_request' || (needs.changes.outputs.code == 'true' && github.event.pull_request.draft == false) }}
     steps:
+      # Same swap headroom build.yml already uses — the Turbopack production build
+      # gets the 7 GB hosted runner OOM-reclaimed (~6 min in, runner shutdown /
+      # exit 143) without it. Skipped on the self-hosted omni-release runner,
+      # which has real memory.
+      - name: Expand Virtual Memory (Native 10GB Swap)
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          sudo swapoff -a || true
+          sudo rm -f /mnt/swapfile /swapfile
+          sudo fallocate -l 10G /mnt/swapfile || sudo dd if=/dev/zero of=/mnt/swapfile bs=1M count=10240
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+          free -h
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
@@ -1048,6 +1062,12 @@ jobs:
       # (if-no-files-found: warn) — Sonar consumes the same file.
       - name: Upload coverage to Codecov (informational)
         if: always()
+        # Informational-only: a missing CODECOV_TOKEN makes the upload stall
+        # (not error), which twice burned the whole 20min job budget and
+        # cancelled the run after every real gate had passed. Hard-timeout the
+        # step and tolerate failure so the upload can never sink the job.
+        timeout-minutes: 3
+        continue-on-error: true
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           files: coverage/lcov.info

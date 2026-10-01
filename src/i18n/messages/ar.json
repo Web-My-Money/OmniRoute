@@ -805,6 +805,13 @@
     "batchConceptBenefit50pct": "خصم 50% على رموز الإدخال والإخراج",
     "batchConceptAsync24h": "غير متزامن مع نافذة إكمال لمدة 24 ساعة",
     "batchConceptUseCases": "الأفضل للتصنيف المجمع والتقييمات والتضمينات",
+    "batchHeaderSubtitle": "Run many requests as one job",
+    "batchStep1": "1 · Upload JSONL",
+    "batchStep1Desc": "Add requests",
+    "batchStep2": "2 · Create batch",
+    "batchStep2Desc": "Run job",
+    "batchStep3": "3 · Get results",
+    "batchStep3Desc": "Download output",
     "filesConceptTitle": "ملفات دفعة",
     "filesConceptSubtitle": "ملفات JSONL المستخدمة بواسطة الدفعات: طلبات الإدخال والنتائج والأخطاء.",
     "filesConceptInput": "الإدخال - JSONL الخاص بك مع طلب واحد في كل سطر",
@@ -974,14 +981,7 @@
     "batchFileUsedByCount": "مستخدم بواسطة {count, plural, one {دفعة واحدة} other {# دفعات}}",
     "batchFilePreview": "معاينة",
     "batchFilePreviewTruncated": "عرض {shown} سطرًا أوليًا ({total} سطرًا إجماليًا)",
-    "batchFileDownloadFull": "تحميل الملف الكامل",
-    "batchHeaderSubtitle": "Run many requests as one job",
-    "batchStep1": "1 · Upload JSONL",
-    "batchStep1Desc": "Add requests",
-    "batchStep2": "2 · Create batch",
-    "batchStep2Desc": "Run job",
-    "batchStep3": "3 · Get results",
-    "batchStep3Desc": "Download output"
+    "batchFileDownloadFull": "تحميل الملف الكامل"
   },
   "disabled": "معطل",
   "featureFlagOmnirouteEmergencyFallbackDescription": "توجيه الطلبات التي استنفدت الميزانية إلى موفر/نموذج الاحتياط المجاني للطوارئ.",
@@ -1019,7 +1019,7 @@
     "apiManager": "مدير API",
     "apiManagerSubtitle": "إدارة مفاتيح واجهة برمجة التطبيقات والوصول إليها",
     "embeddedServices": "الخدمات المدمجة",
-    "embeddedServicesSubtitle": "إدارة خدمات الوكيل المحلية",
+    "embeddedServicesSubtitle": "__MISSING__:Optional local services",
     "logs": "سجلات",
     "webhooks": "خطافات الويب",
     "webhooksSubtitle": "الحصول على إخطار من الأحداث",
@@ -1267,6 +1267,7 @@
     "agentBridgeSubtitle": "اعتراض حركة مرور وكيل IDE",
     "trafficInspector": "مفتش حركة المرور",
     "trafficInspectorSubtitle": "__MISSING__:Inspect request and response traffic from your apps",
+    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client.",
     "cliCode": "كود CLI",
     "cliCodeSubtitle": "أدوات الكود التي تشير إلى OmniRoute",
     "cliAgents": "وكلاء CLI",
@@ -1300,8 +1301,7 @@
       "open": "فتح",
       "close": "إغلاق"
     },
-    "noResults": "لا توجد نتائج",
-    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client."
+    "noResults": "لا توجد نتائج"
   },
   "webhooks": {
     "title": "خطافات الويب",
@@ -1808,6 +1808,11 @@
     "updateStarted": "بدأ التحديث...",
     "reloadingPageAutomatically": "جارٍ إعادة تحميل الصفحة تلقائيًا...",
     "providerTopology": "طوبولوجيا الموفر",
+    "recentRequests": "Recent Requests",
+    "recentRequestsEmpty": "No requests yet.",
+    "recentRequestsModel": "Model",
+    "recentRequestsTokens": "In / Out",
+    "recentRequestsWhen": "When",
     "downloadDmg": "تحميل DMG (macOS)",
     "downloadDmgDescription": "يتوفر إصدار جديد من تطبيق OmniRoute لسطح المكتب. يرجى تنزيل وتثبيت مثبت DMG لنظام macOS للتحديث (الحالي: v{version}).",
     "downloadExe": "تحميل EXE (ويندوز)",
@@ -1865,11 +1870,6 @@
     "releaseNotes": "ملاحظات الإصدار",
     "readMore": "اقرأ المزيد",
     "noAuthLabel": "لا يوجد مصادقة",
-    "recentRequests": "Recent Requests",
-    "recentRequestsEmpty": "No requests yet.",
-    "recentRequestsModel": "Model",
-    "recentRequestsTokens": "In / Out",
-    "recentRequestsWhen": "When",
     "readinessEyebrow": "Get ready to route",
     "readinessTitle": "Send your first request",
     "readinessSubtitle": "Four small steps. OmniRoute checks readiness as you go.",
@@ -2922,9 +2922,9 @@
       "interpreter": "واجهة خط أوامر عميل البرمجة المستقل Open Interpreter",
       "omp": "عميل برمجة الطرفية Oh My Pi",
       "letta": "عميل Letta CLI بذاكرة مستمرة واستخدام للأدوات",
+      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support",
       "warp": "طرفية Warp AI مع دعم لمزودي الخدمة المخصصين",
-      "agent-deck": "منسق الوكلاء المتعددين Agent Deck",
-      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support"
+      "agent-deck": "منسق الوكلاء المتعددين Agent Deck"
     },
     "guides": {
       "cursor": {
@@ -3849,6 +3849,9 @@
   },
   "endpoint": {
     "title": "نقطة نهاية واجهة برمجة التطبيقات",
+    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
+    "testEndpoint": "Test endpoint →",
+    "advancedProtocols": "Advanced protocols",
     "available": "نقاط النهاية المتاحة",
     "cloudProxy": "بروكسي السحابي",
     "disableConfirm": "هل أنت متأكد أنك تريد تعطيل الوكيل السحابي؟",
@@ -4156,10 +4159,7 @@
     "notionIntegrationHelp": "إنشاء تكامل داخلي في",
     "notionIntegrationToken": "رمز تكامل Notion الداخلي",
     "notionNotConnected": "غير متصل",
-    "notionTokenConfigured": "تم تكوين الرمز. أدوات Notion متاحة عبر MCP.",
-    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
-    "testEndpoint": "Test endpoint →",
-    "advancedProtocols": "Advanced protocols"
+    "notionTokenConfigured": "تم تكوين الرمز. أدوات Notion متاحة عبر MCP."
   },
   "endpoints": {
     "tabProxy": "بروكسي نقطة النهاية",
@@ -4632,6 +4632,13 @@
     "retry": "أعد المحاولة",
     "allOperational": "جميع الأنظمة قيد التشغيل",
     "issuesDetected": "تم اكتشاف مشاكل في النظام",
+    "healthVerdictReady": "OmniRoute is ready",
+    "healthVerdictActionRequired": "Action required to restore full operation",
+    "healthVerdictCoolingDown": "Cooling down after recent changes",
+    "healthSubtitle": "System health check",
+    "advancedDiagnosticsTitle": "Advanced diagnostics",
+    "hide": "Hide",
+    "show": "Show",
     "updatedAt": "تم التحديث {time}",
     "latency": "الكمون",
     "latencyP50": "ص50",
@@ -4742,14 +4749,7 @@
     "issueCount": "قضايا {count}",
     "score": "النتيجة",
     "lastRequest": "الطلب الأخير",
-    "lastError": "الخطأ الأخير",
-    "healthVerdictReady": "OmniRoute is ready",
-    "healthVerdictActionRequired": "Action required to restore full operation",
-    "healthVerdictCoolingDown": "Cooling down after recent changes",
-    "healthSubtitle": "System health check",
-    "advancedDiagnosticsTitle": "Advanced diagnostics",
-    "hide": "Hide",
-    "show": "Show"
+    "lastError": "الخطأ الأخير"
   },
   "telemetry": {
     "title": "القياس عن بعد للنظام",
@@ -4954,7 +4954,9 @@
     "multiProvider": "متعدد الموفر",
     "usageTracking": "تتبع الاستخدام",
     "securityDesc": "قم بتعيين كلمة مرور لحماية لوحة المعلومات الخاصة بك، أو قم بالتخطي الآن.",
+    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
     "providerDesc": "قم بتوصيل مزود الذكاء الاصطناعي الأول الخاص بك. يمكنك إضافة المزيد لاحقا.",
+    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard.",
     "apiKeyRequired": "مفتاح واجهة برمجة التطبيقات (مطلوب)",
     "customUrlOptional": "عنوان URL المخصص (اختياري)",
     "testDesc": "دعونا نتحقق من أن اتصال المزود الخاص بك يعمل.",
@@ -5011,9 +5013,7 @@
         "skipped": "تم التكوين بالفعل",
         "failed": "فشل"
       }
-    },
-    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
-    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard."
+    }
   },
   "providers": {
     "title": "المزودون",
@@ -5724,8 +5724,8 @@
     "aggregatorsGateways": "المجمّعات والبوابات",
     "enterpriseCloud": "المؤسسات والسحابة",
     "apiFormatLabel": "تنسيق API",
-    "apiKeyOptionalHint": "اتركه فارغًا إذا لم يكن مفتاح API مطلوبًا",
-    "apiKeyOptionalLabel": "مفتاح API (اختياري)",
+    "apiKeyOptionalHint": "__MISSING__:Leave empty if your local setup or provider does not require authentication.",
+    "apiKeyOptionalLabel": "__MISSING__:API Key (optional)",
     "apiRegionChina": "الصين",
     "apiRegionHint": "اختر منطقة API",
     "apiRegionInternational": "دولي",
@@ -6157,8 +6157,8 @@
       "inception": "Inception Labs متوافقة مع OpenAI على https://api.inceptionlabs.ai/v1. mercury-2 هو أول نموذج انتشار LLM (dLLM) في الكتالوج - أسرع من 5-10 مرات في التوليد مقارنة بالنماذج التلقائية المماثلة، مع استدعاء الأدوات، json_mode، والمخرجات المنظمة.",
       "inference-net": "رصيد مجاني بقيمة 25 دولارًا عند التسجيل بالإضافة إلى توفر منح بحثية",
       "internlm": "حصة مجانية شهرية ~1M مدخلات / 3M مخرجات توكن (~10 RPM)",
-      "jina-ai": "مفتاح API من نوع Bearer لواجهة برمجة تطبيقات إعادة الترتيب من Jina AI.",
-      "jina-reader": "ربط Jina Reader بمفتاح API.",
+      "jina-ai": "__MISSING__:Bearer API key for api.jina.ai (embeddings, rerank, classify, segment, search). Not the Reader / r.jina.ai card. Dashboard keys take precedence over JINA_AI_API_KEY.",
+      "jina-reader": "__MISSING__:Bearer API key for r.jina.ai URL-to-markdown only. Does not serve /v1/embeddings or /v1/rerank. The same Jina token as Foundation API works.",
       "kenari": "توفر Kenari نقطة نهاية لإكمال الدردشة متوافقة مع OpenAI على https://kenari.id/v1/chat/completions، بالإضافة إلى كتالوج مباشر لـ /v1/models يغطي Claude و GPT و DeepSeek و GLM و Kimi والمزيد. تستخدم OmniRoute بروتوكول OpenAI وتعرض النماذج عبر التمرير المباشر.",
       "kie": "ربط KIE.AI بمفتاح API.",
       "kilo-gateway": "ربط Kilo Gateway بمفتاح API.",
@@ -6271,7 +6271,7 @@
       "cursor": "ربط Cursor IDE باستخدام تدفق OAuth الحالي.",
       "cursor-api": "Connect Cursor with a user API key (crsr_...) from cursor.com/dashboard/api; no IDE session needed.",
       "github": "ربط GitHub Copilot باستخدام تدفق OAuth الحالي.",
-      "gitlab-duo": "تطبيق OAuth بنطاقات ai_features + read_user. قم بتكوين GITLAB_DUO_OAUTH_CLIENT_ID واختياريًا GITLAB_DUO_OAUTH_CLIENT_SECRET على مثيل OmniRoute هذا.",
+      "gitlab-duo": "__MISSING__:OAuth application with ai_features + read_user scopes. Configure GITLAB_DUO_OAUTH_CLIENT_ID and optionally GITLAB_DUO_OAUTH_CLIENT_SECRET on this OmniRoute instance.",
       "kilocode": "ربط Kilo Code باستخدام تدفق OAuth الحالي.",
       "kimi-coding": "ربط Kimi Coding باستخدام تدفق OAuth الحالي.",
       "kiro": "الفئة المجانية: 50 رصيدًا شهريًا (~25 ألف–100 ألف توكن). ⚠️ تحظر شروط خدمة Kiro استخدام وكيل/أداة خارجية.",
@@ -6302,6 +6302,20 @@
     "webSessionGuideStep3": "انسخ بيانات الاعتماد المطلوبة من المجال الخاص بالموفر. بالنسبة لملفات تعريف الارتباط، انسخ فقط قيمة رأس ملف تعريف الارتباط واحذف ملف تعريف الارتباط:.",
     "webSessionGuideStep3Manual": "المسار اليدوي: افتح أدوات مطور المتصفح (F12 → الشبكة)، قم بتحديث الصفحة، افتح طلبًا مصادقًا، وانسخ قيمة رأس الكوكي من رؤوس الطلب — احذف بادئة Cookie: .",
     "webSessionGuideStep4": "الصقها هنا وتحقق من الاتصال. إذا توقفت عن العمل، قم بتسجيل الدخول مرة أخرى واستبدلها بقيمة جديدة.",
+    "harImportButtonLabel": "Import .har file",
+    "harImportButtonBusy": "Importing…",
+    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
+    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
+    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
+    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
+    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
+    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
+    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
+    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
+    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
+    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
+    "harImportErrorReadFailed": "Couldn't read that file.",
+    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file.",
     "webSessionSecurityHint": "تعامل مع هذا ككلمة مرور: فقد يصل إلى حساب الويب الذي قمت بتسجيل الدخول إليه حتى تنتهي صلاحيته أو يتم إبطاله.",
     "webNoAuthGuideTitle": "لا توجد بيانات الاعتماد المطلوبة",
     "webNoAuthGuideBody": "{provider} لا يحتاج إلى مفتاح API أو ملف تعريف الارتباط. احفظ الاتصال لاستخدام نقطة نهاية الويب المجانية الخاصة به.",
@@ -6327,8 +6341,8 @@
     "apiProtocolHint": "بعض المزودين ينشرون نفس النماذج عبر أكثر من بروتوكول. اترك الإعداد الافتراضي ما لم تكن بحاجة إلى البديل.",
     "bulkAddFormatHintCloudflare": "مفتاح واحد لكل سطر. التنسيق: name|accountId|apiKey (معرف حساب Cloudflare + رمز API).",
     "lmarenaWebCookieHint": "افتح arena.ai، وسجل الدخول، ثم انسخ ترويسة Cookie الكاملة من طلب الشبكة. قم بتضمين arena-auth-prod-v1.0 و arena-auth-prod-v1.1 (وأي أجزاء أخرى إن وجدت)، ويفضل مع cf_clearance. لا تقم بلصق ملف تعريف الارتباط الفارغ arena-auth-prod-v1 فقط. اختياري: providerSpecificData.recaptchaV3Token إذا كان create-evaluation لا يزال يرجع 403.",
-    "kimiOfficialSupporterBadge": "الصديق المؤسس",
-    "kimiOfficialSupporterTooltip": "Kimi (Moonshot AI) هو الصديق المؤسس للمصادر المفتوحة لـ OmniRoute",
+    "kimiOfficialSupporterBadge": "__MISSING__:Official Supporter",
+    "kimiOfficialSupporterTooltip": "__MISSING__:Kimi (Moonshot AI) is an official OmniRoute launch partner",
     "cheaperInferenceSupporterBadge": "صديق مفتوح المصدر",
     "cheaperInferenceSupporterTooltip": "‏Cheaper Inference تدعم OmniRoute كصديق للمصادر المفتوحة",
     "kimiPartnerLinkNote": "رابط شريك — يدعم OmniRoute دون أي تكلفة إضافية عليك",
@@ -6416,21 +6430,7 @@
     "savedModelEndpointSettings": "إعدادات نقطة نهاية النموذج المحفوظ",
     "searchByModelAria": "البحث حسب الطراز",
     "selectSupportedEndpoint": "اختر نقطة نهاية مدعومة واحدة على الأقل",
-    "antigravityClientProfileHarness": "Harness / CLI",
-    "harImportButtonLabel": "Import .har file",
-    "harImportButtonBusy": "Importing…",
-    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
-    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
-    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
-    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
-    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
-    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
-    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
-    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
-    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
-    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
-    "harImportErrorReadFailed": "Couldn't read that file.",
-    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file."
+    "antigravityClientProfileHarness": "Harness / CLI"
   },
   "settings": {
     "title": "الإعدادات",
@@ -6710,6 +6710,18 @@
     "sidebarVisibility": "إخفاء عناصر الشريط الجانبي",
     "sidebarVisibilityDesc": "قم بإخفاء أي إدخال للتنقل في الشريط الجانبي لتقليل الفوضى المرئية.",
     "sidebarVisibilityHint": "يتم إخفاء أي قسم من الشريط الجانبي تلقائيًا عند...",
+    "presetAll": "All",
+    "presetAllDesc": "Show everything",
+    "presetEssentials": "Essentials",
+    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
+    "presetMinimal": "Minimal",
+    "presetMinimalDesc": "Core pages only",
+    "presetDeveloper": "Developer",
+    "presetDeveloperDesc": "Dev & proxy tools",
+    "presetAdmin": "Admin",
+    "presetAdminDesc": "Monitoring & audit",
+    "settingsSidebarTitle": "Sidebar Customization",
+    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable.",
     "hideHealthLogs": "إخفاء سجلات التحقق من الصحة",
     "hideHealthLogsDesc": "عند التشغيل، قم بمنع رسائل [HealthCheck] في وحدة تحكم الخادم",
     "themeAccent": "لون السمة",
@@ -6921,7 +6933,7 @@
     "afterPromptPlaceholder": "تعليمات تُدرج بعد موجه الوكيل أو المزوّد...",
     "chars": "{count} حرف",
     "thinkingBudgetTitle": "ميزانية التفكير",
-    "thinkingBudgetDesc": "التحكم في استخدام الرمز المميز لاستدلال الذكاء الاصطناعي عبر جميع الطلبات",
+    "thinkingBudgetDesc": "__MISSING__:Controls whether OmniRoute rewrites client thinking/reasoning parameters before requests go upstream. This is separate from compression, prompt cache, and API-key token limits.",
     "thinkingBudgetIndependenceHint": "تستمر ميزات الضغط والتوجيه وحدود الرموز في العمل في كل وضع. الوضع التلقائي لا يعني \"إظهار التفكير تلقائيًا\" - بل يقوم بإزالة حقول تفكير العميل.",
     "passthrough": "العبور",
     "passthroughDesc": "لا توجد تغييرات - يتحكم العميل في ميزانية التفكير",
@@ -6946,7 +6958,7 @@
     "tokenBudget": "ميزانية الرمز المميز",
     "tokens": "الرموز",
     "baseEffortLevel": "مستوى الجهد الأساسي",
-    "adaptiveHint": "يتغير الوضع التكيفي من هذا المستوى الأساسي استنادًا إلى عدد الرسائل واستخدام الأداة وطول المطالبة.",
+    "adaptiveHint": "__MISSING__:Adaptive mode scales from this base level based on message count, tool usage, and prompt length. Does not decrypt provider encrypted reasoning blobs.",
     "requireLogin": "تتطلب تسجيل الدخول",
     "requireLoginDesc": "عند التشغيل، تتطلب لوحة القيادة كلمة المرور. عند إيقاف التشغيل، قم بالوصول دون تسجيل الدخول.",
     "currentPassword": "كلمة المرور الحالية",
@@ -7678,6 +7690,20 @@
     "jsonImportError": "خطأ أثناء استيراد JSON",
     "storagePurgeData": "تطهير البيانات",
     "storagePurgeDataDesc": "حذف جميع السجلات فوراً دون تطبيق عمليات التحقق من الاحتفاظ. يُستخدم بحذر.",
+    "storageMaintenance": "__MISSING__:Maintenance & cleanup",
+    "storageMaintenanceDesc": "__MISSING__:Background cleanup runs every 6 hours and removes rows past the retention windows configured below.",
+    "storageLastAutoCleanup": "__MISSING__:Last auto-cleanup",
+    "storageCleanupNeverRan": "__MISSING__:Not run yet",
+    "storageCleanupRowsDeleted": "__MISSING__:Rows removed",
+    "storageCleanupErrors": "__MISSING__:{count} errors",
+    "storageCleanupEnabled": "__MISSING__:Auto-cleanup on",
+    "storageCleanupDisabled": "__MISSING__:Auto-cleanup off",
+    "storageWalSize": "__MISSING__:WAL size",
+    "storageProcessRss": "__MISSING__:Process memory (RSS)",
+    "storageCgroupBilled": "__MISSING__:Container memory (billed)",
+    "storageCgroupCache": "__MISSING__:File cache",
+    "storageFtsIndex": "__MISSING__:Memory FTS index / data",
+    "storageTopTables": "__MISSING__:Largest tables",
     "storageRetentionCleanup": "إعدادات الاحتفاظ",
     "storageRetentionCleanupDesc": "تكوين الاحتفاظ بالسجلات التشغيلية وتنظيف النسخ الاحتياطية لقاعدة البيانات.",
     "retentionCallDays": "مكالمة {count} يوم",
@@ -8277,19 +8303,7 @@
     "cliproxyapiHealth": "الصحة",
     "cliproxyapiPort": "منفذ",
     "qdrantHost": "مضيف",
-    "qdrantCollection": "مجموعة",
-    "presetAll": "All",
-    "presetAllDesc": "Show everything",
-    "presetEssentials": "Essentials",
-    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
-    "presetMinimal": "Minimal",
-    "presetMinimalDesc": "Core pages only",
-    "presetDeveloper": "Developer",
-    "presetDeveloperDesc": "Dev & proxy tools",
-    "presetAdmin": "Admin",
-    "presetAdminDesc": "Monitoring & audit",
-    "settingsSidebarTitle": "Sidebar Customization",
-    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable."
+    "qdrantCollection": "مجموعة"
   },
   "contextRtk": {
     "title": "محرك آر تي كيه",
@@ -8654,13 +8668,13 @@
   },
   "omniglyph": {
     "preview": "معاينة",
-    "description": "ضغط السياق كصورة. يعرض توجيه النظام، وتوثيق الأدوات، والسجل الكثيف كصفحات PNG مضغوطة يقرأها Claude Fable 5 بدلاً من النص. يتم احتساب رموز الصور بناءً على الأبعاد بدلاً من الأحرف، لذا فإن الكتلة المحولة تكلف أقل بحوالي 10 مرات. مسار Anthropic المباشر فقط.",
+    "description": "__MISSING__:Context-as-image compression. Renders the system prompt, tool documentation, and dense history as compact PNG pages for the measured Claude Fable 5 path. The published OmniGlyph package also exposes native GPT 5.6 transformers, but OmniRoute keeps those routes fail-closed until provider fidelity and reading receipts exist.",
     "economicsTitle": "الجانب الاقتصادي",
     "economics": {
       "fewerTokens": "رموز أقل في الكتلة المحولة",
       "savings": "توفير شامل من البداية للنهاية (مقاس)",
       "imageTokens": "رموز الصور لصفحة 1568×728 (حوالي 28 ألف حرف)",
-      "accuracy": "دقة القراءة على Fable 5 (العدد=30)"
+      "accuracy": "__MISSING__:scoped Fable 5 reading receipt"
     },
     "beforeAfterTitle": "قبل ← بعد",
     "blockSavings": "−{percent}% من الرموز في هذه الكتلة",
@@ -8673,18 +8687,18 @@
     "gates": {
       "model": {
         "label": "النموذج",
-        "pass": "claude-fable-5",
-        "why": "يقرأ Fable 5 فقط الصفحات الكثيفة بدقة 100% (مقاسة، العدد=30). تم حظر GPT-5.5 وGemini 2.5 Flash."
+        "pass": "__MISSING__:claude-fable-5 (measured); gpt-5.6 (HOLD)",
+        "why": "__MISSING__:Only the measured Fable 5 path is enabled in OmniRoute. GPT 5.6 is structurally supported by the package but remains blocked until its provider receipt; unverified families such as Grok stay text-only."
       },
       "transport": {
         "label": "النقل",
-        "pass": "Anthropic المباشر",
-        "why": "تقوم المجمعات بإعادة أخذ عينات الصور وتدمير وضوح القراءة — المسار المباشر فقط هو المعتمد."
+        "pass": "__MISSING__:direct provider",
+        "why": "__MISSING__:Aggregators may resample images and destroy legibility — only a direct provider route is authoritative."
       },
       "format": {
         "label": "التنسيق",
-        "pass": "Claude الأصلي",
-        "why": "يجب أن يستخدم نص الطلب تنسيق Claude ويجب ألا يضع دور النظام (system role) داخل الرسائل أبدًا."
+        "pass": "__MISSING__:native Claude/OpenAI",
+        "why": "__MISSING__:The body must match the provider wire: Claude Messages, OpenAI Chat Completions, or native OpenAI Responses input[]."
       },
       "profitable": {
         "label": "مربح",
@@ -8693,7 +8707,7 @@
       }
     },
     "enableTitle": "تمكين المحرك",
-    "enableDescription": "يعمل في نهاية المكدس (بعد أن يقوم RTK/Caveman بتنظيف النص، ويقوم OmniGlyph بتحويل المتبقي إلى صور) ويعمل أيضًا بشكل مستقل عبر وضع <code>omniglyph</code>. هذه نسخة معاينة وتظل معطلة افتراضيًا حتى تكتمل عملية التحقق الشاملة من البداية للنهاية.",
+    "enableDescription": "__MISSING__:Runs last in the stack after text engines clean the request, using the native provider wire; OpenAI Chat/Responses requests are compressed after translation so their shape is preserved. It also runs standalone through <code>omniglyph</code> mode. This is a preview and remains off by default until end-to-end validation is complete.",
     "profileTitle": "Compression profile",
     "profileDescription": "The profile is a ceiling, not a floor: a stricter profile cannot be reopened by a per-step override. Measured on this codebase: with coding-safe or balanced, a session that has not accumulated history yet compresses nothing, because both raise the minimum-characters threshold and keep the system prompt, tool schemas and tool results native.",
     "profiles": {
@@ -8722,7 +8736,7 @@
   },
   "embeddedServices": {
     "title": "الخدمات المضمنة",
-    "description": "محركات محلية تُدار عند الطلب — CLIProxyAPI و9Router وMux وBifrost. يمكن الوصول إليها عبر الاسترجاع المحلي (loopback) فقط.",
+    "description": "__MISSING__:Optional helpers that run on your machine. Most users can start without them — install one only when an integration needs it.",
     "stateRunning": "قيد التشغيل",
     "stateStopped": "متوقف",
     "stateStarting": "جاري البدء",
@@ -8921,7 +8935,7 @@
     "featureMissingToolResponse": "حقن استجابة الأداة",
     "featureMissingToolResponseDesc": "يُدخل رسائل نتيجة أداة فارغة عندما يرسل العملاء مكالمات أداة بدون استجابات مقابلة.",
     "featureThinkingBudget": "ميزانية التفكير",
-    "featureThinkingBudgetDesc": "يدير تكوين التفكير تلقائيًا. يزيل معلمات التفكير عندما لا تكون الرسالة الأخيرة من المستخدم.",
+    "featureThinkingBudgetDesc": "__MISSING__:Proxy-level control of thinking/reasoning request fields: passthrough (client controls), auto (strip all thinking params), custom (fixed budget), or adaptive (scale by complexity). Independent of compression and routing. Does not decrypt encrypted reasoning content.",
     "featureDirectPaths": "مسارات الترجمة المباشرة",
     "featureDirectPathsDesc": "تحتوي بعض أزواج التنسيق (Claude → Gemini) على مترجمين مباشرين يتجاوزون مركز OpenAI، مما ينتج عنه مخرجات أكثر دقة.",
     "featureImageMapping": "تعيين حجم الصورة",
@@ -10691,7 +10705,7 @@
     "continue": "تابع"
   },
   "cursorAuthModal": {
-    "title": "ربط IDE Cursor",
+    "title": "__MISSING__:Connect Cursor",
     "tabLogin": "Login with Cursor",
     "tabImport": "Import token",
     "loginDescription": "Opens Cursor's browser login. Works in Docker — approve in your host browser, then return here.",
@@ -10704,7 +10718,7 @@
     "autoDetecting": "الكشف التلقائي عن الرموز...",
     "readingFromCursor": "القراءة من Cursor IDE أو وكيل Cursor",
     "tokensAutoDetected": "تم اكتشاف الرموز المميزة تلقائيًا من Cursor IDE!",
-    "cursorNotDetected": "لم يتم الكشف عن IDE للمؤشر. يرجى لصق الرمز المميز الخاص بك يدويًا.",
+    "cursorNotDetected": "__MISSING__:Cursor IDE not detected. Paste your access token (and refresh token if available).",
     "dockerImportHint": "Running in Docker? Prefer Login with Cursor. IDE auto-import and cursor-agent are usually unavailable inside the container. See docs/providers/CURSOR-DOCKER.md.",
     "accessToken": "رمز الوصول",
     "refreshToken": "Refresh Token",
@@ -12074,10 +12088,10 @@
       },
       "acp": {
         "title": "وكلاء ACP",
-        "phrase": "واجهات CLI التي يقوم OmniRoute بإنشائها كخلفية تنفيذ (تدفق عكسي)",
+        "phrase": "__MISSING__:Run complex, long-running logic in the backend",
+        "warning": "Most users can ignore this — use only when an integration requires it.",
         "flow": "العميل → OmniRoute → إنشاء CLI (stdio/ACP) → الاستجابة",
-        "seeOther": "عرض →",
-        "warning": "Most users can ignore this — use only when an integration requires it."
+        "seeOther": "عرض →"
       }
     },
     "comparison": {
@@ -12836,6 +12850,10 @@
       "ALLOW_MULTI_CONNECTIONS_PER_COMPAT_NODE": {
         "description": "السماح باتصالات متعددة لكل عقدة توافق."
       },
+      "DISABLE_CONTEXT_WINDOW_CHECKS": {
+        "label": "Disable Context Window Checks",
+        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
+      },
       "RESPONSES_PASSTHROUGH_DROP_COMMENTARY": {
         "description": "إزالة عناصر مخرجات مرحلة التعليقات الداخلية من تدفقات التمرير الخاصة بـ Responses API قبل إعادة توجيهها إلى العملاء. عطل هذه العلامة لتلقي تعليقات المصدر الأولية."
       },
@@ -12901,10 +12919,6 @@
       },
       "SKILLS_SANDBOX_NETWORK_ENABLED": {
         "description": "تمكين الوصول إلى الشبكة في بيئة اختبار المهارات المعزولة."
-      },
-      "DISABLE_CONTEXT_WINDOW_CHECKS": {
-        "label": "Disable Context Window Checks",
-        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
       }
     }
   },
@@ -13383,6 +13397,13 @@
   },
   "resilienceConnections": {
     "title": "مرونة الاتصال",
+    "reassuranceTitle": "Your connections recover automatically",
+    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
+    "plainStates": {
+      "healthy": "Requests can be sent",
+      "coolingDown": "Trying again soon",
+      "lockedOut": "Needs your attention"
+    },
     "table": {
       "status": "الحالة",
       "provider": "المزوّد",
@@ -13477,16 +13498,10 @@
         "modelLockouts": "حظر النماذج",
         "count": "عدد الاتصالات"
       }
-    },
-    "reassuranceTitle": "Your connections recover automatically",
-    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
-    "plainStates": {
-      "healthy": "Requests can be sent",
-      "coolingDown": "Trying again soon",
-      "lockedOut": "Needs your attention"
     }
   },
   "featureFlagCapabilityFilterEnabledDescription": "رفض الطلبات قبل الإرسال عندما يفتقر النموذج المستهدف إلى القدرات المطلوبة (الرؤية، الأدوات، المخرجات المنظمة، نافذة السياق). يحمي الطلبات المباشرة من مزود واحد التي تتجاوز فلتر توافق الطبقة المجمعة.",
+  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "publicSystem": {
     "notFound": {
       "title": "الصفحة غير موجودة",
@@ -13922,7 +13937,6 @@
     "structuredOutputMismatch": "المزود لا يدعم الإخراج المنظم",
     "contextWindowMismatch": "تجاوز الطلب نافذة سياق المزود"
   },
-  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "cheaperInferenceSponsorBanner": {
     "title": "Cheaper Inference is an OmniRoute Open Source Friend",
     "description": "A cost-ranked gateway reselling dozens of frontier models behind one OpenAI-compatible endpoint — routing each request to the cheapest eligible provider, never above list price.",

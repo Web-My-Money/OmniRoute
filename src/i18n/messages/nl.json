@@ -805,6 +805,13 @@
     "batchConceptBenefit50pct": "50% discount on input + output tokens",
     "batchConceptAsync24h": "Async with a 24h completion window",
     "batchConceptUseCases": "Best for bulk classification, evaluations, and embeddings",
+    "batchHeaderSubtitle": "Run many requests as one job",
+    "batchStep1": "1 · Upload JSONL",
+    "batchStep1Desc": "Add requests",
+    "batchStep2": "2 · Create batch",
+    "batchStep2Desc": "Run job",
+    "batchStep3": "3 · Get results",
+    "batchStep3Desc": "Download output",
     "filesConceptTitle": "Batch files",
     "filesConceptSubtitle": "JSONL files used by batches: input requests, results, and errors.",
     "filesConceptInput": "Input — your JSONL with one request per line",
@@ -974,14 +981,7 @@
     "batchFileUsedByCount": "Gebruikt door {count, plural, one {# batch} other {# batches}}",
     "batchFilePreview": "Voorbeeld",
     "batchFilePreviewTruncated": "Eerste {shown} regels weergeven ({total} totaal regels)",
-    "batchFileDownloadFull": "Download Volledig Bestand",
-    "batchHeaderSubtitle": "Run many requests as one job",
-    "batchStep1": "1 · Upload JSONL",
-    "batchStep1Desc": "Add requests",
-    "batchStep2": "2 · Create batch",
-    "batchStep2Desc": "Run job",
-    "batchStep3": "3 · Get results",
-    "batchStep3Desc": "Download output"
+    "batchFileDownloadFull": "Download Volledig Bestand"
   },
   "disabled": "Uitgeschakeld",
   "featureFlagOmnirouteEmergencyFallbackDescription": "Routeer verzoeken met uitgeput budget naar de gratis nood-fallbackprovider/-model.",
@@ -1019,7 +1019,7 @@
     "apiManager": "API-beheerder",
     "apiManagerSubtitle": "Beheer API-sleutels en toegang",
     "embeddedServices": "Ingebedde Diensten",
-    "embeddedServicesSubtitle": "Beheer lokale proxydiensten",
+    "embeddedServicesSubtitle": "__MISSING__:Optional local services",
     "logs": "Logboeken",
     "webhooks": "Webhaken",
     "webhooksSubtitle": "Blijf op de hoogte van evenementen",
@@ -1267,6 +1267,7 @@
     "agentBridgeSubtitle": "IDE-agentverkeer onderscheppen",
     "trafficInspector": "Traffic Inspector",
     "trafficInspectorSubtitle": "__MISSING__:Inspect request and response traffic from your apps",
+    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client.",
     "cliCode": "CLI Code",
     "cliCodeSubtitle": "Codetools die naar OmniRoute verwijzen",
     "cliAgents": "CLI Agents",
@@ -1300,8 +1301,7 @@
       "open": "open",
       "close": "sluiten"
     },
-    "noResults": "Geen resultaten",
-    "trafficInspectorPurpose": "See exactly what your application sends to and receives from AI providers. Works with any OpenAI-compatible client."
+    "noResults": "Geen resultaten"
   },
   "webhooks": {
     "title": "Webhaken",
@@ -1808,6 +1808,11 @@
     "updateStarted": "Update gestart...",
     "reloadingPageAutomatically": "Pagina automatisch herladen...",
     "providerTopology": "Provider-topologie",
+    "recentRequests": "Recent Requests",
+    "recentRequestsEmpty": "No requests yet.",
+    "recentRequestsModel": "Model",
+    "recentRequestsTokens": "In / Out",
+    "recentRequestsWhen": "When",
     "downloadDmg": "Download DMG (macOS)",
     "downloadDmgDescription": "Er is een nieuwe versie van de OmniRoute desktopapp beschikbaar. Download en installeer alstublieft de macOS DMG-installatieprogramma om bij te werken (huidig: v{version}).",
     "downloadExe": "Download EXE (Windows)",
@@ -1865,11 +1870,6 @@
     "releaseNotes": "Release-opmerkingen",
     "readMore": "Lees Meer",
     "noAuthLabel": "Geen Auth",
-    "recentRequests": "Recent Requests",
-    "recentRequestsEmpty": "No requests yet.",
-    "recentRequestsModel": "Model",
-    "recentRequestsTokens": "In / Out",
-    "recentRequestsWhen": "When",
     "readinessEyebrow": "Get ready to route",
     "readinessTitle": "Send your first request",
     "readinessSubtitle": "Four small steps. OmniRoute checks readiness as you go.",
@@ -2922,9 +2922,9 @@
       "interpreter": "Open Interpreter autonome codeeragent-CLI",
       "omp": "Oh My Pi terminal-codeeragent",
       "letta": "Letta CLI-agent met persistent geheugen en toolgebruik",
+      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support",
       "warp": "Warp AI-terminal met ondersteuning voor aangepaste providers",
-      "agent-deck": "Agent Deck multi-agent-orchestrator",
-      "prime-agent": "Prime Agent — self-improving RLM coding harness with OpenAI-compatible provider support"
+      "agent-deck": "Agent Deck multi-agent-orchestrator"
     },
     "guides": {
       "cursor": {
@@ -3849,6 +3849,9 @@
   },
   "endpoint": {
     "title": "API-eindpunt",
+    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
+    "testEndpoint": "Test endpoint →",
+    "advancedProtocols": "Advanced protocols",
     "available": "Beschikbare eindpunten",
     "cloudProxy": "Cloud-proxy",
     "disableConfirm": "Weet u zeker dat u cloudproxy wilt uitschakelen?",
@@ -4156,10 +4159,7 @@
     "notionIntegrationHelp": "Maak een interne integratie aan bij",
     "notionIntegrationToken": "Notion Interne Integratietoken",
     "notionNotConnected": "Niet verbonden",
-    "notionTokenConfigured": "Token geconfigureerd. Notion-tools zijn beschikbaar via MCP.",
-    "subtitle": "Use the OpenAI-compatible endpoint with most SDKs and tools.",
-    "testEndpoint": "Test endpoint →",
-    "advancedProtocols": "Advanced protocols"
+    "notionTokenConfigured": "Token geconfigureerd. Notion-tools zijn beschikbaar via MCP."
   },
   "endpoints": {
     "tabProxy": "Endpoint Proxy",
@@ -4632,6 +4632,13 @@
     "retry": "Opnieuw proberen",
     "allOperational": "Alle systemen operationeel",
     "issuesDetected": "Systeemproblemen gedetecteerd",
+    "healthVerdictReady": "OmniRoute is ready",
+    "healthVerdictActionRequired": "Action required to restore full operation",
+    "healthVerdictCoolingDown": "Cooling down after recent changes",
+    "healthSubtitle": "System health check",
+    "advancedDiagnosticsTitle": "Advanced diagnostics",
+    "hide": "Hide",
+    "show": "Show",
     "updatedAt": "{time} bijgewerkt",
     "latency": "Latentie",
     "latencyP50": "p50",
@@ -4742,14 +4749,7 @@
     "issueCount": "{count} problemen",
     "score": "Score",
     "lastRequest": "Laatste verzoek",
-    "lastError": "Laatste fout",
-    "healthVerdictReady": "OmniRoute is ready",
-    "healthVerdictActionRequired": "Action required to restore full operation",
-    "healthVerdictCoolingDown": "Cooling down after recent changes",
-    "healthSubtitle": "System health check",
-    "advancedDiagnosticsTitle": "Advanced diagnostics",
-    "hide": "Hide",
-    "show": "Show"
+    "lastError": "Laatste fout"
   },
   "telemetry": {
     "title": "Systeemtelemetrie",
@@ -4954,7 +4954,9 @@
     "multiProvider": "Meerdere aanbieders",
     "usageTracking": "Gebruik volgen",
     "securityDesc": "Stel een wachtwoord in om uw dashboard te beschermen, of sla dit voorlopig over.",
+    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
     "providerDesc": "Sluit uw eerste AI-provider aan. Je kunt later meer toevoegen.",
+    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard.",
     "apiKeyRequired": "API-sleutel (vereist)",
     "customUrlOptional": "Aangepaste URL (optioneel)",
     "testDesc": "Laten we controleren of uw providerverbinding werkt.",
@@ -5011,9 +5013,7 @@
         "skipped": "al reeds geconfigureerd",
         "failed": "mislukt"
       }
-    },
-    "securityDescSkipWarning": "⚠️ Without a password, you won't be able to add providers during setup. You can add them later from the dashboard after setting a password.",
-    "providerRequiresPassword": "You need to set a password first to add providers. Please go back to the security step and set a password, or add providers later from the dashboard."
+    }
   },
   "providers": {
     "title": "Aanbieders",
@@ -5724,8 +5724,8 @@
     "aggregatorsGateways": "Aggregators Gateways",
     "enterpriseCloud": "Onderneming en cloud",
     "apiFormatLabel": "Api Format Label",
-    "apiKeyOptionalHint": "Api Key Optional Hint",
-    "apiKeyOptionalLabel": "Api Key Optional Label",
+    "apiKeyOptionalHint": "__MISSING__:Leave empty if your local setup or provider does not require authentication.",
+    "apiKeyOptionalLabel": "__MISSING__:API Key (optional)",
     "apiRegionChina": "Api Region China",
     "apiRegionHint": "Api Region Hint",
     "apiRegionInternational": "Api Region International",
@@ -6157,8 +6157,8 @@
       "inception": "Inception Labs is OpenAI-compatibel op https://api.inceptionlabs.ai/v1. mercury-2 is het eerste diffusie LLM (dLLM) in de catalogus — 5-10x snellere generatie dan vergelijkbare autoregressieve modellen, met toolaanroepen, json_mode en gestructureerde uitvoer.",
       "inference-net": "$25 gratis tegoed bij aanmelding plus onderzoeksbeurzen beschikbaar",
       "internlm": "Gratis maandelijkse quotum ~1M invoer / 3M uitvoer tokens (~10 RPM)",
-      "jina-ai": "Bearer-API-sleutel voor de Jina AI rerank-API.",
-      "jina-reader": "Verbind Jina Reader met een API-sleutel.",
+      "jina-ai": "__MISSING__:Bearer API key for api.jina.ai (embeddings, rerank, classify, segment, search). Not the Reader / r.jina.ai card. Dashboard keys take precedence over JINA_AI_API_KEY.",
+      "jina-reader": "__MISSING__:Bearer API key for r.jina.ai URL-to-markdown only. Does not serve /v1/embeddings or /v1/rerank. The same Jina token as Foundation API works.",
       "kenari": "Kenari biedt een met OpenAI compatibel chat-completions-eindpunt op https://kenari.id/v1/chat/completions, plus een live /v1/models-catalogus die Claude, GPT, DeepSeek, GLM, Kimi en meer dekt. OmniRoute gebruikt het OpenAI-protocol en toont modellen via passthrough.",
       "kie": "Verbind KIE.AI met een API-sleutel.",
       "kilo-gateway": "Verbind Kilo Gateway met een API-sleutel.",
@@ -6271,7 +6271,7 @@
       "cursor": "Verbind Cursor IDE met de bestaande OAuth-flow.",
       "cursor-api": "Connect Cursor with a user API key (crsr_...) from cursor.com/dashboard/api; no IDE session needed.",
       "github": "Verbind GitHub Copilot met de bestaande OAuth-flow.",
-      "gitlab-duo": "OAuth-applicatie met ai_features + read_user scopes. Configureer GITLAB_DUO_OAUTH_CLIENT_ID en optioneel GITLAB_DUO_OAUTH_CLIENT_SECRET op deze OmniRoute-instantie.",
+      "gitlab-duo": "__MISSING__:OAuth application with ai_features + read_user scopes. Configure GITLAB_DUO_OAUTH_CLIENT_ID and optionally GITLAB_DUO_OAUTH_CLIENT_SECRET on this OmniRoute instance.",
       "kilocode": "Verbind Kilo Code met de bestaande OAuth-flow.",
       "kimi-coding": "Verbind Kimi Coding met de bestaande OAuth-flow.",
       "kiro": "Gratis tier: 50 credits/maand (~25K–100K tokens). ⚠️ Kiro ToS verbiedt het gebruik van externe proxy/harness.",
@@ -6302,6 +6302,20 @@
     "webSessionGuideStep3": "Kopieer de vereiste inloggegevens uit het eigen domein van de provider. Kopieer voor cookies alleen de waarde van de Cookie-header en laat Cookie: weg.",
     "webSessionGuideStep3Manual": "Handmatige pad: open de browserontwikkelaarstools (F12 → Netwerk), vernieuw de pagina, open een geauthenticeerd verzoek en kopieer de waarde van de Cookie-header uit de Verzoekheaders — laat de Cookie: prefix weg.",
     "webSessionGuideStep4": "Plak het hier en controleer de verbinding. Als het niet meer werkt, logt u opnieuw in en vervangt u het door een nieuwe waarde.",
+    "harImportButtonLabel": "Import .har file",
+    "harImportButtonBusy": "Importing…",
+    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
+    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
+    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
+    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
+    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
+    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
+    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
+    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
+    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
+    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
+    "harImportErrorReadFailed": "Couldn't read that file.",
+    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file.",
     "webSessionSecurityHint": "Behandel dit als een wachtwoord: het heeft toegang tot uw ingelogde webaccount totdat het verloopt of wordt ingetrokken.",
     "webNoAuthGuideTitle": "Geen legitimatie vereist",
     "webNoAuthGuideBody": "{provider} heeft geen API-sleutel of cookie nodig. Sla de verbinding op om het gratis webeindpunt te gebruiken.",
@@ -6327,8 +6341,8 @@
     "apiProtocolHint": "Sommige providers publiceren dezelfde modellen over meer dan één protocol. Laat de standaardinstelling staan, tenzij je de alternatieve nodig hebt.",
     "bulkAddFormatHintCloudflare": "Eén sleutel per regel. Indeling: name|accountId|apiKey (Cloudflare-account-ID + API-token).",
     "lmarenaWebCookieHint": "Open arena.ai, meld u aan en kopieer vervolgens de volledige Cookie-header van een netwerkverzoek. Voeg arena-auth-prod-v1.0 en arena-auth-prod-v1.1 toe (en verdere chunks indien aanwezig), bij voorkeur met cf_clearance. Plak niet alleen de lege arena-auth-prod-v1-cookie. Optioneel: providerSpecificData.recaptchaV3Token als create-evaluation nog steeds 403 retourneert.",
-    "kimiOfficialSupporterBadge": "Oprichtende Vriend",
-    "kimiOfficialSupporterTooltip": "Kimi (Moonshot AI) is OmniRoute's oprichtende open source-vriend",
+    "kimiOfficialSupporterBadge": "__MISSING__:Official Supporter",
+    "kimiOfficialSupporterTooltip": "__MISSING__:Kimi (Moonshot AI) is an official OmniRoute launch partner",
     "cheaperInferenceSupporterBadge": "Opensourcevriend",
     "cheaperInferenceSupporterTooltip": "Cheaper Inference steunt OmniRoute als opensourcevriend",
     "kimiPartnerLinkNote": "Partnerlink — ondersteunt OmniRoute zonder extra kosten voor u",
@@ -6416,21 +6430,7 @@
     "savedModelEndpointSettings": "Instellingen voor opgeslagen model-eindpunt",
     "searchByModelAria": "Zoeken op model",
     "selectSupportedEndpoint": "Selecteer ten minste één ondersteunde eindpunt",
-    "antigravityClientProfileHarness": "Harness / CLI",
-    "harImportButtonLabel": "Import .har file",
-    "harImportButtonBusy": "Importing…",
-    "harImportButtonHint": "Export from DevTools Network tab after sending at least one chat message.",
-    "harImportStatusValid": "Imported — valid for ~{minutes}m.",
-    "harImportStatusExpiringSoon": "Imported — valid for only ~{minutes}m more.",
-    "harImportStatusExpired": "Imported, but this token already expired ({minutes}m ago) — export a fresh HAR.",
-    "harImportStatusUnknownExpiry": "Imported. Couldn't read its expiry.",
-    "harImportErrorNotJson": "That file isn't valid JSON — is it really a .har export?",
-    "harImportErrorNoEntries": "This HAR has no network entries recorded.",
-    "harImportErrorNoChathubUrl": "No Copilot chat connection found in this HAR. Send at least one chat message in m365.cloud.microsoft before exporting.",
-    "harImportErrorUnparsableUrl": "Found the chat connection, but couldn't read its URL.",
-    "harImportErrorMissingFields": "Found the chat connection, but the token was missing from it.",
-    "harImportErrorReadFailed": "Couldn't read that file.",
-    "harImportErrorUnknown": "Couldn't extract a credential from that HAR file."
+    "antigravityClientProfileHarness": "Harness / CLI"
   },
   "settings": {
     "title": "Instellingen",
@@ -6710,6 +6710,18 @@
     "sidebarVisibility": "Hide sidebar items",
     "sidebarVisibilityDesc": "Hide any sidebar navigation entry to reduce visual clutter.",
     "sidebarVisibilityHint": "Any sidebar section is hidden automatically when a...",
+    "presetAll": "All",
+    "presetAllDesc": "Show everything",
+    "presetEssentials": "Essentials",
+    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
+    "presetMinimal": "Minimal",
+    "presetMinimalDesc": "Core pages only",
+    "presetDeveloper": "Developer",
+    "presetDeveloperDesc": "Dev & proxy tools",
+    "presetAdmin": "Admin",
+    "presetAdminDesc": "Monitoring & audit",
+    "settingsSidebarTitle": "Sidebar Customization",
+    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable.",
     "hideHealthLogs": "Statuschecklogboeken verbergen",
     "hideHealthLogsDesc": "Indien AAN: onderdruk [HealthCheck]-berichten in de serverconsole",
     "themeAccent": "Themakleur",
@@ -6921,7 +6933,7 @@
     "afterPromptPlaceholder": "Instructies ingevoegd na agent/provider-prompt...",
     "chars": "{count} tekens",
     "thinkingBudgetTitle": "Denkbudget",
-    "thinkingBudgetDesc": "Beheer het gebruik van AI-redeneringstokens voor alle verzoeken",
+    "thinkingBudgetDesc": "__MISSING__:Controls whether OmniRoute rewrites client thinking/reasoning parameters before requests go upstream. This is separate from compression, prompt cache, and API-key token limits.",
     "thinkingBudgetIndependenceHint": "Compressie-, routerings- en tokenlimietfuncties blijven in elke modus werken. Auto betekent niet “auto-show denken” — het verwijdert de redeneervelden van de client.",
     "passthrough": "Doorvoer",
     "passthroughDesc": "Geen wijzigingen – de klant bepaalt het denkbudget",
@@ -6946,7 +6958,7 @@
     "tokenBudget": "Tokenbudget",
     "tokens": "tokens",
     "baseEffortLevel": "Basisinspanningsniveau",
-    "adaptiveHint": "De adaptieve modus schaalt vanaf dit basisniveau op basis van het aantal berichten, het gebruik van tools en de lengte van de prompt.",
+    "adaptiveHint": "__MISSING__:Adaptive mode scales from this base level based on message count, tool usage, and prompt length. Does not decrypt provider encrypted reasoning blobs.",
     "requireLogin": "Inloggen vereisen",
     "requireLoginDesc": "Indien AAN vereist het dashboard een wachtwoord. Wanneer UIT: toegang zonder inloggen.",
     "currentPassword": "Huidig wachtwoord",
@@ -7678,6 +7690,20 @@
     "jsonImportError": "Fout tijdens JSON-import",
     "storagePurgeData": "Gegevens opschonen",
     "storagePurgeDataDesc": "Verwijder onmiddellijk alle records zonder retentiecontroles toe te passen. Wees voorzichtig.",
+    "storageMaintenance": "__MISSING__:Maintenance & cleanup",
+    "storageMaintenanceDesc": "__MISSING__:Background cleanup runs every 6 hours and removes rows past the retention windows configured below.",
+    "storageLastAutoCleanup": "__MISSING__:Last auto-cleanup",
+    "storageCleanupNeverRan": "__MISSING__:Not run yet",
+    "storageCleanupRowsDeleted": "__MISSING__:Rows removed",
+    "storageCleanupErrors": "__MISSING__:{count} errors",
+    "storageCleanupEnabled": "__MISSING__:Auto-cleanup on",
+    "storageCleanupDisabled": "__MISSING__:Auto-cleanup off",
+    "storageWalSize": "__MISSING__:WAL size",
+    "storageProcessRss": "__MISSING__:Process memory (RSS)",
+    "storageCgroupBilled": "__MISSING__:Container memory (billed)",
+    "storageCgroupCache": "__MISSING__:File cache",
+    "storageFtsIndex": "__MISSING__:Memory FTS index / data",
+    "storageTopTables": "__MISSING__:Largest tables",
     "storageRetentionCleanup": "Retentie-instellingen",
     "storageRetentionCleanupDesc": "Configureer de retentie van operationele records en het opschonen van databaseback-ups.",
     "retentionCallDays": "Oproep {count}d",
@@ -8277,19 +8303,7 @@
     "cliproxyapiHealth": "Gezondheid",
     "cliproxyapiPort": "Haven",
     "qdrantHost": "Host",
-    "qdrantCollection": "Verzameling",
-    "presetAll": "All",
-    "presetAllDesc": "Show everything",
-    "presetEssentials": "Essentials",
-    "presetEssentialsDesc": "Beginner path - Advanced tools stay searchable",
-    "presetMinimal": "Minimal",
-    "presetMinimalDesc": "Core pages only",
-    "presetDeveloper": "Developer",
-    "presetDeveloperDesc": "Dev & proxy tools",
-    "presetAdmin": "Admin",
-    "presetAdminDesc": "Monitoring & audit",
-    "settingsSidebarTitle": "Sidebar Customization",
-    "settingsSidebarDesc": "Choose which sidebar items to show. Essentials keeps Advanced tools searchable."
+    "qdrantCollection": "Verzameling"
   },
   "contextRtk": {
     "title": "RTK Engine",
@@ -8654,13 +8668,13 @@
   },
   "omniglyph": {
     "preview": "Preview",
-    "description": "Context-als-afbeelding-compressie. Rendert de systeemprompt, tooldocumentatie en dichte geschiedenis als compacte PNG-pagina's die Claude Fable 5 leest in plaats van tekst. Afbeeldingstokens worden gefactureerd op basis van afmetingen in plaats van tekens, waardoor het geconverteerde blok ongeveer 10× minder kost. Alleen directe Anthropic-route.",
+    "description": "__MISSING__:Context-as-image compression. Renders the system prompt, tool documentation, and dense history as compact PNG pages for the measured Claude Fable 5 path. The published OmniGlyph package also exposes native GPT 5.6 transformers, but OmniRoute keeps those routes fail-closed until provider fidelity and reading receipts exist.",
     "economicsTitle": "De economische aspecten",
     "economics": {
       "fewerTokens": "minder tokens op het geconverteerde blok",
       "savings": "end-to-end besparingen (gemeten)",
       "imageTokens": "afbeeldingstokens voor een pagina van 1568×728 (ongeveer 28k tekens)",
-      "accuracy": "leesnauwkeurigheid op Fable 5 (n=30)"
+      "accuracy": "__MISSING__:scoped Fable 5 reading receipt"
     },
     "beforeAfterTitle": "Voor → na",
     "blockSavings": "−{percent}% tokens op dit blok",
@@ -8673,18 +8687,18 @@
     "gates": {
       "model": {
         "label": "Model",
-        "pass": "claude-fable-5",
-        "why": "Alleen Fable 5 leest dichte pagina's met 100% nauwkeurigheid (gemeten, n=30). GPT-5.5 en Gemini 2.5 Flash zijn geblokkeerd."
+        "pass": "__MISSING__:claude-fable-5 (measured); gpt-5.6 (HOLD)",
+        "why": "__MISSING__:Only the measured Fable 5 path is enabled in OmniRoute. GPT 5.6 is structurally supported by the package but remains blocked until its provider receipt; unverified families such as Grok stay text-only."
       },
       "transport": {
         "label": "Transport",
-        "pass": "direct Anthropic",
-        "why": "Aggregators resamplen afbeeldingen en vernietigen de leesbaarheid — alleen de directe route is leidend."
+        "pass": "__MISSING__:direct provider",
+        "why": "__MISSING__:Aggregators may resample images and destroy legibility — only a direct provider route is authoritative."
       },
       "format": {
         "label": "Format",
-        "pass": "native Claude",
-        "why": "De body moet het Claude-format gebruiken en mag nooit een systeemrol binnen berichten plaatsen."
+        "pass": "__MISSING__:native Claude/OpenAI",
+        "why": "__MISSING__:The body must match the provider wire: Claude Messages, OpenAI Chat Completions, or native OpenAI Responses input[]."
       },
       "profitable": {
         "label": "Rendabel",
@@ -8693,7 +8707,7 @@
       }
     },
     "enableTitle": "Schakel de engine in",
-    "enableDescription": "Draait als laatste in de stack (nadat RTK/Caveman de tekst opschoont, converteert OmniGlyph de rest naar afbeeldingen) en draait ook standalone via de <code>omniglyph</code>-modus. Dit is een preview en blijft standaard uitgeschakeld totdat de end-to-end-validatie is voltooid.",
+    "enableDescription": "__MISSING__:Runs last in the stack after text engines clean the request, using the native provider wire; OpenAI Chat/Responses requests are compressed after translation so their shape is preserved. It also runs standalone through <code>omniglyph</code> mode. This is a preview and remains off by default until end-to-end validation is complete.",
     "profileTitle": "Compression profile",
     "profileDescription": "The profile is a ceiling, not a floor: a stricter profile cannot be reopened by a per-step override. Measured on this codebase: with coding-safe or balanced, a session that has not accumulated history yet compresses nothing, because both raise the minimum-characters threshold and keep the system prompt, tool schemas and tool results native.",
     "profiles": {
@@ -8722,7 +8736,7 @@
   },
   "embeddedServices": {
     "title": "Ingebedde services",
-    "description": "Lokale engines beheerd op aanvraag — CLIProxyAPI, 9Router, Mux en Bifrost. Alleen toegankelijk via loopback.",
+    "description": "__MISSING__:Optional helpers that run on your machine. Most users can start without them — install one only when an integration needs it.",
     "stateRunning": "Draait",
     "stateStopped": "Gestopt",
     "stateStarting": "Starten",
@@ -8921,7 +8935,7 @@
     "featureMissingToolResponse": "Gereedschapsreactie-injectie",
     "featureMissingToolResponseDesc": "Injecteert lege tool_result-berichten wanneer clients tool_calls verzenden zonder overeenkomstige antwoorden.",
     "featureThinkingBudget": "Denkbudget",
-    "featureThinkingBudgetDesc": "Beheert automatisch de denkconfiguratie. Verwijdert denkparameters wanneer het laatste bericht niet van de gebruiker is.",
+    "featureThinkingBudgetDesc": "__MISSING__:Proxy-level control of thinking/reasoning request fields: passthrough (client controls), auto (strip all thinking params), custom (fixed budget), or adaptive (scale by complexity). Independent of compression and routing. Does not decrypt encrypted reasoning content.",
     "featureDirectPaths": "Directe vertaalpaden",
     "featureDirectPathsDesc": "Sommige formatenparen (Claude → Gemini) hebben directe vertalers die de OpenAI-hub omzeilen, waardoor een nauwkeurigere uitvoer ontstaat.",
     "featureImageMapping": "Afbeeldingsgrootte in kaart brengen",
@@ -10691,7 +10705,7 @@
     "continue": "Doorgaan"
   },
   "cursorAuthModal": {
-    "title": "Sluit Cursor-IDE aan",
+    "title": "__MISSING__:Connect Cursor",
     "tabLogin": "Login with Cursor",
     "tabImport": "Import token",
     "loginDescription": "Opens Cursor's browser login. Works in Docker — approve in your host browser, then return here.",
@@ -10704,7 +10718,7 @@
     "autoDetecting": "Tokens automatisch detecteren...",
     "readingFromCursor": "Lezen vanuit Cursor IDE of cursor-agent",
     "tokensAutoDetected": "Tokens succesvol automatisch gedetecteerd vanuit Cursor IDE!",
-    "cursorNotDetected": "Cursor-IDE niet gedetecteerd. Plak uw token handmatig.",
+    "cursorNotDetected": "__MISSING__:Cursor IDE not detected. Paste your access token (and refresh token if available).",
     "dockerImportHint": "Running in Docker? Prefer Login with Cursor. IDE auto-import and cursor-agent are usually unavailable inside the container. See docs/providers/CURSOR-DOCKER.md.",
     "accessToken": "Toegangstoken",
     "refreshToken": "Refresh Token",
@@ -12074,10 +12088,10 @@
       },
       "acp": {
         "title": "ACP Agents",
-        "phrase": "CLI's die OmniRoute start als uitvoeringsbackend (omgekeerde flow)",
+        "phrase": "__MISSING__:Run complex, long-running logic in the backend",
+        "warning": "Most users can ignore this — use only when an integration requires it.",
         "flow": "Client → OmniRoute → CLI spawnen (stdio/ACP) → respons",
-        "seeOther": "Bekijk →",
-        "warning": "Most users can ignore this — use only when an integration requires it."
+        "seeOther": "Bekijk →"
       }
     },
     "comparison": {
@@ -12836,6 +12850,10 @@
       "ALLOW_MULTI_CONNECTIONS_PER_COMPAT_NODE": {
         "description": "Sta meerdere verbindingen toe voor elke compatibiliteitsnode."
       },
+      "DISABLE_CONTEXT_WINDOW_CHECKS": {
+        "label": "Disable Context Window Checks",
+        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
+      },
       "RESPONSES_PASSTHROUGH_DROP_COMMENTARY": {
         "description": "Verwijder interne commentary-fase-uitvoeritems uit Responses API-passthrough-streams voordat ze worden doorgestuurd naar clients. Schakel deze vlag uit om onbewerkte upstream-commentary te ontvangen."
       },
@@ -12901,10 +12919,6 @@
       },
       "SKILLS_SANDBOX_NETWORK_ENABLED": {
         "description": "Schakel netwerktoegang in de skills-sandbox in."
-      },
-      "DISABLE_CONTEXT_WINDOW_CHECKS": {
-        "label": "Disable Context Window Checks",
-        "description": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active."
       }
     }
   },
@@ -13383,6 +13397,13 @@
   },
   "resilienceConnections": {
     "title": "Verbindingsveerkracht",
+    "reassuranceTitle": "Your connections recover automatically",
+    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
+    "plainStates": {
+      "healthy": "Requests can be sent",
+      "coolingDown": "Trying again soon",
+      "lockedOut": "Needs your attention"
+    },
     "table": {
       "status": "Status",
       "provider": "Provider",
@@ -13477,16 +13498,10 @@
         "modelLockouts": "Modelvergrendelingen",
         "count": "Aantal Verbindingen"
       }
-    },
-    "reassuranceTitle": "Your connections recover automatically",
-    "reassuranceDetail": "Usually no action is needed. OmniRoute temporarily rests a connection after failures, then safely tries it again.",
-    "plainStates": {
-      "healthy": "Requests can be sent",
-      "coolingDown": "Trying again soon",
-      "lockedOut": "Needs your attention"
     }
   },
   "featureFlagCapabilityFilterEnabledDescription": "Weiger verzoeken vóór verzending wanneer het doellmodel ontbrekende vereiste mogelijkheden heeft (zicht, tools, gestructureerde output, contextvenster). Beschermt directe verzoeken van een enkele aanbieder die de compatibiliteitsfilter van de comb-laag omzeilen.",
+  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "publicSystem": {
     "notFound": {
       "title": "Pagina niet gevonden",
@@ -13922,7 +13937,6 @@
     "structuredOutputMismatch": "Provider ondersteunt geen gestructureerde uitvoer",
     "contextWindowMismatch": "Verzoek overschrijdt de contextvenster van de provider"
   },
-  "featureFlagDisableContextWindowChecksDescription": "Skip OmniRoute's local context-window and max-input-token check for direct single-model requests. Upstream providers still enforce their actual limits. Prompt compression and output-token caps remain active.",
   "cheaperInferenceSponsorBanner": {
     "title": "Cheaper Inference is an OmniRoute Open Source Friend",
     "description": "A cost-ranked gateway reselling dozens of frontier models behind one OpenAI-compatible endpoint — routing each request to the cheapest eligible provider, never above list price.",
