@@ -7056,11 +7056,6 @@
       "count": 1
     }
   },
-  "tests/unit/ui/use-stream-metrics.test.tsx": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
-    }
-  },
   "tests/unit/ui/use-traffic-stream.test.tsx": {
     "@typescript-eslint/no-unused-vars": {
       "count": 1
