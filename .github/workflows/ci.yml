@@ -989,6 +989,9 @@ jobs:
     env:
       JWT_SECRET: ci-test-secret-with-sufficient-length-for-validation
       API_KEY_SECRET: ci-test-api-key-secret-long
+      # Secrets can't be referenced in `if:` conditions; surface the token as a
+      # job env so the upload step can skip itself when no token exists.
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -1061,17 +1064,17 @@ jobs:
       # reporter above also fixes coverage/lcov.info being silently absent
       # (if-no-files-found: warn) — Sonar consumes the same file.
       - name: Upload coverage to Codecov (informational)
-        if: always()
-        # Informational-only: a missing CODECOV_TOKEN makes the upload stall
-        # (not error), which twice burned the whole 20min job budget and
-        # cancelled the run after every real gate had passed. Hard-timeout the
-        # step and tolerate failure so the upload can never sink the job.
+        # Skip entirely without a token: tokenless upload stalls (not errors),
+        # and even a hard timeout marks the STEP cancelled — which propagates a
+        # "cancelled" job conclusion despite continue-on-error, after every real
+        # gate had already passed. Skipped steps don't poison the job.
+        if: always() && env.CODECOV_TOKEN != ''
         timeout-minutes: 3
         continue-on-error: true
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           files: coverage/lcov.info
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ env.CODECOV_TOKEN }}
           fail_ci_if_error: false
       - name: Upload coverage artifacts
         if: always()
