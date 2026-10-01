@@ -627,6 +627,20 @@ jobs:
     needs: changes
     if: ${{ github.event_name != 'pull_request' || (needs.changes.outputs.code == 'true' && github.event.pull_request.draft == false) }}
     steps:
+      - name: Expand Virtual Memory (Native 10GB Swap)
+        # Hosted ubuntu-latest has ~7GB RAM; the Turbopack compile survives but the
+        # "Collecting page data" phase (3 Node workers) spikes RSS and the runner
+        # gets reclaimed mid-step with no exit code — the same signature tracked in
+        # #8090 and the reason build.yml already carries this step.
+        if: ${{ runner.environment == 'github-hosted' }}
+        run: |
+          sudo swapoff -a || true
+          sudo rm -f /mnt/swapfile /swapfile
+          sudo fallocate -l 10G /mnt/swapfile || sudo dd if=/dev/zero of=/mnt/swapfile bs=1M count=10240
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+          free -h
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
