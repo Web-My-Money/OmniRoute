@@ -2,7 +2,7 @@
 // tests/unit/ui/use-tools-builder.test.tsx
 // Runs via Vitest (vitest.config.ts)
 // Uses React DOM directly (no @testing-library/dom dep required).
-import React, { act, useRef } from "react";
+import React, { act, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it, expect } from "vitest";
 import { useToolsBuilder } from "../../../src/app/(dashboard)/dashboard/playground/hooks/useToolsBuilder";
@@ -22,10 +22,12 @@ function mountHook<T>(useHook: () => T): {
   const root = createRoot(container);
 
   function HookComponent() {
-    const captureRef = useRef<T>(undefined as unknown as T);
-    captureRef.current = useHook();
-
-    hookRef.current = captureRef.current;
+    const value = useHook();
+    // Write-through in an effect: mutating outer state during render trips
+    // react-hooks/immutability; act() flushes effects so hookRef is populated.
+    useEffect(() => {
+      hookRef.current = value;
+    });
     return null;
   }
 
