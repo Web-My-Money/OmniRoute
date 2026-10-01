@@ -17,7 +17,7 @@ The work ships as small, independently verified waves. Each wave must preserve p
 
 ## Current Evidence
 
-- OmniRoute's real Next.js startup path is `src/instrumentation-node.ts`; `src/server-init.ts` is unused.
+- OmniRoute's real Next.js startup path is `src/instrumentation-node.ts`; the legacy server-init module it bypassed has since been removed upstream.
 - `src/lib/db/cleanup.ts` runs retention cleanup at startup and every six hours after the scheduler is initialized.
 - The production cleanup scheduler now starts from the real boot path.
 - Production SQLite was reduced from 865 MB to approximately 319 MB after rebuilding the memory FTS index, pruning telemetry, and vacuuming.
@@ -140,7 +140,7 @@ Review dashboard routes and SQLite modules for unbounded reads, high-cardinality
 
 ### Dead startup paths
 
-Remove or clearly quarantine startup code that cannot execute only after proving it has no supported entry point. Until then, do not add new runtime initialization to `src/server-init.ts`.
+Remove or clearly quarantine startup code that cannot execute only after proving it has no supported entry point. (Since this doc was written, the legacy server-init module was removed upstream; keep new runtime initialization on the `src/instrumentation-node.ts` path only.)
 
 ## Error Handling and Safety
 

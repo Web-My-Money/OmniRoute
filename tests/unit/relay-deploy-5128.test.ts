@@ -94,8 +94,10 @@ test("#5128C: Cloudflare worker upload sends an accepted script Content-Type", a
       // embedded part header instead of reading FormData.get().
       const headers = new Headers(init.headers);
       requestContentType = headers.get("content-type") ?? undefined;
-      const bodyText = Buffer.isBuffer(init.body)
-        ? (init.body as Buffer).toString("utf8")
+      // The route wraps the multipart Buffer in Uint8Array at the fetch boundary —
+      // Buffer.from() decodes both Buffer and Uint8Array correctly.
+      const bodyText = Buffer.isBuffer(init.body) || init.body instanceof Uint8Array
+        ? Buffer.from(init.body as Uint8Array).toString("utf8")
         : String(init.body);
       const match = bodyText.match(/name="index\.js"[^]*?Content-Type: ([^\r\n]+)/);
       scriptPartContentType = match?.[1];
@@ -148,8 +150,8 @@ test("#6416: Cloudflare worker script body is Service Worker syntax (no top-leve
   globalThis.fetch = (async (input: unknown, init: MockRequestInit = {}) => {
     const url = String(input);
     if (init.method === "PUT" && url.includes("/workers/scripts/") && !url.includes("/subdomain")) {
-      const bodyText = Buffer.isBuffer(init.body)
-        ? (init.body as Buffer).toString("utf8")
+      const bodyText = Buffer.isBuffer(init.body) || init.body instanceof Uint8Array
+        ? Buffer.from(init.body as Uint8Array).toString("utf8")
         : String(init.body);
       const scriptMatch = bodyText.match(
         /name="index\.js"[^]*?Content-Type: [^\r\n]+\r\n\r\n([^]*?)\r\n--/

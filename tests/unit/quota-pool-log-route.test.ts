@@ -193,10 +193,10 @@ test("UsageLogCard: renders logEmpty i18n key for empty state", () => {
   );
 });
 
-test("UsageLogCard: fail-soft — guards events with ?? []", () => {
+test("UsageLogCard: fail-soft — guards events with Array.isArray", () => {
   assert.ok(
-    usageLogCardSrc.includes("?? []"),
-    "UsageLogCard must guard events with ?? [] for fail-soft behavior"
+    usageLogCardSrc.includes("Array.isArray(raw)"),
+    "UsageLogCard must guard events with Array.isArray for fail-soft behavior"
   );
 });
 

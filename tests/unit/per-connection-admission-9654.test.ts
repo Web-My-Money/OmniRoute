@@ -170,10 +170,15 @@ test("admitChatRequest with explicit controller overrides per-connection lookup"
 });
 
 test("admitChatStructure routes structural rejection to per-connection controller when heap pressure is genuinely high (#10183/#10268)", async () => {
-  // occupy sess-a's per-connection controller via the module-level instance
+  // occupy sess-a's per-connection controller via the module-level instance —
+  // fill the whole budget: CHAT_MAX_HEAVY_IN_FLIGHT is env-tunable (default 4),
+  // so holding a single slot no longer exhausts it.
   const controller = perConnectionAdmissionController.getController("sess-a");
-  const occupied = controller.tryAcquireHeavy();
-  assert.ok(occupied);
+  const occupied: Array<{ release(): void } | null> = [];
+  for (let i = 0; i < controller.maxHeavyInFlight; i += 1) {
+    occupied.push(controller.tryAcquireHeavy());
+  }
+  assert.ok(occupied.every(Boolean));
 
   const result = await admitChatStructure(
     {
@@ -190,19 +195,23 @@ test("admitChatStructure routes structural rejection to per-connection controlle
       heapPressureCheck: () => true,
     }
   );
-  // The process-wide slot is busy → 503
+  // The process-wide budget is busy → 503
   assert.equal(result.admit, false);
   if (result.admit) return;
   assert.equal(result.response.status, 503);
   assert.equal(result.response.headers.get("Retry-After"), "1");
-  occupied.release();
+  for (const lease of occupied) lease?.release();
 });
 
 test("admitChatStructure with different sessionId shares the global budget", async () => {
-  // occupy the shared process-global budget via sess-a
+  // occupy the shared process-global budget via sess-a — fill every slot, the
+  // budget is CHAT_MAX_HEAVY_IN_FLIGHT (env-tunable, default 4), not 1.
   const ctrlA = perConnectionAdmissionController.getController("sess-a");
-  const occupied = ctrlA.tryAcquireHeavy();
-  assert.ok(occupied);
+  const occupied: Array<{ release(): void } | null> = [];
+  for (let i = 0; i < ctrlA.maxHeavyInFlight; i += 1) {
+    occupied.push(ctrlA.tryAcquireHeavy());
+  }
+  assert.ok(occupied.every(Boolean));
 
   // Session B must NOT get independent capacity (pre-#10110 it did — that was
   // the defect): it shares the one process-wide slot and must be rejected —
@@ -226,5 +235,5 @@ test("admitChatStructure with different sessionId shares the global budget", asy
   );
   assert.equal(result.admit, false);
   assert.equal(result.response.status, 503);
-  occupied.release();
+  for (const lease of occupied) lease?.release();
 });
