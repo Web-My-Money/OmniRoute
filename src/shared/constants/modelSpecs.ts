@@ -21,6 +21,10 @@ export interface ModelSpec {
   // (upstream returns 400). Used to normalize the request when a combo/route substitutes
   // this model after the client already chose `disabled`. See issue #3554.
   rejectsThinkingDisabled?: boolean;
+  // Model rejects `thinking.type:"disabled"` but has a supported way to turn thinking off:
+  // send `thinking:{type:<this value>}` instead (Claude Sonnet 5.5: "between_tools").
+  // Unlike `rejectsThinkingDisabled`, which drops the field, this keeps the caller's intent.
+  thinkingDisabledAs?: "between_tools";
   // Model ONLY supports adaptive thinking: manual extended thinking was removed. Sending
   // `thinking.type:"enabled"` or any `thinking.budget_tokens` returns HTTP 400; reasoning
   // is steered exclusively by `output_config.effort` (low/medium/high/xhigh/max). True for
@@ -315,6 +319,26 @@ export const MODEL_SPECS: Record<string, ModelSpec> = {
     supportsTools: true,
     supportsVision: true,
     aliases: BEDROCK_CLAUDE_ALIASES("claude-sonnet-4-6", "claude-sonnet-4.6"),
+  },
+
+  // ── Claude Sonnet 5.5 ───────────────────────────────────────────
+  // Declared BEFORE "claude-sonnet-5" on purpose: prefix matching is first-match-wins in
+  // insertion order, so dated ids ("claude-sonnet-5-5-2026…") must meet this entry first.
+  // Limits mirror claude-sonnet-5, which this id resolved to before it had its own spec.
+  "claude-sonnet-5-5": {
+    maxOutputTokens: 128000,
+    contextWindow: 1000000,
+    defaultThinkingBudget: 32000,
+    thinkingBudgetCap: 120000,
+    supportsThinking: true,
+    supportsTools: true,
+    supportsVision: true,
+    adaptiveThinkingOnly: true,
+    // Anthropic 400: 'To turn thinking off on this model, send "thinking": {"type":
+    // "between_tools"} instead of {"type": "disabled"}.' The gateway thinking budget
+    // (custom/0) and Claude Code's internal calls both emit "disabled".
+    thinkingDisabledAs: "between_tools",
+    aliases: BEDROCK_CLAUDE_ALIASES("claude-sonnet-5-5"),
   },
 
   // ── Claude Sonnet 5 ─────────────────────────────────────────────
@@ -805,12 +829,14 @@ export function normalizeThinkingForModel<T extends Record<string, unknown>>(
   modelId: string
 ): T {
   const thinking = body?.thinking as Record<string, unknown> | undefined;
-  if (
-    thinking &&
-    typeof thinking === "object" &&
-    thinking.type === "disabled" &&
-    getModelSpec(modelId)?.rejectsThinkingDisabled
-  ) {
+  if (!thinking || typeof thinking !== "object" || thinking.type !== "disabled") return body;
+  const spec = getModelSpec(modelId);
+  // Models with a documented replacement for `disabled` (Sonnet 5.5) keep the intent: thinking
+  // stays off, spelled the way the model accepts. budget_tokens is dropped with the old type.
+  if (spec?.thinkingDisabledAs) {
+    return { ...body, thinking: { type: spec.thinkingDisabledAs } };
+  }
+  if (spec?.rejectsThinkingDisabled) {
     const { thinking: _omitted, ...rest } = body as Record<string, unknown>;
     return rest as T;
   }
