@@ -3,7 +3,8 @@
   "_justifications": {
     "@testing-library/dom": "Peer dep obrigatoria de @testing-library/react v16 (adicionada no PR #11224); Refs #9985.",
     "@testing-library/user-event": "Utilitario oficial do ecossistema testing-library para testes de UI (adicionada no PR #11224); Refs #9985.",
-    "@types/turndown": "Tipos DefinitelyTyped para turndown (ja allowlisted) — pacote types-only, sem superficie de runtime."
+    "@types/turndown": "Tipos DefinitelyTyped para turndown (ja allowlisted) — pacote types-only, sem superficie de runtime.",
+    "playwright-core": "Microsoft Playwright driver (publisher: microsoft). Ja importado dinamicamente pelo codigo de browser-login; so resolvia via hoisting de promptfoo, entao fica declarado junto de playwright (mesma versao exata)."
   },
   "allowed": [
     "@atjsh/llmlingua-2",
@@ -112,6 +113,7 @@
     "pino-abstract-transport",
     "pino-pretty",
     "playwright",
+    "playwright-core",
     "playwright-ctrf-json-reporter",
     "prettier",
     "promptfoo",
