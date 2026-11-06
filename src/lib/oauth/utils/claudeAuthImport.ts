@@ -6,7 +6,7 @@ import {
 } from "@/lib/db/providers";
 import { getClaudeCodeUserAgent } from "@/shared/constants/claudeCodeClient";
 import { ClaudeAuthFileError } from "@/lib/oauth/utils/claudeAuthFile";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 function toRecord(value: unknown): JsonRecord {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : {};

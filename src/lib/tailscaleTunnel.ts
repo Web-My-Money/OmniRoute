@@ -11,7 +11,7 @@ import { getRuntimePorts } from "@/lib/runtime/ports";
 import { getCachedPassword, setCachedPassword } from "@/mitm/manager";
 import { execFileWithPassword } from "@/mitm/systemCommands";
 import { getConsistentMachineId } from "@/shared/utils/machineId";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 const execFileAsync = promisify(execFile);
 

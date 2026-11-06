@@ -35,7 +35,7 @@ import {
   CANONICAL_EFFORT_VALUES,
   extendCodexGpt56EffortValues,
 } from "@/shared/reasoning/effortStandardization";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 const MODEL_METADATA_SCHEMA_VERSION = "model-metadata-v1";
 

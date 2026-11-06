@@ -1,4 +1,4 @@
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 type ClaudeExtraUsageConnectionState = {
   provider?: string | null;

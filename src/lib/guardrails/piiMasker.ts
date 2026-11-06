@@ -5,7 +5,7 @@ import { getPiiRuleConfig } from "@/lib/pii/piiRuleConfig";
 import { recordPiiDetections } from "@/lib/pii/piiDetectionStats";
 
 import { isFeatureFlagEnabled } from "@/shared/utils/featureFlags";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 type PiiDetection = {
   count: number;

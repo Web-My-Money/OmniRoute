@@ -7,7 +7,7 @@ import type { OutputStyleSelectionEntry } from "@omniroute/open-sse/services/com
 
 import { backupDbFile } from "./backup";
 import { getDbInstance, rowToCamel } from "./core";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 export interface CompressionCombo {
   id: string;

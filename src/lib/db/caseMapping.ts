@@ -1,4 +1,4 @@
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 /**
  * db/caseMapping.ts — pure snake_case ↔ camelCase column mapping.
  *

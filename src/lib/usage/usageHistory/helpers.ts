@@ -1,4 +1,4 @@
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 /**
  * Pure, stateless helpers extracted from usageHistory.ts.
  * No DB access, no module-level state — safe to import anywhere.

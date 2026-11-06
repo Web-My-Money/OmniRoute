@@ -1,6 +1,6 @@
 /** db/models/shared.ts — foundational JSON-record helpers shared across model sub-modules. */
 
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 export type { JsonRecord };
 
 export function asRecord(value: unknown): JsonRecord {

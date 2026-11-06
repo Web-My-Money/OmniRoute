@@ -24,7 +24,7 @@ import type {
   ComboRecord,
   UtilizationTimeRange,
 } from "@/shared/types/utilization";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 export interface ComboHealthAutopilotOptions {
   range: UtilizationTimeRange;

@@ -22,7 +22,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { logicalCallSql } from "./logicalCallSql";
 import { getDbInstance } from "./core";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 export interface AgenticConversationRow {
   id: string;

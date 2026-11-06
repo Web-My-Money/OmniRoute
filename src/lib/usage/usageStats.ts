@@ -15,7 +15,7 @@ import { calculateCost } from "./costCalculator";
 import { isFlatRateProvider } from "./flatRateProviders";
 import { getRawDataCutoffDate, isAggregationEnabled } from "./aggregateHistory";
 import { toNumber } from "@/shared/utils/numeric";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 type UsageBucket = {
   requests: number;

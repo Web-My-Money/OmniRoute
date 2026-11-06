@@ -17,7 +17,7 @@ import {
   sanitizeErrorFramesFromLogChunks,
 } from "../../logPayloads";
 import type { CallLogDetailState } from "../callLogArtifacts";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 // #7879: re-export the canonical helper so existing consumers of this module
 // keep importing `toNumber` from here unchanged.
 export { toNumber } from "@/shared/utils/numeric";

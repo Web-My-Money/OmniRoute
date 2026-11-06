@@ -1,4 +1,4 @@
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 /**
  * Public Dashboard contract for Kimi Coding Extra Usage (额度加油包).
  *

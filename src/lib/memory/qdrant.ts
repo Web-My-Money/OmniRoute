@@ -1,6 +1,6 @@
 import { getSettings } from "@/lib/db/settings";
 import { createEmbeddingResponse } from "@/lib/embeddings/service";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 /**
  * Vector quantization mode for the memory collection (F4.4 / Q1).

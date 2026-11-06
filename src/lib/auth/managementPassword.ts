@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { getSettings, updateSettings } from "@/lib/db/settings";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 const BCRYPT_HASH_PATTERN = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
 const MANAGEMENT_PASSWORD_SALT_ROUNDS = 12;

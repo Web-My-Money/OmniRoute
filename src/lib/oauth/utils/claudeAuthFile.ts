@@ -9,7 +9,7 @@ import {
   updateProviderCredentials,
 } from "@/sse/services/tokenRefresh";
 import { isUnrecoverableRefreshError } from "@omniroute/open-sse/services/tokenRefresh.ts";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 interface ClaudeConnectionLike {
   id?: string;

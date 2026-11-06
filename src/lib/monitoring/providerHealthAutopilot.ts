@@ -7,7 +7,7 @@ import { applyOperatorActivationIntent } from "@/lib/providers/operatorDisable";
 import { toNumberOrNull } from "@/shared/utils/numeric";
 import { clearProviderFailure, clearModelLock } from "@omniroute/open-sse/services/accountFallback";
 import { resolveProviderAlias } from "@omniroute/open-sse/services/model";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 export type ProviderAutopilotSeverity = "info" | "warning" | "critical";
 export type ProviderAutopilotState = "healthy" | "degraded" | "down";

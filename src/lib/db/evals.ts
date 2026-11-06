@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { getDbInstance, rowToCamel } from "./core";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 export type EvalTargetType = "suite-default" | "model" | "combo";
 export type EvalCaseStrategy = "contains" | "exact" | "regex" | "custom";

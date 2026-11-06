@@ -1,4 +1,4 @@
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 const COMBO_TEST_MAX_TOKENS = 64;
 const STREAMING_MODEL_TEST_MAX_TOKENS = 64;

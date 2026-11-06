@@ -12,7 +12,7 @@
  */
 
 import { getDbInstance } from "./core";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 type BudgetResetInterval = "daily" | "weekly" | "monthly";
 

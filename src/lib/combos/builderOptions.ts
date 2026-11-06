@@ -22,7 +22,7 @@ import {
 import type { RegistryModel } from "@omniroute/open-sse/config/providerRegistry.ts";
 import { getVideoProvider } from "@omniroute/open-sse/config/videoRegistry.ts";
 import { appendSyncedEffortVariants } from "@omniroute/open-sse/utils/syncedEffortVariants";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 type BuilderModelSource = "imported" | "system" | "custom" | "fallback";
 type BuilderConnectionStatus = "active" | "inactive" | "rate-limited" | "error";
