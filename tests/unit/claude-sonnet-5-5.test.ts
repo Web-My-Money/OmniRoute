@@ -30,7 +30,8 @@ test("Claude Sonnet 5.5 rejects disabled thinking and forced tool choice", () =>
     { model: MODEL_ID, thinking: { type: "disabled" }, marker: true },
     MODEL_ID
   );
-  assert.equal("thinking" in withoutDisabled, false);
+  // WMM: `disabled` becomes `between_tools` (thinkingDisabledAs), not a dropped field.
+  assert.deepEqual(withoutDisabled.thinking, { type: "between_tools" });
   assert.equal(withoutDisabled.marker, true);
 
   for (const toolChoice of [

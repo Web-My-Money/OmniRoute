@@ -585,9 +585,6 @@ export const MODEL_SPECS: Record<string, ModelSpec> = {
     supportsTools: true,
     supportsVision: true,
     adaptiveThinkingOnly: true,
-    // Mirrored from claude-opus-5. Inert here: `disabled` is rewritten to adaptive (below)
-    // before normalizeClaudeDisabledThinkingEffort can see it.
-    maxEffortWhenThinkingDisabled: "high",
     // Anthropic 400: '"thinking.type.disabled" is not supported for this model. Use
     // "adaptive"' (observed 2026-11-04 via the gateway thinking budget custom/0). Only
     // requests that explicitly send `disabled` are rewritten; no other field is touched.

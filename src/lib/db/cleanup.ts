@@ -40,6 +40,59 @@ interface CleanupResult {
   errors: number;
 }
 
+// ──────────────── Last-run visibility (opsState key_value) — WMM ────────────────
+// Persisted record of the most recent auto-cleanup run, surfaced by /api/storage/health.
+
+const OPS_STATE_NAMESPACE = "opsState";
+const LAST_CLEANUP_RUN_KEY = "lastAutoCleanupRun";
+
+export interface CleanupRunRecord {
+  ranAt: string;
+  durationMs: number;
+  autoCleanupEnabled: boolean;
+  totalDeleted: number;
+  totalErrors: number;
+  results: Record<string, CleanupResult>;
+}
+
+/**
+ * Read the persisted record of the most recent auto-cleanup run.
+ * Returns null when cleanup has never completed (or state is unreadable).
+ */
+export function getLastCleanupRun(): CleanupRunRecord | null {
+  try {
+    const db = getDbInstance();
+    const row = db
+      .prepare("SELECT value FROM key_value WHERE namespace = ? AND key = ?")
+      .get(OPS_STATE_NAMESPACE, LAST_CLEANUP_RUN_KEY) as { value?: string } | undefined;
+    if (!row?.value) return null;
+    const parsed = JSON.parse(row.value) as unknown;
+    if (
+      !parsed ||
+      typeof parsed !== "object" ||
+      typeof (parsed as CleanupRunRecord).ranAt !== "string"
+    ) {
+      return null;
+    }
+    return parsed as CleanupRunRecord;
+  } catch {
+    return null;
+  }
+}
+
+function recordLastCleanupRun(record: CleanupRunRecord): void {
+  try {
+    const db = getDbInstance();
+    db.prepare("INSERT OR REPLACE INTO key_value (namespace, key, value) VALUES (?, ?, ?)").run(
+      OPS_STATE_NAMESPACE,
+      LAST_CLEANUP_RUN_KEY,
+      JSON.stringify(record)
+    );
+  } catch (err) {
+    console.error("[Cleanup] Failed to record last cleanup run:", err);
+  }
+}
+
 function getRetentionSettings() {
   return getUserDatabaseSettings().retention;
 }
@@ -678,11 +731,20 @@ export async function runAutoCleanup(): Promise<{
   totalErrors: number;
   results: Record<string, CleanupResult>;
 }> {
+  const startedAt = Date.now();
   const retention = getRetentionSettings();
   const autoCleanupEnabled = retention.autoCleanupEnabled;
 
   if (!autoCleanupEnabled) {
     console.log("[Cleanup] Auto-cleanup is disabled");
+    recordLastCleanupRun({
+      ranAt: new Date().toISOString(),
+      durationMs: Date.now() - startedAt,
+      autoCleanupEnabled: false,
+      totalDeleted: 0,
+      totalErrors: 0,
+      results: {},
+    });
     return { totalDeleted: 0, totalErrors: 0, results: {} };
   }
 
@@ -714,6 +776,15 @@ export async function runAutoCleanup(): Promise<{
   const totalErrors = Object.values(results).reduce((sum, r) => sum + r.errors, 0);
 
   console.log(`[Cleanup] Auto-cleanup complete: ${totalDeleted} deleted, ${totalErrors} errors`);
+
+  recordLastCleanupRun({
+    ranAt: new Date().toISOString(),
+    durationMs: Date.now() - startedAt,
+    autoCleanupEnabled: true,
+    totalDeleted,
+    totalErrors,
+    results,
+  });
 
   return { totalDeleted, totalErrors, results };
 }

@@ -129,19 +129,21 @@ test("Claude Opus 5.5 strips unsupported sampling parameters", () => {
   }
 });
 
-test("Claude Opus 5.5 drops disabled thinking and collapses manual budgets to adaptive", () => {
+// WMM: the fork rewrites an explicit `disabled` to `adaptive` (thinkingDisabledAs) instead of dropping the
+// thinking object; both avoid the upstream 400, and the rewrite is the behaviour verified live on 2026-11-05.
+test("Claude Opus 5.5 rewrites disabled thinking to adaptive and collapses manual budgets to adaptive", () => {
   const withoutDisabled = normalizeThinkingForModel(
     { model: MODEL_ID, thinking: { type: "disabled" }, output_config: { effort: "low" } },
     MODEL_ID
   );
-  assert.equal("thinking" in withoutDisabled, false);
+  assert.deepEqual(withoutDisabled.thinking, { type: "adaptive" });
   assert.deepEqual(withoutDisabled.output_config, { effort: "low" });
 
   const dotWithoutDisabled = normalizeThinkingForModel(
     { model: DOT_MODEL_ID, thinking: { type: "disabled" } },
     DOT_MODEL_ID
   );
-  assert.equal("thinking" in dotWithoutDisabled, false);
+  assert.deepEqual(dotWithoutDisabled.thinking, { type: "adaptive" });
 
   const adaptive = normalizeClaudeAdaptiveThinking(
     { model: MODEL_ID, thinking: { type: "enabled", budget_tokens: 64_000 } },

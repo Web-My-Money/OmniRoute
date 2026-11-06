@@ -150,7 +150,7 @@ export class DevinCliExecutor extends BaseExecutor {
     // cancelled controller throws ERR_INVALID_STATE, and the child's `close` handler would
     // raise that inside an EventEmitter listener — an uncaught exception for the whole server.
     let consumerGone = false;
-    let childProcess: ReturnType<typeof spawn> | null = null;
+    let childProcess: ReturnType<typeof spawnHostBinary> | null = null;
 
     const sseStream = new ReadableStream<Uint8Array>({
       start(controller) {
