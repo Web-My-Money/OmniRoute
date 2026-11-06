@@ -290,17 +290,38 @@ ENV OMNIROUTE_MIGRATIONS_DIR=/app/migrations
 COPY --from=builder /app/scripts/dev/healthcheck.mjs ./healthcheck.mjs
 
 # Pre-bake Playwright Chromium so the container does not re-download it on every start.
-# The Railway start command keeps a conditional fallback install at
-# /app/node_modules/playwright/node_modules/playwright-core/cli.js, but the image ships
-# the browser. The version tracks node_modules/playwright/node_modules/playwright-core
-# in package-lock.json (1.62.1 at v3.8.50) - bump both together.
+# The Railway service's start command (a Railway setting, not a repo file) keeps a
+# conditional fallback install, but the image ships the browser.
+#
+# Where playwright-core lands under /app/node_modules depends on how npm dedupes the
+# lockfile, so do NOT hard-code one path:
+#   - nested:    /app/node_modules/playwright/node_modules/playwright-core
+#                (before #42, a different playwright-core 1.61.1 (hoisted via promptfoo)
+#                 owned the top level, so npm nested playwright's own 1.62.1 here)
+#   - top-level: /app/node_modules/playwright-core
+#                (since #42 declared playwright-core 1.62.1 directly in package.json, the
+#                 single copy is deduped to this path and nothing is nested; the
+#                 assembleStandalone.mjs extra-module copy also always lands here)
+# The nested copy wins when present because that is the one `playwright` resolves
+# first; otherwise the top-level copy; otherwise fail the build with a clear message.
+# The version pinned below tracks playwright / playwright-core in package-lock.json
+# (1.62.1) - bump both together.
 ENV PLAYWRIGHT_BROWSERS_PATH=/app/.playwright-browsers
-RUN test -d /app/node_modules/playwright/node_modules/playwright-core && \
+RUN set -eu; \
+    if [ -d /app/node_modules/playwright/node_modules/playwright-core ]; then \
+      PW_CORE_DIR=/app/node_modules/playwright/node_modules/playwright-core; \
+    elif [ -d /app/node_modules/playwright-core ]; then \
+      PW_CORE_DIR=/app/node_modules/playwright-core; \
+    else \
+      echo "playwright-core not found: checked /app/node_modules/playwright/node_modules/playwright-core and /app/node_modules/playwright-core" >&2; \
+      exit 1; \
+    fi; \
+    echo "Using playwright-core at ${PW_CORE_DIR}"; \
     mkdir -p /app/.playwright-browsers && \
     cd /tmp && rm -rf pwfetch && mkdir pwfetch && cd pwfetch && \
     npm pack playwright-core@1.62.1 --silent && \
     tar -xzf playwright-core-1.62.1.tgz && \
-    cp -fv package/browsers.json /app/node_modules/playwright/node_modules/playwright-core/browsers.json && \
+    cp -fv package/browsers.json "${PW_CORE_DIR}/browsers.json" && \
     node package/cli.js install chromium && \
     cd / && rm -rf /tmp/pwfetch
 
