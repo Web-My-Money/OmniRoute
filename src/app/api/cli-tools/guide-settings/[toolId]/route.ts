@@ -6,13 +6,18 @@ import * as yaml from "js-yaml";
 import { requireCliToolsAuth } from "@/lib/api/requireCliToolsAuth";
 import { getRuntimePorts } from "@/lib/runtime/ports";
 import { getCliPrimaryConfigPath, getOpenCodeConfigPath } from "@/shared/services/cliRuntime";
-import { opaqueJoin } from "@/lib/opaquePath";
 import { mergeOpenCodeConfigText } from "@/shared/services/opencodeConfig";
 import { guideSettingsSaveSchema } from "@/shared/validation/schemas";
 import { isValidationFailure, validateBody } from "@/shared/validation/helpers";
 import { resolveApiKey, getOrCreateApiKey } from "@/shared/services/apiKeyResolver";
 import { sanitizeErrorMessage } from "@omniroute/open-sse/utils/error";
 import { guardCliConfigWrite } from "@/lib/api/cliConfigWriteGuard";
+import {
+  configClobberRefusalResponse,
+  parseJsonObject,
+  parseYamlObject,
+  readExistingConfig,
+} from "../../_lib/readExistingConfig";
 
 /**
  * Where each guide tool's config lands, and the host command that writes the
@@ -42,14 +47,14 @@ const GUIDE_TOOL_TARGETS: Record<string, { resolve: () => string; hostCommand: s
  */
 export async function GET(request, { params }) {
   // cli-tools routes require the shared management auth guard on every exported handler.
-  const authError = await requireCliToolsAuth(request);
+  const authError = await requireCliToolsAuth(request, { alwaysRequireAuth: true });
   if (authError) return authError;
   void params;
   return NextResponse.json({ error: "GET not supported for this tool" }, { status: 400 });
 }
 
 export async function POST(request, { params }) {
-  const authError = await requireCliToolsAuth(request);
+  const authError = await requireCliToolsAuth(request, { alwaysRequireAuth: true });
   if (authError) return authError;
 
   let rawBody;
@@ -72,7 +77,7 @@ export async function POST(request, { params }) {
   if (isValidationFailure(validation)) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
-  const { baseUrl, model, models, modelLabels } = validation.data;
+  const { baseUrl, model, models, modelLabels, catalog } = validation.data;
   // (#523) Extract keyId BEFORE validation — Zod strips unknown fields!
   const apiKeyId = typeof rawBody?.keyId === "string" ? rawBody.keyId.trim() : null;
   // If no keyId provided, auto-create a valid DB-backed key instead of using placeholder
@@ -96,7 +101,7 @@ export async function POST(request, { params }) {
       case "opencode":
         // (#524) OpenCode config was never saved because only 'continue' was handled here.
         // OpenCode reads opencode.jsonc/opencode.json — update the active native config.
-        return await saveOpenCodeConfig({ baseUrl, apiKey, model, models, modelLabels });
+        return await saveOpenCodeConfig({ baseUrl, apiKey, model, models, modelLabels, catalog });
       case "hermes":
         return await saveHermesConfig({ baseUrl, apiKey, model });
       // hermes-agent now uses the dedicated /api/cli-tools/hermes-agent-settings endpoint
@@ -107,11 +112,23 @@ export async function POST(request, { params }) {
         );
     }
   } catch (error) {
+    const refusal = configClobberRefusalResponse(error);
+    if (refusal) return refusal;
     return NextResponse.json(
       { error: sanitizeErrorMessage(error instanceof Error ? error.message : String(error)) },
       { status: 500 }
     );
   }
+}
+
+// `models` is merged into below; a non-array value cannot be merged without
+// discarding it, so refuse it like an unparsable file.
+function parseContinueConfig(raw: string): Record<string, any> {
+  const parsed = parseJsonObject(raw);
+  if (parsed.models != null && !Array.isArray(parsed.models)) {
+    throw new TypeError("config.json `models` must be an array");
+  }
+  return parsed;
 }
 
 /**
@@ -120,20 +137,16 @@ export async function POST(request, { params }) {
  */
 async function saveContinueConfig({ baseUrl, apiKey, model }) {
   const { apiPort } = getRuntimePorts();
-  const configPath = opaqueJoin(os.homedir(), ".continue", "config.json");
+  const configPath = path.join(os.homedir(), ".continue", "config.json");
   const configDir = path.dirname(configPath);
 
   // Ensure dir exists
   await fs.mkdir(configDir, { recursive: true });
 
-  // Read existing config if any
-  let existingConfig: any = {};
-  try {
-    const raw = await fs.readFile(/* turbopackIgnore: true */ configPath, "utf-8");
-    existingConfig = JSON.parse(raw);
-  } catch {
-    // No existing config or invalid JSON — start fresh
-  }
+  // Read existing config if any. Only a missing file starts fresh — invalid
+  // JSON (or a non-array `models`) is refused (409) instead of being replaced.
+  const existingConfig: Record<string, any> =
+    (await readExistingConfig(configPath, parseContinueConfig)) ?? {};
 
   // Build the OmniRoute model entry
   const normalizedBaseUrl = String(baseUrl || "")
@@ -198,7 +211,7 @@ async function saveContinueConfig({ baseUrl, apiKey, model }) {
  *
  * (#524) OpenCode was silently failing because this handler was missing.
  */
-async function saveOpenCodeConfig({ baseUrl, apiKey, model, models, modelLabels }) {
+async function saveOpenCodeConfig({ baseUrl, apiKey, model, models, modelLabels, catalog }) {
   const configPath = getOpenCodeConfigPath();
   const configDir = path.dirname(configPath);
 
@@ -224,6 +237,7 @@ async function saveOpenCodeConfig({ baseUrl, apiKey, model, models, modelLabels 
     model,
     models,
     modelLabels,
+    catalog,
   });
 
   await fs.writeFile(configPath, nextConfigText, "utf-8");
@@ -243,7 +257,7 @@ async function saveOpenCodeConfig({ baseUrl, apiKey, model, models, modelLabels 
  */
 async function saveHermesConfig({ baseUrl, apiKey, model }) {
   const configPath =
-    getCliPrimaryConfigPath("hermes") || opaqueJoin(os.homedir(), ".hermes", "config.yaml");
+    getCliPrimaryConfigPath("hermes") || path.join(os.homedir(), ".hermes", "config.yaml");
   const configDir = path.dirname(configPath);
 
   await fs.mkdir(configDir, { recursive: true });
@@ -260,16 +274,10 @@ async function saveHermesConfig({ baseUrl, apiKey, model }) {
   }
   const selectedModel = model;
 
-  let existingConfig: Record<string, any> = {};
-  try {
-    const raw = await fs.readFile(/* turbopackIgnore: true */ configPath, "utf-8");
-    const parsed = yaml.load(raw);
-    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-      existingConfig = parsed as Record<string, any>;
-    }
-  } catch {
-    // No existing config or unparsable YAML — start fresh.
-  }
+  // Only a missing file starts fresh. Unparsable YAML, or YAML whose top level
+  // is not a mapping, is refused (409) instead of being replaced.
+  const existingConfig: Record<string, any> =
+    (await readExistingConfig(configPath, parseYamlObject)) ?? {};
 
   const nextConfig = {
     ...existingConfig,

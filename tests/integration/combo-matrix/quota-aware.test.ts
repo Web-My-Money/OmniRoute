@@ -88,7 +88,7 @@ test("reset-aware: exhausted connection (limitReached) demoted — second target
         id: "ra-claude",
         kind: "model",
         providerId: "claude",
-        model: "claude-3-5-sonnet-20241022",
+        model: "claude-sonnet-4-6",
         connectionId: claudeConn.id,
       },
     ],
@@ -219,7 +219,7 @@ test("headroom: target with most free capacity dispatched first despite being se
         id: "hr-claude",
         kind: "model",
         providerId: "claude",
-        model: "claude-3-5-sonnet-20241022",
+        model: "claude-sonnet-4-6",
         connectionId: claudeConn.id,
       },
     ],
@@ -271,7 +271,7 @@ test("lkgp: last-known-good provider is prioritised above definition order", asy
       // openai FIRST in definition — must be deprioritised (LKGP record points to claude)
       "openai/gpt-4o-mini",
       // claude SECOND — must be moved to front by the LKGP record
-      "claude/claude-3-5-sonnet-20241022",
+      "claude/claude-sonnet-4-6",
     ],
   });
   h.installRecordingFetch();

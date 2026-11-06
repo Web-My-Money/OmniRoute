@@ -12,7 +12,7 @@
  */
 
 import { getDbInstance, isBuildPhase, isCloud } from "./core";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 interface StatementLike<TRow = unknown> {
   all: (...params: unknown[]) => TRow[];

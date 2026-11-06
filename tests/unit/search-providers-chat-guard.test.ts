@@ -16,7 +16,6 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { getExecutor, hasSpecializedExecutor } from "../../open-sse/executors/index.ts";
 import { SEARCH_PROVIDERS } from "../../open-sse/config/searchRegistry.ts";
-import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const SEARCH_PROVIDER_IDS = Object.keys(SEARCH_PROVIDERS);
 
@@ -30,7 +29,7 @@ test("#10274: no search provider has a specialized chat executor", () => {
   }
 });
 
-test("#10274: a chat-completion request routed to a search provider must not silently hit OpenAI's endpoint", () => {
+test("#10274: a chat-completion request routed to a search provider must not silently hit OpenAI's endpoint", async () => {
   // Desired behavior: search providers (registered only in SEARCH_PROVIDERS, never in the
   // chat REGISTRY) must not silently resolve to OpenAI's chat/completions endpoint when
   // routed through the normal chat-completions executor path. getExecutor() must throw a
@@ -41,13 +40,13 @@ test("#10274: a chat-completion request routed to a search provider must not sil
   // OpenAI's endpoint -- this assertion FAILS on unfixed release/v3.8.50 code because no
   // error is thrown at all.
   for (const id of SEARCH_PROVIDER_IDS) {
-    assert.throws(
-      () => getExecutor(id),
-      (err) => {
-        assert.match((err as LooseDeep).message, /search provider/i);
-        assert.match((err as LooseDeep).message, /does not support chat completions/i);
-        assert.match((err as LooseDeep).message, /\/v1\/search/i);
-        assert.equal((err as LooseDeep).status, 400);
+    await assert.rejects(
+      getExecutor(id),
+      (err: Error & { status?: number }) => {
+        assert.match(err.message, /search provider/i);
+        assert.match(err.message, /does not support chat completions/i);
+        assert.match(err.message, /\/v1\/search/i);
+        assert.equal(err.status, 400);
         return true;
       },
       `search provider '${id}' must raise a clear error instead of inheriting OpenAI's base URL/config`

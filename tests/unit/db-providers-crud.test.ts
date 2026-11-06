@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-db-providers-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -42,21 +41,21 @@ test.after(async () => {
 });
 
 test("createProviderConnection assigns provider-scoped priorities and supports filtered reads", async () => {
-  const first = (await providersDb.createProviderConnection({
+  const first = await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Primary",
     apiKey: "sk-primary",
     group: "team-b",
-  })) as JsonRecord & { id: string };
-  const second = (await providersDb.createProviderConnection({
+  });
+  const second = await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Secondary",
     apiKey: "sk-secondary",
     isActive: false,
     group: "team-a",
-  })) as JsonRecord & { id: string };
+  });
 
   const openAiConnections = await providersDb.getProviderConnections({ provider: "openai" });
   const activeConnections = await providersDb.getProviderConnections({
@@ -83,19 +82,19 @@ test("createProviderConnection assigns provider-scoped priorities and supports f
 });
 
 test("getProviderConnections filters by authType", async () => {
-  const apiKeyConnection = (await providersDb.createProviderConnection({
+  const apiKeyConnection = await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "API Key Connection",
     apiKey: "sk-apikey",
-  })) as JsonRecord & { id: string };
-  const oauthConnection = (await providersDb.createProviderConnection({
+  });
+  const oauthConnection = await providersDb.createProviderConnection({
     provider: "claude",
     authType: "oauth",
     email: "oauth@example.com",
     accessToken: "token-a",
     refreshToken: "refresh-a",
-  })) as JsonRecord & { id: string };
+  });
 
   const oauthOnly = await providersDb.getProviderConnections({ authType: "oauth" });
   const apiKeyOnly = await providersDb.getProviderConnections({ authType: "apikey" });
@@ -111,16 +110,16 @@ test("getProviderConnections filters by authType", async () => {
 });
 
 test("oauth connections upsert by provider and email instead of duplicating rows", async () => {
-  const original = (await providersDb.createProviderConnection({
+  const original = await providersDb.createProviderConnection({
     provider: "claude",
     authType: "oauth",
     email: "dev@example.com",
     accessToken: "token-a",
     refreshToken: "refresh-a",
     testStatus: "ok",
-  })) as JsonRecord & { id: string };
+  });
 
-  const updated = (await providersDb.createProviderConnection({
+  const updated = await providersDb.createProviderConnection({
     provider: "claude",
     authType: "oauth",
     email: "dev@example.com",
@@ -128,7 +127,7 @@ test("oauth connections upsert by provider and email instead of duplicating rows
     refreshToken: "refresh-b",
     lastError: "expired",
     testStatus: "retrying",
-  })) as JsonRecord & { id: string };
+  });
 
   const rows = await providersDb.getProviderConnections({ provider: "claude" });
 
@@ -140,25 +139,25 @@ test("oauth connections upsert by provider and email instead of duplicating rows
 });
 
 test("codex workspace uniqueness uses workspaceId alongside email", async () => {
-  const workspaceA = (await providersDb.createProviderConnection({
+  const workspaceA = await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "workspace@example.com",
     providerSpecificData: { workspaceId: "ws-a" },
-  })) as JsonRecord & { id: string };
-  const workspaceAUpdate = (await providersDb.createProviderConnection({
+  });
+  const workspaceAUpdate = await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "workspace@example.com",
     providerSpecificData: { workspaceId: "ws-a" },
     accessToken: "updated-token",
-  })) as JsonRecord & { id: string };
-  const workspaceB = (await providersDb.createProviderConnection({
+  });
+  const workspaceB = await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "workspace@example.com",
     providerSpecificData: { workspaceId: "ws-b" },
-  })) as JsonRecord & { id: string };
+  });
 
   const rows = await providersDb.getProviderConnections({ provider: "codex" });
 
@@ -172,22 +171,22 @@ test("codex workspace uniqueness uses workspaceId alongside email", async () => 
 });
 
 test("codex logins without a workspaceId are not merged on bare email match", async () => {
-  const loginA = (await providersDb.createProviderConnection({
+  const loginA = await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "shared@example.com",
     accessToken: "token-account-a",
     refreshToken: "refresh-account-a",
     providerSpecificData: { chatgptUserId: "user-a" },
-  })) as JsonRecord & { id: string };
-  const loginB = (await providersDb.createProviderConnection({
+  });
+  const loginB = await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     email: "shared@example.com",
     accessToken: "token-account-b",
     refreshToken: "refresh-account-b",
     providerSpecificData: { chatgptUserId: "user-b" },
-  })) as JsonRecord & { id: string };
+  });
 
   const rows = await providersDb.getProviderConnections({ provider: "codex" });
 
@@ -202,25 +201,72 @@ test("codex logins without a workspaceId are not merged on bare email match", as
   assert.equal(rowA?.refreshToken, "refresh-account-a");
 });
 
+test("updateProviderConnection persists an explicit priority for a single connection", async () => {
+  const connection = await providersDb.createProviderConnection({
+    provider: "openai",
+    authType: "apikey",
+    name: "Only connection",
+  });
+
+  const updated = await providersDb.updateProviderConnection(String(connection.id), {
+    priority: 5,
+  });
+  const persisted = await providersDb.getProviderConnectionById(String(connection.id));
+  const listed = await providersDb.getProviderConnections({ provider: "openai" });
+
+  assert.equal(updated?.priority, 5);
+  assert.equal(persisted?.priority, 5);
+  assert.equal(listed[0].priority, 5);
+
+  await providersDb.updateProviderConnection(String(connection.id), { name: "Renamed connection" });
+  const renamed = await providersDb.getProviderConnectionById(String(connection.id));
+  assert.equal(renamed?.name, "Renamed connection");
+  assert.equal(renamed?.priority, 5);
+});
+
+test("updateProviderConnection preserves other priorities when changing routing order", async () => {
+  const first = await providersDb.createProviderConnection({
+    provider: "openai",
+    authType: "apikey",
+    name: "First",
+  });
+  const second = await providersDb.createProviderConnection({
+    provider: "openai",
+    authType: "apikey",
+    name: "Second",
+  });
+
+  await providersDb.updateProviderConnection(String(first.id), { priority: 10 });
+  const ordered = await providersDb.getProviderConnections({ provider: "openai" });
+
+  assert.deepEqual(
+    ordered.map(({ id, priority }) => ({ id, priority })),
+    [
+      { id: second.id, priority: 2 },
+      { id: first.id, priority: 10 },
+    ]
+  );
+});
+
 test("updateProviderConnection reorders priorities and returns decrypted payloads", async () => {
-  const first = (await providersDb.createProviderConnection({
+  const first = await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "First",
     apiKey: "first-key",
-  })) as JsonRecord & { id: string };
-  const second = (await providersDb.createProviderConnection({
+  });
+  const second = await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Second",
     apiKey: "second-key",
-  })) as JsonRecord & { id: string };
-  const third = (await providersDb.createProviderConnection({
+  });
+  const third = await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Third",
     apiKey: "third-key",
-  })) as JsonRecord & { id: string };
+  });
 
   const updated = await providersDb.updateProviderConnection((third as any).id, {
     priority: 0,
@@ -232,6 +278,7 @@ test("updateProviderConnection reorders priorities and returns decrypted payload
 
   assert.equal((updated as any).providerSpecificData.region, "us-east-1");
   assert.equal(updated.rateLimitProtection, true);
+  assert.equal(updated.priority, ordered[0].priority);
   assert.deepEqual(
     ordered.map((connection) => ({
       id: connection.id,
@@ -246,24 +293,24 @@ test("updateProviderConnection reorders priorities and returns decrypted payload
 });
 
 test("deleteProviderConnection reorders remaining rows and bulk delete reports changes", async () => {
-  const first = (await providersDb.createProviderConnection({
+  const first = await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "apikey",
     name: "One",
     apiKey: "one",
-  })) as JsonRecord & { id: string };
-  const second = (await providersDb.createProviderConnection({
+  });
+  const second = await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "apikey",
     name: "Two",
     apiKey: "two",
-  })) as JsonRecord & { id: string };
-  const third = (await providersDb.createProviderConnection({
+  });
+  const third = await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "apikey",
     name: "Three",
     apiKey: "three",
-  })) as JsonRecord & { id: string };
+  });
 
   assert.equal(await providersDb.deleteProviderConnection((second as any).id), true);
 
@@ -285,24 +332,24 @@ test("deleteProviderConnection reorders remaining rows and bulk delete reports c
 });
 
 test("deleteProviderConnections deletes multiple connections and returns correct count", async () => {
-  const a = (await providersDb.createProviderConnection({
+  const a = await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Alpha",
     apiKey: "alpha-key",
-  })) as JsonRecord & { id: string };
-  const b = (await providersDb.createProviderConnection({
+  });
+  const b = await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Beta",
     apiKey: "beta-key",
-  })) as JsonRecord & { id: string };
-  const c = (await providersDb.createProviderConnection({
+  });
+  const c = await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Gamma",
     apiKey: "gamma-key",
-  })) as JsonRecord & { id: string };
+  });
 
   const deleted = await providersDb.deleteProviderConnections([(a as any).id, (c as any).id]);
   assert.equal(deleted, 2);
@@ -351,12 +398,12 @@ test("provider node CRUD supports filter, update and delete", async () => {
 });
 
 test("rate-limit helpers persist cooldown state in the database", async () => {
-  const connection = (await providersDb.createProviderConnection({
+  const connection = await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Rate Limited",
     apiKey: "rate-key",
-  })) as JsonRecord & { id: string };
+  });
   const future = Date.now() + 90_000;
 
   providersDb.setConnectionRateLimitUntil((connection as any).id, future);
@@ -386,21 +433,21 @@ test("quota helpers zero stale windows and format countdowns", () => {
   assert.equal(providersDb.formatResetCountdown(past), null);
 });
 test("getProviderConnections supports authType filter and column projection", async () => {
-  const oauth = (await providersDb.createProviderConnection({
+  const oauth = await providersDb.createProviderConnection({
     provider: "openai",
     authType: "oauth",
     name: "OAuth Conn",
     email: "user@example.com",
     refreshToken: "rt_abc123",
     isActive: true,
-  })) as JsonRecord & { id: string };
-  const apiKey = (await providersDb.createProviderConnection({
+  });
+  const apiKey = await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "API Key Conn",
     apiKey: "sk-xyz",
     isActive: true,
-  })) as JsonRecord & { id: string };
+  });
 
   // authType filter
   const oauthConns = await providersDb.getProviderConnections({ authType: "oauth" });
@@ -469,7 +516,7 @@ test("getProviderConnections rejects column names outside the real provider_conn
   // The reserved SQL keyword "group" is a legitimate, allowlisted column and
   // must still work (quoted internally so it doesn't collide with the SQL
   // GROUP keyword).
-  (await providersDb.createProviderConnection({
+  await providersDb.createProviderConnection({
     provider: "openai",
     authType: "oauth",
     name: "Group Column Conn",
@@ -477,7 +524,7 @@ test("getProviderConnections rejects column names outside the real provider_conn
     refreshToken: "rt_group_col",
     isActive: true,
     group: "team-a",
-  })) as JsonRecord & { id: string };
+  });
   const withGroup = await providersDb.getProviderConnections(
     { authType: "oauth" },
     undefined,
@@ -491,13 +538,13 @@ test("getProviderConnections rejects column names outside the real provider_conn
 test("getProviderConnections supports limit/offset pagination", async () => {
   // Create 5 connections
   for (let i = 5; i >= 1; i--) {
-    const conn = (await providersDb.createProviderConnection({
+    const conn = await providersDb.createProviderConnection({
       provider: "openai",
       authType: "apikey",
       name: `Pageable conn ${i}`,
       apiKey: `sk-paging-${i}`,
       priority: i,
-    })) as JsonRecord & { id: string };
+    });
   }
   // createProviderConnection calls _reorderConnections after every insert,
   // which reassigns priorities — so expectations must come from the DB.

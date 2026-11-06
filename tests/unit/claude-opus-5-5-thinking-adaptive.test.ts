@@ -54,8 +54,11 @@ test("opus-5-5 keeps every limit it inherited before it had a spec", () => {
   const five = getModelSpec("claude-opus-5");
   const fiveFive = getModelSpec("claude-opus-5-5");
   assert.ok(five && fiveFive);
-  const { thinkingDisabledAs: _unusedA, aliases: _unusedB, ...fiveRest } = five;
-  const { thinkingDisabledAs: _unusedC, aliases: _unusedD, ...fiveFiveRest } = fiveFive;
+  // Upstream v3.8.53 gave 5.5 its own flags (rejectsThinkingDisabled, rejectsForcedToolChoice,
+  // defaultReasoningEffort); compare only the limits it inherited.
+  const limits = ({ maxOutputTokens, contextWindow, defaultThinkingBudget, thinkingBudgetCap, supportsThinking, supportsTools, supportsVision, adaptiveThinkingOnly }: Record<string, unknown>) => ({ maxOutputTokens, contextWindow, defaultThinkingBudget, thinkingBudgetCap, supportsThinking, supportsTools, supportsVision, adaptiveThinkingOnly });
+  const fiveRest = limits(five as Record<string, unknown>);
+  const fiveFiveRest = limits(fiveFive as Record<string, unknown>);
   assert.deepEqual(fiveFiveRest, fiveRest);
   assert.equal(fiveFive.maxOutputTokens, 128000);
   assert.equal(fiveFive.contextWindow, 1000000);

@@ -28,6 +28,11 @@ import assert from "node:assert/strict";
 import { createComboRoutingHarness, providerFromUrl } from "../_comboRoutingHarness.ts";
 import type { LooseDeep } from "../../helpers/looseTypes.ts";
 
+// The harness restores the fetch present at construction during teardown.
+// A late background handoff must never escape to a real provider with fixture credentials.
+globalThis.fetch = async () => {
+  throw new Error("Unexpected network request outside the scripted handoff fixture");
+};
 const h = await createComboRoutingHarness("combo-relay-handoff");
 const {
   BaseExecutor,
@@ -84,7 +89,7 @@ function relayRequest(withSessionId = true) {
 
 // Install a recording fetch that:
 //   • returns a valid handoff JSON (wrapped in an OpenAI completion) for the
-//     internal summary request (identified by _omnirouteInternalRequest flag in body)
+//     summary request (identified by its public prompt; internal flags are stripped)
 //   • returns a normal OpenAI response for every other call
 function installHandoffAwareFetch() {
   h.calls.length = 0;
@@ -114,8 +119,21 @@ function installHandoffAwareFetch() {
     };
     h.calls.push(call);
 
-    // Return valid handoff JSON for the internal summary generation request
-    if (bodyObj._omnirouteInternalRequest === "universal-handoff") {
+    // BaseExecutor strips _omniroute* before fetch; relying on that internal flag
+    // returned an ordinary answer for the summarizer and made the DB assertion fail.
+    assert.equal(
+      bodyObj._omnirouteInternalRequest,
+      undefined,
+      "internal markers must not reach upstream"
+    );
+    const messages = Array.isArray(bodyObj.messages) ? bodyObj.messages : [];
+    const isSummary = messages.some(
+      (message) =>
+        message?.role === "user" &&
+        typeof message.content === "string" &&
+        message.content.startsWith("You are a context summarizer.")
+    );
+    if (isSummary) {
       return buildOpenAIResponse(SCRIPTED_SUMMARY_JSON);
     }
 
@@ -169,6 +187,7 @@ test("context-relay universal handoff: fires and writes handoff record on model 
 
   const r = await handleChat(relayRequest(/* withSessionId */ true));
   assert.equal(r.status, 200, "main request must succeed");
+  await r.json();
 
   // Wait for the setImmediate + generateUniversalHandoffAsync to complete and
   // write the DB record. Poll for up to 2 s — typically resolves in <100 ms.
@@ -212,6 +231,7 @@ test("context-relay universal handoff: does NOT fire when no prior model is reco
 
   const r = await handleChat(relayRequest(true));
   assert.equal(r.status, 200);
+  await r.json();
 
   // Give setImmediate time to fire if the bug were present.
   await new Promise((res) => setTimeout(res, 250));
@@ -253,6 +273,7 @@ test("context-relay universal handoff: does NOT fire when x-omniroute-session-id
   // Send WITHOUT the session header.
   const r = await handleChat(relayRequest(/* withSessionId */ false));
   assert.equal(r.status, 200);
+  await r.json();
 
   await new Promise((res) => setTimeout(res, 250));
 

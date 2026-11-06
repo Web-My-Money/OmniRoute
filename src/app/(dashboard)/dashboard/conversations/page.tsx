@@ -1,14 +1,29 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@omniroute/ui-kit/table";
+import { SectionHeader } from "@omniroute/ui-kit/page-header";
+import Badge from "@/shared/components/Badge";
+import Button from "@/shared/components/Button";
+import Icon from "@/shared/components/Icon";
+import Input from "@/shared/components/Input";
+import Modal from "@/shared/components/Modal";
 import { PROVIDER_COLORS, getHttpStatusStyle } from "@/shared/constants/colors";
 import { formatTime } from "@/shared/utils/formatting";
 import { copyToClipboard } from "@/shared/utils/clipboard";
 import RequestLoggerDetail from "@/shared/components/RequestLoggerDetail";
 import useEmailPrivacyStore from "@/store/emailPrivacyStore";
 import { ChatBubble } from "@/app/(dashboard)/dashboard/tools/traffic-inspector/components/chat/ChatBubble";
-import type { NormalizedBlock, NormalizedTurn } from "@/mitm/inspector/types";
+import { toTurn, type ConversationTurn } from "./toTurn";
 
 interface ConversationRow {
   id: string;
@@ -26,31 +41,32 @@ interface ConversationRow {
   // streaming (call_logs only gets its row on completion). Used to poll
   // /api/logs/[id] for this conversation's live partial assistant text.
   activeCallLogId: string | null;
+  // Whether the latest turn actually used previous_response_id and it
+  // resolved server-side — distinct from this row existing at all, which
+  // only means the client-side content-hash tracker saw >= 2 turns
+  // regardless of transport (see isGenuineContinuationTurn).
+  isGenuineContinuation: boolean;
+  // The last turn never reached a clean "stop" (truncated/failed stream, or
+  // a tool call still unanswered) AND 5+ minutes have passed with nothing
+  // having continued — see resolveConversationStalledState's own doc
+  // comment for why a bare unanswered tool call alone doesn't count (that's
+  // normal seconds after it lands). Never true while isActive.
+  isStalled: boolean;
 }
 
 // Same spinner used for an in-flight request on /dashboard/logs
 // (RequestLoggerV2) — reused here so "in progress" reads the same way in
 // both places.
 function ActiveSpinner() {
+  const t = useTranslations("conversations");
   return (
     <span
-      className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500/15 border border-amber-500/25 shrink-0"
-      title="In progress"
+      className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-warning-bg border border-warning/30 shrink-0"
+      title={t("statusInProgress")}
     >
-      <span className="inline-block h-2.5 w-2.5 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
+      <span className="inline-block h-2.5 w-2.5 rounded-full border-2 border-warning border-t-transparent animate-spin" />
     </span>
   );
-}
-
-interface ConversationTurn {
-  seq: number;
-  id: string;
-  parentId: string | null;
-  role: string;
-  textPreview: string;
-  blockKind: string;
-  toolName: string | null;
-  firstSeenAt: string;
 }
 
 interface ConversationTurnsPage {
@@ -68,9 +84,7 @@ const LIVE_TEXT_POLL_INTERVAL_MS = 1200;
 
 function ProviderBadge({ provider }: { provider: string | null }) {
   if (!provider) return <span className="text-text-muted text-[10px]">—</span>;
-  const style = (PROVIDER_COLORS as Record<string, { bg: string; text: string; label: string }>)[
-    provider
-  ];
+  const style = PROVIDER_COLORS[provider];
   if (!style) {
     return (
       <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold bg-bg-subtle text-text-muted border border-border">
@@ -94,50 +108,52 @@ function StatusBadge({ status }: { status: number | null }) {
   return (
     <span
       className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold"
-      style={{ backgroundColor: style.bg, color: style.text ?? "#fff" }}
+      style={{ backgroundColor: style.bg, color: style.text }}
     >
       {status}
     </span>
   );
 }
 
-/**
- * Builds the exact NormalizedBlock (src/mitm/inspector/types.ts) the
- * request-detail panel already builds from buildRequestTurns/
- * buildResponseTurns, so a tool call/result renders through the very same
- * ChatBubble → MessageContent → ToolCallBlock/ToolResultBlock pipeline as
- * the detail view — not a parallel implementation. `textPreview` round-
- * tripped through JSON for a structured tool_use/tool_result turn; parse it
- * best-effort so the block gets a real object, not a JSON string.
- */
-function toTurn(node: ConversationTurn): NormalizedTurn {
-  const role: NormalizedTurn["role"] =
-    node.role === "system" || node.role === "user" || node.role === "assistant"
-      ? node.role
-      : "tool";
+// Distinguishes a conversation whose latest turn actually used
+// previous_response_id (server-verified — see isGenuineContinuationTurn)
+// from one the content-hash tracker merely counts as multi-turn while still
+// resending full history each request.
+function ContinuationBadge({ isGenuine }: { isGenuine: boolean }) {
+  const t = useTranslations("conversations");
+  if (!isGenuine) return null;
+  return (
+    <Badge
+      variant="success"
+      size="sm"
+      title={t("continuationGenuineTitle")}
+      icon={<Icon name="bolt" size={11} />}
+    >
+      {t("continuationBadge")}
+    </Badge>
+  );
+}
 
-  let block: NormalizedBlock;
-  if (node.blockKind === "tool_use") {
-    let input: unknown = node.textPreview;
-    try {
-      input = JSON.parse(node.textPreview);
-    } catch {
-      // Arguments weren't valid JSON — show the raw string.
-    }
-    block = { type: "tool_use", id: node.id.slice(0, 12), name: node.toolName ?? "tool", input };
-  } else if (node.blockKind === "tool_result") {
-    let content: unknown = node.textPreview;
-    try {
-      content = JSON.parse(node.textPreview);
-    } catch {
-      // Not JSON — show the raw string.
-    }
-    block = { type: "tool_result", tool_use_id: node.id.slice(0, 12), content };
-  } else {
-    block = { type: "text", text: node.textPreview || "_(empty)_" };
-  }
-
-  return { role, blocks: [block], timestamp: node.firstSeenAt };
+// Flags a conversation whose latest turn never reached a clean "stop" --
+// a truncated/failed stream, or a tool call still unanswered 5+ minutes
+// after the last activity with nothing having continued (see
+// resolveConversationStalledState -- a bare unanswered tool call alone is
+// completely normal seconds after it lands, so this only fires once the
+// grace period has actually elapsed). Server-computed so this badge never
+// disagrees with the actual persisted artifact state.
+function StalledBadge({ isStalled }: { isStalled: boolean }) {
+  const t = useTranslations("conversations");
+  if (!isStalled) return null;
+  return (
+    <Badge
+      variant="error"
+      size="sm"
+      title={t("stalledTitle")}
+      icon={<Icon name="error" size={11} />}
+    >
+      {t("stalledBadge")}
+    </Badge>
+  );
 }
 
 /**
@@ -165,30 +181,30 @@ function ConversationLogView({
   // comment for why), rendered as a provisional bubble below the real turns.
   livePartialText: string;
 }) {
+  const t = useTranslations("conversations");
   if (nodes.length === 0 && !livePartialText) {
-    return (
-      <div className="text-sm text-text-muted py-4">No turns recorded for this conversation.</div>
-    );
+    return <div className="text-sm text-text-muted py-4">{t("noTurns")}</div>;
   }
   return (
     <div className="flex flex-col gap-1.5 py-2 w-full min-w-0">
       {hasMore && (
-        <button
-          type="button"
+        <Button
+          variant="outline"
+          size="sm"
+          className="self-center mb-2"
           onClick={onLoadOlder}
           disabled={loadingMore}
-          className="self-center mb-2 px-3 py-1.5 rounded-md border border-border text-xs text-text-muted hover:text-text-main hover:bg-bg-subtle transition-colors disabled:opacity-50"
         >
           {loadingMore ? "Loading…" : "Load more"}
-        </button>
+        </Button>
       )}
       {nodes.map((node) => (
         <ChatBubble key={node.id} turn={toTurn(node)} />
       ))}
       {livePartialText && (
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-1.5 text-[10px] text-amber-600 dark:text-amber-400">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+          <div className="flex items-center gap-1.5 text-[10px] text-warning">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-warning animate-pulse" />
             Generating…
           </div>
           <ChatBubble
@@ -204,6 +220,7 @@ function ConversationLogView({
 }
 
 function ConversationsPageContent() {
+  const t = useTranslations("conversations");
   const router = useRouter();
   const searchParams = useSearchParams();
   // Read once on mount, mirroring dashboard/logs/page.tsx (#6830/#8354): re-reading the
@@ -250,8 +267,20 @@ function ConversationsPageContent() {
   });
   const initialOpenedRef = useRef(false);
   const initialConversationOpenedRef = useRef(false);
-  const conversationPanelRef = useRef<HTMLDivElement>(null);
-  const conversationContentRef = useRef<HTMLDivElement>(null);
+  const conversationPanelRef = useRef<HTMLDivElement | null>(null);
+  const conversationContentRef = useRef<HTMLDivElement | null>(null);
+  // The kit Dialog portals its content a render after `open` flips, so the panel/content
+  // nodes are tracked in state too: the observer/scroll effects re-run once they mount.
+  const [panelNode, setPanelNode] = useState<HTMLDivElement | null>(null);
+  const [contentNode, setContentNode] = useState<HTMLDivElement | null>(null);
+  const attachPanel = useCallback((el: HTMLDivElement | null) => {
+    conversationPanelRef.current = el;
+    setPanelNode(el);
+  }, []);
+  const attachContent = useCallback((el: HTMLDivElement | null) => {
+    conversationContentRef.current = el;
+    setContentNode(el);
+  }, []);
   // True right after opening a conversation (or clicking "Go to bottom"),
   // cleared once the user scrolls away from the bottom themselves. A large
   // conversation's last page can include multi-KB tool-output/context turns
@@ -268,13 +297,15 @@ function ConversationsPageContent() {
   // itself in the poll effect's dependency array (which would tear down and
   // restart the interval on every single appended turn).
   const newestSeqRef = useRef<number | null>(null);
+  // Tracks the PREVIOUS render's activeCallLogId truthiness, so the
+  // reply-just-finished effect below can detect the true->false transition
+  // specifically (not "is currently falsy", which would also fire on mount
+  // / switching conversations).
+  const wasReplyActiveRef = useRef(false);
 
-  // Extracted so openConversation can force an immediate refresh instead of
-  // waiting for the next scheduled tick — see its call site for why: a
-  // conversation opened right after a new reply starts streaming otherwise
-  // shows no live text until this poll's own interval happens to land,
-  // because activeCallLogId only updates via the resync effect below, which
-  // depends on this list actually having been refetched.
+  // The background list poll below only runs this while no conversation
+  // modal is open — see loadActiveConversationSummary and the poll effect
+  // for the lighter single-row path used while one is open.
   const loadConversations = useCallback(() => {
     if (document.visibilityState !== "visible") return;
     return fetch("/api/conversations?limit=100", { cache: "no-store" })
@@ -290,27 +321,59 @@ function ConversationsPageContent() {
       });
   }, []);
 
+  // While the modal is open, only the one open conversation's summary needs
+  // to stay live (see the resync effect below) — refetching and
+  // re-annotating the whole up-to-100-row list every poll tick just to pluck
+  // that one row back out is pure waste, and at a 1s poll interval it's
+  // waste on every tick. Patches the row in place so the existing resync
+  // effect (keyed on `conversations`) picks it up unchanged.
+  const loadActiveConversationSummary = useCallback((id: string) => {
+    if (document.visibilityState !== "visible") return;
+    return fetch(`/api/conversations/${id}`, { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        const fresh = data?.conversation;
+        if (!fresh) return;
+        setConversations((prev) => {
+          const idx = prev.findIndex((c) => c.id === fresh.id);
+          if (idx === -1) return prev;
+          const next = prev.slice();
+          next[idx] = fresh;
+          return next;
+        });
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
-    loadConversations();
-    const interval = setInterval(loadConversations, pollSeconds * 1000);
+    const poll = () =>
+      activeConversationId
+        ? loadActiveConversationSummary(activeConversationId)
+        : loadConversations();
+    poll();
+    const interval = setInterval(poll, pollSeconds * 1000);
     return () => {
       clearInterval(interval);
     };
-  }, [pollSeconds, loadConversations]);
+  }, [pollSeconds, loadConversations, loadActiveConversationSummary, activeConversationId]);
 
   // activeConversation is a snapshot taken once at openConversation() time —
   // it's never touched again while the modal stays open (the turns-poll
   // effect below only appends conversationNodes). Without this, "Goto latest
   // request" and any other displayed summary field (lastModel/lastStatus/
   // turnCount) go stale the moment a new request lands in this conversation
-  // while you're still reading it, even though the list poll above (which
-  // runs regardless of whether the modal is open) already has the fresh
-  // row. Re-sync from it whenever the list refreshes.
+  // while you're still reading it. Re-synced from `conversations` whenever
+  // that refreshes — the effect above keeps it fresh whether the modal is
+  // closed (full list poll) or open (single-conversation poll patches this
+  // same row in place).
   useEffect(() => {
     if (!activeConversationId) return;
     const fresh = conversations.find((c) => c.id === activeConversationId);
     if (!fresh) return;
-    setActiveConversation((prev) => (prev && prev.id === fresh.id ? fresh : prev));
+    void (async () => {
+      await Promise.resolve();
+      setActiveConversation((prev) => (prev && prev.id === fresh.id ? fresh : prev));
+    })();
   }, [conversations, activeConversationId]);
 
   useEffect(() => {
@@ -412,7 +475,7 @@ function ConversationsPageContent() {
     // fields (lastCallLogId etc.) get resynced from the list poll while the
     // modal stays open (see that effect's comment), which would otherwise
     // tear down and recreate this observer on every poll tick.
-  }, [activeConversation?.id]);
+  }, [activeConversation?.id, panelNode, contentNode]);
 
   // Un-pin as soon as the user scrolls away from the bottom themselves (e.g.
   // to read earlier turns or click "Load more"), so later content growth
@@ -428,7 +491,7 @@ function ConversationsPageContent() {
     };
     panel.addEventListener("scroll", onScroll, { passive: true });
     return () => panel.removeEventListener("scroll", onScroll);
-  }, [activeConversation?.id]);
+  }, [activeConversation?.id, panelNode]);
 
   const fetchConversationPage = useCallback(
     (id: string, params: string): Promise<ConversationTurnsPage | null> =>
@@ -458,13 +521,13 @@ function ConversationsPageContent() {
         // ignore navigation errors
       }
       // `row` is a snapshot from whenever the list last polled — if a reply
-      // started streaming after that tick, row.activeCallLogId is still
-      // null and the live-text poll effect never starts until the next
-      // scheduled list refresh happens to land (the exact "opened it and
-      // saw nothing, closed and reopened and saw it live" report). Force
-      // one now so activeConversation resyncs with the current isActive/
-      // activeCallLogId immediately instead of waiting on pollSeconds.
-      loadConversations();
+      // started streaming after that tick, row.activeCallLogId is still null
+      // and the live-text poll effect never starts until a fresh summary
+      // lands (the exact "opened it and saw nothing, closed and reopened and
+      // saw it live" report). setActiveConversation above already changes
+      // activeConversationId, which is a dependency of the poll effect below
+      // — it tears down and re-fires immediately on that change, forcing the
+      // single-row resync here for free without a second explicit call.
       fetchConversationPage(row.id, `limit=${CONVERSATION_PAGE_SIZE}`)
         .then((page) => {
           setConversationNodes(page?.nodes ?? []);
@@ -477,7 +540,7 @@ function ConversationsPageContent() {
           scrollToBottom();
         });
     },
-    [router, fetchConversationPage, scrollToBottom, loadConversations]
+    [router, fetchConversationPage, scrollToBottom]
   );
 
   const closeConversation = useCallback(() => {
@@ -557,7 +620,7 @@ function ConversationsPageContent() {
   //
   // Depends on activeConversationId, NOT the whole activeConversation
   // object: activeConversation gets a fresh object reference every list-poll
-  // tick (see the resync effect above, needed so "Goto latest request"
+  // tick (see the resync effect above, needed so the "Go to latest request" button
   // doesn't go stale) — on the SAME poll cadence as this effect's own
   // interval. Depending on the object would tear down and recreate this
   // setInterval every single tick, resetting its countdown each time and
@@ -580,6 +643,35 @@ function ConversationsPageContent() {
     return () => clearInterval(interval);
   }, [activeConversationId, pollSeconds, fetchConversationPage]);
 
+  // Live incident (2026-09-02): resolveConversationId reassigns a node's
+  // last_correlation_id to the CURRENT request at request-START (before its
+  // reply streams), but that request's call-log artifact -- what
+  // resolveTurnDisplayContent needs to show real text -- is only written at
+  // completion. A node touched by a still-in-flight request therefore
+  // legitimately resolves empty if fetched during that window; the afterSeq
+  // poll above only ever APPENDS strictly newer nodes, so one already
+  // rendered empty stays empty in local state forever, even once its
+  // artifact exists moments later -- the exact "empty until you close and
+  // reopen the conversation" symptom. Once a reply that was streaming
+  // finishes (activeCallLogId's true -> false transition -- see the
+  // wasReplyActiveRef doc comment), re-fetch the recent page and merge it in
+  // by id (never drop older "Load more" history) so any node that resolved
+  // empty during the race gets its real content without a manual reopen.
+  useEffect(() => {
+    const wasActive = wasReplyActiveRef.current;
+    wasReplyActiveRef.current = Boolean(activeCallLogId);
+    if (!wasActive || activeCallLogId || !activeConversationId) return;
+
+    fetchConversationPage(activeConversationId, `limit=${CONVERSATION_PAGE_SIZE}`).then((page) => {
+      if (!page || page.nodes.length === 0) return;
+      setConversationNodes((prev) => {
+        const byId = new Map(prev.map((n) => [n.id, n] as const));
+        for (const n of page.nodes) byId.set(n.id, n);
+        return [...byId.values()].sort((a, b) => a.seq - b.seq);
+      });
+    });
+  }, [activeCallLogId, activeConversationId, fetchConversationPage]);
+
   // Live preview of the CURRENTLY streaming reply, if any: conversation_turn_nodes
   // only gains a node for an assistant turn once the client resends it as
   // history on its NEXT request (resolveConversationId reads only the request
@@ -595,7 +687,10 @@ function ConversationsPageContent() {
   // RequestLoggerDetail's CONVERSATION_ACTIVE_POLL_INTERVAL_MS.
   useEffect(() => {
     if (!activeCallLogId) {
-      setLivePartialText("");
+      void (async () => {
+        await Promise.resolve();
+        setLivePartialText("");
+      })();
       return;
     }
     let cancelled = false;
@@ -649,6 +744,8 @@ function ConversationsPageContent() {
         lastStatus: null,
         isActive: false,
         activeCallLogId: null,
+        isGenuineContinuation: false,
+        isStalled: false,
       }
     );
   }, [initialConversationParam, loading, conversations, openConversation]);
@@ -687,39 +784,33 @@ function ConversationsPageContent() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <h2 className="text-lg font-semibold text-text-main">Conversations</h2>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-text-muted">
-            {total} conversation{total === 1 ? "" : "s"} with 2+ turns
-          </span>
-          <label
-            className="flex items-center gap-1 px-2 py-1 text-[11px] text-text-muted bg-bg-subtle rounded-md border border-border"
-            title="How often this list re-fetches from the server."
-          >
-            <span>Auto-refresh</span>
-            <input
-              type="number"
-              min={1}
-              step={1}
-              value={pollSeconds}
-              onChange={(e) => {
-                const next = Math.max(1, Number(e.target.value) || 1);
-                setPollSeconds(next);
-                try {
-                  localStorage.setItem(POLL_STORAGE_KEY, String(next));
-                } catch {}
-              }}
-              className="w-10 bg-transparent text-center font-mono focus:outline-none"
-            />
-            <span>s</span>
-          </label>
-        </div>
-      </div>
+      <SectionHeader
+        title={t("title")}
+        description={t("countSummary", { total })}
+        actions={
+          <Input
+            type="number"
+            min={1}
+            step={1}
+            label={`${t("autoRefresh")} (s)`}
+            title={t("autoRefreshTitle")}
+            className="w-36"
+            inputClassName="font-mono"
+            value={pollSeconds}
+            onChange={(e) => {
+              const next = Math.max(1, Number(e.target.value) || 1);
+              setPollSeconds(next);
+              try {
+                localStorage.setItem(POLL_STORAGE_KEY, String(next));
+              } catch {}
+            }}
+          />
+        }
+      />
 
       {loading && conversations.length === 0 && (
         <div className="flex items-center justify-center py-12 text-text-muted text-sm">
-          Loading conversations...
+          {t("loading")}
         </div>
       )}
 
@@ -753,6 +844,8 @@ function ConversationsPageContent() {
                     >
                       {row.id.slice(0, 16)}…
                     </span>
+                    <ContinuationBadge isGenuine={row.isGenuineContinuation} />
+                    <StalledBadge isStalled={row.isStalled} />
                   </span>
                   <span className="font-mono text-xs text-text-muted shrink-0">
                     {row.turnCount} turns
@@ -765,7 +858,7 @@ function ConversationsPageContent() {
                   </div>
                   <StatusBadge status={row.lastStatus} />
                 </div>
-                <div className="text-end text-[11px] text-text-muted">
+                <div className="text-right text-[11px] text-text-muted">
                   {formatTime(row.lastSeenAt)}
                 </div>
               </div>
@@ -773,135 +866,128 @@ function ConversationsPageContent() {
           </div>
 
           {/* Desktop/tablet: full table */}
-          <div className="hidden sm:block overflow-x-auto rounded-xl border border-border">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-bg-subtle text-start text-[11px] uppercase tracking-wider text-text-muted">
-                  <th className="px-3 py-2">Conversation</th>
-                  <th className="px-3 py-2 text-end">Turns</th>
-                  <th className="px-3 py-2">Last Model</th>
-                  <th className="px-3 py-2">Provider</th>
-                  <th className="px-3 py-2">Status</th>
-                  <th className="px-3 py-2 text-end">Last Seen</th>
-                </tr>
-              </thead>
-              <tbody>
-                {conversations.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="border-b border-border/50 last:border-0 hover:bg-bg-subtle cursor-pointer transition-colors"
-                    onClick={() => openConversation(row)}
-                  >
-                    <td className="px-3 py-2 font-mono text-[11px] text-text-main">
-                      <span className="flex items-center gap-1.5">
-                        {row.isActive && <ActiveSpinner />}
-                        <span
-                          title={row.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            copyToClipboard(row.id);
-                          }}
-                          className="hover:underline"
-                        >
-                          {row.id.slice(0, 16)}…
-                        </span>
+          <Table
+            className="text-sm"
+            containerClassName="hidden sm:block"
+            scrollbarLabel={t("title")}
+          >
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("colConversation")}</TableHead>
+                <TableHead className="text-right">{t("colTurns")}</TableHead>
+                <TableHead>{t("colContinuation")}</TableHead>
+                <TableHead>{t("colLastModel")}</TableHead>
+                <TableHead>{t("colProvider")}</TableHead>
+                <TableHead>{t("colStatus")}</TableHead>
+                <TableHead className="text-right">{t("colLastSeen")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {conversations.map((row) => (
+                <TableRow
+                  key={row.id}
+                  className="cursor-pointer"
+                  onClick={() => openConversation(row)}
+                >
+                  <TableCell className="font-mono text-[11px] text-text-main">
+                    <span className="flex items-center gap-1.5">
+                      {row.isActive && <ActiveSpinner />}
+                      <span
+                        title={row.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          copyToClipboard(row.id);
+                        }}
+                        className="hover:underline"
+                      >
+                        {row.id.slice(0, 16)}…
                       </span>
-                    </td>
-                    <td className="px-3 py-2 text-end font-mono text-text-main">{row.turnCount}</td>
-                    <td className="px-3 py-2 text-text-main">{row.lastModel ?? "—"}</td>
-                    <td className="px-3 py-2">
-                      <ProviderBadge provider={row.lastProvider} />
-                    </td>
-                    <td className="px-3 py-2">
-                      <StatusBadge status={row.lastStatus} />
-                    </td>
-                    <td className="px-3 py-2 text-end text-text-muted">
-                      {formatTime(row.lastSeenAt)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-text-main">
+                    {row.turnCount}
+                  </TableCell>
+                  <TableCell>
+                    <ContinuationBadge isGenuine={row.isGenuineContinuation} />
+                    <StalledBadge isStalled={row.isStalled} />
+                  </TableCell>
+                  <TableCell className="text-text-main">{row.lastModel ?? "—"}</TableCell>
+                  <TableCell>
+                    <ProviderBadge provider={row.lastProvider} />
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge status={row.lastStatus} />
+                  </TableCell>
+                  <TableCell className="text-right text-text-muted">
+                    {formatTime(row.lastSeenAt)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </>
       )}
 
-      {activeConversation && (
-        <div
-          className="fixed inset-0 z-50 flex items-start justify-center px-2 pt-[5vh] sm:px-4"
-          onClick={closeConversation}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Conversation"
-        >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <Modal
+        isOpen={Boolean(activeConversation)}
+        onClose={closeConversation}
+        size="full"
+        maxWidth="48rem"
+        compactHeader
+        bodyClassName="p-0"
+        title={
+          <span className="block min-w-0">
+            <span className="block text-sm font-semibold text-text-main">{t("drawerTitle")}</span>
+            {activeConversation && (
+              <span
+                title={activeConversation.id}
+                className="block truncate font-mono text-[11px] font-normal text-text-muted"
+              >
+                {activeConversation.id.slice(0, 24)}…
+              </span>
+            )}
+          </span>
+        }
+      >
+        {activeConversation && (
           <div
-            ref={conversationPanelRef}
-            className="relative w-full max-w-3xl max-h-[90vh] overflow-x-hidden overflow-y-auto rounded-xl border border-border bg-bg-primary shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
+            ref={attachPanel}
+            className="max-h-[calc(90vh-5rem)] overflow-x-hidden overflow-y-auto"
           >
-            <div className="sticky top-0 z-10 flex items-center justify-between gap-3 px-4 py-3 border-b border-border bg-bg-primary/95 backdrop-blur-sm rounded-t-xl sm:px-6 sm:py-4">
-              <div className="min-w-0">
-                <h3 className="text-sm font-semibold text-text-main">Conversation</h3>
-                <span
-                  title={activeConversation.id}
-                  className="block truncate font-mono text-[11px] text-text-muted"
-                >
-                  {activeConversation.id.slice(0, 24)}…
-                </span>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={goToPreviousConversation}
-                  disabled={!hasPreviousConversation}
-                  title="Previous conversation"
-                  aria-label="Previous conversation"
-                  className="p-1 rounded hover:bg-bg-subtle text-text-muted hover:text-text-primary transition-colors disabled:opacity-30 disabled:pointer-events-none"
-                >
-                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={goToNextConversation}
-                  disabled={!hasNextConversation}
-                  title="Next conversation"
-                  aria-label="Next conversation"
-                  className="p-1 rounded hover:bg-bg-subtle text-text-muted hover:text-text-primary transition-colors disabled:opacity-30 disabled:pointer-events-none"
-                >
-                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-                </button>
-                {activeConversation.lastCallLogId && (
-                  <button
-                    type="button"
-                    onClick={gotoLatestRequest}
-                    className="px-2 py-1 rounded-md border border-border text-[11px] text-text-muted hover:text-text-main hover:bg-bg-subtle transition-colors whitespace-nowrap"
-                  >
-                    Goto latest request
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={scrollToBottom}
-                  title="Go to bottom"
-                  className="p-1 rounded hover:bg-bg-subtle text-text-muted hover:text-text-primary transition-colors"
-                  aria-label="Go to bottom"
-                >
-                  <span className="material-symbols-outlined text-[18px]">
-                    vertical_align_bottom
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={closeConversation}
-                  className="p-1 rounded hover:bg-bg-subtle text-text-muted hover:text-text-primary transition-colors"
-                  aria-label="Close conversation"
-                >
-                  <span className="material-symbols-outlined text-[20px]">close</span>
-                </button>
-              </div>
+            <div className="sticky top-0 z-10 flex items-center justify-end gap-2 border-b border-border bg-surface px-4 py-2 sm:px-6">
+              <Button
+                variant="ghost"
+                size="icon"
+                icon="chevron_left"
+                onClick={goToPreviousConversation}
+                disabled={!hasPreviousConversation}
+                title={t("prevConversation")}
+                aria-label={t("prevConversation")}
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                icon="chevron_right"
+                onClick={goToNextConversation}
+                disabled={!hasNextConversation}
+                title={t("nextConversation")}
+                aria-label={t("nextConversation")}
+              />
+              {activeConversation.lastCallLogId && (
+                <Button variant="outline" size="sm" onClick={gotoLatestRequest}>
+                  {t("gotoLatestRequest")}
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                icon="vertical_align_bottom"
+                onClick={scrollToBottom}
+                title={t("goToBottom")}
+                aria-label={t("goToBottom")}
+              />
             </div>
-            <div ref={conversationContentRef} className="p-4 sm:p-6">
+            <div ref={attachContent} className="p-4 sm:p-6">
               {conversationLoading ? (
                 <div className="text-sm text-text-muted py-4">Loading…</div>
               ) : (
@@ -915,8 +1001,8 @@ function ConversationsPageContent() {
               )}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
 
       {selectedLog && (
         <RequestLoggerDetail
@@ -938,11 +1024,12 @@ function ConversationsPageContent() {
 }
 
 export default function ConversationsPage() {
+  const t = useTranslations("conversations");
   return (
     <Suspense
       fallback={
         <div className="flex items-center justify-center py-12 text-text-muted text-sm">
-          Loading conversations...
+          {t("loading")}
         </div>
       }
     >

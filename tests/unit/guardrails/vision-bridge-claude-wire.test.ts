@@ -5,7 +5,25 @@
  */
 import test from "node:test";
 import assert from "node:assert/strict";
-import type { LooseDeep } from "../../helpers/looseTypes.ts";
+import dns from "node:dns";
+
+// Stub DNS for fetchRemoteImage's GHSA-cmhj-wh2f-9cgx DNS-rebinding guard
+// (assertHostnameResolvesPublic in src/shared/network/remoteImageFetch.ts).
+// Since GHSA-34rg-3pqj-35g9 the vision bridge pins `guard: "public-only"`, so every
+// remote image hostname is resolved before the injected fetch is reached; the
+// example.com hosts below must not depend on real DNS in CI. Node --test runs each
+// file in its own process, so this rebinding does not leak across files.
+const originalDnsLookup = dns.promises.lookup;
+(dns.promises as { lookup: unknown }).lookup = (async (
+  _hostname: string,
+  options?: { all?: boolean }
+) => {
+  const record = { address: "203.0.113.1", family: 4 };
+  return options && options.all ? [record] : record;
+}) as typeof dns.promises.lookup;
+process.on("exit", () => {
+  (dns.promises as { lookup: unknown }).lookup = originalDnsLookup;
+});
 
 const { isClaudeWireFormatModel, ensureBase64ImagesForClaudeWire } =
   await import("../../../src/lib/guardrails/visionBridgeHelpers.ts");
@@ -27,7 +45,7 @@ test("isClaudeWireFormatModel: false for openai-format providers", () => {
 });
 
 test("ensureBase64ImagesForClaudeWire: passthrough for non-claude-wire models", async () => {
-  const body: LooseDeep = {
+  const body = {
     model: "openai/gpt-4o-mini",
     messages: [
       {
@@ -45,7 +63,7 @@ test("ensureBase64ImagesForClaudeWire: passthrough for non-claude-wire models", 
 
 test("ensureBase64ImagesForClaudeWire: keeps data-URI images as-is", async () => {
   const dataUri = "data:image/png;base64,iVBORw0KGgo=";
-  const body: LooseDeep = {
+  const body = {
     model: "zai/glm-5",
     messages: [
       {
@@ -55,7 +73,7 @@ test("ensureBase64ImagesForClaudeWire: keeps data-URI images as-is", async () =>
     ],
   };
   const out = await ensureBase64ImagesForClaudeWire(body, "zai/glm-5");
-  const part = (out as LooseDeep).messages[0].content[0];
+  const part = out.messages[0].content[0];
   assert.strictEqual(part.image_url.url, dataUri);
 });
 
@@ -70,7 +88,7 @@ test("ensureBase64ImagesForClaudeWire: resolves remote URLs to base64 for claude
     });
 
   try {
-    const body: LooseDeep = {
+    const body = {
       model: "zai/glm-5",
       messages: [
         {
@@ -93,10 +111,10 @@ test("ensureBase64ImagesForClaudeWire: resolves remote URLs to base64 for claude
     );
     const part = out.messages[0].content[1];
     assert.ok(
-      (part as LooseDeep).image_url.url.startsWith("data:image/png;base64,"),
+      part.image_url.url.startsWith("data:image/png;base64,"),
       "remote URL must be resolved to a base64 data URI"
     );
-    assert.ok((part as LooseDeep).image_url.url.includes(pngBase64));
+    assert.ok(part.image_url.url.includes(pngBase64));
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -109,7 +127,7 @@ test("ensureBase64ImagesForClaudeWire: fail-open when the remote fetch fails", a
   };
 
   try {
-    const body: LooseDeep = {
+    const body = {
       model: "zai/glm-5",
       messages: [
         {
@@ -121,9 +139,68 @@ test("ensureBase64ImagesForClaudeWire: fail-open when the remote fetch fails", a
     const out = await ensureBase64ImagesForClaudeWire(body, "zai/glm-5", async () => {
       throw new Error("network down");
     });
-    const part = (out as LooseDeep).messages[0].content[0];
+    const part = out.messages[0].content[0];
     assert.strictEqual(part.image_url.url, "https://example.com/cat.png");
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+// GHSA-34rg-3pqj-35g9 — the vision bridge inlines a user-supplied `image_url` to base64 for
+// claude-wire targets (`visionBridge.ts` reroute) and for the Anthropic describe self-call.
+// `fetchRemoteImageAsDataUri()` called `fetchRemoteImage()` with only `{ signal, fetchImpl }`,
+// so the URL was validated under the OPERATOR outbound policy (`block-metadata` on a
+// default install: loopback/LAN allowed, DNS check skipped) instead of `public-only`. The
+// helper is fail-open, so the observable contract is: the injected fetch is NEVER invoked
+// for a private host and the part is left untouched (not inlined).
+for (const privateUrl of ["http://127.0.0.1:1/x.png", "http://192.168.1.50/x.png"]) {
+  test(`ensureBase64ImagesForClaudeWire: never fetches a private image_url (${privateUrl}) (GHSA-34rg-3pqj-35g9)`, async () => {
+    const fetchedUrls: string[] = [];
+    const body = {
+      model: "zai/glm-5",
+      messages: [
+        {
+          role: "user",
+          content: [{ type: "image_url", image_url: { url: privateUrl } }],
+        },
+      ],
+    };
+
+    const out = await ensureBase64ImagesForClaudeWire(body, "zai/glm-5", async (input) => {
+      fetchedUrls.push(String(input));
+      // Canary: on the vulnerable code these bytes are inlined into the rerouted body.
+      return new Response(new Uint8Array([0x89, 0x50, 0x4e, 0x47]), {
+        status: 200,
+        headers: { "content-type": "image/png" },
+      });
+    });
+
+    assert.deepStrictEqual(fetchedUrls, [], "the private URL must never be fetched");
+    const part = out.messages[0].content[0];
+    assert.strictEqual(part.image_url.url, privateUrl, "part must be left untouched (fail-open)");
+  });
+}
+
+test("ensureBase64ImagesForClaudeWire: still inlines a public image_url whose DNS resolves to a public IP (GHSA-34rg-3pqj-35g9)", async () => {
+  // The module-level DNS stub answers a public IP, so the `public-only` rebinding guard
+  // passes and the injected fetch is reached.
+  const fetchedUrls: string[] = [];
+  const body = {
+    model: "zai/glm-5",
+    messages: [
+      {
+        role: "user",
+        content: [{ type: "image_url", image_url: { url: "https://cdn.example.com/public.png" } }],
+      },
+    ],
+  };
+  const out = await ensureBase64ImagesForClaudeWire(body, "zai/glm-5", async (input) => {
+    fetchedUrls.push(String(input));
+    return new Response(new Uint8Array([0x89, 0x50, 0x4e, 0x47]), {
+      status: 200,
+      headers: { "content-type": "image/png" },
+    });
+  });
+  assert.deepStrictEqual(fetchedUrls, ["https://cdn.example.com/public.png"]);
+  assert.ok(out.messages[0].content[0].image_url.url.startsWith("data:image/png;base64,"));
 });

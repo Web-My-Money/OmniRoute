@@ -1,4 +1,4 @@
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 export const QWEN_CODE_ENV_KEY = "OMNIROUTE_API_KEY";
 

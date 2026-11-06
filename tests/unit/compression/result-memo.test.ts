@@ -6,15 +6,15 @@ import {
   makeMemoKey,
   isDeterministicMode,
   clearMemoStore,
+  resultMemoForTests,
   MEMO_CAP,
 } from "../../../open-sse/services/compression/resultMemo.ts";
-import type {
-  CompressionConfig,
-  CompressionResult,
-} from "../../../open-sse/services/compression/types.ts";
+import type { CompressionResult } from "../../../open-sse/services/compression/types.ts";
 import { DEFAULT_COMPRESSION_CONFIG } from "../../../open-sse/services/compression/types.ts";
-import { applyCompression } from "../../../open-sse/services/compression/strategySelector.ts";
-import type { LooseDeep } from "../../helpers/looseTypes.ts";
+import {
+  applyCompression,
+  applyCompressionAsync,
+} from "../../../open-sse/services/compression/strategySelector.ts";
 
 const baseBody = {
   messages: [{ role: "user", content: "hello world compress me please" }],
@@ -91,12 +91,12 @@ describe("resultMemo unit", () => {
     const hit1 = memoLookup(key);
     assert.notEqual(hit1, null);
     // Mutate the returned body
-    (hit1!.body as LooseDeep)["injected"] = "evil";
+    (hit1!.body as Record<string, unknown>)["injected"] = "evil";
 
     // Second lookup should not see the mutation
     const hit2 = memoLookup(key);
     assert.notEqual(hit2, null);
-    assert.equal((hit2!.body as LooseDeep)["injected"], undefined);
+    assert.equal((hit2!.body as Record<string, unknown>)["injected"], undefined);
   });
 
   it("FIFO eviction: after MEMO_CAP entries, oldest is evicted", () => {
@@ -199,7 +199,7 @@ describe("isDeterministicMode", () => {
       ...DEFAULT_COMPRESSION_CONFIG,
       stackedPipeline: [{ engine: "ionizer" as const }, { engine: "lite" as const }],
     };
-    assert.equal(isDeterministicMode("stacked", cfg as unknown as CompressionConfig), false);
+    assert.equal(isDeterministicMode("stacked", cfg), false);
   });
 
   it("stacked with headroom engine is NOT deterministic (excluded until vetted)", () => {
@@ -222,7 +222,6 @@ describe("applyCompression with memoization", () => {
   });
 
   it("flag OFF: two identical calls both compute (no caching path)", () => {
-    let callCount = 0;
     // We can't easily spy on internal engine, so we verify via deterministic output
     // equality between independent calls (proving cache isn't interfering).
     // Use a body that will be lightly compressed.
@@ -259,6 +258,38 @@ describe("applyCompression with memoization", () => {
     // Verify cache was populated
     const key = makeMemoKey(body, "lite", memoConfig, "u1");
     assert.notEqual(memoLookup(key), null);
+  });
+
+  it("memo misses and hits cannot mutate the cached result", () => {
+    const body = {
+      messages: [{ role: "user", content: "Mutation isolation test content. ".repeat(15) }],
+      model: "gpt-4",
+    };
+    const miss = applyCompression(body, "lite", { config: memoConfig, principalId: "u1" });
+    const expected = structuredClone(miss.body);
+    miss.body.messages[0]!.content = "mutated miss";
+
+    const hit = applyCompression(body, "lite", { config: memoConfig, principalId: "u1" });
+    assert.deepEqual(hit.body, expected);
+    hit.body.messages[0]!.content = "mutated hit";
+
+    assert.deepEqual(
+      applyCompression(body, "lite", { config: memoConfig, principalId: "u1" }).body,
+      expected
+    );
+    assert.equal(resultMemoForTests.lookupCount, 3);
+  });
+
+  it("async memo misses and hits perform one lookup per call", async () => {
+    const body = {
+      messages: [{ role: "user", content: "Async lookup count test content. ".repeat(15) }],
+      model: "gpt-4",
+    };
+
+    await applyCompressionAsync(body, "lite", { config: memoConfig, principalId: "u1" });
+    assert.equal(resultMemoForTests.lookupCount, 1);
+    await applyCompressionAsync(body, "lite", { config: memoConfig, principalId: "u1" });
+    assert.equal(resultMemoForTests.lookupCount, 2);
   });
 
   it("flag ON + deterministic mode: different principalId = MISS", () => {
@@ -359,8 +390,7 @@ describe("resultMemo — core review hardening", () => {
 
   it("#8137: caveman mode produces SAME key across different models", () => {
     // caveman is deterministic and model-independent (no image/vision logic)
-    const k = (model?: string) =>
-      makeMemoKey(baseBody, "caveman" as never, memoConfig, "p1", model);
+    const k = (model?: string) => makeMemoKey(baseBody, "caveman" as never, memoConfig, "p1", model);
     assert.equal(k("gpt-4"), k("claude-3"), "caveman key must be model-independent");
   });
 

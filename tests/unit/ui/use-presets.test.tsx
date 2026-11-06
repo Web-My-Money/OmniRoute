@@ -2,10 +2,12 @@
 // tests/unit/ui/use-presets.test.tsx
 // Runs via Vitest (vitest.config.ts)
 // Uses React DOM directly (no @testing-library/dom dep required).
-import React, { act, useEffect } from "react";
+import React, { act, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { usePresets } from "../../../src/app/(dashboard)/dashboard/playground/hooks/usePresets";
+import {
+  usePresets,
+} from "../../../src/app/(dashboard)/dashboard/playground/hooks/usePresets";
 import type { PlaygroundPresetListItem } from "../../../src/shared/schemas/playground";
 
 // ─── Minimal hook test harness ────────────────────────────────────────────────
@@ -22,12 +24,9 @@ function mountHook<T>(useHook: () => T): {
   const root = createRoot(container);
 
   function HookComponent() {
-    const value = useHook();
-    // Write-through in an effect: mutating outer state during render trips
-    // react-hooks/immutability; act() flushes effects so hookRef is populated.
-    useEffect(() => {
-      hookRef.current = value;
-    });
+    const captureRef = useRef<T>(undefined as unknown as T);
+    captureRef.current = useHook();
+    hookRef.current = captureRef.current;
     return null;
   }
 
@@ -162,7 +161,7 @@ describe("usePresets", () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(input),
-        })
+        }),
       );
       // Second call: GET list to refresh
       expect(mockFetch).toHaveBeenNthCalledWith(2, "/api/playground/presets");
@@ -183,7 +182,6 @@ describe("usePresets", () => {
           name: "x",
           endpoint: "chat.completions",
           model: "gpt-4o",
-          params: {},
         });
       });
 
@@ -221,7 +219,7 @@ describe("usePresets", () => {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(patch),
-        })
+        }),
       );
       expect((res as PlaygroundPresetListItem | null)?.name).toBe("Updated");
       unmount();
@@ -249,7 +247,7 @@ describe("usePresets", () => {
       expect(mockFetch).toHaveBeenNthCalledWith(
         1,
         `/api/playground/presets/${MOCK_PRESET.id}`,
-        expect.objectContaining({ method: "DELETE" })
+        expect.objectContaining({ method: "DELETE" }),
       );
       // After remove, list is refetched => presets = []
       expect(result.current.presets).toHaveLength(0);

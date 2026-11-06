@@ -627,6 +627,85 @@ test("fixMissingToolResponses keeps OpenAI role:tool when assistant uses OpenAI 
   assert.equal(fixed.messages[2].tool_call_id, "call_b");
 });
 
+test("fixMissingToolResponses inserts missing response when only some tool calls are answered (#17946)", () => {
+  const fixed = toolCallHelper.fixMissingToolResponses({
+    messages: [
+      {
+        role: "assistant",
+        tool_calls: [
+          { id: "call_a", type: "function", function: { name: "lookup", arguments: "{}" } },
+          { id: "call_b", type: "function", function: { name: "search", arguments: "{}" } },
+        ],
+      },
+      { role: "tool", tool_call_id: "call_a", content: "result a" },
+      { role: "user", content: "continue" },
+    ],
+  });
+
+  assert.equal(fixed.messages.length, 4);
+  assert.equal(fixed.messages[1].role, "tool");
+  assert.equal(fixed.messages[1].tool_call_id, "call_a");
+  assert.equal(fixed.messages[1].content, "result a");
+  assert.equal(fixed.messages[2].role, "tool");
+  assert.equal(fixed.messages[2].tool_call_id, "call_b");
+  assert.equal(fixed.messages[2].content, "");
+  assert.equal(fixed.messages[3].role, "user");
+});
+
+test("fixMissingToolResponses merges missing Claude tool_result blocks into the existing results message (#17946)", () => {
+  const resultsMessage = {
+    role: "user",
+    content: [
+      { type: "tool_result", tool_use_id: "tool_a", content: "result a" },
+      { type: "text", text: "continue" },
+    ],
+  };
+  const fixed = toolCallHelper.fixMissingToolResponses({
+    messages: [
+      { role: "user", content: [{ type: "text", text: "do it" }] },
+      {
+        role: "assistant",
+        content: [
+          { type: "tool_use", id: "tool_a", name: "bash", input: { cmd: "ls" } },
+          { type: "tool_use", id: "tool_b", name: "bash", input: { cmd: "pwd" } },
+        ],
+      },
+      resultsMessage,
+    ],
+  });
+
+  // Anthropic requires every tool_result in the user message right after the
+  // tool_use turn: no second user message, the missing block joins the existing one
+  // after the existing tool_result blocks and before any text block.
+  assert.equal(fixed.messages.length, 3);
+  const merged = fixed.messages[2];
+  assert.equal(merged.role, "user");
+  assert.deepEqual(merged.content, [
+    { type: "tool_result", tool_use_id: "tool_a", content: "result a" },
+    { type: "tool_result", tool_use_id: "tool_b", content: "" },
+    { type: "text", text: "continue" },
+  ]);
+  // The caller's message object is not mutated.
+  assert.equal(resultsMessage.content.length, 2);
+});
+
+test("fixMissingToolResponses inserts responses when assistant with tool_calls is the last message (#17946)", () => {
+  const fixed = toolCallHelper.fixMissingToolResponses({
+    messages: [
+      { role: "user", content: "run tools" },
+      {
+        role: "assistant",
+        tool_calls: [{ id: "call_1", type: "function", function: { name: "f1", arguments: "{}" } }],
+      },
+    ],
+  });
+
+  assert.equal(fixed.messages.length, 3);
+  assert.equal(fixed.messages[2].role, "tool");
+  assert.equal(fixed.messages[2].tool_call_id, "call_1");
+  assert.equal(fixed.messages[2].content, "");
+});
+
 test("fallbackToolCallId returns the right id shape with and without an index", () => {
   const noIndex = toolCallHelperLoose.fallbackToolCallId() as unknown as string;
   assert.match(
@@ -828,7 +907,9 @@ test("translateRequest does NOT inject duplicate thinking for Claude-format mess
         {
           role: "assistant",
           content: [
-            { type: "thinking", thinking: "I already have this" },
+            // Signed: a thinking block without a signature is dropped by the request
+            // translator (#12105), which would leave nothing for this test to protect.
+            { type: "thinking", thinking: "I already have this", signature: "sig_existing" },
             { type: "tool_use", id: "toolu_existing", name: "read", input: {} },
           ],
         },
@@ -851,6 +932,59 @@ test("translateRequest does NOT inject duplicate thinking for Claude-format mess
     "original thinking should be preserved"
   );
   assert.equal(getReasoningCacheServiceStats().replays, 0);
+
+  clearReasoningCacheAll();
+});
+
+test("translateRequest replays cached reasoning when the client's Claude-format thinking block has no signature", () => {
+  // #12105: an unsigned thinking block cannot be replayed to Claude, so the request
+  // translator drops it instead of stamping a fabricated signature. For Kimi Coding the
+  // tool_use turn still needs a thinking precursor, and the reasoning cache (keyed by the
+  // tool_use id) is the authentic source — it must be re-hydrated exactly once.
+  clearReasoningCacheAll();
+  cacheReasoningByKey("toolu_unsigned", "kimi-coding-apikey", "k3-256k", "cached thinking");
+
+  const result = translateRequest(
+    FORMATS.OPENAI,
+    FORMATS.CLAUDE,
+    "k3-256k",
+    {
+      messages: [
+        { role: "user", content: "hi" },
+        {
+          role: "assistant",
+          content: [
+            { type: "thinking", thinking: "unsigned client thinking" },
+            { type: "tool_use", id: "toolu_unsigned", name: "read", input: {} },
+          ],
+        },
+        { role: "tool", tool_call_id: "toolu_unsigned", content: "data" },
+      ],
+    },
+    false,
+    null,
+    "kimi-coding-apikey"
+  );
+
+  const assistantMsg = result.messages.find((m) => m.role === "assistant");
+  const thinkingBlocks =
+    Array.isArray(assistantMsg.content) &&
+    assistantMsg.content.filter((b) => b?.type === "thinking");
+  assert.equal(thinkingBlocks?.length, 1, "should have exactly one thinking block (no duplicate)");
+  assert.equal(
+    thinkingBlocks[0].thinking,
+    "cached thinking",
+    "cached reasoning should be replayed"
+  );
+  assert.equal(
+    thinkingBlocks[0].signature,
+    undefined,
+    "replayed thinking must not carry a fabricated signature"
+  );
+  const thinkingIdx = assistantMsg.content.indexOf(thinkingBlocks[0]);
+  const toolUseIdx = assistantMsg.content.findIndex((b) => b?.type === "tool_use");
+  assert.ok(thinkingIdx < toolUseIdx, "thinking block should be before tool_use");
+  assert.equal(getReasoningCacheServiceStats().replays, 1);
 
   clearReasoningCacheAll();
 });

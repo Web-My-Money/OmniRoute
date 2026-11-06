@@ -12,7 +12,7 @@
 
 import { promises as fs } from "fs";
 import path from "path";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 /**
  * CLIProxyAPI `type` → OmniRoute provider id. Only OAuth-based providers OmniRoute
@@ -24,6 +24,7 @@ export const CLIPROXY_TYPE_TO_PROVIDER: Record<string, string> = {
   codex: "codex",
   antigravity: "antigravity",
   kimi: "kimi",
+  meta: "muse-code",
 };
 
 export interface ParsedCliProxyAuth {
@@ -34,6 +35,7 @@ export interface ParsedCliProxyAuth {
   refreshToken: string | null;
   expiresAt: string | null;
   projectId: string | null;
+  providerSpecificData?: Record<string, unknown>;
 }
 
 function asString(value: unknown): string | null {
@@ -75,6 +77,38 @@ export function parseCliProxyAuthRecord(raw: unknown, now: number = 0): ParsedCl
   const provider = CLIPROXY_TYPE_TO_PROVIDER[type];
   if (!provider) return null;
   const accessToken = asString(record.access_token);
+  if (provider === "muse-code") {
+    const dcaToken =
+      asString(record.dca_token) ||
+      (accessToken && accessToken.startsWith("dca:") ? accessToken : null);
+    const apiKey = asString(record.api_key);
+    const inferenceKey =
+      apiKey && !apiKey.startsWith("dca:")
+        ? apiKey
+        : accessToken && !accessToken.startsWith("dca:")
+          ? accessToken
+          : "";
+    if (!inferenceKey && !dcaToken) return null;
+    const minted = Boolean(inferenceKey);
+    return {
+      provider,
+      type,
+      email: asString(record.email),
+      accessToken: inferenceKey || dcaToken || "",
+      refreshToken: dcaToken,
+      // Minted Muse keys do not inherit the DCA expiry clock.
+      expiresAt: minted ? null : resolveCliProxyExpiry(record, now),
+      projectId: null,
+      providerSpecificData: {
+        dcaToken: dcaToken ?? undefined,
+        baseUrl: asString(record.base_url) ?? undefined,
+        email: asString(record.email) ?? undefined,
+        name: asString(record.name) ?? undefined,
+        authKind: asString(record.auth_kind) || "oauth",
+        importedFrom: "cliproxyapi",
+      },
+    };
+  }
   if (!accessToken) return null;
   return {
     provider,
@@ -102,6 +136,7 @@ export function toConnectionPayload(parsed: ParsedCliProxyAuth): JsonRecord {
     testStatus: "active",
     providerSpecificData: {
       ...(parsed.projectId ? { projectId: parsed.projectId } : {}),
+      ...(parsed.providerSpecificData || {}),
       importedFrom: "cliproxyapi",
       importedAt: new Date().toISOString(),
     },

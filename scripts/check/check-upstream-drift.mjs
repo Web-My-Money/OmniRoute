@@ -185,6 +185,11 @@ function generateManifest(upstreamRef) {
   const files = buildManifestFiles(parseNameStatus(nameStatus), (file) =>
     git(["diff", base, "--", file])
   );
+  // The manifest cannot guard itself: it is a fork-only file, so its "patch" is its whole body,
+  // which quotes other files' sentinel lines (JSON-escaped, a little longer on every rewrite). The
+  // self-entry therefore never reached a fixed point. Existence-only is the stable choice.
+  const selfKey = path.relative(ROOT, MANIFEST_PATH).split(path.sep).join("/");
+  if (files[selfKey]) files[selfKey] = { sentinels: [] };
   return { upstreamRef, files };
 }
 

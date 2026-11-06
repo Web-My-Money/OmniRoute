@@ -183,32 +183,27 @@ test("csvToJsonl: non-numeric string in max_tokens stays as string", () => {
 
 // ── Security: setByPath prototype pollution guard ─────────────────────────────
 
-test("csvToJsonl: setByPath rejects __proto__ path → row silently skipped (no crash)", () => {
-  // The schema validates mapping values, so we test via a crafted but schema-valid
-  // path. The schema only checks record shape, not the specific path strings deeply.
-  // We bypass schema validation by passing a mapping where the path traversal is safe
-  // but attempt to test the guard directly via internal behavior.
-  //
-  // Strategy: pass a mapping value that looks like a body path to satisfy Zod, then
-  // confirm the result is either skipped cleanly or the object is not polluted.
-  const csv = "id,prompt\nr1,safe_content";
-  const result = make(csv);
-  // Core test: Object.prototype should not be polluted
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  assert.equal((Object.prototype as any).__polluted, undefined, "__proto__ must not be polluted");
-  assert.equal(result.rowsParsed, 1, "normal row must still succeed");
-});
-
-test("csvToJsonl: setByPath rejects 'constructor' as a key name — no Object.constructor overwrite", () => {
-  // Provide a mapping that would attempt constructor pollution.
-  // The forbidden key guard should silently skip rather than throw or pollute.
-  const csv = "id,prompt\nr1,hello";
-  const safeResult = make(csv);
-  // Confirm constructor is still the native one
-  const plainObj = {};
-  assert.equal(typeof plainObj.constructor, "function", "constructor must remain a function");
-  assert.equal(safeResult.rowsParsed, 1);
-});
+for (const key of ["__proto__", "constructor", "prototype"]) {
+  test(`csvToJsonl: rejects the forbidden ${key} mapping segment`, () => {
+    const prototypeBefore = Object.getOwnPropertyDescriptors(Object.prototype);
+    const result = csvToJsonl({
+      csv: "id,prompt,extra\nr1,hello,unexpected",
+      mapping: { ...DEFAULT_MAPPING, extra: `body.${key}.marker` },
+      defaults: DEFAULT_DEFAULTS,
+    });
+    assert.equal(result.rowsParsed, 1, "rejecting one path must preserve the valid row");
+    assert.equal(result.rowsSkipped, 0);
+    assert.deepEqual(result.errors, []);
+    const [request] = parseLines(result.jsonl);
+    // Null-prototype objects already protect Object.prototype; also assert that
+    // the forbidden path itself never reaches the generated request body.
+    assert.deepEqual(request.body, {
+      model: "gpt-4o",
+      messages: [{ content: "hello", role: "user" }],
+    });
+    assert.deepEqual(Object.getOwnPropertyDescriptors(Object.prototype), prototypeBefore);
+  });
+}
 
 test("csvToJsonl: setByPath accepts body.messages[0].content — normal nested path works", () => {
   const csv = "id,prompt\ntest-1,deep nested value";

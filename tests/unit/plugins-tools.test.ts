@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // ── Temp dirs ──
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-plugins-tools-"));
@@ -22,16 +21,6 @@ function getTool(name: string) {
   assert.ok(tool, `Tool ${name} not found`);
   return tool!;
 }
-
-// reason: each tool's handler declares its own args shape, so the array's union
-// collapses the param to an intersection; each test passes only what its tool expects.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ToolResult = { [key: string]: any };
-const callToolHandler = async (
-  tool: (typeof pluginTools)[number],
-  args?: JsonRecord
-  // reason: `never` is assignable to every member of the args intersection.
-): Promise<ToolResult> => (await tool.handler(args as never)) as ToolResult;
 
 function writeTestPlugin(opts?: { name?: string; onRequest?: boolean }) {
   const name = opts?.name ?? "test-tools-plugin";
@@ -98,7 +87,7 @@ test.after(() => {
 
 test("plugin_list: returns empty when no plugins", async () => {
   const tool = getTool("plugin_list");
-  const result = await callToolHandler(tool, {});
+  const result = await tool.handler({});
   assert.deepEqual(result.plugins, []);
 });
 
@@ -109,7 +98,7 @@ test("plugin_list: returns installed plugins", async () => {
   await pluginManager.install(sourceDir);
 
   const tool = getTool("plugin_list");
-  const result = await callToolHandler(tool, {});
+  const result = await tool.handler({});
   assert.equal(result.plugins.length, 1);
   assert.equal(result.plugins[0].name, name);
   assert.equal(result.plugins[0].version, "1.0.0");
@@ -126,10 +115,10 @@ test("plugin_list: filters by status", async () => {
   await pluginManager.install(sourceDir);
 
   const tool = getTool("plugin_list");
-  const activeResult = await callToolHandler(tool, { status: "active" });
+  const activeResult = await tool.handler({ status: "active" });
   assert.equal(activeResult.plugins.length, 0);
 
-  const installedResult = await callToolHandler(tool, { status: "installed" });
+  const installedResult = await tool.handler({ status: "installed" });
   assert.equal(installedResult.plugins.length, 1);
 
   await pluginManager.uninstall(name);
@@ -142,7 +131,7 @@ test("plugin_install: installs a valid plugin", async () => {
   activeSourceDirs.push(sourceDir);
 
   const tool = getTool("plugin_install");
-  const result = await callToolHandler(tool, { path: sourceDir });
+  const result = await tool.handler({ path: sourceDir });
   assert.equal(result.success, true);
   assert.equal(result.plugin.name, name);
 
@@ -153,13 +142,7 @@ test("plugin_install: installs a valid plugin", async () => {
 test("plugin_install: throws for invalid path", async () => {
   const tool = getTool("plugin_install");
   await assert.rejects(
-    () =>
-      tool.handler({ path: "/nonexistent/path" } as unknown as { status?: string } & {
-        path: string;
-      } & { name: string } & { name: string; config?: Record<string, unknown> } & {
-        name?: string;
-        limit?: number;
-      }),
+    () => tool.handler({ path: "/nonexistent/path" }),
     (err: Error) => {
       assert.ok(err.message.includes("No valid plugin found"));
       return true;
@@ -176,7 +159,7 @@ test("plugin_activate: activates installed plugin", async () => {
   await pluginManager.install(sourceDir);
 
   const tool = getTool("plugin_activate");
-  const result = await callToolHandler(tool, { name });
+  const result = await tool.handler({ name });
   assert.equal(result.success, true);
   assert.ok(result.message.includes(name));
 
@@ -185,7 +168,7 @@ test("plugin_activate: activates installed plugin", async () => {
 
 test("plugin_activate: returns error for nonexistent plugin", async () => {
   const tool = getTool("plugin_activate");
-  const result = await callToolHandler(tool, { name: "no-such-plugin" });
+  const result = await tool.handler({ name: "no-such-plugin" });
   assert.equal(result.success, false);
   assert.ok(result.error.includes("not found"));
 });
@@ -197,8 +180,8 @@ test("plugin_activate: is idempotent", async () => {
   await pluginManager.install(sourceDir);
 
   const tool = getTool("plugin_activate");
-  await callToolHandler(tool, { name });
-  const result = await callToolHandler(tool, { name });
+  await tool.handler({ name });
+  const result = await tool.handler({ name });
   assert.equal(result.success, true);
 
   await pluginManager.uninstall(name);
@@ -214,7 +197,7 @@ test("plugin_deactivate: deactivates active plugin", async () => {
   await pluginManager.activate(name);
 
   const tool = getTool("plugin_deactivate");
-  const result = await callToolHandler(tool, { name });
+  const result = await tool.handler({ name });
   assert.equal(result.success, true);
 
   await pluginManager.uninstall(name);
@@ -222,7 +205,7 @@ test("plugin_deactivate: deactivates active plugin", async () => {
 
 test("plugin_deactivate: succeeds silently for nonexistent plugin", async () => {
   const tool = getTool("plugin_deactivate");
-  const result = await callToolHandler(tool, { name: "ghost-deactivate" });
+  const result = await tool.handler({ name: "ghost-deactivate" });
   // manager.deactivate() doesn't throw for missing plugins — silently sets status to inactive
   assert.equal(result.success, true);
 });
@@ -236,14 +219,14 @@ test("plugin_uninstall: removes plugin", async () => {
   await pluginManager.install(sourceDir);
 
   const tool = getTool("plugin_uninstall");
-  const result = await callToolHandler(tool, { name });
+  const result = await tool.handler({ name });
   assert.equal(result.success, true);
   assert.equal(dbPlugins.getPluginByName(name), null);
 });
 
 test("plugin_uninstall: returns error for nonexistent plugin", async () => {
   const tool = getTool("plugin_uninstall");
-  const result = await callToolHandler(tool, { name: "ghost-uninstall" });
+  const result = await tool.handler({ name: "ghost-uninstall" });
   assert.equal(result.success, false);
   assert.ok(result.error.includes("not found"));
 });
@@ -257,7 +240,7 @@ test("plugin_configure: reads config when no config arg", async () => {
   await pluginManager.install(sourceDir);
 
   const tool = getTool("plugin_configure");
-  const result = await callToolHandler(tool, { name });
+  const result = await tool.handler({ name });
   assert.ok(result.config !== undefined);
   assert.ok(result.configSchema !== undefined);
 
@@ -271,7 +254,7 @@ test("plugin_configure: updates config", async () => {
   await pluginManager.install(sourceDir);
 
   const tool = getTool("plugin_configure");
-  const result = await callToolHandler(tool, { name, config: { apiUrl: "https://example.com" } });
+  const result = await tool.handler({ name, config: { apiUrl: "https://example.com" } });
   assert.equal(result.success, true);
   assert.equal(result.config.apiUrl, "https://example.com");
 
@@ -284,7 +267,7 @@ test("plugin_configure: updates config", async () => {
 
 test("plugin_configure: returns error for nonexistent plugin", async () => {
   const tool = getTool("plugin_configure");
-  const result = await callToolHandler(tool, { name: "ghost-config" });
+  const result = await tool.handler({ name: "ghost-config" });
   assert.equal(result.success, false);
   assert.ok(result.error.includes("not found"));
 });
@@ -300,7 +283,7 @@ test("plugin_configure: rejects config with wrong type (number instead of string
 
   const tool = getTool("plugin_configure");
   // apiUrl expects a string — passing a number should fail validation
-  const result = await callToolHandler(tool, { name, config: { apiUrl: 12345 } });
+  const result = await tool.handler({ name, config: { apiUrl: 12345 } });
   assert.equal(result.success, false, "should fail validation for wrong type");
   assert.ok(
     result.error && result.error.includes("validation failed"),
@@ -318,7 +301,7 @@ test("plugin_configure: rejects config with out-of-range number", async () => {
 
   const tool = getTool("plugin_configure");
   // maxRetries has min:1, max:10 — 999 should fail
-  const result = await callToolHandler(tool, { name, config: { maxRetries: 999 } });
+  const result = await tool.handler({ name, config: { maxRetries: 999 } });
   assert.equal(result.success, false, "should fail validation for out-of-range number");
   assert.ok(result.error && result.error.includes("validation failed"));
 
@@ -332,7 +315,7 @@ test("plugin_configure: accepts valid config matching schema", async () => {
   await pluginManager.install(sourceDir);
 
   const tool = getTool("plugin_configure");
-  const result = await callToolHandler(tool, {
+  const result = await tool.handler({
     name,
     config: { apiUrl: "https://ok.example.com", maxRetries: 5 },
   });
@@ -367,7 +350,7 @@ test("plugin_configure: allows any config when plugin has no configSchema", asyn
   await pluginManager.install(sourceDir);
 
   const tool = getTool("plugin_configure");
-  const result = await callToolHandler(tool, { name, config: { anything: "goes", foo: 42 } });
+  const result = await tool.handler({ name, config: { anything: "goes", foo: 42 } });
   // No schema → validation skipped → should succeed
   assert.equal(result.success, true, "should accept any config when no schema is declared");
 
@@ -378,7 +361,7 @@ test("plugin_configure: allows any config when plugin has no configSchema", asyn
 
 test("plugin_scan: returns discovery result", async () => {
   const tool = getTool("plugin_scan");
-  const result = await callToolHandler(tool, {});
+  const result = await tool.handler({});
   assert.ok(result !== undefined);
   assert.equal(typeof result.discovered, "number");
   assert.ok(Array.isArray(result.errors));
@@ -388,7 +371,7 @@ test("plugin_scan: returns discovery result", async () => {
 
 test("plugin_executions: returns execution list", async () => {
   const tool = getTool("plugin_executions");
-  const result = await callToolHandler(tool, { limit: 10 });
+  const result = await tool.handler({ limit: 10 });
   assert.ok(result !== undefined);
   assert.ok(Array.isArray(result.metrics));
 });

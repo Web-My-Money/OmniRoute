@@ -3,8 +3,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { JsonRecord } from "../../src/shared/types/json.ts";
-import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-builder-options-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -22,7 +20,7 @@ async function resetStorage() {
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 }
 
-async function seedConnection(provider, overrides: JsonRecord = {}) {
+async function seedConnection(provider, overrides = {}) {
   const payload = {
     provider,
     authType: overrides.authType || "apikey",
@@ -39,9 +37,9 @@ async function seedConnection(provider, overrides: JsonRecord = {}) {
   };
 
   if (overrides.name !== undefined) {
-    (payload as LooseDeep).name = overrides.name;
+    payload.name = overrides.name;
   } else if ((overrides.authType || "apikey") !== "oauth") {
-    (payload as LooseDeep).name = `${provider}-${Math.random().toString(16).slice(2, 8)}`;
+    payload.name = `${provider}-${Math.random().toString(16).slice(2, 8)}`;
   }
 
   return providersDb.createProviderConnection(payload);
@@ -130,7 +128,7 @@ test("combo builder options route aggregates providers, connections, models and 
     isHidden: true,
   });
 
-  const response = await route.GET(new Request("http://localhost/api/combos/builder/options"));
+  const response = await route.GET();
   const body = (await response.json()) as any;
 
   assert.equal(response.status, 200);
@@ -203,28 +201,27 @@ test("combo builder options route aggregates providers, connections, models and 
   );
 });
 
-test("combo builder options route includes no-auth provider (opencode) even without provider_connections rows", async () => {
-  // No connections seeded — opencode has noAuth: true and never gets a provider_connections row.
-  const response = await route.GET(new Request("http://localhost/api/combos/builder/options"));
+test("combo builder options route includes no-auth provider (uncloseai) even without provider_connections rows", async () => {
+  // No connections seeded — uncloseai has noAuth: true and never gets a provider_connections row.
+  const response = await route.GET();
   const body = (await response.json()) as any;
 
   assert.equal(response.status, 200);
   assert.ok(Array.isArray(body.providers), "providers should be an array");
 
-  const opencode = body.providers.find((p: any) => p.providerId === "opencode");
-  assert.ok(opencode, "opencode should appear in combo builder options even without connections");
-  assert.equal(opencode.connectionCount, 0, "opencode should have 0 connections");
-  assert.equal(opencode.activeConnectionCount, 0, "opencode should have 0 active connections");
-  assert.ok(opencode.models.length > 0, "opencode should expose its built-in models");
+  const noAuth = body.providers.find((p: any) => p.providerId === "uncloseai");
+  assert.ok(noAuth, "uncloseai should appear in combo builder options even without connections");
+  assert.equal(noAuth.connectionCount, 0, "uncloseai should have 0 connections");
+  assert.equal(noAuth.activeConnectionCount, 0, "uncloseai should have 0 active connections");
+  assert.ok(noAuth.models.length > 0, "uncloseai should expose its built-in models");
   // Spot-check a known built-in model from providerRegistry.ts
   assert.ok(
-    opencode.models.some((m: any) => m.id === "big-pickle"),
-    "big-pickle should be among opencode models"
+    noAuth.models.some((m: any) => m.id === "turboderp/Qwen3.8-27B-exl3"),
+    "the built-in model should be among uncloseai models"
   );
-  // #2901: no-auth opencode routes under its alias "oc/" (the bare "opencode/"
-  // prefix misroutes to the opencode-zen api-key tier via ALIAS_TO_PROVIDER_ID).
-  assert.equal(opencode.models[0].qualifiedModel.startsWith("oc/"), true);
-  assert.equal(opencode.source, "system", "opencode should have source=system");
+  // #2901: no-auth providers route under their alias ("unc/"), not their id.
+  assert.equal(noAuth.models[0].qualifiedModel.startsWith("unc/"), true);
+  assert.equal(noAuth.source, "system", "uncloseai should have source=system");
 });
 
 test("combo builder options route exposes compatible provider nodes with node metadata", async () => {
@@ -245,7 +242,7 @@ test("combo builder options route exposes compatible provider nodes with node me
   });
   await modelsDb.addCustomModel("openai-compatible-demo", "gpt-custom", "GPT Custom");
 
-  const response = await route.GET(new Request("http://localhost/api/combos/builder/options"));
+  const response = await route.GET();
   const body = (await response.json()) as any;
   const provider = body.providers.find((entry) => entry.providerId === "openai-compatible-demo");
 
@@ -258,5 +255,9 @@ test("combo builder options route exposes compatible provider nodes with node me
   assert.equal(provider.source, "provider-node");
   assert.equal(provider.acceptsArbitraryModel, true);
   assert.ok(provider.models.some((model) => model.id === "gpt-custom"));
-  assert.equal(provider.models[0].qualifiedModel, "openai-compatible-demo/gpt-custom");
+  // #14135/#14143: when a provider node declares a routing prefix, qualifiedModel must
+  // carry that prefix, not the internal node id — `parseModel()` only resolves the alias.
+  // Asserted against the node's own prefix so the pair cannot drift apart again.
+  assert.equal(provider.models[0].qualifiedModel, `${provider.prefix}/gpt-custom`);
+  assert.equal(provider.models[0].qualifiedModel, "gd/gpt-custom");
 });

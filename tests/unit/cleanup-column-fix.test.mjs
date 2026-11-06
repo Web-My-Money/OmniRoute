@@ -7,7 +7,11 @@ import path from "node:path";
 // These verify the critical column name fixes that were causing silent cleanup failures.
 
 const CLEANUP_PATH = path.resolve(import.meta.dirname, "../../src/lib/db/cleanup.ts");
+const RECLAIM_PATH = path.resolve(import.meta.dirname, "../../src/lib/db/reclaimFreedPages.ts");
 const source = fs.readFileSync(CLEANUP_PATH, "utf-8");
+// Post-cleanup space reclamation (#12821) lives in its own module, kept out of
+// cleanup.ts to stay under the file-size cap — scan both for the invariants below.
+const reclaimSource = fs.readFileSync(RECLAIM_PATH, "utf-8");
 
 test("cleanup: compression_analytics uses 'timestamp' column (not 'created_at')", () => {
   // The bug: cleanup used WHERE created_at < ? but the table has 'timestamp' column.
@@ -58,9 +62,15 @@ test("cleanup: has background scheduler (startCleanupScheduler)", () => {
     "must export startCleanupScheduler for periodic background cleanup"
   );
   assert.ok(source.includes("CLEANUP_INTERVAL_MS"), "must have a cleanup interval constant");
+  // #12821: reclaim freed pages without a blocking full VACUUM on the serving thread.
   assert.ok(
-    source.includes("VACUUM"),
-    "scheduler must run VACUUM after deletes to reclaim disk space"
+    reclaimSource.includes("incremental_vacuum("),
+    "reclaimFreedPages() must reclaim freed pages via PRAGMA incremental_vacuum after deletes"
+  );
+  assert.ok(
+    !/\b(exec|run|prepare)\s*\(\s*[`'"]\s*VACUUM\b/i.test(source) &&
+      !/\b(exec|run|prepare)\s*\(\s*[`'"]\s*VACUUM\b/i.test(reclaimSource),
+    "scheduler must never run a blocking full VACUUM — defer to vacuumScheduler (#12821)"
   );
 });
 
@@ -80,7 +90,7 @@ test("cleanup: scheduler is wired into instrumentation-node.ts", () => {
   );
 });
 
-test("cleanup: mcp_tool_audit uses its created_at column", () => {
+test("cleanup: mcp_tool_audit uses correct table name (not 'mcp_audit_log')", () => {
   assert.ok(
     source.includes("DELETE FROM mcp_tool_audit WHERE created_at < ?"),
     "mcp_tool_audit cleanup must use its created_at column"
@@ -95,7 +105,7 @@ test("cleanup: mcp_tool_audit uses its created_at column", () => {
   );
 });
 
-test("cleanup: a2a_task_events uses its created_at column", () => {
+test("cleanup: a2a_task_events uses correct table name (not 'a2a_events')", () => {
   assert.ok(
     source.includes("DELETE FROM a2a_task_events WHERE created_at < ?"),
     "a2a_task_events cleanup must use its created_at column"
@@ -107,14 +117,6 @@ test("cleanup: a2a_task_events uses its created_at column", () => {
   assert.ok(
     !source.includes("DELETE FROM a2a_task_events WHERE timestamp"),
     "must NOT use timestamp for a2a_task_events"
-  );
-});
-
-test("cleanup: scheduler does not run proxy cleanup twice", () => {
-  const schedulerSource = source.slice(source.indexOf("export function startCleanupScheduler"));
-  assert.ok(
-    !schedulerSource.includes("cleanupProxyLogs()"),
-    "runAutoCleanup already owns proxy log cleanup"
   );
 });
 

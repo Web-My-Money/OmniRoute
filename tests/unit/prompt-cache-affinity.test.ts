@@ -13,7 +13,6 @@ import {
   _clearOAuthSessionOccupancyForTest,
   reserveOAuthSession,
 } from "../../open-sse/services/oauthSessionOccupancy.ts";
-import type { ApplyStrategyOrderingDeps } from "../../open-sse/services/combo/applyStrategyOrdering.ts";
 
 function target(
   executionKey: string,
@@ -133,17 +132,9 @@ test("cache-optimized strategy routes a stable prompt key to the same account", 
     log: { info() {}, warn() {} },
     apiKeyAllowedConnections: null,
   };
-  const first = await applyStrategyOrdering(
-    "cache-optimized",
-    targets,
-    deps as unknown as ApplyStrategyOrderingDeps
-  );
-  const second = await applyStrategyOrdering(
-    "cache-optimized",
-    [...targets].reverse(),
-    deps as unknown as ApplyStrategyOrderingDeps
-  );
-  assert.equal(first[0].connectionId, second[0].connectionId);
+  const first = await applyStrategyOrdering("cache-optimized", targets, deps);
+  const second = await applyStrategyOrdering("cache-optimized", [...targets].reverse(), deps);
+  assert.equal(first.orderedTargets[0].connectionId, second.orderedTargets[0].connectionId);
 });
 
 test("foreign OAuth session softly redirects cache affinity while the same session stays local", () => {

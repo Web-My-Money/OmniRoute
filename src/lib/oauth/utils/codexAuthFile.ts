@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import { getCachedProviderConnectionById } from "@/lib/localDb";
+import { getCachedProviderConnectionById } from "@/lib/db/readCache";
 import { createBackup } from "@/shared/services/backupService";
 import { getCliConfigPaths } from "@/shared/services/cliRuntime";
 import {
@@ -9,7 +9,10 @@ import {
   updateProviderCredentials,
 } from "@/sse/services/tokenRefresh";
 import { isUnrecoverableRefreshError } from "@omniroute/open-sse/services/tokenRefresh.ts";
-import { type JsonRecord } from "@/shared/types/json";
+import { toRecord, toNonEmptyString, decodeJwtPayload } from "./codexAuthValues";
+import * as passive from "@omniroute/open-sse/services/tokenRefresh/passiveCodex.ts";
+
+type JsonRecord = Record<string, unknown>;
 
 interface CodexConnectionLike {
   id?: string;
@@ -59,27 +62,6 @@ export class CodexAuthFileError extends Error {
 }
 
 const CODEX_REFRESH_BUFFER_MS = Math.max(TOKEN_EXPIRY_BUFFER_MS, 5 * 60 * 1000);
-
-function toRecord(value: unknown): JsonRecord {
-  return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : {};
-}
-
-function toNonEmptyString(value: unknown): string | null {
-  if (typeof value !== "string") return null;
-  const trimmed = value.trim();
-  return trimmed ? trimmed : null;
-}
-
-function decodeJwtPayload(jwt: string): JsonRecord | null {
-  try {
-    const parts = jwt.split(".");
-    if (parts.length !== 3) return null;
-    const payload = Buffer.from(parts[1], "base64url").toString("utf8");
-    return toRecord(JSON.parse(payload));
-  } catch {
-    return null;
-  }
-}
 
 function extractCodexAccountId(idToken: string, providerSpecificData: unknown): string | null {
   const payload = decodeJwtPayload(idToken);
@@ -214,6 +196,7 @@ async function resolveFreshCodexConnection(connectionId: string): Promise<CodexC
   if (!shouldRefreshCodexConnection(connection)) {
     return connection;
   }
+  if (passive.isPassiveCodex("codex")) return passive.adoptPassiveCodex(connection);
 
   const refreshToken = toNonEmptyString(connection.refreshToken);
   if (!refreshToken) {

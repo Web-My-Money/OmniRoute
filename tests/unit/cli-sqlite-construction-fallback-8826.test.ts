@@ -5,7 +5,6 @@ import Module from "node:module";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // #8826: better-sqlite3 v12 loads its native addon lazily -- import("better-sqlite3")
 // SUCCEEDS and only new Database() throws "Could not locate the bindings file" when
@@ -21,8 +20,8 @@ register(hookPath, import.meta.url);
 
 // Patch Module._load so CJS createRequire("better-sqlite3") in driverFactory.ts
 // also gets a constructor that throws the bindings error.
-const originalLoad = (Module as LooseDeep)._load;
-(Module as LooseDeep)._load = function patchedLoad(request, parent, isMain) {
+const originalLoad = Module._load;
+Module._load = function patchedLoad(request, parent, isMain) {
   if (request === "better-sqlite3") {
     function FakeBetterSqlite() {
       throw new Error(
@@ -31,7 +30,7 @@ const originalLoad = (Module as LooseDeep)._load;
     }
     return FakeBetterSqlite;
   }
-  //
+  // @ts-expect-error Module._load is a CJS internal
   return originalLoad.call(this, request, parent, isMain);
 };
 
@@ -43,7 +42,7 @@ test("#8826: openOmniRouteDb() falls back to node:sqlite when better-sqlite3 nat
     try {
       fs.rmSync(tmpDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     } catch {}
-    (Module as LooseDeep)._load = originalLoad;
+    Module._load = originalLoad;
   });
 
   const origDataDir = process.env.DATA_DIR;
@@ -60,7 +59,7 @@ test("#8826: openOmniRouteDb() falls back to node:sqlite when better-sqlite3 nat
 
   assert.ok(result.db, "openOmniRouteDb() should return a working db adapter");
   assert.equal(
-    (result.db as LooseDeep).driver,
+    result.db.driver,
     "node:sqlite",
     "should fall back to node:sqlite when better-sqlite3 constructor throws (#8826)"
   );

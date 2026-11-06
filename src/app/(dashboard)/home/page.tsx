@@ -1,5 +1,5 @@
 import { getMachineId } from "@/shared/utils/machine";
-import { getSettings } from "@/lib/localDb";
+import { loadHomeSettings } from "./loadHomeSettings";
 import HomePageClient from "../dashboard/HomePageClient";
 import BootstrapBanner from "../dashboard/BootstrapBanner";
 import KimiSponsorBanner from "../dashboard/KimiSponsorBanner";
@@ -7,21 +7,27 @@ import CheaperInferenceSponsorBanner from "../dashboard/CheaperInferenceSponsorB
 import VscodeCopilotBanner from "../dashboard/VscodeCopilotBanner";
 import NewsBanner from "../dashboard/NewsBanner";
 import FirstRunReadinessCard from "../dashboard/FirstRunReadinessCard";
+import HomeSystemMetricsCards from "./HomeSystemMetricsCards";
+import UnpricedUsageBanner from "../dashboard/UnpricedUsageBanner";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const settings = await getSettings();
-  const machineId = await getMachineId();
+  // Settings failures degrade to defaults here (display-only) — see loadHomeSettings (#14060).
+  const [settings, machineId] = await Promise.all([loadHomeSettings(), getMachineId()]);
   const isBootstrapped = process.env.OMNIROUTE_BOOTSTRAPPED === "true";
   return (
     <>
       {isBootstrapped && <BootstrapBanner />}
       <FirstRunReadinessCard setupComplete={Boolean(settings.setupComplete)} />
+      <UnpricedUsageBanner />
       <KimiSponsorBanner />
       <CheaperInferenceSponsorBanner />
       <VscodeCopilotBanner />
       <NewsBanner />
+      <div className="mb-4">
+        <HomeSystemMetricsCards />
+      </div>
       <HomePageClient machineId={machineId} />
     </>
   );

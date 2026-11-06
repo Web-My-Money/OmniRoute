@@ -134,7 +134,9 @@ test("bailian-coding-plan validation rejects 401 as invalid key", async () => {
     });
 
     assert.equal(result.valid, false);
-    assert.equal(result.error, "Invalid API key");
+    // Prefix match: the message now also names an expired Token Plan subscription,
+    // which yields the identical upstream 401/403.
+    assert.match(String(result.error), /^Invalid API key/);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -156,7 +158,9 @@ test("bailian-coding-plan validation rejects 403 as invalid key", async () => {
     });
 
     assert.equal(result.valid, false);
-    assert.equal(result.error, "Invalid API key");
+    // Prefix match: the message now also names an expired Token Plan subscription,
+    // which yields the identical upstream 401/403.
+    assert.match(String(result.error), /^Invalid API key/);
   } finally {
     globalThis.fetch = originalFetch;
   }

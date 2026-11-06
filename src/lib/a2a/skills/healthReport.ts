@@ -6,7 +6,7 @@
 
 import type { A2ATask, TaskArtifact } from "../taskManager";
 import { resolveOmniRouteBaseUrl } from "@/shared/utils/resolveOmniRouteBaseUrl";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 type ProviderHealthEntry = {
   state?: string;

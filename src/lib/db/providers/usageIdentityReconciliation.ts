@@ -1,7 +1,7 @@
 import { resolveUsageAccountIdentity } from "@/lib/usage/accountIdentity";
 import { parseProviderSpecificData } from "../webSessionDedup";
 import { toStringOrNull } from "./columns";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 interface StatementLike {
   run: (...params: unknown[]) => { changes?: number };

@@ -1,8 +1,3 @@
-// Registers jest-dom matchers (toBeInTheDocument, toHaveTextContent, …) for
-// vitest `expect` — the package is a devDependency but was never imported, so
-// tests using these matchers failed with "Invalid Chai property" (#8618).
-import "@testing-library/jest-dom/vitest";
-
 // jsdom (unlike real browsers) does not implement `window.matchMedia`. Several
 // dashboard components read the OS color-scheme preference via
 // `window.matchMedia("(prefers-color-scheme: dark)")` (see
@@ -27,10 +22,17 @@ if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
   };
 }
 
-// jsdom does not implement Element.scrollIntoView; components like ChatTab call
-// it on mount when a messages ref exists. No-op is sufficient for assertions.
-if (typeof Element !== "undefined" && typeof Element.prototype.scrollIntoView !== "function") {
-  Element.prototype.scrollIntoView = () => {};
+// jsdom does not implement `ResizeObserver`. The kit `Table` (packages/ui-kit/src/table-scroll-area.tsx,
+// KEA-7886) measures its scroll area with one on mount, so any test rendering a dashboard table
+// crashes with "ResizeObserver is not defined" unless a no-op stub exists. ~50 test files used to
+// repeat this stub locally; registering it once here covers the rest (a file-local `??=` stub
+// stays harmless). Layout is never measured under jsdom, so a no-op is enough.
+if (typeof globalThis.ResizeObserver === "undefined") {
+  globalThis.ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
 }
 
 // #7935 wired `useTranslations`/`useLocale` (next-intl) into ~180 dashboard/shared

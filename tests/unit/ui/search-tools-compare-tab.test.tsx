@@ -95,7 +95,7 @@ describe("CompareTab", () => {
     (
       globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
     ).IS_REACT_ACT_ENVIRONMENT = true;
-    globalThis.fetch = mockFetchForProviders() as unknown as typeof fetch;
+    globalThis.fetch = mockFetchForProviders();
   });
 
   afterEach(() => {
@@ -167,9 +167,10 @@ describe("CompareTab", () => {
       buttons.forEach((b) => b.click());
     });
 
-    // All 4 should be selected
+    // All 4 should be selected (the picker is a kit CheckboxGroup now: the checked state is
+    // the native checkbox's, where it used to be the toggle button's aria-pressed).
     buttons.forEach((b) => {
-      expect(b.getAttribute("aria-pressed")).toBe("true");
+      expect((b as unknown as HTMLInputElement).checked).toBe(true);
     });
   });
 
@@ -208,7 +209,7 @@ describe("CompareTab", () => {
     globalThis.fetch = mockFetchForProviders({
       serper: { urls: ["https://a.com", "https://b.com"], cost: 0.001, latency: 150 },
       bing: { urls: ["https://a.com", "https://c.com"], cost: 0.002, latency: 200 },
-    }) as unknown as typeof fetch;
+    });
 
     const el = renderCompare(FOUR_PROVIDERS);
     const input = el.querySelector("[data-testid='compare-query-input']") as HTMLInputElement;
@@ -248,7 +249,7 @@ describe("CompareTab", () => {
     globalThis.fetch = mockFetchForProviders({
       serper: { urls: ["https://shared.com", "https://a.com"] },
       bing: { urls: ["https://shared.com", "https://b.com"] },
-    }) as unknown as typeof fetch;
+    });
 
     const el = renderCompare(FOUR_PROVIDERS);
     const input = el.querySelector("[data-testid='compare-query-input']") as HTMLInputElement;

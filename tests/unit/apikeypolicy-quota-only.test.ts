@@ -101,12 +101,12 @@ test("quota-only key requesting its quotaShared-* virtual model is allowed", asy
   // quotaGroupSlug("Times") === "times", matching quotaModelName("Times", ...) → qtSd/times/...
   const group = groupsDb.createGroup("Times");
 
-  const conn = (await providersDb.createProviderConnection({
+  const conn = await providersDb.createProviderConnection({
     provider: "codex",
     authType: "apikey",
     name: "quota-b4-codex-conn",
     apiKey: "sk-codex-b4-allowed",
-  })) as JsonRecord & { id: string };
+  });
   const connId = (conn as Record<string, unknown>).id as string;
   assert.ok(connId);
 
@@ -136,12 +136,12 @@ test("quota-only key requesting its quotaShared-* virtual model is allowed", asy
 
 test("quota-only key requesting raw model name is rejected 403 QUOTA_ONLY", async () => {
   const group = groupsDb.createGroup("Times");
-  const conn = (await providersDb.createProviderConnection({
+  const conn = await providersDb.createProviderConnection({
     provider: "codex",
     authType: "apikey",
     name: "quota-b4-codex-conn-raw",
     apiKey: "sk-codex-b4-raw",
-  })) as JsonRecord & { id: string };
+  });
   const connId = (conn as Record<string, unknown>).id as string;
   const pool = poolsDb.createPool({ connectionId: connId, name: "Times", groupId: group.id });
 
@@ -170,12 +170,12 @@ test("quota-only key requesting raw model name is rejected 403 QUOTA_ONLY", asyn
 
 test("quota-only key requesting a quotaShared-* model from a different pool is rejected 403 QUOTA_ONLY", async () => {
   const group = groupsDb.createGroup("Times");
-  const conn = (await providersDb.createProviderConnection({
+  const conn = await providersDb.createProviderConnection({
     provider: "codex",
     authType: "apikey",
     name: "quota-b4-codex-conn-otherpool",
     apiKey: "sk-codex-b4-otherpool",
-  })) as JsonRecord & { id: string };
+  });
   const connId = (conn as Record<string, unknown>).id as string;
   const pool = poolsDb.createPool({ connectionId: connId, name: "Times", groupId: group.id });
 
@@ -231,12 +231,12 @@ test("key with empty allowedQuotas is subject to normal model restriction checks
 
   const body = await readBody(blocked.rejection);
   assert.match(body.error.message, /not allowed for this API key/);
-  // The code for this case comes from errorConfig (403 → "insufficient_quota")
+  // The code for this case comes from errorConfig (403 → "permission_denied")
   // rather than QUOTA_ONLY — confirming paths are separate
-  assert.notEqual(
+  assert.equal(
     body.error.code,
-    "QUOTA_ONLY",
-    "normal key rejection must NOT use QUOTA_ONLY code"
+    "permission_denied",
+    "normal key rejection must use the neutral 403 code, not a quota code"
   );
 });
 
@@ -280,5 +280,3 @@ test("quota-only key whose allowedQuotas references a non-existent pool is rejec
   assert.equal(body.error.code, "QUOTA_ONLY", "error code should be QUOTA_ONLY");
   assert.ok(!body.error.message.includes(" at "), "message must not contain stack trace");
 });
-
-import type { JsonRecord } from "../../src/shared/types/json.ts";

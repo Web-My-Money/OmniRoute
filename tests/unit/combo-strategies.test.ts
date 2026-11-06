@@ -4,9 +4,6 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { JsonRecord } from "../../src/shared/types/json.ts";
-import type { ComboLike, SingleModelTarget } from "../../open-sse/services/combo/types.ts";
-import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-combo-strategies-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -20,9 +17,10 @@ const { clearAllStickyBindings } =
 const { invalidateCodexQuotaCache, registerCodexConnection, registerCodexQuotaFetcher } =
   await import("../../open-sse/services/codexQuotaFetcher.ts");
 const { registerQuotaFetcher } = await import("../../open-sse/services/quotaPreflight.ts");
+const { getQuotaScopedModelForProvider } =
+  await import("../../open-sse/services/antigravityQuotaFamily.ts");
 const combosDb = await import("../../src/lib/db/combos.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
-const { recordComboRequest } = await import("../../open-sse/services/comboMetrics.ts");
 const { saveModelsDevCapabilities } = await import("../../src/lib/modelsDevSync.ts");
 
 after(() => {
@@ -87,8 +85,8 @@ async function selectedModelFor(combo: Record<string, unknown>, body: Record<str
   const calls: string[] = [];
   const response = await handleComboChat({
     body,
-    combo: combo as unknown as ComboLike,
-    allCombos: [combo as unknown as ComboLike],
+    combo,
+    allCombos: [combo],
     isModelAvailable: undefined,
     relayOptions: undefined,
     signal: undefined,
@@ -119,11 +117,15 @@ function codexQuota({
   return {
     rate_limit: {
       primary_window: {
+        limit_window_seconds: 18000,
         used_percent: used5h,
+        limit_window_seconds: 18000,
         reset_after_seconds: reset5hSeconds,
       },
       secondary_window: {
+        limit_window_seconds: 604800,
         used_percent: used7d,
+        limit_window_seconds: 604800,
         reset_after_seconds: reset7dSeconds,
       },
     },
@@ -143,6 +145,23 @@ function installCodexQuotaMock(quotasByToken: Record<string, unknown>) {
   return () => {
     globalThis.fetch = previousFetch;
   };
+}
+
+async function createQuotaConnection(provider: string, label: string, accessToken?: string) {
+  const connection = await providersDb.createProviderConnection({
+    provider,
+    authType: accessToken ? "oauth" : "apikey",
+    name: `${label}-${randomUUID()}`,
+    accessToken,
+    isActive: true,
+    testStatus: "active",
+  });
+  return String(connection.id);
+}
+
+async function codexConnection(label: string) {
+  const token = `token-${label}-${randomUUID()}`;
+  return { id: await createQuotaConnection("codex", label, token), token };
 }
 
 function resetAwareCombo(
@@ -183,16 +202,20 @@ async function selectedConnectionFor(
   const calls: Array<string | null> = [];
   const response = await handleComboChat({
     body: reqBodyTextArray,
-    combo: combo as unknown as ComboLike,
-    allCombos: [combo as unknown as ComboLike],
+    combo,
+    allCombos: [combo],
     isModelAvailable: undefined,
     relayOptions: undefined,
     signal: undefined,
     settings: {},
     log: makeLog(),
     apiKeyAllowedConnections: options.apiKeyAllowedConnections,
-    handleSingleModel: async (_body: unknown, modelStr: string, target?: SingleModelTarget) => {
-      calls.push((target as LooseDeep)?.connectionId ?? null);
+    handleSingleModel: async (
+      _body: unknown,
+      modelStr: string,
+      target?: { connectionId?: string | null; allowedConnectionIds?: string[] | null }
+    ) => {
+      calls.push(target?.connectionId ?? null);
       return okResponse(modelStr);
     },
   });
@@ -262,8 +285,8 @@ test("auto strategy handles null and empty prompt edge cases without throwing", 
 });
 
 test("reset-aware strategy prefers lower weekly remaining quota when reset is much sooner", async (t) => {
-  const soon = { id: `soon-${randomUUID()}`, token: `token-soon-${randomUUID()}` };
-  const later = { id: `later-${randomUUID()}`, token: `token-later-${randomUUID()}` };
+  const soon = await codexConnection("soon");
+  const later = await codexConnection("later");
   t.after(
     installCodexQuotaMock({
       [soon.token]: codexQuota({
@@ -287,13 +310,10 @@ test("reset-aware strategy prefers lower weekly remaining quota when reset is mu
 });
 
 test("reset-aware strategy aggressively spends quota that resets soon", async (t) => {
-  const team = { id: `team-${randomUUID()}`, token: `token-team-${randomUUID()}` };
-  const fullLater = { id: `full-${randomUUID()}`, token: `token-full-${randomUUID()}` };
-  const soonLow = { id: `soon-low-${randomUUID()}`, token: `token-soon-low-${randomUUID()}` };
-  const soonLower = {
-    id: `soon-lower-${randomUUID()}`,
-    token: `token-soon-lower-${randomUUID()}`,
-  };
+  const team = await codexConnection("team");
+  const fullLater = await codexConnection("full");
+  const soonLow = await codexConnection("soon-low");
+  const soonLower = await codexConnection("soon-lower");
   t.after(
     installCodexQuotaMock({
       [team.token]: codexQuota({
@@ -335,14 +355,8 @@ test("reset-aware strategy aggressively spends quota that resets soon", async (t
 });
 
 test("reset-aware strategy prioritizes soon-reset weekly quota over empty later accounts", async (t) => {
-  const fullerSoon = {
-    id: `fuller-soon-${randomUUID()}`,
-    token: `token-fuller-soon-${randomUUID()}`,
-  };
-  const emptyLater = {
-    id: `empty-later-${randomUUID()}`,
-    token: `token-empty-later-${randomUUID()}`,
-  };
+  const fullerSoon = await codexConnection("fuller-soon");
+  const emptyLater = await codexConnection("empty-later");
   t.after(
     installCodexQuotaMock({
       [fullerSoon.token]: codexQuota({
@@ -369,14 +383,8 @@ test("reset-aware strategy prioritizes soon-reset weekly quota over empty later 
 });
 
 test("reset-aware strategy keeps 5h reset pressure softer than weekly pressure", async (t) => {
-  const fullerSoon = {
-    id: `session-fuller-soon-${randomUUID()}`,
-    token: `token-session-fuller-soon-${randomUUID()}`,
-  };
-  const emptyLater = {
-    id: `session-empty-later-${randomUUID()}`,
-    token: `token-session-empty-later-${randomUUID()}`,
-  };
+  const fullerSoon = await codexConnection("session-fuller-soon");
+  const emptyLater = await codexConnection("session-empty-later");
   t.after(
     installCodexQuotaMock({
       [fullerSoon.token]: codexQuota({
@@ -403,14 +411,8 @@ test("reset-aware strategy keeps 5h reset pressure softer than weekly pressure",
 });
 
 test("reset-aware strategy avoids accounts near 5h exhaustion", async (t) => {
-  const exhausted5h = {
-    id: `exhausted-${randomUUID()}`,
-    token: `token-exhausted-${randomUUID()}`,
-  };
-  const healthy5h = {
-    id: `healthy-${randomUUID()}`,
-    token: `token-healthy-${randomUUID()}`,
-  };
+  const exhausted5h = await codexConnection("exhausted");
+  const healthy5h = await codexConnection("healthy");
   t.after(
     installCodexQuotaMock({
       [exhausted5h.token]: codexQuota({
@@ -433,10 +435,18 @@ test("reset-aware strategy avoids accounts near 5h exhaustion", async (t) => {
   assert.equal(await selectedConnectionFor(combo), healthy5h.id);
 });
 
+test("Antigravity aliases share one family-scoped cache key", () => {
+  assert.equal(getQuotaScopedModelForProvider("agy", "gemini-3.7-flash-high"), "family:gemini");
+  assert.equal(
+    getQuotaScopedModelForProvider("antigravity", "gemini-3.7-flash-high"),
+    "family:gemini"
+  );
+});
+
 test("reset-aware strategy rotates similar scores with round-robin tie breaking", async () => {
   const provider = `tie-provider-${randomUUID()}`;
-  const first = `first-${randomUUID()}`;
-  const second = `second-${randomUUID()}`;
+  const first = await createQuotaConnection(provider, "first");
+  const second = await createQuotaConnection(provider, "second");
   const quota = {
     used: 50,
     total: 100,
@@ -472,8 +482,8 @@ test("reset-aware strategy rotates similar scores with round-robin tie breaking"
 
 test("reset-aware strategy uses registered quota fetchers for non-Codex providers", async () => {
   const provider = `quota-provider-${randomUUID()}`;
-  const soon = `soon-${randomUUID()}`;
-  const later = `later-${randomUUID()}`;
+  const soon = await createQuotaConnection(provider, "soon");
+  const later = await createQuotaConnection(provider, "later");
   const resetAtSoon = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
   const resetAtLater = new Date(Date.now() + 5 * 24 * 3600 * 1000).toISOString();
 
@@ -505,7 +515,7 @@ test("reset-aware strategy uses registered quota fetchers for non-Codex provider
 
 test("reset-aware strategy deduplicates quota fetches for repeated connection targets", async () => {
   const provider = `dedupe-provider-${randomUUID()}`;
-  const connectionId = `shared-${randomUUID()}`;
+  const connectionId = await createQuotaConnection(provider, "shared");
   let fetchCount = 0;
 
   registerQuotaFetcher(provider, async (id) => {
@@ -538,8 +548,8 @@ test("reset-aware strategy deduplicates quota fetches for repeated connection ta
 
 test("reset-aware quota SWR serves stale ordering while refreshing in background", async () => {
   const provider = `swr-provider-${randomUUID()}`;
-  const cachedFirst = `cached-first-${randomUUID()}`;
-  const cachedSecond = `cached-second-${randomUUID()}`;
+  const cachedFirst = await createQuotaConnection(provider, "cached-first");
+  const cachedSecond = await createQuotaConnection(provider, "cached-second");
   const fetchCounts = new Map<string, number>();
 
   registerQuotaFetcher(provider, async (connectionId) => {
@@ -587,20 +597,20 @@ test("reset-aware quota SWR serves stale ordering while refreshing in background
 
 test("reset-aware strategy respects API-key allowed connections during expansion", async () => {
   const provider = `limited-provider-${randomUUID()}`;
-  const disallowed = (await providersDb.createProviderConnection({
+  const disallowed = await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name: `disallowed-${randomUUID()}`,
     apiKey: "sk-disallowed",
     isActive: true,
-  })) as JsonRecord & { id: string };
-  const allowed = (await providersDb.createProviderConnection({
+  });
+  const allowed = await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name: `allowed-${randomUUID()}`,
     apiKey: "sk-allowed",
     isActive: true,
-  })) as JsonRecord & { id: string };
+  });
   const allowedId = String(allowed.id);
   const disallowedId = String(disallowed.id);
   const fetchedConnectionIds: string[] = [];
@@ -638,16 +648,16 @@ test("reset-aware strategy respects API-key allowed connections during expansion
 
 test("reset-aware strategy parses numeric reset timestamps from quota telemetry", async () => {
   const provider = `timestamp-provider-${randomUUID()}`;
-  const soon = `timestamp-soon-${randomUUID()}`;
-  const later = `timestamp-later-${randomUUID()}`;
-  const soonResetIso = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
-  const laterResetIso = new Date(Date.now() + 5 * 24 * 3600 * 1000).toISOString();
+  const soon = await createQuotaConnection(provider, "timestamp-soon");
+  const later = await createQuotaConnection(provider, "timestamp-later");
+  const soonResetSeconds = Math.floor((Date.now() + 24 * 3600 * 1000) / 1000);
+  const laterResetMs = Date.now() + 5 * 24 * 3600 * 1000;
 
   registerQuotaFetcher(provider, async (connectionId) => ({
     used: connectionId === soon ? 40 : 20,
     total: 100,
     percentUsed: connectionId === soon ? 0.4 : 0.2,
-    resetAt: connectionId === soon ? soonResetIso : laterResetIso,
+    resetAt: connectionId === soon ? soonResetSeconds : laterResetMs,
   }));
 
   const combo = {
@@ -668,8 +678,8 @@ test("reset-aware strategy parses numeric reset timestamps from quota telemetry"
 
 test("reset-aware strategy scores provider-specific weekly windows when available", async () => {
   const provider = `weekly-provider-${randomUUID()}`;
-  const soon = `weekly-soon-${randomUUID()}`;
-  const later = `weekly-later-${randomUUID()}`;
+  const soon = await createQuotaConnection(provider, "weekly-soon");
+  const later = await createQuotaConnection(provider, "weekly-later");
   const resetAtSoon = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
   const resetAtLater = new Date(Date.now() + 5 * 24 * 3600 * 1000).toISOString();
 
@@ -724,8 +734,8 @@ test("priority combo advances to next model when first returns 400 'model not su
   const calls: string[] = [];
   const response = await handleComboChat({
     body: reqBodyTextArray,
-    combo: combo as unknown as ComboLike,
-    allCombos: [combo as unknown as ComboLike],
+    combo,
+    allCombos: [combo],
     isModelAvailable: undefined,
     relayOptions: undefined,
     signal: undefined,

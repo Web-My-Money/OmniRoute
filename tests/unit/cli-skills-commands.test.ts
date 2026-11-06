@@ -1,7 +1,5 @@
 import test from "node:test";
-import type { LooseDeep } from "../helpers/looseTypes.ts";
-import type { MockRequestInit } from "../helpers/mockFetch.ts";
-import { makeMcpStreamFetch } from "./helpers/mcpStreamMock.ts";
+import { makeMcpStreamFetch, type McpFetchCall } from "./helpers/mcpStreamMock.ts";
 import assert from "node:assert/strict";
 
 const SKILLS_DATA = [
@@ -118,13 +116,13 @@ test("runSkillsGet busca /api/skills/:id", async () => {
 });
 
 test("runSkillsEnable usa JSON-RPC tools/call", async () => {
-  const calls: { url: string; init: LooseDeep }[] = [];
+  const calls: unknown[] = [];
   const origFetch = globalThis.fetch;
   globalThis.fetch = makeMcpStreamFetch({ toolResult: { ok: true } });
   const inner = globalThis.fetch;
   globalThis.fetch = ((url: unknown, init: unknown) => {
     calls.push({ url: String(url), init });
-    return inner(url as string, init as RequestInit);
+    return inner(url, init);
   }) as any;
 
   const { runSkillsEnable } = await import("../../bin/cli/commands/skills.mjs");
@@ -143,13 +141,13 @@ test("runSkillsEnable usa JSON-RPC tools/call", async () => {
 });
 
 test("runSkillsExecute usa JSON-RPC tools/call", async () => {
-  const calls: { url: string; init: LooseDeep }[] = [];
+  const calls: unknown[] = [];
   const origFetch = globalThis.fetch;
   globalThis.fetch = makeMcpStreamFetch({ toolResult: { result: "ok", output: "parsed" } });
   const inner = globalThis.fetch;
   globalThis.fetch = ((url: unknown, init: unknown) => {
     calls.push({ url: String(url), init });
-    return inner(url as string, init as RequestInit);
+    return inner(url, init);
   }) as any;
 
   const { runSkillsExecute } = await import("../../bin/cli/commands/skills.mjs");
@@ -209,9 +207,9 @@ test("runMarketplaceSearch retorna pacotes com query e filtros", async () => {
 });
 
 test("runMarketplaceInstall --yes envia POST sem confirmação", async () => {
-  let capturedBody: LooseDeep | null = null;
+  let capturedBody: unknown = null;
   const origFetch = globalThis.fetch;
-  globalThis.fetch = ((_url: string, init?: MockRequestInit) => {
+  globalThis.fetch = ((_url: string, init: unknown) => {
     capturedBody = JSON.parse(init?.body ?? "{}");
     return Promise.resolve(makeResp({ skillId: "sk_pdf_installed" }));
   }) as any;
@@ -230,4 +228,25 @@ test("runMarketplaceInstall --yes envia POST sem confirmação", async () => {
   assert.equal(capturedBody.version, "latest");
   assert.equal(capturedBody.enable, true);
   assert.ok(out.includes("sk_pdf_installed"));
+});
+
+test("runSkillsEnable works against a sessionless MCP stream", async () => {
+  const calls: McpFetchCall[] = [];
+  const origFetch = globalThis.fetch;
+  globalThis.fetch = makeMcpStreamFetch({
+    toolResult: { ok: true },
+    sessionMode: "stateless",
+    calls,
+  });
+
+  try {
+    const { runSkillsEnable } = await import("../../bin/cli/commands/skills.mjs");
+    const out = await captureStdout(() => runSkillsEnable("sk_pdf", {}, makeCmd()));
+    const toolCall = calls.find((c) => c.body?.method === "tools/call");
+    assert.equal(toolCall?.body?.params?.name, "omniroute_skills_enable");
+    assert.deepEqual(toolCall?.body?.params?.arguments, { skillId: "sk_pdf", enabled: true });
+    assert.match(out, /Enabled: sk_pdf/);
+  } finally {
+    globalThis.fetch = origFetch;
+  }
 });

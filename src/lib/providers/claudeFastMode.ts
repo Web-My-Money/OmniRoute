@@ -1,4 +1,4 @@
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 /**
  * Default models that support Anthropic Fast Mode (speed:"fast").
@@ -8,6 +8,7 @@ import { type JsonRecord } from "@/shared/types/json";
  */
 export const CLAUDE_FAST_MODE_DEFAULT_MODELS = [
   "claude-fable-5",
+  "claude-opus-5-5",
   "claude-opus-5",
   "claude-opus-4-8",
   "claude-opus-4-7",

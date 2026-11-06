@@ -12,7 +12,7 @@
  *     the CLI installer and `verify`),
  *  2. MOVES the member trees out of the staging bundle into
  *     `.build/optional-packs/<name>/node_modules/…` (same volume → cheap rename),
- *  3. emits `optional-pack-<name>.tar.gz` next to them (bsdtar; disable with
+ *  3. emits `optional-pack-<name>-<sha256>.tar.gz` next to them (disable with
  *     `OMNIROUTE_OPTIONAL_PACK_TAR=0`) for the desktop release workflow to
  *     upload as versioned assets.
  *
@@ -27,6 +27,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import {
+  archiveChecksum,
   OPTIONAL_PACKS,
   PACK_INDEX_FILENAME,
   buildPackIndexEntry,
@@ -89,16 +90,20 @@ function moveTree(src, dest) {
   return { removedFiles: files, removedBytes: bytes };
 }
 
-function tarPack(packOutDir, tarballPath) {
+export function tarPack(packOutDir, tarballPath) {
   // bsdtar ships with macOS, Linux images, and Windows runners (System32\tar.exe).
+  // GNU tar (common in Git-for-Windows environments) treats `C:\...` in `-f` as a
+  // remote rsh target ("Cannot connect to C:"), so always pass a bare filename
+  // and point cwd at the tarball directory instead.
   const result = spawnSync(
     process.platform === "win32" ? "tar.exe" : "tar",
-    ["-czf", tarballPath, "-C", packOutDir, "node_modules"],
-    { stdio: "pipe" }
+    ["-czf", path.basename(tarballPath), "-C", packOutDir, "node_modules"],
+    { stdio: "pipe", cwd: path.dirname(tarballPath) }
   );
   if (result.status !== 0) {
     throw new Error(
-      `optional-pack tar failed for ${path.basename(tarballPath)} (exit ${result.status})`
+      `optional-pack tar failed for ${path.basename(tarballPath)} (exit ${result.status})` +
+        `: ${(result.stderr || result.stdout || "").toString().slice(-600)}`
     );
   }
 }
@@ -160,6 +165,12 @@ export async function stageOptionalPacks({
     if (emitTarballs) {
       tarball = path.join(packsOutDir, indexEntry.tarball);
       tarPack(packOutDir, tarball);
+      const sha256 = await archiveChecksum(tarball);
+      const archiveName = `optional-pack-${pack.name}-${sha256}.tar.gz`;
+      const archivePath = path.join(packsOutDir, archiveName);
+      fs.renameSync(tarball, archivePath);
+      Object.assign(indexEntry, { tarball: archiveName, sha256 });
+      tarball = archivePath;
     }
     packsOut.push({ name: pack.name, removedFiles, removedBytes, tarball });
     log(

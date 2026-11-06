@@ -2,8 +2,8 @@
  * Browser-TLS-impersonating HTTP client for app.notion.com.
  *
  * Thin re-export over the shared `tlsClientBase.ts` factory
- * (`createTlsClientModule`). All provider-agnostic logic (sidecar lifecycle,
- * streaming tail-file, proxy resolution, error classes, SSE detection,
+ * (`createTlsClientModule`). All provider-agnostic logic (wreq-js transport
+ * pooling, direct streaming, proxy resolution, deadlines, SSE detection,
  * Cloudflare challenge detection) lives in the base module; this file supplies
  * only Notion-specific config and preserves the original public export surface.
  */
@@ -13,6 +13,7 @@ import {
   type TlsFetchOptions,
   type TlsFetchResult,
 } from "./tlsClientBase.ts";
+import { newestChromeProfile } from "../utils/browserProfiles.ts";
 
 const DEFAULT_TIMEOUT_MS =
   Number.parseInt(process.env.OMNIROUTE_NOTION_TLS_TIMEOUT_MS || "", 10) || 30_000;
@@ -21,10 +22,10 @@ const HARD_TIMEOUT_GRACE_MS =
 
 export const tlsClientModule = createTlsClientModule({
   providerName: "Notion",
-  tlsProfile: "chrome_146",
+  tlsProfile: newestChromeProfile,
+  emulationOs: "windows",
   domain: "https://app.notion.com",
-  tempDirPrefix: "pplx-stream-",
-  tailFileVariant: "A",
+  streamEofPolicy: "include",
   responseValidation: "sse",
   exportCloudflareCheck: true,
   defaultTimeoutMs: DEFAULT_TIMEOUT_MS,

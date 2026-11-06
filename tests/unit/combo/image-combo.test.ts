@@ -23,6 +23,7 @@ fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
 
 const core = await import("@/lib/db/core.ts");
 const { createCombo } = await import("@/lib/db/combos");
+const { createProviderConnection } = await import("@/lib/db/providers");
 const { executeImageCombo } = await import("@omniroute/open-sse/services/imageCombo");
 
 type LogEntry = { level: string; tag: unknown; msg: unknown };
@@ -93,7 +94,7 @@ test("returns 400 when combo is not found", async () => {
     { model: "nonexistent-combo", prompt: "a cat" },
     createMockAuth(),
     Date.now(),
-    log as unknown as typeof import("@/sse/utils/logger")
+    log
   );
   assert.equal(response.status, 400);
   const body = await response.json();
@@ -115,7 +116,7 @@ test("returns 400 when combo has no image-capable targets", async () => {
     { model: "chat-only-combo", prompt: "a cat" },
     createMockAuth(),
     Date.now(),
-    log as unknown as typeof import("@/sse/utils/logger")
+    log
   );
   assert.equal(response.status, 400);
   const body = await response.json();
@@ -137,7 +138,7 @@ test("returns 400 when combo has no usable targets", async () => {
     { model: "empty-combo", prompt: "a cat" },
     createMockAuth(),
     Date.now(),
-    log as unknown as typeof import("@/sse/utils/logger")
+    log
   );
   assert.equal(response.status, 400);
 });
@@ -157,7 +158,7 @@ test("cannot resolve credentials for a combo with image models but no provider c
     { model: "img-no-conn", prompt: "a cat", n: 1 },
     createMockAuth(),
     Date.now(),
-    log as unknown as typeof import("@/sse/utils/logger")
+    log
   );
   // Should fail because no provider connection for "openai" exists
   assert.equal(response.status, 400);
@@ -185,7 +186,7 @@ test("correctly filters models: only image-registry models pass, chat-only model
     { model: "mixed-combo", prompt: "a cat" },
     createMockAuth(),
     Date.now(),
-    log as unknown as typeof import("@/sse/utils/logger")
+    log
   );
   // Should get 400 because no credentials exist, but the filtering
   // should have removed gpt-4o from consideration
@@ -214,7 +215,7 @@ test("non-combo bare model names pass through model resolution unchanged", async
     { model: "some-random-name", prompt: "a cat" },
     createMockAuth(),
     Date.now(),
-    log as unknown as typeof import("@/sse/utils/logger")
+    log
   );
   // Should get 400 since "some-random-name" is not a combo
   assert.equal(response.status, 400);
@@ -239,7 +240,7 @@ test("provider/model format (with slash) is not treated as a combo name", async 
     { model: "openai/gpt-image-2", prompt: "a cat" },
     createMockAuth(),
     Date.now(),
-    log as unknown as typeof import("@/sse/utils/logger")
+    log
   );
   assert.equal(response.status, 400);
   const body = await response.json();
@@ -272,7 +273,7 @@ test("all error responses from executeImageCombo sanitize stack traces", async (
       { model: scenario.comboName, prompt: "a cat" },
       createMockAuth(),
       Date.now(),
-      log as unknown as typeof import("@/sse/utils/logger")
+      log
     );
     assert.ok(response.status >= 400, `Scenario "${scenario.name}" returns error status`);
     const body = await response.json();
@@ -283,3 +284,118 @@ test("all error responses from executeImageCombo sanitize stack traces", async (
     );
   }
 });
+
+// ---------------------------------------------------------------------------
+// Success path — public response shape (#12268)
+// ---------------------------------------------------------------------------
+
+function buildCodexSSE(items: Array<Record<string, unknown>>): string {
+  const frames = items.map((item) => JSON.stringify({ type: "response.output_item.done", item }));
+  return frames.map((frame) => `event: response.output_item.done\ndata: ${frame}\n`).join("\n");
+}
+
+test("combo success keeps the OpenAI {created, data} wrapper and Codex defaults to b64_json (#12268)", async () => {
+  // Codex CLI hardcodes the model name `gpt-image-2`; a combo is what lets it
+  // reach a codex target. The combo response must match the direct-model
+  // response shape byte-for-byte or the client aborts while decoding `created`.
+  await createProviderConnection({
+    provider: "codex",
+    authType: "apikey",
+    apiKey: "codex-token",
+    name: "codex-image-combo",
+    isActive: true,
+    testStatus: "active",
+    providerSpecificData: {},
+  });
+  await createCombo({
+    name: "gpt-image-2",
+    strategy: "priority",
+    models: ["codex/gpt-5.6-sol"],
+  });
+
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () =>
+    new Response(
+      buildCodexSSE([
+        {
+          type: "image_generation_call",
+          id: "ig_combo_1",
+          status: "completed",
+          revised_prompt: "a green tree icon",
+          result: "aVZCT1J3MEtHZ28=",
+        },
+      ]),
+      { status: 200, headers: { "content-type": "text/event-stream" } }
+    );
+
+  try {
+    const log = createLog();
+    const response = await executeImageCombo(
+      "gpt-image-2",
+      { model: "gpt-image-2", prompt: "a green tree icon, white background, minimal flat" },
+      createMockAuth(),
+      Date.now(),
+      log
+    );
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.ok(!Array.isArray(body), "combo path must not return a bare array");
+    assert.equal(typeof body.created, "number");
+    assert.ok(Array.isArray(body.data));
+    assert.equal(body.data.length, 1);
+    assert.equal(body.data[0].b64_json, "aVZCT1J3MEtHZ28=");
+    assert.equal(body.data[0].url, undefined);
+    assert.equal(body.data[0].revised_prompt, "a green tree icon");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("combo keeps cx/gpt-6.1-sol as an image target (#18687)", async () => {
+  await createProviderConnection({
+    provider: "codex",
+    authType: "apikey",
+    apiKey: "codex-token",
+    name: "codex-gpt-6.1-sol-combo",
+    isActive: true,
+    testStatus: "active",
+    providerSpecificData: {},
+  });
+  await createCombo({
+    name: "codex-sol-images",
+    strategy: "priority",
+    models: ["cx/gpt-6.1-sol"],
+  });
+
+  const upstreamModels: unknown[] = [];
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (_url, init) => {
+    upstreamModels.push(JSON.parse(String(init?.body ?? "{}")).model);
+    return new Response(
+      buildCodexSSE([
+        { type: "image_generation_call", id: "ig_sol", status: "completed", result: "c29s" },
+      ]),
+      { status: 200, headers: { "content-type": "text/event-stream" } }
+    );
+  };
+
+  try {
+    const response = await executeImageCombo(
+      "codex-sol-images",
+      { model: "codex-sol-images", prompt: "a small red apple" },
+      createMockAuth(),
+      Date.now(),
+      createLog()
+    );
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.data[0].b64_json, "c29s");
+    assert.deepEqual(upstreamModels, ["gpt-6.1-sol"]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Parallel fan-out — a slow failing first target must not block a healthy one
+// ---------------------------------------------------------------------------

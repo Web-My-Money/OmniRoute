@@ -15,6 +15,7 @@ import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next-intl", () => ({
+  useLocale: () => "en",
   useTranslations: () => (key: string, values?: Record<string, unknown>) => {
     if (values) {
       return Object.entries(values).reduce((acc, [k, v]) => acc.replace(`{${k}}`, String(v)), key);
@@ -36,11 +37,13 @@ vi.mock("@/store/notificationStore", () => ({
 
 import ConnectionRow, {
   type ConnectionRowConnection,
-  type ConnectionRowProps,
 } from "@/app/(dashboard)/dashboard/providers/[id]/components/ConnectionRow";
 import { ConfirmModal } from "@/shared/components";
 import { useConnectionDeleteConfirm } from "@/app/(dashboard)/dashboard/providers/[id]/hooks/useConnectionDeleteConfirm";
 import { useNotificationStore } from "@/store/notificationStore";
+
+// The shared Modal is a kit Dialog (Radix) since KEA-7886: its content is portaled to
+// document.body, so queries start there (the container is a child of body).
 
 const cleanupCallbacks: Array<() => void> = [];
 
@@ -78,7 +81,7 @@ function Harness() {
   return (
     <div>
       <ConnectionRow
-        {...(rowProps as Omit<ConnectionRowProps, "connection" | "onDelete">)}
+        {...(rowProps as never)}
         connection={TARGET_CONNECTION}
         onDelete={() => deleteConfirm.request(TARGET_CONNECTION.id!, TARGET_CONNECTION.name!)}
       />
@@ -127,7 +130,7 @@ describe("confirm before removing a single connection (#7361)", () => {
   });
 
   function clickDeleteButton() {
-    const deleteButton = container.querySelector<HTMLButtonElement>("button[title='delete']");
+    const deleteButton = document.body.querySelector<HTMLButtonElement>("button[title='delete']");
     expect(deleteButton).toBeTruthy();
     act(() => {
       deleteButton!.click();
@@ -135,7 +138,7 @@ describe("confirm before removing a single connection (#7361)", () => {
   }
 
   function clickConfirmButton() {
-    const dialog = container.querySelector("[role='dialog']");
+    const dialog = document.body.querySelector("[role='alertdialog']");
     expect(dialog).toBeTruthy();
     const buttons = Array.from(dialog!.querySelectorAll("button"));
     const confirmButton = buttons.find((b) => b.textContent?.trim() === "Delete");
@@ -148,12 +151,12 @@ describe("confirm before removing a single connection (#7361)", () => {
       root.render(<Harness />);
     });
 
-    expect(container.querySelector("[role='dialog']")).toBeNull();
+    expect(document.body.querySelector("[role='alertdialog']")).toBeNull();
 
     clickDeleteButton();
 
     expect(fetchStub).not.toHaveBeenCalled();
-    expect(container.querySelector("[role='dialog']")).toBeTruthy();
+    expect(document.body.querySelector("[role='alertdialog']")).toBeTruthy();
   });
 
   it("includes the account name in the confirm dialog copy", async () => {
@@ -163,7 +166,7 @@ describe("confirm before removing a single connection (#7361)", () => {
 
     clickDeleteButton();
 
-    const dialog = container.querySelector("[role='dialog']");
+    const dialog = document.body.querySelector("[role='alertdialog']");
     expect(dialog?.textContent).toContain("Production Key");
   });
 

@@ -24,8 +24,15 @@ const BASE_URL =
 const MODEL = process.env.NVIDIA_MODEL || "openai/gpt-oss-120b";
 
 // Neutralize CR/LF before logging so env-derived values (NVIDIA_MODEL, etc.)
-// cannot forge extra log lines (S5145 log injection).
-const line = (s = "") => console.log(String(s).replace(/[\r\n]+/g, " "));
+// cannot forge extra log lines (S5145 log injection). Also strip any raw
+// occurrence of the API key so an upstream error/response that echoes it
+// back (e.g. inside err.stack or a validation result) never reaches the
+// terminal in clear text (js/clear-text-logging, CWE-312/532).
+const line = (s = "") => {
+  let out = String(s).replace(/[\r\n]+/g, " ");
+  if (KEY) out = out.split(KEY).join("[REDACTED]");
+  console.log(out);
+};
 const hr = () => line("─".repeat(72));
 
 function show(label: string, value: unknown) {

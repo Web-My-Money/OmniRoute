@@ -81,7 +81,9 @@ export function createBunSqliteAdapter(db: BunSqliteDatabaseLike, filePath: stri
           return normalizeRunResult(statement.run(...normalizeParams(params)));
         },
         get(...params: unknown[]): Row | undefined {
-          return statement.get(...normalizeParams(params)) as Row | undefined;
+          // bun:sqlite returns null when no row matches; better-sqlite3, node:sqlite and
+          // sql.js return undefined, which is the contract the call sites are written to.
+          return (statement.get(...normalizeParams(params)) ?? undefined) as Row | undefined;
         },
         all(...params: unknown[]): Row[] {
           return statement.all(...normalizeParams(params)) as Row[];

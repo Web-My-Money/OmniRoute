@@ -20,15 +20,27 @@ process.env.DATA_DIR = TEST_DATA_DIR;
 
 const core = await import("../../src/lib/db/core.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
+const {
+  clearAllModelLockouts,
+  getModelLockoutInfo,
+  recordModelLockoutFailure,
+  recordCoreOwnedAntigravityQuotaState,
+  getProviderProfile,
+  shouldDeferAntigravityQuotaStateToCaller,
+} = await import("../../open-sse/services/accountFallback.ts");
 
 import {
   classify429,
   decide429,
   FULL_QUOTA_COOLDOWN_MS,
 } from "../../open-sse/services/antigravity429Engine.ts";
-import { markConnectionQuotaExhausted } from "../../open-sse/executors/antigravity.ts";
+import {
+  markConnectionQuotaExhausted,
+  resolveAntigravityBodyRetryHint,
+} from "../../open-sse/executors/antigravity.ts";
 
 test.after(() => {
+  clearAllModelLockouts();
   core.resetDbInstance();
   fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
@@ -83,11 +95,11 @@ test("classify429: exhausted capacity with reset after 0s is rate_limited", () =
 // ── DB persistence (the missing wire — Bug #2) ───────────────────────────────
 
 test("markConnectionQuotaExhausted persists 24h cooldown; isConnectionRateLimited returns true", async () => {
-  const conn = (await providersDb.createProviderConnection({
+  const conn = await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "AG Test Quota",
-  })) as JsonRecord & { id: string };
+  });
   const connId = (conn as any).id;
 
   assert.equal(
@@ -106,11 +118,11 @@ test("markConnectionQuotaExhausted persists 24h cooldown; isConnectionRateLimite
 });
 
 test("markConnectionQuotaExhausted: expired cooldown does not block the connection", async () => {
-  const conn = (await providersDb.createProviderConnection({
+  const conn = await providersDb.createProviderConnection({
     provider: "antigravity",
     authType: "oauth",
     name: "AG Test Expired",
-  })) as JsonRecord & { id: string };
+  });
   const connId = (conn as any).id;
 
   // Set cooldown in the past — simulates expired cooldown
@@ -122,4 +134,114 @@ test("markConnectionQuotaExhausted: expired cooldown does not block the connecti
   );
 });
 
-import type { JsonRecord } from "../../src/shared/types/json.ts";
+test("direct Antigravity body prose preserves non-authoritative provenance", () => {
+  const body = JSON.stringify({
+    error: { message: "Individual quota reached. Resets in 131h." },
+  });
+
+  assert.deepEqual(
+    resolveAntigravityBodyRetryHint(body, "Individual quota reached. Resets in 131h."),
+    { retryMs: 131 * 60 * 60_000, source: "body" }
+  );
+});
+
+test("direct Antigravity structured reset remains authoritative", () => {
+  const body = JSON.stringify({
+    error: {
+      message: "Individual quota reached.",
+      details: [{ "@type": "type.googleapis.com/google.rpc.RetryInfo", retryDelay: "2h" }],
+    },
+  });
+
+  assert.deepEqual(resolveAntigravityBodyRetryHint(body, "Individual quota reached."), {
+    retryMs: 2 * 60 * 60_000,
+    source: "google_rpc_retry_info",
+  });
+});
+
+test("direct Antigravity has one downstream model-lock owner and clamps body prose", () => {
+  const chatCoreSource = fs.readFileSync(
+    path.resolve(import.meta.dirname, "../../open-sse/handlers/chatCore.ts"),
+    "utf8"
+  );
+  const eprSource = fs.readFileSync(
+    path.resolve(import.meta.dirname, "../../open-sse/handlers/chatCore/executeProviderRequest.ts"),
+    "utf8"
+  );
+  assert.match(
+    chatCoreSource,
+    /accountSemaphoreKey && !deferAntigravityQuotaStateToCaller/,
+    "chatCore must not apply a prose-derived Antigravity semaphore TTL"
+  );
+  assert.match(
+    eprSource,
+    /Dropped generic quota cache after 429/,
+    "non-Codex 429 must leave a QUOTA debug breadcrumb"
+  );
+  assert.match(
+    chatCoreSource,
+    /if \(deferAntigravityQuotaStateToCaller\)[\s\S]{0,2000}else if \(kimiRateLimitResetAt\)/
+  );
+  assert.doesNotMatch(chatCoreSource, /lockExactModel/);
+
+  clearAllModelLockouts();
+  const maxCooldownMs = 30 * 60_000;
+  recordModelLockoutFailure(
+    "antigravity",
+    "direct-connection",
+    "direct-model",
+    "quota_exhausted",
+    429,
+    3_000,
+    null,
+    {
+      exactCooldownMs: 131 * 60 * 60_000,
+      maxCooldownMs,
+      scope: "exact",
+      exactCooldownIsUpstreamReset: false,
+    }
+  );
+  const info = getModelLockoutInfo("antigravity", "direct-connection", "direct-model");
+  assert.ok(info);
+  assert.equal(info.failureCount, 1);
+  assert.ok(info.remainingMs > maxCooldownMs - 5_000 && info.remainingMs <= maxCooldownMs);
+});
+
+test("Antigravity quota state is deferred only when a caller owner exists", () => {
+  assert.equal(shouldDeferAntigravityQuotaStateToCaller("antigravity", true), true);
+  assert.equal(shouldDeferAntigravityQuotaStateToCaller("agy", true), true);
+  assert.equal(shouldDeferAntigravityQuotaStateToCaller("antigravity", false), false);
+  assert.equal(shouldDeferAntigravityQuotaStateToCaller("agy", false), false);
+  assert.equal(shouldDeferAntigravityQuotaStateToCaller("gemini", true), false);
+});
+
+test("core-owned Antigravity quota state applies the same provenance-aware cap", async () => {
+  clearAllModelLockouts();
+  const maxCooldownMs = 30 * 60_000;
+  const profile = { ...getProviderProfile("antigravity"), maxCooldownMs };
+  const bodyResult = await recordCoreOwnedAntigravityQuotaState({
+    provider: "agy",
+    connectionId: "responses-body",
+    model: "direct-model",
+    status: 429,
+    errorText: "Individual quota reached. Resets in 131h.",
+    headers: null,
+    profileOverride: profile,
+  });
+  assert.equal(bodyResult.failureCount, 1);
+  assert.ok(
+    bodyResult.cooldownMs > maxCooldownMs - 5_000 && bodyResult.cooldownMs <= maxCooldownMs
+  );
+
+  const headerResult = await recordCoreOwnedAntigravityQuotaState({
+    provider: "antigravity",
+    connectionId: "responses-header",
+    model: "direct-model",
+    status: 429,
+    errorText: "Individual quota reached.",
+    headers: new Headers({ "Retry-After": "7200" }),
+    profileOverride: profile,
+  });
+  assert.equal(headerResult.failureCount, 1);
+  assert.ok(headerResult.cooldownMs > 2 * 60 * 60_000 - 5_000);
+});

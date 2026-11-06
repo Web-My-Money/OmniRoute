@@ -1,5 +1,6 @@
 import type { ComboModelStep } from "@/lib/combos/steps";
-import { isRecord } from "@/shared/types/json";
+
+type JsonRecord = Record<string, unknown>;
 
 export const COMBO_BUILDER_AUTO_CONNECTION = "__auto__";
 export const COMBO_BUILDER_STAGES = [
@@ -54,6 +55,10 @@ export function getComboBuilderStages(options: ComboBuilderStageOptions = {}): C
   return COMBO_BUILDER_STAGES.filter((stage) => stage !== "intelligent");
 }
 
+function isRecord(value: unknown): value is JsonRecord {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
 function toTrimmedString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 }
@@ -78,6 +83,7 @@ export function buildPrecisionComboModelStep({
   connectionLabel,
   allowedConnectionIds = null,
   weight = 0,
+  modelPrefix,
 }: {
   providerId: string;
   modelId: string;
@@ -86,9 +92,22 @@ export function buildPrecisionComboModelStep({
   /** #3266: account allowlist scoping round-robin to a subset of connections. */
   allowedConnectionIds?: string[] | null;
   weight?: number;
-}): Omit<ComboModelStep, "id"> {
+  /**
+   * #11433: the routing-prefix segment to serialize into `model` (e.g. a
+   * no-auth provider's alias), when it differs from the canonical
+   * `providerId`. Some canonical provider ids collide with an
+   * unrelated manual `ALIAS_TO_PROVIDER_ID` routing override (`opencode` →
+   * `opencode-zen`), so reconstructing `model` from the raw `providerId`
+   * alone can round-trip to the wrong provider on request routing. Falls
+   * back to `providerId` when omitted/blank. `step.providerId` always stays
+   * the canonical id regardless, so routing/duplicate-detection identity is
+   * unaffected.
+   */
+  modelPrefix?: string | null;
+}): ComboModelStep {
   const normalizedProviderId = toTrimmedString(providerId) || "provider";
   const normalizedModelId = toTrimmedString(modelId) || "model";
+  const normalizedModelPrefix = toTrimmedString(modelPrefix) || normalizedProviderId;
   const normalizedConnectionId = toTrimmedString(connectionId);
   const normalizedConnectionLabel = toTrimmedString(connectionLabel);
   // A pinned single connection wins over an allowlist, so only carry the allowlist
@@ -105,7 +124,7 @@ export function buildPrecisionComboModelStep({
   return {
     kind: "model",
     providerId: normalizedProviderId,
-    model: `${normalizedProviderId}/${normalizedModelId}`,
+    model: `${normalizedModelPrefix}/${normalizedModelId}`,
     ...(normalizedConnectionId ? { connectionId: normalizedConnectionId } : {}),
     ...(normalizedConnectionLabel ? { label: normalizedConnectionLabel } : {}),
     ...(normalizedAllowed.length > 0 ? { allowedConnectionIds: normalizedAllowed } : {}),
@@ -148,17 +167,22 @@ export function buildManualComboModelStep({
   value: unknown;
   providers?: ComboBuilderProviderIdentity[];
   weight?: number;
-}): Omit<ComboModelStep, "id"> | null {
+}): ComboModelStep | null {
   const parsed = parseQualifiedModel(value);
   if (!parsed) return null;
 
   const providerId = resolveComboBuilderProviderId(parsed.providerId, providers);
   if (!providerId) return null;
 
+  // #11433: preserve the user-typed prefix as the routing prefix instead of
+  // letting buildPrecisionComboModelStep rebuild `model` from the resolved
+  // canonical providerId, which can collide with an unrelated manual alias
+  // override (e.g. "opencode" -> "opencode-zen").
   return buildPrecisionComboModelStep({
     providerId,
     modelId: parsed.modelId,
     weight,
+    modelPrefix: parsed.providerId,
   });
 }
 
@@ -212,7 +236,7 @@ export type ComboBuilderGlobalModelEntry = {
   modelName: string;
   connectionCount: number;
   connections: unknown[];
-  step: Omit<ComboModelStep, "id">;
+  step: ComboModelStep;
 };
 
 type ComboBuilderGlobalProvider = {
@@ -220,7 +244,7 @@ type ComboBuilderGlobalProvider = {
   displayName?: unknown;
   connectionCount?: unknown;
   connections?: unknown[];
-  models?: Array<{ id?: unknown; name?: unknown }>;
+  models?: Array<{ id?: unknown; name?: unknown; qualifiedModel?: unknown }>;
 };
 
 /**
@@ -247,12 +271,18 @@ export function buildGlobalModelList(
       const modelId = toTrimmedString(model?.id);
       if (!modelId) return;
       const modelName = toTrimmedString(model?.name) || modelId;
+      // #11433: derive the routing prefix from the model's already-corrected
+      // `qualifiedModel` (e.g. "<alias>/<model>" for a no-auth provider)
+      // instead of defaulting to the raw providerId, which can collide with
+      // an unrelated manual alias override.
+      const modelPrefix = parseQualifiedModel(model?.qualifiedModel)?.providerId || providerId;
       const step = buildPrecisionComboModelStep({
         providerId,
         modelId,
         connectionId: null,
         connectionLabel: null,
         allowedConnectionIds: [],
+        modelPrefix,
       });
       list.push({
         providerId,

@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { getSettings, updateSettings } from "@/lib/db/settings";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 const BCRYPT_HASH_PATTERN = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
 const MANAGEMENT_PASSWORD_SALT_ROUNDS = 12;
@@ -42,6 +42,14 @@ export function hasManagementPasswordConfigured(settings: JsonRecord | null | un
 
 export function isBcryptHash(value: unknown): value is string {
   return typeof value === "string" && BCRYPT_HASH_PATTERN.test(value);
+}
+
+// #13679 (PR D, item #5): the well-known INITIAL_PASSWORD placeholder shipped in
+// .env.example / contrib/podman/omniroute.container / docker deploy manifests is a
+// public, guessable credential. Callers on the authentication path use this to refuse
+// a successful match from non-loopback requests instead of only warning on boot.
+export function isKnownInsecureManagementPassword(password: string): boolean {
+  return INSECURE_DEFAULT_PASSWORDS.has(password);
 }
 
 export async function hashManagementPassword(password: string) {

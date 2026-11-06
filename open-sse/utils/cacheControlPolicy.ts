@@ -23,6 +23,7 @@ import type {
  * Cache control preservation modes
  */
 export type CacheControlMode = "auto" | "always" | "never";
+export type GeminiPromptCacheMode = "off" | "implicit";
 
 /**
  * Cache control settings from the database
@@ -136,6 +137,11 @@ const OPENAI_FORMAT_CACHE_CONTROL_PROVIDERS = new Set([
   "xiaomi-mimo",
 ]);
 
+/** Providers whose cache is populated from the longest matching prefix without
+ * an explicit `cache_control` breakpoint. This is deliberately narrower than
+ * CACHING_PROVIDERS, which also includes explicit-breakpoint providers. */
+const AUTOMATIC_PREFIX_CACHING_PROVIDERS = new Set(["openai", "codex", "azure"]);
+
 /**
  * Per-connection override for cache behavior, resolved from the connection's
  * `provider_specific_data.cache` JSON sub-object (see `resolveConnectionCacheOverride`).
@@ -189,6 +195,25 @@ export function providerHonorsOpenAIFormatCacheControl(
 }
 
 /**
+ * Providers that accept OpenAI's explicit prompt-caching field
+ * `prompt_cache_breakpoint` on content parts (GPT-5.6+ explicit mode). Kept
+ * separate from OPENAI_FORMAT_CACHE_CONTROL_PROVIDERS: that set is about
+ * Anthropic-style `cache_control`, which openai/openrouter must not receive,
+ * and strict OpenAI-compatible upstreams reject unknown part fields (#16384).
+ */
+const OPENAI_PROMPT_CACHE_BREAKPOINT_PROVIDERS = new Set(["openai", "openrouter"]);
+
+/**
+ * Whether `prompt_cache_breakpoint` on content parts is forwarded to `provider`
+ * on the OpenAI-format passthrough. Not gated on caching-aware client detection:
+ * a client that sends the field opted into explicit caching on purpose.
+ */
+export function providerAcceptsPromptCacheBreakpoint(provider: string | null | undefined): boolean {
+  if (!provider) return false;
+  return OPENAI_PROMPT_CACHE_BREAKPOINT_PROVIDERS.has(provider.toLowerCase());
+}
+
+/**
  * Detect if the client is Claude Code or another caching-aware client
  */
 export function isClaudeCodeClient(userAgent: string | null | undefined): boolean {
@@ -213,16 +238,53 @@ export function isClaudeCodeClient(userAgent: string | null | undefined): boolea
 export function providerSupportsCaching(
   provider: string | null | undefined,
   targetFormat?: string | null,
-  connectionCacheOverride?: ConnectionCacheOverride | null
+  connectionCacheOverride?: ConnectionCacheOverride | null,
+  model?: string | null
 ): boolean {
+  if (!provider) return false;
+  const providerId = provider.toLowerCase();
+  if (providerId === "antigravity" || providerId === "agy") {
+    // Antigravity carries Gemini, Claude, and GPT models. Only Gemini models
+    // are in this release's implicit-cache scope.
+    const modelSegments = String(model ?? "")
+      .toLowerCase()
+      .split("/")
+      .filter(Boolean);
+    if (!modelSegments.some((segment) => segment.startsWith("gemini-"))) return false;
+    if (typeof connectionCacheOverride?.supportsPromptCaching === "boolean") {
+      return connectionCacheOverride.supportsPromptCaching;
+    }
+    return true;
+  }
   if (typeof connectionCacheOverride?.supportsPromptCaching === "boolean") {
     return connectionCacheOverride.supportsPromptCaching;
   }
-  if (!provider) return false;
-  if (CACHING_PROVIDERS.has(provider.toLowerCase())) return true;
+  // Vertex is a mixed-format provider. Only its Anthropic Claude path accepts
+  // cache_control; Gemini and OpenAI-format partner models use other mechanisms.
+  if (providerId === "vertex" || providerId === "vertex-partner") {
+    return targetFormat?.toLowerCase() === "claude";
+  }
+  if (CACHING_PROVIDERS.has(providerId)) return true;
   // All Claude-protocol providers support prompt caching
   if (targetFormat === "claude") return true;
   return false;
+}
+
+/** Whether a marker-free request can still participate in the provider cache.
+ * A custom connection must declare marker stripping to opt into this stronger
+ * semantic; `supportsPromptCaching` alone does not say how caching is requested. */
+export function providerUsesAutomaticPrefixCaching(
+  provider: string | null | undefined,
+  connectionCacheOverride?: ConnectionCacheOverride | null
+): boolean {
+  if (connectionCacheOverride?.supportsPromptCaching === false) return false;
+  const passthrough = connectionCacheOverride?.cacheControlPassthrough;
+  if (passthrough === "openai-format" || passthrough === "claude-format") return false;
+  if (connectionCacheOverride?.supportsPromptCaching === true && passthrough === "strip") {
+    return true;
+  }
+  if (!provider) return false;
+  return AUTOMATIC_PREFIX_CACHING_PROVIDERS.has(provider.toLowerCase());
 }
 
 /**
@@ -262,6 +324,7 @@ export function shouldPreserveCacheControl({
   userAgent,
   targetProvider,
   targetFormat,
+  targetModel,
   settings,
   connectionCacheOverride,
 }: {
@@ -270,6 +333,7 @@ export function shouldPreserveCacheControl({
   comboStrategy?: AnyRoutingStrategyValue | null;
   targetProvider: string | null | undefined;
   targetFormat?: string | null;
+  targetModel?: string | null;
   settings?: CacheControlSettings;
   connectionCacheOverride?: ConnectionCacheOverride | null;
 }): boolean {
@@ -287,7 +351,12 @@ export function shouldPreserveCacheControl({
   }
 
   // …talking to a provider that supports prompt caching.
-  return providerSupportsCaching(targetProvider, targetFormat, connectionCacheOverride);
+  return providerSupportsCaching(
+    targetProvider,
+    targetFormat,
+    connectionCacheOverride,
+    targetModel
+  );
 }
 
 /**

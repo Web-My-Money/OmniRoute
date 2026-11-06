@@ -3,6 +3,13 @@ export interface RunResult {
   lastInsertRowid: number | bigint;
 }
 
+/**
+ * A statement whose row shape is known to the caller.
+ *
+ * Drivers hand back untyped rows, so the generic lives here rather than on each
+ * adapter: callers that know their SELECT list write `prepare<Row>(sql)` and get
+ * `Row[]` back. Omitting the type argument keeps the old `unknown` behaviour.
+ */
 export interface PreparedStatement<Row = unknown> {
   run(...params: unknown[]): RunResult;
   get(...params: unknown[]): Row | undefined;

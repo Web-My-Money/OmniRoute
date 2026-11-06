@@ -3,7 +3,7 @@ import {
   normalizeCodexServiceTier,
   type CodexServiceTier,
 } from "./requestDefaults";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 function asRecord(value: unknown): JsonRecord {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : {};
@@ -13,6 +13,10 @@ export type CodexFastTierValue = CodexServiceTier;
 export type CodexGlobalServiceMode = "none" | CodexServiceTier;
 
 export const CODEX_FAST_TIER_DEFAULT_SUPPORTED_MODELS: readonly string[] = [
+  "gpt-6.1-sol",
+  "gpt-6-astra",
+  "gpt-6-sol",
+  "gpt-6-luna",
   "gpt-5.6-sol",
   "gpt-5.6-terra",
   "gpt-5.6-luna",

@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 // #6097 — Regression guard for the "safety-net combo redirect" ReferenceError.
 //
@@ -70,14 +69,14 @@ test.after(async () => {
 test("#6097 safety-net combo redirect does not throw ReferenceError: reqId is not defined", async () => {
   // A healthy provider connection so the inner auto/* combo has a candidate to
   // dispatch to once the safety-net redirect completes.
-  (await providersDb.createProviderConnection({
+  await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "openai-safetynet-6097",
     apiKey: "sk-safetynet-6097",
     isActive: true,
     testStatus: "active",
-  })) as JsonRecord & { id: string };
+  });
 
   // A persisted combo whose single member is a virtual `auto/*` combo. The
   // top-level handler resolves the OUTER combo; only when handleComboChat calls

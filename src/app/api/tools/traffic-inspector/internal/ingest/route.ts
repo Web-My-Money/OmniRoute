@@ -109,18 +109,23 @@ export async function POST(request: Request): Promise<Response> {
     // loopback ingest; sanitization is centralized here so the inspector never
     // stores bearer tokens / API keys (Hard Rule #12).
     const data = parsed.data;
-    const req = {
+    const req: InterceptedRequest = {
       ...data,
-      agent: data.agent as InterceptedRequest["agent"],
+      id: data.id,
+      source: data.source,
+      timestamp: data.timestamp,
+      method: data.method,
+      host: data.host,
+      path: data.path,
+      requestSize: data.requestSize,
+      responseSize: data.responseSize,
+      status: data.status,
       requestHeaders: sanitizeHeaders(data.requestHeaders || {}),
       responseHeaders: sanitizeHeaders(data.responseHeaders || {}),
       requestBody: data.requestBody != null ? maskSecret(data.requestBody) : null,
       responseBody: data.responseBody != null ? maskSecret(data.responseBody) : null,
     };
-    // safeParse + .required() guarantee the mandatory fields exist at runtime;
-    // zod v4 keeps the inferred type partial, so the cast asserts the
-    // post-validation shape rather than re-declaring every field.
-    globalTrafficBuffer.push(req as InterceptedRequest);
+    globalTrafficBuffer.push(req);
     return Response.json({ ok: true, id: req.id }, { status: 200 });
   } catch (err) {
     const msg = sanitizeErrorMessage(err);

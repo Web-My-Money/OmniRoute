@@ -8,7 +8,6 @@ import {
   buildClaudePromptCacheLogMeta,
 } from "../../open-sse/handlers/chatCore/executorHelpers.ts";
 import { FORMATS } from "../../open-sse/translator/formats.ts";
-import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 test("resolveAccountSemaphoreAccountKey prefers an explicit non-blank connectionId", () => {
   assert.equal(resolveAccountSemaphoreAccountKey("conn-1", { id: "ignored" }), "conn-1");
@@ -33,7 +32,10 @@ test("resolveAccountSemaphoreAccountKey returns null when nothing usable is pres
   assert.equal(resolveAccountSemaphoreAccountKey("", {}), null);
   // non-string / blank candidates are all rejected
   assert.equal(
-    resolveAccountSemaphoreAccountKey("", { id: 123, email: "   " } as unknown as LooseDeep),
+    resolveAccountSemaphoreAccountKey("", { id: 123, email: "   " } as unknown as Record<
+      string,
+      unknown
+    >),
     null
   );
 });
@@ -48,6 +50,45 @@ test("resolveAccountSemaphoreMaxConcurrency parses finite numbers and numeric st
   assert.equal(resolveAccountSemaphoreMaxConcurrency({ maxConcurrent: " 3.5 " }), 3.5);
 });
 
+test("resolveAccountSemaphoreMaxConcurrency prefers a positive rate-limit override", () => {
+  assert.equal(
+    resolveAccountSemaphoreMaxConcurrency({
+      maxConcurrent: 5,
+      rateLimitMaxConcurrent: 2,
+    }),
+    2
+  );
+  assert.equal(
+    resolveAccountSemaphoreMaxConcurrency({
+      maxConcurrent: null,
+      rateLimitMaxConcurrent: "3",
+    }),
+    3
+  );
+});
+
+test("resolveAccountSemaphoreMaxConcurrency falls back when the override is not positive", () => {
+  for (const rateLimitMaxConcurrent of [0, -1, Number.NaN, Number.POSITIVE_INFINITY, "bad"]) {
+    assert.equal(
+      resolveAccountSemaphoreMaxConcurrency({ maxConcurrent: 4, rateLimitMaxConcurrent }),
+      4
+    );
+  }
+  assert.equal(
+    resolveAccountSemaphoreMaxConcurrency({ maxConcurrent: 0, rateLimitMaxConcurrent: 0 }),
+    0
+  );
+  assert.equal(resolveAccountSemaphoreMaxConcurrency({ rateLimitMaxConcurrent: 0 }), null);
+});
+
+test("resolveAccountSemaphoreMaxConcurrency ignores the override when protection is disabled", () => {
+  assert.equal(
+    resolveAccountSemaphoreMaxConcurrency({ maxConcurrent: 4, rateLimitMaxConcurrent: 2 }, false),
+    4
+  );
+  assert.equal(resolveAccountSemaphoreMaxConcurrency({ rateLimitMaxConcurrent: 2 }, false), null);
+});
+
 test("resolveAccountSemaphoreMaxConcurrency rejects non-finite / non-numeric / missing values", () => {
   // exercises the private toFiniteNumberOrNull null branches indirectly
   assert.equal(resolveAccountSemaphoreMaxConcurrency({ maxConcurrent: Infinity }), null);
@@ -56,7 +97,10 @@ test("resolveAccountSemaphoreMaxConcurrency rejects non-finite / non-numeric / m
   assert.equal(resolveAccountSemaphoreMaxConcurrency({ maxConcurrent: "" }), null);
   assert.equal(resolveAccountSemaphoreMaxConcurrency({ maxConcurrent: "   " }), null);
   assert.equal(
-    resolveAccountSemaphoreMaxConcurrency({ maxConcurrent: true } as unknown as LooseDeep),
+    resolveAccountSemaphoreMaxConcurrency({ maxConcurrent: true } as unknown as Record<
+      string,
+      unknown
+    >),
     null
   );
   assert.equal(resolveAccountSemaphoreMaxConcurrency({}), null);
@@ -121,7 +165,7 @@ test("buildClaudePromptCacheLogMeta returns null for non-Claude format or non-ob
   assert.equal(buildClaudePromptCacheLogMeta(FORMATS.OPENAI, { system: [] }, null), null);
   assert.equal(buildClaudePromptCacheLogMeta(FORMATS.CLAUDE, null, null), null);
   assert.equal(
-    buildClaudePromptCacheLogMeta(FORMATS.CLAUDE, "x" as unknown as LooseDeep, null),
+    buildClaudePromptCacheLogMeta(FORMATS.CLAUDE, "x" as unknown as Record<string, unknown>, null),
     null
   );
 });
@@ -160,9 +204,9 @@ test("buildClaudePromptCacheLogMeta counts cache_control breakpoints across syst
   assert.equal(meta.applied, true);
   assert.equal(meta.systemBreakpoints.length, 1);
   assert.equal(meta.systemBreakpoints[0].ttl, "5m");
-  assert.equal((meta.systemBreakpoints[0] as LooseDeep).index, 0);
+  assert.equal(meta.systemBreakpoints[0].index, 0);
   assert.equal(meta.toolBreakpoints.length, 1);
-  assert.equal((meta.toolBreakpoints[0] as LooseDeep).name, "lookup");
+  assert.equal(meta.toolBreakpoints[0].name, "lookup");
   assert.equal(meta.messageBreakpoints.length, 1);
   assert.equal(meta.messageBreakpoints[0].role, "user");
   assert.equal(meta.messageBreakpoints[0].blockType, "text");

@@ -7,7 +7,6 @@ import { tmpdir } from "node:os";
 import {
   isNativeExecutable,
   planBuildToolSpawn,
-  planHostToolSpawn,
   resolveLocalBinEntry,
   runBuildTool,
 } from "../../../scripts/build/buildToolRunner.mjs";
@@ -208,21 +207,27 @@ test("colocate-standalone.mjs never spawns the node_modules/.bin shim again", ()
   );
 });
 
-test("planHostToolSpawn routes npm/npx through a shell on Windows only", () => {
-  const win = planHostToolSpawn("npm", ["install", "-g", "--prefix", "C:\\tmp dir\\pfx"], "win32");
+test("prepublish.ts bundles the ChatGPT Web Codex MCP bridge through runBuildTool (#11704)", () => {
+  // Node >= 20 on Windows refuses to spawn npx.cmd without a shell (EINVAL,
+  // CVE-2024-27980). The ChatGPT Web MCP esbuild step was the last raw
+  // execFileSync(NPX_BIN, ...) in prepublish.ts and crashed npm run build:cli.
+  const source = readFileSync(
+    new URL("../../../scripts/build/prepublish.ts", import.meta.url),
+    "utf8"
+  );
+  const mcpPath = "open-sse/vendor/codex-chatgpt-web/adapters/chatgpt-web/mcp-server.ts";
+  const idx = source.indexOf(mcpPath);
+  assert.notEqual(idx, -1, "ChatGPT Web Codex MCP source path is still bundled");
 
-  assert.equal(win.file, "npm");
-  assert.equal(win.shell, true, ".cmd shims need cmd.exe on Windows (EINVAL otherwise)");
-  assert.deepEqual(win.args, ["install", "-g", "--prefix", '"C:\\tmp dir\\pfx"']);
-
-  const posix = planHostToolSpawn("npm", ["install", "-g", "--prefix", "/tmp/pfx"], "linux");
-
-  assert.equal(posix.shell, false, "POSIX spawns npm directly — no shell, no quoting");
-  assert.deepEqual(posix.args, ["install", "-g", "--prefix", "/tmp/pfx"]);
-});
-
-test("planHostToolSpawn leaves already-quoted and whitespace-free args alone", () => {
-  const plan = planHostToolSpawn("npx", ["eslint", ".", '"pre-quoted"'], "win32");
-
-  assert.deepEqual(plan.args, ["eslint", ".", '"pre-quoted"']);
+  const window = source.slice(Math.max(0, idx - 400), idx);
+  assert.match(
+    window,
+    /runBuildTool\s*\(\s*"esbuild"\s*,\s*"esbuild"/,
+    "must spawn esbuild via runBuildTool() — raw npx.cmd is EINVAL on Node >= 20/Windows"
+  );
+  assert.doesNotMatch(
+    window,
+    /execFileSync\s*\(\s*NPX_BIN/,
+    "must not spawn NPX_BIN (npx.cmd) to bundle the ChatGPT Web MCP bridge"
+  );
 });

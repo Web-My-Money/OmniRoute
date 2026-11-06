@@ -21,10 +21,9 @@ export async function persistCodexChildQuotaResponse(params: {
   fallbackRateLimitedUntil?: string | null;
 }): Promise<PersistCodexChildQuotaResult | null> {
   if (params.model.trim().length === 0) return null;
-  const quota = parseCodexQuotaHeaders(params.headers);
-  if (!quota) return null;
-
   const scope = getCodexModelScope(params.model);
+  const quota = parseCodexQuotaHeaders(params.headers, params.model);
+  if (!quota) return null;
   const quotaState = {
     usage5h: quota.usage5h,
     limit5h: quota.limit5h,
@@ -56,7 +55,9 @@ export async function persistCodexChildQuotaResponse(params: {
           rateLimitedUntil,
           rateLimitSource: exhaustedWindow ? ("quota_reset" as const) : ("fallback" as const),
         }
-      : {}),
+      : params.status === 200
+        ? { rateLimitedUntil: null }
+        : {}),
   });
   if (!providerSpecificData) return null;
 

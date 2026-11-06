@@ -1,3 +1,4 @@
+import { isHttpLogError } from "@/shared/utils/upstreamHttp";
 import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 import { requireManagementAuth } from "@/lib/api/requireManagementAuth";
@@ -36,19 +37,33 @@ function rowPriority(row: any): number {
  * `correlationId`. Running the same predicates over the merged rows closes that
  * gap. It is idempotent for DB rows (they already satisfy the predicate) while
  * correctly excluding in-memory rows that do not match.
+ *
+ * That idempotence is the contract, and it is only worth as much as the two
+ * predicates agree: a row the SQL WHERE accepted must survive this function, so
+ * every clause here has to be at least as wide as its counterpart in
+ * `buildCallLogFilterSql()` (src/lib/usage/callLogs.ts). Where it was narrower,
+ * the query returned the right rows and this pass deleted them again with nothing
+ * logged -- see the apiKey and combo clauses below.
  */
 export function rowMatchesFilter(row: any, filter: Record<string, any>): boolean {
   if (!filter) return true;
 
   if (filter.status === "error") {
-    if (!(Number(row?.status) >= 400 || Boolean(row?.error))) return false;
+    if (!isHttpLogError(row)) return false;
   } else if (filter.status === "ok") {
     if (!(Number(row?.status) >= 200 && Number(row?.status) < 300)) return false;
-  } else if (typeof filter.status === "number" || (typeof filter.status === "string" && !isNaN(Number(filter.status)))) {
+  } else if (
+    typeof filter.status === "number" ||
+    (typeof filter.status === "string" && !isNaN(Number(filter.status)))
+  ) {
     if (Number(row?.status) !== Number(filter.status)) return false;
   }
 
-  if (filter.model && !matchesSearch(row?.model || "", String(filter.model))) {
+  if (
+    filter.model &&
+    !matchesSearch(row?.model || "", String(filter.model)) &&
+    !matchesSearch(row?.requestedModel || "", String(filter.model))
+  ) {
     return false;
   }
   if (filter.provider && !matchesSearch(row?.provider || "", String(filter.provider))) {
@@ -57,27 +72,39 @@ export function rowMatchesFilter(row: any, filter: Record<string, any>): boolean
   if (filter.account && !matchesSearch(row?.account || "", String(filter.account))) {
     return false;
   }
-  if (filter.apiKey && !matchesSearch(row?.apiKeyName || "", String(filter.apiKey))) {
+  if (
+    filter.apiKey &&
+    !matchesSearch(row?.apiKeyName || "", String(filter.apiKey)) &&
+    !matchesSearch(row?.apiKeyId || "", String(filter.apiKey))
+  ) {
     return false;
   }
-  if (filter.combo && !matchesSearch(row?.comboName || "", String(filter.combo))) {
+  if (filter.combo && row?.comboName == null) {
     return false;
   }
-  if (filter.correlationId && !matchesSearch(row?.correlationId || "", String(filter.correlationId))) {
+  if (
+    filter.correlationId &&
+    !matchesSearch(row?.correlationId || "", String(filter.correlationId))
+  ) {
     return false;
   }
   if (filter.search) {
     const term = String(filter.search);
     const haystack = [
       row?.model,
+      row?.requestedModel,
       row?.provider,
       row?.providerDisplay,
       row?.account,
       row?.apiKeyName,
+      row?.apiKeyId,
       row?.comboName,
+      row?.comboStepId,
+      row?.comboExecutionKey,
       row?.correlationId,
       row?.error,
       row?.path,
+      row?.status == null ? null : String(row.status),
     ]
       .filter(Boolean)
       .join(" ");
@@ -109,9 +136,13 @@ export function buildCallLogListRows({
   // Include active (in-flight) requests from the pending-by-id map
   // so they appear in the logs grid alongside persisted entries.
   const activeEntries: any[] = [];
+  const activePersistedIds = new Set<string>();
+  const persistedById = new Map(logs.map((log) => [log.id, log]));
   const persistedIds = new Set(logs.map((log: any) => log.id).filter(Boolean));
 
   for (const detail of pendingDetails) {
+    const persisted = persistedById.get(detail.persistedLogId);
+    if (persisted) activePersistedIds.add(persisted.id);
     activeEntries.push({
       id: detail.id,
       timestamp: new Date(detail.startedAt).toISOString(),
@@ -125,7 +156,10 @@ export function buildCallLogListRows({
       account: connectionNames.get(detail.connectionId || "") || detail.connectionId || "unknown",
       connectionId: detail.connectionId,
       duration: Math.max(0, now - detail.startedAt),
-      tokens: { in: 0, out: 0 },
+      tokens: detail.tokens || { in: 0, out: 0 },
+      // In-memory details carry no added wait yet — null like "no wait".
+      addedWaitMs: null,
+      addedWaitCause: null,
       cacheSource: null,
       sourceFormat: null,
       targetFormat: null,
@@ -135,13 +169,36 @@ export function buildCallLogListRows({
       error: null,
       correlationId: detail.correlationId || null,
       active: true,
+      // Retain DB filter metadata while the exact attempt is still active.
+      ...(persisted
+        ? {
+            ...persisted,
+            id: detail.id,
+            timestamp: new Date(detail.startedAt).toISOString(),
+            duration: Math.max(0, now - detail.startedAt),
+            active: true,
+          }
+        : {}),
+      ...(detail.stale
+        ? {
+            stale: true,
+            sweptAt:
+              typeof detail.sweptAt === "number" ? new Date(detail.sweptAt).toISOString() : null,
+          }
+        : {}),
     });
   }
 
   const pendingIds = new Set(activeEntries.map((entry) => entry.id));
   const completedEntries: any[] = [];
   for (const detail of completedDetails) {
-    if (persistedIds.has(detail.id) || pendingIds.has(detail.id)) continue;
+    if (
+      persistedIds.has(detail.persistedLogId) ||
+      // Only legacy previews can use their public ID as the durable row identity.
+      (!detail.attemptGeneration && persistedIds.has(detail.id)) ||
+      pendingIds.has(detail.id)
+    )
+      continue;
     const completedAt = typeof detail.completedAt === "number" ? detail.completedAt : null;
     const duration =
       typeof detail.durationMs === "number" && Number.isFinite(detail.durationMs)
@@ -160,7 +217,10 @@ export function buildCallLogListRows({
       account: connectionNames.get(detail.connectionId || "") || detail.connectionId || "unknown",
       connectionId: detail.connectionId,
       duration,
-      tokens: { in: 0, out: 0 },
+      tokens: detail.tokens || { in: 0, out: 0 },
+      // In-memory details carry no added wait yet — null like "no wait".
+      addedWaitMs: null,
+      addedWaitCause: null,
       cacheSource: null,
       sourceFormat: null,
       targetFormat: null,
@@ -176,7 +236,11 @@ export function buildCallLogListRows({
     });
   }
 
-  return [...activeEntries, ...completedEntries, ...logs].sort((a, b) => {
+  return [
+    ...activeEntries,
+    ...completedEntries,
+    ...logs.filter((log) => !activePersistedIds.has(log.id)),
+  ].sort((a, b) => {
     // Active requests always on top
     const pa = rowPriority(a);
     const pb = rowPriority(b);
@@ -208,9 +272,14 @@ export async function GET(request: Request) {
     // are dropped at the SQL layer (before LIMIT), not client-side after slicing.
     if (searchParams.get("excludeTests") === "1") filter.excludeTests = true;
 
+    // This endpoint is polled every 2-10s by the logs dashboard. A full
+    // `getProviderConnections()` read wraps every row in a lazy-decrypt proxy
+    // over all columns; the rows are only used for connectionId → display
+    // name mapping, so request just those columns (projected reads skip the
+    // raw-row cache by design — see providers.ts getProviderConnections).
     const [logs, connections, providerNodes] = await Promise.all([
       getCallLogs(filter),
-      getProviderConnections(),
+      getProviderConnections({}, undefined, undefined, ["id", "name", "display_name", "email"]),
       getProviderNodes(),
     ]);
     const providerDisplayNames = new Map<string, string>(
@@ -227,7 +296,7 @@ export async function GET(request: Request) {
     );
 
     const rows = buildCallLogListRows({
-      logs,
+      logs: logs.filter((row) => rowMatchesFilter(row, filter)),
       connections,
       providerDisplayNames,
       pendingDetails: getPendingById().values(),

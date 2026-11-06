@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { getTaskManager } from "@/lib/a2a/taskManager";
 import { getCachedSettings } from "@/lib/db/settings";
 
-export async function GET(request: NextRequest) {
+export async function GET(request?: NextRequest) {
   try {
     const [settings, stats] = await Promise.all([
       getCachedSettings(),

@@ -20,7 +20,10 @@ import {
   parseLMArenaInitialModels,
   pickLMArenaModelId,
 } from "../../open-sse/executors/lmarena.ts";
-import { clearLMArenaDeadCatalogModels } from "../../open-sse/executors/lmarena/models.ts";
+import {
+  clearLMArenaDeadCatalogModels,
+  resolveLMArenaModelId,
+} from "../../open-sse/executors/lmarena/models.ts";
 import { __setTlsFetchOverrideForTesting } from "../../open-sse/services/lmarenaTlsClient.ts";
 
 const TEST_ARENA_MODEL_ID = "019e080d-c29d-7d9a-aa54-faed41da0763";
@@ -49,6 +52,7 @@ type LMArenaExecutorTestAccess = {
     modelAMessageId: string;
     modelBMessageId?: string;
     recaptchaV3Token: string | null;
+    cx?: string;
     userMessage: {
       content: string;
       experimental_attachments: unknown[];
@@ -284,6 +288,11 @@ describe("LMArena Executor", () => {
     assert.equal(arenaBody.modelBId, undefined, "Should not set modelBId for direct mode");
     assert.equal(arenaBody.modelBMessageId, undefined, "Should not set modelBMessageId");
     assert.equal(arenaBody.recaptchaV3Token, null);
+    assert.equal(
+      "cx" in arenaBody,
+      false,
+      "Should not attach a cx blob unless the operator supplied one (or opted in, #16895)"
+    );
     assert.deepEqual(arenaBody.userMessage.experimental_attachments, []);
     assert.deepEqual(arenaBody.userMessage.metadata, {});
     assert.ok(
@@ -482,6 +491,44 @@ describe("LMArena Executor", () => {
     assert.equal(pickLMArenaModelId(TEST_ARENA_MODEL_ID, []), TEST_ARENA_MODEL_ID);
   });
 
+  it("sanitizes static catalog lookup failures before warning", async () => {
+    const warnings: string[] = [];
+    const resolved = await resolveLMArenaModelId("unknown-model-for-log-test", {
+      debug: () => {
+        throw new Error(
+          "Catalog lookup failed at /srv/private/lmarena-catalog.ts:17:5; " +
+            "access_token=lmarena-catalog-secret\n" +
+            "    at SecretCatalogFrame (/srv/private/lmarena-catalog-stack.ts:2:3)"
+        );
+      },
+      warn: (_scope, message) => warnings.push(String(message)),
+    });
+
+    assert.equal(resolved, "unknown-model-for-log-test");
+    assert.equal(warnings.length, 1);
+    assert.match(warnings[0], /Using raw model id after static catalog lookup failed/);
+    assert.match(warnings[0], /Catalog lookup failed/);
+    assert.doesNotMatch(warnings[0], /\/srv\/private\/lmarena-catalog(?:-stack)?\.ts/);
+    assert.doesNotMatch(warnings[0], /lmarena-catalog-secret|SecretCatalogFrame/);
+  });
+
+  it("uses a stable fallback when the catalog failure sanitizes to blank", async () => {
+    const warnings: string[] = [];
+    const resolved = await resolveLMArenaModelId("unknown-model-for-blank-log-test", {
+      debug: () => {
+        throw new Error(
+          "\n    at SecretOnlyFrame (/srv/private/lmarena-catalog-stack-only.ts:2:3)"
+        );
+      },
+      warn: (_scope, message) => warnings.push(String(message)),
+    });
+
+    assert.equal(resolved, "unknown-model-for-blank-log-test");
+    assert.deepEqual(warnings, [
+      "Using raw model id after static catalog lookup failed: Arena catalog lookup error",
+    ]);
+  });
+
   it("resolves catalog public names via static Direct-chat allowlist (no arena.ai fetch)", async () => {
     const executor = new LMArenaExecutor();
     let arenaHomeFetches = 0;
@@ -617,6 +664,45 @@ describe("LMArena Executor", () => {
     assert.equal(body.recaptchaV3Token, "tok_abc");
   });
 
+  it("forwards the reconstructed cookie and reCAPTCHA token to the TLS request", async () => {
+    let captured:
+      | {
+          url: string;
+          options: { method?: string; headers?: Record<string, string>; body?: string };
+        }
+      | undefined;
+    __setTlsFetchOverrideForTesting(async (url, options) => {
+      captured = { url, options };
+      return {
+        status: 400,
+        headers: new Headers({ "Content-Type": "application/json" }),
+        text: "{}",
+        body: null,
+      };
+    });
+
+    try {
+      await new LMArenaExecutor().execute({
+        model: TEST_ARENA_MODEL_ID,
+        body: { messages: [{ role: "user", content: "Hello" }] },
+        credentials: {
+          cookie: "arena-auth-prod-v1=; arena-auth-prod-v1.0=chunk-a; arena-auth-prod-v1.1=chunk-b",
+          providerSpecificData: { recaptchaV3Token: "tok_abc" },
+        },
+        signal: new AbortController().signal,
+        log: null,
+      });
+
+      assert.ok(captured);
+      assert.match(captured.url, /\/nextjs-api\/stream\/create-evaluation$/);
+      assert.equal(captured.options.method, "POST");
+      assert.equal(captured.options.headers?.Cookie, "arena-auth-prod-v1=chunk-achunk-b");
+      assert.equal(JSON.parse(captured.options.body ?? "{}").recaptchaV3Token, "tok_abc");
+    } finally {
+      __setTlsFetchOverrideForTesting(null);
+    }
+  });
+
   it("surfaces Cloudflare challenge as bot-management error", async () => {
     const executor = new LMArenaExecutor();
     __setTlsFetchOverrideForTesting(async () => ({
@@ -639,6 +725,35 @@ describe("LMArena Executor", () => {
       const err = await result.response.json();
       assert.match(err.error.message, /Cloudflare|bot|recaptcha/i);
       assert.equal(err.error.code, "cloudflare_or_bot");
+    } finally {
+      __setTlsFetchOverrideForTesting(null);
+    }
+  });
+
+  it("uses an error status for a Cloudflare challenge returned with HTTP 200", async () => {
+    __setTlsFetchOverrideForTesting(async () => ({
+      status: 200,
+      headers: new Headers({ "Content-Type": "text/html" }),
+      text: "<html>Just a moment... challenges.cloudflare.com</html>",
+      body: null,
+    }));
+
+    try {
+      const result = await new LMArenaExecutor().execute({
+        model: TEST_ARENA_MODEL_ID,
+        body: { messages: [{ role: "user", content: "Hello" }] },
+        credentials: { cookie: "session=test" },
+        signal: new AbortController().signal,
+        log: null,
+      });
+
+      assert.equal(result.response.status, 403);
+      assert.deepEqual((await result.response.json()).error, {
+        message:
+          "Arena blocked by Cloudflare bot management. Use a residential/browser-grade network if needed, paste a fresh full Cookie header (include cf_clearance / __cf_bm when present), and optionally set providerSpecificData.recaptchaV3Token from a live browser session.",
+        type: "api_error",
+        code: "cloudflare_or_bot",
+      });
     } finally {
       __setTlsFetchOverrideForTesting(null);
     }

@@ -21,6 +21,7 @@ import { providersBatchTestSchema } from "@/shared/validation/schemas";
 import { isValidationFailure, validateBody } from "@/shared/validation/helpers";
 import { requireManagementAuth } from "@/lib/api/requireManagementAuth";
 import { sanitizeErrorMessage } from "@omniroute/open-sse/utils/error";
+import { getRequestPeerLocality } from "@/shared/utils/apiAuth";
 
 // Determine auth type group for a provider id
 function getAuthGroup(providerId) {
@@ -103,12 +104,10 @@ export async function POST(request) {
     let connectionsToTest = [];
     if (mode === "selected") {
       const idSet = new Set(connectionIds || []);
-      connectionsToTest = allConnections.filter((c) => typeof c.id === "string" && idSet.has(c.id));
+      connectionsToTest = allConnections.filter((c) => idSet.has(c.id));
     } else if (mode === "provider" && providerId) {
       const familyProviderIds = new Set(getProviderConnectionFamilyIds(providerId));
-      connectionsToTest = allConnections.filter(
-        (c) => typeof c.provider === "string" && familyProviderIds.has(c.provider)
-      );
+      connectionsToTest = allConnections.filter((c) => familyProviderIds.has(c.provider));
     } else if (mode === "oauth") {
       connectionsToTest = allConnections.filter((c) => {
         const authGroup = getAuthGroup(c.provider);
@@ -135,9 +134,7 @@ export async function POST(request) {
     } else if (mode === "cloud-agent") {
       connectionsToTest = allConnections.filter((c) => getAuthGroup(c.provider) === "cloud-agent");
     } else if (mode === "ide") {
-      connectionsToTest = allConnections.filter(
-        (c) => typeof c.provider === "string" && IDE_PROVIDER_IDS.has(c.provider)
-      );
+      connectionsToTest = allConnections.filter((c) => IDE_PROVIDER_IDS.has(c.provider));
     } else if (mode === "compatible") {
       connectionsToTest = allConnections.filter((c) => isCompatibleProvider(c.provider));
     } else if (mode === "all") {
@@ -168,10 +165,15 @@ export async function POST(request) {
     const PER_CONNECTION_TIMEOUT = 30_000; // 30s per connection
     const CONCURRENCY = 5; // max parallel tests
 
+    // GHSA-jmq6-8j86-8xqj: the local CLI probe spawns on the host — only for local callers.
+    // S-01 (#15159): allowLocalSpawn covers the devin cloud-agent validator's CLI
+    // fallback, which also spawns. Same gate, same reason.
+    const allowLocalRuntimeProbe = getRequestPeerLocality(request) !== "remote";
+    const allowLocalSpawn = getRequestPeerLocality(request) !== "remote";
     const testOne = async (conn: Record<string, unknown>) => {
       try {
         const result = await Promise.race([
-          testSingleConnection(String(conn.id)),
+          testSingleConnection(conn.id, undefined, { allowLocalRuntimeProbe, allowLocalSpawn }),
           new Promise((_, reject) =>
             setTimeout(
               () => reject(new Error("Connection test timed out after 30s")),

@@ -20,11 +20,22 @@
 import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, beforeAll } from "vitest";
 
-// No local next-intl mock: the global vitest setup mock renders the real en.json
-// copy, which the detail-modal assertions below rely on ("Request log detail",
-// "Close detail modal" aria-labels from requestLogger.detail).
+// The kit Table (KEA-7886) mounts a persistent horizontal scrollbar that measures the table
+// with ResizeObserver, which jsdom does not implement.
+beforeAll(() => {
+  globalThis.ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
+});
+
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string) => key,
+  useLocale: () => "en",
+}));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn(), refresh: vi.fn() }),
@@ -67,6 +78,9 @@ function deferredResponse() {
 }
 
 beforeEach(() => {
+  (
+    globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }
+  ).IS_REACT_ACT_ENVIRONMENT = true;
   callLogsRequests = 0;
   if (!globalThis.localStorage) {
     const store = new Map<string, string>();
@@ -163,14 +177,14 @@ describe("RequestLoggerV2 detail modal lifecycle", () => {
     await act(async () => {
       row?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
-    expect(container.querySelector('[aria-label="Request log detail"]')).not.toBeNull();
+    expect(container.querySelector('[aria-label="ariaLabel"]')).not.toBeNull();
 
     await act(async () => {
       container
-        .querySelector<HTMLButtonElement>('[aria-label="Close detail modal"]')
+        .querySelector<HTMLButtonElement>('[aria-label="close"]')
         ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
-    expect(container.querySelector('[aria-label="Request log detail"]')).toBeNull();
+    expect(container.querySelector('[aria-label="ariaLabel"]')).toBeNull();
 
     await act(async () => {
       detail.resolve(
@@ -189,7 +203,7 @@ describe("RequestLoggerV2 detail modal lifecycle", () => {
       await detail.promise;
     });
 
-    expect(container.querySelector('[aria-label="Request log detail"]')).toBeNull();
+    expect(container.querySelector('[aria-label="ariaLabel"]')).toBeNull();
   });
 });
 

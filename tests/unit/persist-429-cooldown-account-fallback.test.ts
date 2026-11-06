@@ -34,8 +34,8 @@ const core = await import("../../src/lib/db/core.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
 
 import { applyErrorState, resetAccountState } from "../../open-sse/services/accountFallback.ts";
-import { markConnectionRateLimitedUntil, clearConnectionRateLimit } from "../../src/lib/localDb.ts";
-import type { JsonRecord } from "../../src/shared/types/json.ts";
+const { markConnectionRateLimitedUntil, clearConnectionRateLimit } =
+  await import("@/lib/db/providers");
 
 test.after(() => {
   core.resetDbInstance();
@@ -45,11 +45,11 @@ test.after(() => {
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 async function makeConnection(provider: string, name: string): Promise<string> {
-  const conn = (await providersDb.createProviderConnection({
+  const conn = await providersDb.createProviderConnection({
     provider,
     authType: "api_key",
     name,
-  })) as JsonRecord & { id: string };
+  });
   return (conn as any).id as string;
 }
 

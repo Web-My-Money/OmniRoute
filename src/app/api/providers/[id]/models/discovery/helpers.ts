@@ -7,7 +7,7 @@ import {
   enrichOllamaModelsWithCapabilities,
 } from "@/lib/providerModels/ollamaCapabilities";
 
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 export type { JsonRecord };
 
 export function asRecord(value: unknown): JsonRecord {

@@ -3,8 +3,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { MockRequestInit } from "../helpers/mockFetch.ts";
-import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // DefaultExecutor transitively touches the DB layer (provider/key rotation
 // lookups) at import/call time. Point DATA_DIR at an isolated temp dir
@@ -21,6 +19,7 @@ const {
 } = await import("../../src/shared/constants/clientIdentityProfiles.ts");
 const { isForbiddenCustomHeaderName } =
   await import("../../src/shared/constants/upstreamHeaders.ts");
+const { DEFAULT_CODEX_CLIENT_VERSION } = await import("../../src/shared/constants/codexClient.ts");
 const { DefaultExecutor } = await import("../../open-sse/executors/default.ts");
 const core = await import("../../src/lib/db/core.ts");
 
@@ -41,11 +40,11 @@ test("getClientIdentityProfileHeaders: unknown profile id falls back to no heade
 
 test("getClientIdentityProfileHeaders: known CLI profiles expose their preset headers", () => {
   const claudeCli = getClientIdentityProfileHeaders("claude-cli");
-  assert.equal(claudeCli["User-Agent"], "claude-cli/2.1.220 (external, cli)");
+  assert.equal(claudeCli["User-Agent"], "claude-cli/2.1.280 (external, cli)");
   assert.equal(claudeCli["X-App"], "cli");
 
   const codexCli = getClientIdentityProfileHeaders("codex-cli");
-  assert.equal(codexCli["User-Agent"], "codex_cli_rs/0.149.0");
+  assert.equal(codexCli["User-Agent"], `codex_cli_rs/${DEFAULT_CODEX_CLIENT_VERSION}`);
   assert.equal(codexCli.originator, "codex_cli_rs");
 
   const geminiCli = getClientIdentityProfileHeaders("gemini-cli");
@@ -57,7 +56,7 @@ test("getClientIdentityProfileHeaders: returns a fresh mutable copy (catalog sta
   headers["User-Agent"] = "tampered";
   assert.equal(
     CLIENT_IDENTITY_PROFILES["claude-cli"].headers["User-Agent"],
-    "claude-cli/2.1.220 (external, cli)"
+    "claude-cli/2.1.280 (external, cli)"
   );
 });
 
@@ -82,8 +81,11 @@ test("a selected profile's headers land in providerSpecificData.customHeaders", 
     customHeaders: { ...profileHeaders, "X-Operator-Set": "keep-me" },
   };
 
-  assert.equal(providerSpecificData.customHeaders["User-Agent"], "codex_cli_rs/0.149.0");
-  assert.equal((providerSpecificData.customHeaders as LooseDeep).originator, "codex_cli_rs");
+  assert.equal(
+    providerSpecificData.customHeaders["User-Agent"],
+    `codex_cli_rs/${DEFAULT_CODEX_CLIENT_VERSION}`
+  );
+  assert.equal(providerSpecificData.customHeaders.originator, "codex_cli_rs");
   assert.equal(providerSpecificData.customHeaders["X-Operator-Set"], "keep-me");
 });
 
@@ -102,7 +104,7 @@ test("profile headers merged into customHeaders survive applyCustomHeaders sanit
     true
   ) as Record<string, string>;
 
-  assert.equal(headers["User-Agent"], "claude-cli/2.1.220 (external, cli)");
+  assert.equal(headers["User-Agent"], "claude-cli/2.1.280 (external, cli)");
   assert.equal(headers["X-App"], "cli");
   assert.equal(headers["Authorization"], "Bearer test-key");
 });
@@ -147,7 +149,7 @@ test("DefaultExecutor.execute sends the selected profile's headers for a compati
   const originalFetch = globalThis.fetch;
   let capturedHeaders: Record<string, string> = {};
 
-  globalThis.fetch = async (_url: string | URL | Request, init: MockRequestInit = {}) => {
+  globalThis.fetch = async (_url: string | URL | Request, init: RequestInit = {}) => {
     capturedHeaders = (init.headers as Record<string, string>) || {};
     return new Response(JSON.stringify({ ok: true }), {
       status: 200,

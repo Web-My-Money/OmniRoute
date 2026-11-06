@@ -1,14 +1,16 @@
-import { getProviderConnectionById, resolveProxyForConnection } from "@/lib/localDb";
+import { getProviderConnectionById } from "@/lib/db/providers";
+import { resolveProxyForConnection } from "@/lib/db/settings";
 import { isConnectionUnavailableToAuxiliaryActivity } from "@/lib/exclusiveLeaseIsolation";
 import {
   fetchAndPersistProviderLimits,
   refreshAndUpdateCredentials,
 } from "@/lib/usage/providerLimits";
+import { releaseCodexCooldownAfterResetCredit } from "@/lib/usage/resetCreditCooldownRelease";
 import { invalidateCodexQuotaCache } from "@omniroute/open-sse/services/codexQuotaFetcher.ts";
 import { getCodexBackendIdentityHeaders } from "@omniroute/open-sse/config/codexClient.ts";
 import { runWithProxyContext } from "@omniroute/open-sse/utils/proxyFetch.ts";
 import { sanitizeErrorMessage } from "@omniroute/open-sse/utils/error.ts";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 const CODEX_RESET_CREDIT_CONSUME_URL =
   "https://chatgpt.com/backend-api/wham/rate-limit-reset-credits/consume";
@@ -506,6 +508,12 @@ export async function consumeCodexResetCredit(
 
     const refreshed = await fetchAndPersistProviderLimits(connectionId, "manual", {
       allowRotatingRefresh: true,
+    });
+    // The credit is already spent upstream: a failed local release must not turn it into a 500.
+    await releaseCodexCooldownAfterResetCredit(connectionId, refreshed.usage).catch((error) => {
+      console.warn(
+        `[CodexResetCredits] Cooldown release failed for ${connectionId}: ${sanitizeErrorMessage(error)}`
+      );
     });
 
     return { outcome, usage: refreshed.usage };

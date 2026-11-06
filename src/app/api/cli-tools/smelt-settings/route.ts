@@ -15,6 +15,11 @@ import { cliModelConfigSchema } from "@/shared/validation/schemas";
 import { isValidationFailure, validateBody } from "@/shared/validation/helpers";
 import { resolveApiKey } from "@/shared/services/apiKeyResolver";
 import { sanitizeErrorMessage } from "@omniroute/open-sse/utils/error.ts";
+import {
+  configClobberRefusalResponse,
+  parseJsonObject,
+  readExistingConfig,
+} from "../_lib/readExistingConfig";
 
 const TOOL_ID = "smelt";
 
@@ -38,7 +43,7 @@ const hasOmniRouteConfig = (settings: Record<string, unknown> | null): boolean =
 // Read current config.json
 const readConfig = async (): Promise<Record<string, unknown> | null> => {
   try {
-    const content = await fs.readFile(/* turbopackIgnore: true */ getSmeltConfigPath(), "utf-8");
+    const content = await fs.readFile(getSmeltConfigPath(), "utf-8");
     return JSON.parse(content) as Record<string, unknown>;
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return null;
@@ -125,14 +130,10 @@ export async function POST(request: Request) {
     // Backup current config before modifying
     await createBackup(TOOL_ID, configPath);
 
-    // Read existing config or start fresh
-    let existing: Record<string, unknown> = {};
-    try {
-      const raw = await fs.readFile(/* turbopackIgnore: true */ configPath, "utf-8");
-      existing = JSON.parse(raw) as Record<string, unknown>;
-    } catch {
-      /* No existing config */
-    }
+    // Read existing config or start fresh. Only a missing file starts fresh —
+    // an unreadable/unparsable one is refused (409) instead of being replaced.
+    const existing: Record<string, unknown> =
+      (await readExistingConfig(configPath, parseJsonObject)) ?? {};
 
     // Merge OmniRoute settings (smelt uses OpenAI-compatible config)
     const normalizedBaseUrl = baseUrl.endsWith("/v1") ? baseUrl : `${baseUrl}/v1`;
@@ -159,6 +160,8 @@ export async function POST(request: Request) {
       configPath,
     });
   } catch (err) {
+    const refusal = configClobberRefusalResponse(err);
+    if (refusal) return refusal;
     return NextResponse.json({ error: { message: sanitizeErrorMessage(err) } }, { status: 500 });
   }
 }
@@ -182,7 +185,7 @@ export async function DELETE(request: Request) {
     // Read existing config
     let existing: Record<string, unknown> = {};
     try {
-      const raw = await fs.readFile(/* turbopackIgnore: true */ configPath, "utf-8");
+      const raw = await fs.readFile(configPath, "utf-8");
       existing = JSON.parse(raw) as Record<string, unknown>;
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code === "ENOENT") {

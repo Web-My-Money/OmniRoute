@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAllModelLockouts } from "@omniroute/open-sse/services/accountFallback.ts";
 import { getCacheStats } from "@omniroute/open-sse/services/signatureCache.ts";
-import { getProviderConnections, updateProviderConnection } from "@/lib/localDb";
+import { getProviderConnections, updateProviderConnection } from "@/lib/db/providers";
 import {
   enableRateLimitProtection,
   disableRateLimitProtection,
@@ -12,7 +12,7 @@ import { getAccountDisplayName } from "@/lib/display/names";
 
 import { toggleRateLimitSchema } from "@/shared/validation/schemas";
 import { isValidationFailure, validateBody } from "@/shared/validation/helpers";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 function asRecord(value: unknown): JsonRecord {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : {};

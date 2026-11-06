@@ -48,7 +48,7 @@ describe("getModelsDevPricing caching (#9300)", () => {
 
     // Seed pricing data into DB
     modelsDev.saveModelsDevPricing(
-      PRICING_DATA as unknown as Parameters<typeof modelsDev.saveModelsDevPricing>[0]
+      PRICING_DATA as Record<string, Record<string, Record<string, number>>>
     );
 
     // Reset cache to ensure a clean read from DB
@@ -94,7 +94,7 @@ describe("getModelsDevPricing caching (#9300)", () => {
     // Save updated pricing
     modelsDev.saveModelsDevPricing({
       openai: { "gpt-4o": { input: 5, output: 20 } },
-    } as Parameters<typeof modelsDev.saveModelsDevPricing>[0]);
+    } as Record<string, Record<string, Record<string, number>>>);
 
     const afterSave = modelsDev.getModelsDevPricing();
     // Must be a different object (cache was invalidated, re-loaded from DB)

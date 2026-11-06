@@ -183,6 +183,13 @@ function convertMessages(messages, tools, model) {
   let currentRole = null;
   let toolsAttached = false;
   let toolDocs = "";
+  // The actual turn object that ends up carrying `toolDocs` (issue #13652).
+  // `buildKiroPayload()` only prepends the doc block onto `currentMessage`, so
+  // once this turn is demoted into `history` (any turn after the first, on a
+  // resent multi-turn request) we need to know it was NOT promoted, and embed
+  // the doc text directly onto it instead of letting it get re-glued onto
+  // whatever the newest turn happens to be.
+  let toolDocsCarrier = null;
 
   // Only Claude models support images in Kiro. Kiro also routes non-Claude
   // models (deepseek, minimax, glm, qwen3-coder-next) that do not accept image
@@ -242,7 +249,10 @@ function convertMessages(messages, tools, model) {
         }
         const built = buildKiroToolSpecs(tools);
         userMsg.userInputMessage.userInputMessageContext.tools = built.specs;
-        if (built.docs) toolDocs = built.docs;
+        if (built.docs) {
+          toolDocs = built.docs;
+          toolDocsCarrier = userMsg;
+        }
         toolsAttached = true;
       }
 
@@ -530,8 +540,28 @@ function convertMessages(messages, tools, model) {
     }
     const built = buildKiroToolSpecs(tools);
     currentMessage.userInputMessage.userInputMessageContext.tools = built.specs;
-    if (built.docs) toolDocs = built.docs;
+    if (built.docs) {
+      toolDocs = built.docs;
+      toolDocsCarrier = currentMessage;
+    }
     toolsAttached = true;
+  }
+
+  // The relocated doc text is only safe to leave in `toolDocs` (which
+  // `buildKiroPayload()` unconditionally prepends onto `currentMessage`) when
+  // the turn that originally carried it IS `currentMessage` — true for a
+  // single-turn conversation and the "no user turn" fallback above. On any
+  // later turn of a resent multi-turn request, the tool-bearing turn has been
+  // demoted into `history` instead, so re-prepending `toolDocs` here would
+  // glue the *already delivered* doc block onto the newest turn every time
+  // (issue #13652). Embed it directly onto the carrier turn's own content —
+  // still in `history` at this point — and clear `toolDocs` so
+  // `buildKiroPayload()` does not also inject it.
+  if (toolDocs && toolDocsCarrier && toolDocsCarrier !== currentMessage) {
+    const carrierMessage = toolDocsCarrier.userInputMessage;
+    const existingContent = carrierMessage.content || "";
+    carrierMessage.content = `# Tool Documentation\n\n${toolDocs}\n\n---\n\n${existingContent}`;
+    toolDocs = "";
   }
 
   // Clean up history for Kiro API compatibility
@@ -704,6 +734,51 @@ function convertMessages(messages, tools, model) {
     }
   }
 
+  // Strip orphaned toolUses: an assistantResponseMessage that advertises a
+  // toolUse with no matching toolResult anywhere in history (or the current
+  // message) produces an invalid Kiro/Bedrock transcript -- Bedrock rejects it
+  // with "Expected toolResult blocks at messages.N.content for the following
+  // Ids: ...". This mirrors the orphaned-toolResult cleanup above, but for the
+  // opposite direction (a tool_use that never got answered, e.g. because the
+  // client lost one of two parallel tool results). The same defense
+  // (fixToolPairs, open-sse/services/contextManager.ts) already applies on the
+  // Claude and post-#7822 Antigravity paths; KiroExecutor.execute() never
+  // calls BaseExecutor.execute(), so it never got this guard.
+  const answeredToolUseIds = new Set<string>();
+  for (const item of mergedHistory) {
+    const toolResults = item.userInputMessage?.userInputMessageContext?.toolResults as
+      | Array<{ toolUseId?: string }>
+      | undefined;
+    if (Array.isArray(toolResults)) {
+      for (const result of toolResults) {
+        if (result?.toolUseId) answeredToolUseIds.add(result.toolUseId);
+      }
+    }
+  }
+  const currentToolResultsForOrphanCheck = currentMessage?.userInputMessage
+    ?.userInputMessageContext?.toolResults as Array<{ toolUseId?: string }> | undefined;
+  if (Array.isArray(currentToolResultsForOrphanCheck)) {
+    for (const result of currentToolResultsForOrphanCheck) {
+      if (result?.toolUseId) answeredToolUseIds.add(result.toolUseId);
+    }
+  }
+  for (const item of mergedHistory) {
+    const toolUses = item.assistantResponseMessage?.toolUses as
+      | Array<{ toolUseId?: string }>
+      | undefined;
+    if (!Array.isArray(toolUses)) continue;
+    const filtered = toolUses.filter(
+      (use) => use?.toolUseId && answeredToolUseIds.has(use.toolUseId)
+    );
+    if (filtered.length !== toolUses.length) {
+      if (filtered.length > 0) {
+        item.assistantResponseMessage!.toolUses = filtered;
+      } else {
+        delete item.assistantResponseMessage!.toolUses;
+      }
+    }
+  }
+
   // Ensure alternating roles by inserting synthetic assistant messages
   // between consecutive user turns that couldn't be merged.
   const alternatingHistory: typeof mergedHistory = [];
@@ -832,6 +907,9 @@ export function buildKiroPayload(model, body, stream, credentials) {
   // so Kiro accepts the request instead of returning `Improperly formed
   // request`. This preserves tool-call history and is a no-op when body.tools
   // is already populated.
+  // The synthesized names are recorded because the client never declared them
+  // (#18675): the executor must not read a synthesized `tool_call` as a client tool.
+  let synthesizedToolNames: string[] = [];
   if (tools.length === 0) {
     const seen = new Set<string>();
     const synthesized: Array<Record<string, unknown>> = [];
@@ -866,6 +944,7 @@ export function buildKiroPayload(model, body, stream, credentials) {
     }
     if (synthesized.length > 0) {
       tools = synthesized;
+      synthesizedToolNames = [...seen];
     }
   }
 
@@ -905,6 +984,7 @@ export function buildKiroPayload(model, body, stream, credentials) {
       history: unknown[];
     };
     profileArn?: string;
+    _kiroSynthesizedToolNames?: Map<string, true>;
     inferenceConfig?: {
       maxTokens?: number;
       temperature?: number;
@@ -978,6 +1058,11 @@ export function buildKiroPayload(model, body, stream, credentials) {
 
   if (profileArn) {
     payload.profileArn = profileArn;
+  }
+  // In-memory channel (Map, like `_toolNameMap`): survives post-translation compression and
+  // is dropped by the Kiro executor's transformRequest allowlist before the wire send.
+  if (synthesizedToolNames.length > 0) {
+    payload._kiroSynthesizedToolNames = new Map(synthesizedToolNames.map((n) => [n, true]));
   }
 
   if (maxTokens || temperature !== undefined || topP !== undefined) {

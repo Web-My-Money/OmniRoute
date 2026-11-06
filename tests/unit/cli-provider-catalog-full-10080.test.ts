@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // #10080 — `loadAvailableProviders()` always returned the 6-entry
 // COMMON_PROVIDERS fallback, so `omniroute keys add <provider>` rejected ~290 of
@@ -108,11 +107,11 @@ test("loadAvailableProviders reads the decomposed catalog, not the 6-entry fallb
   // Lower bound rather than an exact count so adding providers does not break this.
   assert.ok(providers.length > 200, `expected 200+ providers, got ${providers.length}`);
 
-  const byId = new Map<string, LooseDeep>((providers as LooseDeep[]).map((p) => [p.id, p]));
-  for (const id of ["cerebras", "groq", "gemini", "siliconflow", "opencode", "kiro"]) {
+  const byId = new Map(providers.map((p) => [p.id, p]));
+  for (const id of ["cerebras", "groq", "gemini", "siliconflow", "uncloseai", "kiro"]) {
     assert.ok(byId.has(id), `${id} missing from the catalog`);
   }
-  assert.equal(byId.get("opencode")?.category, "noauth");
+  assert.equal(byId.get("uncloseai")?.category, "noauth");
   assert.equal(byId.get("kiro")?.category, "oauth");
   assert.equal(byId.get("cerebras")?.category, "api-key");
   assert.ok(providers.filter((p) => p.hasFree).length > 50, "free-tier flags should survive");

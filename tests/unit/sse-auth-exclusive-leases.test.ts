@@ -3,7 +3,6 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { looseCreds, type LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-auth-exclusive-lease-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -15,8 +14,6 @@ const providersDb = await import("../../src/lib/db/providers.ts");
 const apiKeysDb = await import("../../src/lib/db/apiKeys.ts");
 const leaseDb = await import("../../src/lib/db/exclusiveConnectionLeases.ts");
 const auth = await import("../../src/sse/services/auth.ts");
-const getCreds = looseCreds(auth.getProviderCredentials);
-const getCredsPreflight = looseCreds(auth.getProviderCredentialsWithQuotaPreflight);
 const settingsDb = await import("../../src/lib/db/settings.ts");
 const quotaCache = await import("../../src/domain/quotaCache.ts");
 const quotaPreflight = await import("../../open-sse/services/quotaPreflight.ts");
@@ -38,7 +35,7 @@ async function seedConnection(
   } = {}
 ): Promise<{ id: string }> {
   const provider = overrides.provider ?? "glm";
-  const connection = (await providersDb.createProviderConnection({
+  const connection = await providersDb.createProviderConnection({
     provider,
     authType: "apikey",
     name: `${provider}-managed-${priority}-${Math.random().toString(16).slice(2)}`,
@@ -48,7 +45,7 @@ async function seedConnection(
     priority,
     rateLimitedUntil: overrides.rateLimitedUntil,
     providerSpecificData: overrides.providerSpecificData ?? {},
-  })) as JsonRecord & { id: string };
+  });
   return connection as { id: string };
 }
 
@@ -92,12 +89,12 @@ test("foreign top candidate is skipped and the existing selector chooses the nex
     connectionId: top.id,
   });
 
-  const selected = await getCreds("glm", null, [top.id, next.id], "glm-4.6", {
+  const selected = await auth.getProviderCredentials("glm", null, [top.id, next.id], "glm-4.6", {
     lease: { apiKeyId: key.id, context: context(OWNERS[1], 1), mode: "acquire" },
     materializeCredentials: false,
   });
   assert.equal(selected?.connectionId, next.id);
-  assert.equal((selected as ExclusiveLeaseSelectionResult).exclusiveLease.generation, 1);
+  assert.equal((selected as auth.ExclusiveLeaseSelectionResult).exclusiveLease.generation, 1);
 });
 
 test("all eligible candidates foreign returns WAITING without credentials", async () => {
@@ -116,10 +113,16 @@ test("all eligible candidates foreign returns WAITING without credentials", asyn
     connectionId: second.id,
   });
 
-  const selected = await getCreds("glm", null, [first.id, second.id], "glm-4.6", {
-    lease: { apiKeyId: key.id, context: context(OWNERS[2], 1), mode: "acquire" },
-    materializeCredentials: false,
-  });
+  const selected = await auth.getProviderCredentials(
+    "glm",
+    null,
+    [first.id, second.id],
+    "glm-4.6",
+    {
+      lease: { apiKeyId: key.id, context: context(OWNERS[2], 1), mode: "acquire" },
+      materializeCredentials: false,
+    }
+  );
   assert.equal(selected?.waitingForCapacity, true);
   assert.equal(selected?.freeCount, 0);
   assert.equal("apiKey" in selected, false);
@@ -137,13 +140,19 @@ test("an eligible live owner binding is reused despite softer priority scoring",
   assert.equal(acquired.kind, "ACQUIRED");
   if (acquired.kind !== "ACQUIRED") return;
 
-  const selected = await getCreds("glm", null, [preferred.id, bound.id], "glm-4.6", {
-    lease: {
-      apiKeyId: key.id,
-      context: context(OWNERS[0], acquired.lease.generation),
-      mode: "request",
-    },
-  });
+  const selected = await auth.getProviderCredentials(
+    "glm",
+    null,
+    [preferred.id, bound.id],
+    "glm-4.6",
+    {
+      lease: {
+        apiKeyId: key.id,
+        context: context(OWNERS[0], acquired.lease.generation),
+        mode: "request",
+      },
+    }
+  );
   assert.equal(selected?.connectionId, bound.id);
   assert.match(selected?.apiKey ?? "", /^sk-glm-managed-2-/);
 });
@@ -151,14 +160,20 @@ test("an eligible live owner binding is reused despite softer priority scoring",
 test("quota-preflight wrapper claims before returning even when live preflight is a no-op", async () => {
   const connection = await seedConnection(1);
   const key = await seedManagedKey([connection.id]);
-  const selected = await getCredsPreflight("glm", null, [connection.id], "glm-4.6", {
-    lease: { apiKeyId: key.id, context: context(OWNERS[0], 1), mode: "acquire" },
-    materializeCredentials: false,
-    reserveOAuthSession: false,
-  });
+  const selected = await auth.getProviderCredentialsWithQuotaPreflight(
+    "glm",
+    null,
+    [connection.id],
+    "glm-4.6",
+    {
+      lease: { apiKeyId: key.id, context: context(OWNERS[0], 1), mode: "acquire" },
+      materializeCredentials: false,
+      reserveOAuthSession: false,
+    }
+  );
 
   assert.equal(selected?.connectionId, connection.id);
-  assert.equal((selected as ExclusiveLeaseSelectionResult).exclusiveLease.generation, 1);
+  assert.equal((selected as auth.ExclusiveLeaseSelectionResult).exclusiveLease.generation, 1);
   assert.equal(leaseDb.getActiveExclusiveConnectionLease(OWNERS[0])?.connectionId, connection.id);
   assert.equal("apiKey" in selected, false);
 });
@@ -166,12 +181,18 @@ test("quota-preflight wrapper claims before returning even when live preflight i
 test("lifecycle pre-acquire disables request-scoped OAuth occupancy reservation", async () => {
   const connection = await seedConnection(1, { provider: "codex" });
   const key = await seedManagedKey([connection.id]);
-  const selected = await getCredsPreflight("codex", null, [connection.id], "gpt-5.6-sol", {
-    lease: { apiKeyId: key.id, context: context(OWNERS[0], 1), mode: "acquire" },
-    materializeCredentials: false,
-    reserveOAuthSession: false,
-    sessionKey: "routing-session-not-owner",
-  });
+  const selected = await auth.getProviderCredentialsWithQuotaPreflight(
+    "codex",
+    null,
+    [connection.id],
+    "gpt-5.6-sol",
+    {
+      lease: { apiKeyId: key.id, context: context(OWNERS[0], 1), mode: "acquire" },
+      materializeCredentials: false,
+      reserveOAuthSession: false,
+      sessionKey: "routing-session-not-owner",
+    }
+  );
 
   assert.equal(selected?.connectionId, connection.id);
   assert.equal(
@@ -183,25 +204,37 @@ test("lifecycle pre-acquire disables request-scoped OAuth occupancy reservation"
 test("acquire is idempotent without adopting a caller-supplied placeholder generation", async () => {
   const connection = await seedConnection(1);
   const key = await seedManagedKey([connection.id]);
-  const first = await getCredsPreflight("glm", null, [connection.id], "glm-4.6", {
-    lease: { apiKeyId: key.id, context: context(OWNERS[0], 1), mode: "acquire" },
-    materializeCredentials: false,
-    reserveOAuthSession: false,
-  });
-  const second = await getCredsPreflight("glm", null, [connection.id], "glm-4.6", {
-    lease: { apiKeyId: key.id, context: context(OWNERS[0], 999), mode: "acquire" },
-    materializeCredentials: false,
-    reserveOAuthSession: false,
-  });
+  const first = await auth.getProviderCredentialsWithQuotaPreflight(
+    "glm",
+    null,
+    [connection.id],
+    "glm-4.6",
+    {
+      lease: { apiKeyId: key.id, context: context(OWNERS[0], 1), mode: "acquire" },
+      materializeCredentials: false,
+      reserveOAuthSession: false,
+    }
+  );
+  const second = await auth.getProviderCredentialsWithQuotaPreflight(
+    "glm",
+    null,
+    [connection.id],
+    "glm-4.6",
+    {
+      lease: { apiKeyId: key.id, context: context(OWNERS[0], 999), mode: "acquire" },
+      materializeCredentials: false,
+      reserveOAuthSession: false,
+    }
+  );
 
-  assert.equal((first as ExclusiveLeaseSelectionResult).exclusiveLease.generation, 1);
-  assert.equal((second as ExclusiveLeaseSelectionResult).exclusiveLease.generation, 1);
+  assert.equal((first as auth.ExclusiveLeaseSelectionResult).exclusiveLease.generation, 1);
+  assert.equal((second as auth.ExclusiveLeaseSelectionResult).exclusiveLease.generation, 1);
 });
 
 test("managed request distinguishes missing lease from stale generation", async () => {
   const connection = await seedConnection(1);
   const key = await seedManagedKey([connection.id]);
-  const missing = await getCreds("glm", null, [connection.id], "glm-4.6", {
+  const missing = await auth.getProviderCredentials("glm", null, [connection.id], "glm-4.6", {
     lease: { apiKeyId: key.id, context: context(OWNERS[0], 1), mode: "request" },
   });
   assert.equal(missing?.leaseRequired, true);
@@ -214,7 +247,7 @@ test("managed request distinguishes missing lease from stale generation", async 
   });
   assert.equal(acquired.kind, "ACQUIRED");
   if (acquired.kind !== "ACQUIRED") return;
-  const stale = await getCreds("glm", null, [connection.id], "glm-4.6", {
+  const stale = await auth.getProviderCredentials("glm", null, [connection.id], "glm-4.6", {
     lease: {
       apiKeyId: key.id,
       context: context(OWNERS[0], acquired.lease.generation + 1),
@@ -224,13 +257,20 @@ test("managed request distinguishes missing lease from stale generation", async 
   assert.equal(stale?.leaseFenceStale, true);
 });
 
-test("unmanaged selection cannot receive lease-only connections even while free", async () => {
+test("unmanaged selection may receive a lease-capable connection while its lease is FREE", async () => {
+  // #11775: listing a connection in a lease-capable key's allowlist is no longer a
+  // static global reservation — ordinary routing keeps using it until an ACTIVE lease
+  // is held (the ACTIVE case is covered by the tests below).
   const [managed, ordinary] = await Promise.all([seedConnection(1), seedConnection(2)]);
   await seedManagedKey([managed.id]);
   assert.equal((await apiKeysDb.getExclusiveLeaseConnectionIds()).has(managed.id), true);
 
-  const selected = await getCreds("glm", null, null, "glm-4.6");
-  assert.equal(selected?.connectionId, ordinary.id);
+  const selected = await auth.getProviderCredentials("glm", null, null, "glm-4.6");
+  assert.ok(selected, "unmanaged selection still resolves a connection");
+  assert.ok(
+    [managed.id, ordinary.id].includes(selected.connectionId),
+    `selected ${selected.connectionId} must be one of the two seeded connections`
+  );
 });
 
 test("generic lease selection is provider-neutral across GLM and OpenAI fixtures", async () => {
@@ -240,14 +280,14 @@ test("generic lease selection is provider-neutral across GLM and OpenAI fixtures
   ] as const) {
     const connection = await seedConnection(1, { provider });
     const key = await seedManagedKey([connection.id]);
-    const selected = await getCreds(provider, null, [connection.id], model, {
+    const selected = await auth.getProviderCredentials(provider, null, [connection.id], model, {
       lease: { apiKeyId: key.id, context: context(OWNERS[0], 1), mode: "acquire" },
       materializeCredentials: false,
     });
     assert.equal(selected?.connectionId, connection.id, provider);
     leaseDb.releaseExclusiveConnectionLease({
       leaseOwnerId: OWNERS[0],
-      generation: (selected!.exclusiveLease as LooseDeep).generation,
+      generation: selected!.exclusiveLease.generation,
       apiKeyId: key.id,
     });
   }
@@ -260,7 +300,7 @@ test("managed capacity scales one owner per connection and the next owner waits"
   const key = await seedManagedKey(connections.map((connection) => connection.id));
   const selectedIds = new Set<string>();
   for (let index = 0; index < connections.length; index += 1) {
-    const selected = await getCreds(
+    const selected = await auth.getProviderCredentials(
       "glm",
       null,
       connections.map((connection) => connection.id),
@@ -281,7 +321,7 @@ test("managed capacity scales one owner per connection and the next owner waits"
   }
   assert.equal(selectedIds.size, 9);
 
-  const waiting = await getCreds(
+  const waiting = await auth.getProviderCredentials(
     "glm",
     null,
     connections.map((connection) => connection.id),
@@ -312,7 +352,7 @@ for (const strategy of ["fill-first", "round-robin", "random", "p2c", "strict-ra
     });
     assert.equal(foreign.kind, "ACQUIRED");
 
-    const selected = await getCreds("glm", null, ids, "glm-4.6", {
+    const selected = await auth.getProviderCredentials("glm", null, ids, "glm-4.6", {
       lease: { apiKeyId: key.id, context: context(OWNERS[1], 1), mode: "acquire" },
       materializeCredentials: false,
     });
@@ -339,11 +379,17 @@ test("managed live quota preflight rejects one candidate and claims the next wit
     };
   });
 
-  const selected = await getCredsPreflight("glm", null, [blocked.id, healthy.id], "glm-4.6", {
-    lease: { apiKeyId: key.id, context: context(OWNERS[0], 1), mode: "acquire" },
-    materializeCredentials: false,
-    reserveOAuthSession: false,
-  });
+  const selected = await auth.getProviderCredentialsWithQuotaPreflight(
+    "glm",
+    null,
+    [blocked.id, healthy.id],
+    "glm-4.6",
+    {
+      lease: { apiKeyId: key.id, context: context(OWNERS[0], 1), mode: "acquire" },
+      materializeCredentials: false,
+      reserveOAuthSession: false,
+    }
+  );
 
   assert.deepEqual(calls, [blocked.id, healthy.id]);
   assert.equal(selected?.connectionId, healthy.id);
@@ -372,7 +418,7 @@ test("managed cached quota ineligibility transitions the live owner to a FREE co
     daily: { remainingPercentage: 1, resetAt: new Date(Date.now() + 60_000).toISOString() },
   });
 
-  const selected = await getCreds("glm", null, [bound.id, free.id], "glm-4.6", {
+  const selected = await auth.getProviderCredentials("glm", null, [bound.id, free.id], "glm-4.6", {
     lease: {
       apiKeyId: key.id,
       context: context(OWNERS[0], acquired.lease.generation),
@@ -411,14 +457,20 @@ test("managed cooldown and terminal-auth ineligibility transition only to a FREE
         : { testStatus: "banned" }
     );
 
-    const selected = await getCreds("glm", null, [bound.id, free.id], "glm-4.6", {
-      lease: {
-        apiKeyId: key.id,
-        context: context(OWNERS[0], acquired.lease.generation),
-        mode: "request",
-      },
-      materializeCredentials: false,
-    });
+    const selected = await auth.getProviderCredentials(
+      "glm",
+      null,
+      [bound.id, free.id],
+      "glm-4.6",
+      {
+        lease: {
+          apiKeyId: key.id,
+          context: context(OWNERS[0], acquired.lease.generation),
+          mode: "request",
+        },
+        materializeCredentials: false,
+      }
+    );
     assert.equal(selected?.connectionId, free.id, kind);
   }
 });
@@ -445,14 +497,20 @@ test("managed model lockout transitions the same generation to a FREE connection
     "gemini-2.5-pro"
   );
 
-  const selected = await getCreds("gemini", null, [bound.id, free.id], "gemini-2.5-pro", {
-    lease: {
-      apiKeyId: key.id,
-      context: context(OWNERS[0], acquired.lease.generation),
-      mode: "request",
-    },
-    materializeCredentials: false,
-  });
+  const selected = await auth.getProviderCredentials(
+    "gemini",
+    null,
+    [bound.id, free.id],
+    "gemini-2.5-pro",
+    {
+      lease: {
+        apiKeyId: key.id,
+        context: context(OWNERS[0], acquired.lease.generation),
+        mode: "request",
+      },
+      materializeCredentials: false,
+    }
+  );
   assert.equal(selected?.connectionId, free.id);
   assert.equal(
     leaseDb.getActiveExclusiveConnectionLease(OWNERS[0])?.generation,
@@ -476,7 +534,7 @@ test("managed request invalidates an unsafe binding when no FREE failover target
     rateLimitedUntil: new Date(Date.now() + 60_000).toISOString(),
   });
 
-  const selected = await getCreds("glm", null, [bound.id], "glm-4.6", {
+  const selected = await auth.getProviderCredentials("glm", null, [bound.id], "glm-4.6", {
     lease: {
       apiKeyId: key.id,
       context: context(OWNERS[0], acquired.lease.generation),
@@ -488,6 +546,3 @@ test("managed request invalidates an unsafe binding when no FREE failover target
   assert.equal(selected?.allRateLimited, true);
   assert.equal(leaseDb.getActiveExclusiveConnectionLease(OWNERS[0]), null);
 });
-
-import type { JsonRecord } from "../../src/shared/types/json.ts";
-import type { ExclusiveLeaseSelectionResult } from "../../src/sse/services/auth.ts";

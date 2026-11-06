@@ -1,14 +1,13 @@
 import { createHash } from "crypto";
-import {
-  getApiKeys,
-  getCombos,
-  getModelAliases,
-  getProviderConnections,
-  getCachedProviderNodes,
-  getSettings,
-  getReasoningRoutingRules,
-} from "@/lib/localDb";
-import { type JsonRecord } from "@/shared/types/json";
+import { getApiKeys } from "@/lib/db/apiKeys";
+import { getCombos } from "@/lib/db/combos";
+import { getModelAliases } from "@/lib/db/models";
+import { getProviderConnections } from "@/lib/db/providers";
+import { getCachedProviderNodes } from "@/lib/db/readCache";
+import { getSettings } from "@/lib/db/settings";
+import { getReasoningRoutingRules } from "@/lib/db/reasoningRoutingRules";
+
+type JsonRecord = Record<string, unknown>;
 
 export interface ConfigSyncBundle {
   settings: JsonRecord;
@@ -121,6 +120,7 @@ function sanitizeApiKeyForSync(apiKey: unknown): JsonRecord {
     "allowedModels",
     "allowedCombos",
     "allowedConnections",
+    "preferredConnections",
     "noLog",
     "autoResolve",
     "isActive",
@@ -199,10 +199,7 @@ export async function buildConfigSyncBundle(): Promise<ConfigSyncBundle> {
     getCachedProviderNodes(),
     getModelAliases(),
     getCombos(),
-    // Explicit limit: getApiKeys' 1,000-row safety bound is for hot-path
-    // callers. A sync bundle must carry every key or a restore silently
-    // loses them.
-    getApiKeys(1_000_000),
+    getApiKeys(),
     getReasoningRoutingRules(),
   ]);
 

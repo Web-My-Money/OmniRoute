@@ -23,10 +23,10 @@
 //   node scripts/check/check-dashboard-typecheck.mjs
 //   node scripts/check/check-dashboard-typecheck.mjs --update   # re-freeze baseline
 
-import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { runScopedTypecheck } from "./run-scoped-typecheck.mjs";
 
 const ROOT = process.cwd();
 const TSCONFIG = path.join(ROOT, "tsconfig.typecheck-dashboard.json");
@@ -94,30 +94,6 @@ export function diffAgainstBaseline(live, baseline) {
   return { regressions, improvements };
 }
 
-function runTsc() {
-  try {
-    // Invoke the local tsc entrypoint through node directly — spawning npx(.cmd)
-    // without a shell throws EINVAL on Windows (CVE-2024-27980 hardening).
-    const stdout = execFileSync(
-      process.execPath,
-      [
-        path.join(ROOT, "node_modules", "typescript", "bin", "tsc"),
-        "--pretty",
-        "false",
-        "--noEmit",
-        "-p",
-        TSCONFIG,
-      ],
-      { encoding: "utf8", maxBuffer: 64 * 1024 * 1024, cwd: ROOT }
-    );
-    return stdout;
-  } catch (err) {
-    // tsc exits non-zero when there are type errors — stdout still has the report.
-    if (err.stdout) return String(err.stdout);
-    throw err;
-  }
-}
-
 function loadBaseline() {
   if (!fs.existsSync(BASELINE_PATH)) return {};
   return JSON.parse(fs.readFileSync(BASELINE_PATH, "utf8"));
@@ -134,7 +110,7 @@ function main() {
   }
 
   console.log("[dashboard-typecheck] Running tsc scoped to src/app/(dashboard)/**…");
-  const stdout = runTsc();
+  const stdout = runScopedTypecheck(ROOT, TSCONFIG, { incremental: false });
   const live = parseTscOutput(stdout);
   const baseline = loadBaseline();
   const { regressions, improvements } = diffAgainstBaseline(live, baseline);

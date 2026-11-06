@@ -1,4 +1,4 @@
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 // #8347: CLIProxyAPI-style upstreams gate a richer catalog behind a `client_version` query
 // param on the model-list request (mirroring `discovery/codex.ts::buildCodexModelsUrl`).
 // This is a per-connection, default-OFF opt-in — appending an unexpected query param to

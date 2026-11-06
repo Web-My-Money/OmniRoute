@@ -13,8 +13,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { cleanupTestDataDir } from "../../helpers/cleanupTempDir.ts";
-import type { VisionModelConfig } from "../../../src/lib/guardrails/visionBridgeHelpers.ts";
+import { cleanupTempDataDir } from "../../_setup/tempDataDir.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-vision-bridge-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -43,7 +42,7 @@ const originalFetch = globalThis.fetch;
 
 test.after(async () => {
   globalThis.fetch = originalFetch;
-  await cleanupTestDataDir(TEST_DATA_DIR);
+  await cleanupTempDataDir(TEST_DATA_DIR);
 });
 
 test.afterEach(() => {
@@ -85,7 +84,7 @@ test("callVisionModel falls through to next model when primary fails", async () 
 
   const result = await callVisionModel(
     TINY_PNG,
-    { model: "openai/gpt-4o-mini", prompt: "Describe this image." } as unknown as VisionModelConfig,
+    { model: "openai/gpt-4o-mini", prompt: "Describe this image." },
     "sk-test-key",
     { fixedModel: "openai/gpt-4o-mini", maxFallbackAttempts: 2 }
   );
@@ -106,10 +105,7 @@ test("callVisionModel throws when ALL models fail", async () => {
     () =>
       callVisionModel(
         TINY_PNG,
-        {
-          model: "openai/gpt-4o-mini",
-          prompt: "Describe this image.",
-        } as unknown as VisionModelConfig,
+        { model: "openai/gpt-4o-mini", prompt: "Describe this image." },
         "sk-test-key",
         { fixedModel: "openai/gpt-4o-mini", maxFallbackAttempts: 2 }
       ),

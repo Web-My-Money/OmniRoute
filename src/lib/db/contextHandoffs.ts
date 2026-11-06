@@ -1,5 +1,5 @@
 import { getDbInstance, rowToCamel } from "./core";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 export interface HandoffPayload {
   id?: string;

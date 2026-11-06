@@ -24,7 +24,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-11300-hidden-leak-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -32,7 +31,7 @@ process.env.DATA_DIR = TEST_DATA_DIR;
 const core = await import("../../src/lib/db/core.ts");
 const providersDb = await import("../../src/lib/db/providers.ts");
 const modelsDb = await import("../../src/lib/db/models.ts");
-const { mergeModelCompatOverride } = await import("../../src/lib/localDb.ts");
+const { mergeModelCompatOverride } = await import("@/lib/db/models");
 const v1ModelsCatalog = await import("../../src/app/api/v1/models/catalog.ts");
 
 async function resetStorage() {
@@ -62,7 +61,7 @@ async function fetchCatalogIds(): Promise<string[]> {
 }
 
 test("#11300 A: hiding a static model under its ALIAS (cc) excludes it under both cc/ and claude/ ids", async () => {
-  (await providersDb.createProviderConnection({
+  await providersDb.createProviderConnection({
     provider: "claude",
     authType: "apikey",
     name: "claude-main",
@@ -70,7 +69,7 @@ test("#11300 A: hiding a static model under its ALIAS (cc) excludes it under bot
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  })) as JsonRecord & { id: string };
+  });
 
   // Sanity: before hiding, the model is advertised.
   let ids = await fetchCatalogIds();
@@ -95,7 +94,7 @@ test("#11300 A: hiding a static model under its ALIAS (cc) excludes it under bot
 });
 
 test('#11300 B: hiding a codex-native unprefixed model under "openai" excludes the bare model id', async () => {
-  (await providersDb.createProviderConnection({
+  await providersDb.createProviderConnection({
     provider: "codex",
     authType: "oauth",
     name: "codex-main",
@@ -103,7 +102,7 @@ test('#11300 B: hiding a codex-native unprefixed model under "openai" excludes t
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  })) as JsonRecord & { id: string };
+  });
 
   const nativeModelId = "gpt-5.6-sol";
 
@@ -137,7 +136,7 @@ test("#11300 C: hiding a compatible-node synced model under its configured PREFI
     chatPath: "/v1/chat/completions",
     modelsPath: "/v1/models",
   });
-  const connection = (await providersDb.createProviderConnection({
+  const connection = await providersDb.createProviderConnection({
     provider: NODE_ID,
     authType: "apikey",
     name: "deepseek-node-conn",
@@ -149,7 +148,7 @@ test("#11300 C: hiding a compatible-node synced model under its configured PREFI
       chatPath: "/v1/chat/completions",
       modelsPath: "/v1/models",
     },
-  })) as JsonRecord & { id: string };
+  });
 
   const modelId = "deepseek-v4-flash-0731";
   await modelsDb.replaceSyncedAvailableModelsForConnection(

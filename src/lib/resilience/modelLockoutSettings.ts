@@ -1,5 +1,5 @@
 import { isAutomatedTestProcess } from "@/shared/utils/testProcess";
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 
 export interface ModelLockoutSettings {
   enabled: boolean;

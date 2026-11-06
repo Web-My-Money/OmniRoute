@@ -1,31 +1,63 @@
-# WMM Railway build file — DO NOT let this drift silently from upstream.
+# WMM Railway build file - DO NOT let this drift silently from upstream.
 #
-# This is a byte-for-byte copy of upstream's `Dockerfile` (base -> builder ->
-# runner-base), with the `runner-web` and `runner-cli` stages removed so that
-# `runner-base` is the LAST stage in the file.
+# This is a copy of upstream's `Dockerfile` (base -> builder -> runner-base), with the
+# `runner-web` and `runner-cli` stages removed so that `runner-base` is the LAST stage
+# in the file, plus the WMM deltas listed below.
 #
 # Why this file exists instead of pointing Railway at the real `Dockerfile`:
 # Railway's Dockerfile builder has no documented way to select a build target
-# (`--target`) for a multi-stage Dockerfile — it always builds the LAST stage.
+# (`--target`) for a multi-stage Dockerfile - it always builds the LAST stage.
 # Upstream's Dockerfile ends at `runner-cli` (base -> builder -> runner-base ->
 # runner-web -> runner-cli), which bundles extra CLI tooling (git, docker.io,
 # docker-compose, global npm installs of codex/claude-code/droid/openclaw)
 # that the live Railway `omniroute` service has never run and does not need.
-# The image originally live in production (`diegosouzapw/omniroute:3.8.49`) was
-# built from the `runner-base` target specifically (see the service's custom
-# start command, which manually patches in Playwright/Chromium at boot —
-# that hack only makes sense against the lean, browser-less `runner-base`
-# image, not `runner-web` which already bundles Chromium).
 #
-# Railway is pointed at this file via the `RAILWAY_DOCKERFILE_PATH` service
-# variable. Whenever upstream changes the `base`/`builder`/`runner-base`
-# stages in the real `Dockerfile` (check after every `git merge upstream/...`),
-# re-sync this file by re-running:
-#   sed -n '/^# Regenerated 2026-09-25 from upstream v3.8.50 `Dockerfile` (rebase of wmm-production).
+# Railway is pointed at this file via the `RAILWAY_DOCKERFILE_PATH` service variable.
+#
+# WMM deltas versus upstream's Dockerfile (check each after every upstream merge):
+#   1. Stages after `runner-base` removed (above).
+#   2. Every `RUN --mount=type=cache,id=...` uses Railway's id format
+#      `s/<railway-service-id>-<target path>`, hard-coded to the live production `omniroute`
+#      service id (c1a15bab-...). Upstream's ids (92ca8a61-...) belong to a different service
+#      and fail on ours. A throwaway verification service must swap these ids for its own.
+#   3. Playwright Chromium is pre-baked into the image (block "Pre-bake Playwright Chromium"
+#      below). The Railway service sets PLAYWRIGHT_BROWSERS_PATH=/app/.playwright-browsers.
+#      The playwright-core directory is RESOLVED at build time, not hard-coded (#43): where
+#      npm puts it depends on lockfile dedupe, and a hard-coded path silently broke every
+#      build for five weeks.
+#   (The former tls-client pin is gone: upstream v3.8.53 replaced tls-client-node with wreq-js.)
+#
+# Last re-synced from upstream v3.8.53 `Dockerfile` on 2026-11-06. To re-sync: take upstream's
+# `Dockerfile`, cut everything from "# -- Runner Web" onward, re-apply deltas 2 and 3.
 
 # ── Common base with runtime deps ──────────────────────────────────────────
-FROM node:26-trixie-slim AS base
+# Pinned to a patch release (Dependabot bumps it) instead of the floating `26-trixie-slim`
+# tag: the floating tag let v3.8.52 ship with node 26.12.0, whose bundled root store still
+# trusts the compromised eMudhra intermediates (https://emudhra.we-have-a-problem.com/).
+# 26.12.1 is the first 26.x that rejects them; tests/unit/build/docker-ca-baseline.test.mjs
+# keeps it from going below that.
+FROM node:26.12.1-trixie-slim AS base
 WORKDIR /app
+
+# Mirrors for builders whose network cannot reach the default sources
+# (deb.debian.org / registry.npmjs.org / nodejs.org). Defaults keep upstream
+# behavior byte-identical; override at build time, e.g.:
+#   podman build \
+#     --build-arg APT_MIRROR=http://mirrors.tuna.tsinghua.edu.cn \
+#     --build-arg NPM_REGISTRY=https://registry.npmmirror.com \
+#     --build-arg NODE_DIST_URL=https://npmmirror.com/mirrors/node ...
+# APT_MIRROR replaces the whole scheme-plus-host. The default matches the base
+# image, whose single /etc/apt/sources.list.d/debian.sources lists both
+# /debian and /debian-security under http://deb.debian.org, so the default
+# substitution changes nothing. A mirror must serve both paths and include its
+# own scheme (e.g. http://mirrors.example.cn).
+# NODE_DIST_URL, when set, is exported as NODEJS_ORG_MIRROR only for the
+# node-gyp rebuild in the builder stage (lib/process-release.js). Left empty,
+# the variable is never set and node-gyp uses nodejs.org. The npm config write
+# persists in ~/.npmrc for every stage derived from base.
+ARG APT_MIRROR=http://deb.debian.org
+ARG NPM_REGISTRY=
+ARG NODE_DIST_URL=
 
 # `apt-get upgrade` pulls the security-patched versions of the Debian (trixie)
 # base-image packages at build time — clears the subset of container-scan CVEs
@@ -35,7 +67,9 @@ WORKDIR /app
 # is rebuilt; none are reachable from the proxy's request surface at runtime.
 RUN --mount=type=cache,id=s/c1a15bab-c913-4ee7-b676-1a2a1d46967c-/var/cache/apt,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,id=s/c1a15bab-c913-4ee7-b676-1a2a1d46967c-/var/lib/apt/lists,target=/var/lib/apt/lists,sharing=locked \
-  apt-get update \
+  sed -i -E "s|https?://deb.debian.org|${APT_MIRROR}|g" /etc/apt/sources.list.d/debian.sources \
+  && if [ -n "${NPM_REGISTRY}" ]; then npm config set registry "${NPM_REGISTRY}"; fi \
+  && apt-get update \
   && apt-get upgrade -y \
   && apt-get install -y --no-install-recommends libsecret-1-0 ca-certificates \
   && rm -rf /var/lib/apt/lists/*
@@ -47,9 +81,10 @@ RUN --mount=type=cache,id=s/c1a15bab-c913-4ee7-b676-1a2a1d46967c-/var/cache/apt,
 #
 # Refreshing npm does NOT fix them. Measured on npm@12.0.2 (2026-08-12, latest):
 #   brace-expansion 5.0.7  (needs >= 5.0.9)   CVE-2026-69152, CVE-2026-14257
-#   ip-address      10.2.0 (needs >= 10.3.1)  CVE-2026-69192/-69198/-54272
+#   ip-address      10.2.0 (needs >= 10.5.1)  CVE-2026-69192/-69198/-54272 + the
+#                   isLinkLocal / NAT64 local-use SSRF advisories fixed in 10.5.1
 #   tar             7.5.19 (needs >= 7.5.21)  GHSA-r292-9mhp-454m
-#   undici          6.27.0 (needs >= 6.28.0)  CVE-2026-16729/-16728/-15157
+#   undici          6.27.0 (needs >= 6.29.1)  GHSA-2m5v-pch6-74hx and October 2026 fixes
 # No published npm release carries patched copies, so `npm install -g npm@latest`
 # alone was pure build time for zero CVEs — it is kept only to land on a known,
 # current npm tree, and the patched copies are overlaid on top below.
@@ -69,20 +104,21 @@ RUN set -eux; \
   npm install -g npm@latest; \
   npm install --prefix /tmp/npm-cve-patch --no-audit --no-fund --ignore-scripts \
     --install-strategy=nested \
-    brace-expansion@5.0.9 ip-address@10.5.0 tar@7.5.22 undici@6.28.0; \
-  for pkg in brace-expansion ip-address tar undici; do \
+    brace-expansion@5.0.12 ip-address@10.7.4 postcss-selector-parser@7.1.6 tar@7.5.22 undici@6.29.1; \
+  for pkg in brace-expansion ip-address postcss-selector-parser tar undici; do \
     test -d "/usr/local/lib/node_modules/npm/node_modules/$pkg"; \
     rm -rf "/usr/local/lib/node_modules/npm/node_modules/$pkg"; \
     cp -R "/tmp/npm-cve-patch/node_modules/$pkg" \
       "/usr/local/lib/node_modules/npm/node_modules/$pkg"; \
   done; \
   rm -rf /tmp/npm-cve-patch; \
-  node -e "for (const p of ['brace-expansion','ip-address','tar','undici']) console.log(p, require('/usr/local/lib/node_modules/npm/node_modules/'+p+'/package.json').version);"; \
+  node -e "for (const p of ['brace-expansion','ip-address','postcss-selector-parser','tar','undici']) console.log(p, require('/usr/local/lib/node_modules/npm/node_modules/'+p+'/package.json').version);"; \
   npm --version; \
   npm cache clean --force
 
 # ── Builder ────────────────────────────────────────────────────────────────
 FROM base AS builder
+ARG NODE_DIST_URL=
 
 # No telemetry, anywhere. Disable Next.js's anonymous build-time telemetry
 # (it otherwise pings Vercel during `next build`). Set on the builder stage so
@@ -128,55 +164,39 @@ RUN test -f package-lock.json \
 # node-gyp comes from npm's own bundled copy (deterministic, already in the image)
 # instead of `npx --yes`, which would install an arbitrary registry version
 # on-demand and run its lifecycle scripts (Sonar docker:S6505).
-#
-# tls-client-node (chatgpt-web/claude-web/grok-web/lmarena/perplexity-web TLS
-# impersonation) hits the same --ignore-scripts wall: its own postinstall.js
-# fetches a platform .so/.dylib/.dll from the bogdanfinn/tls-client GitHub
-# Releases API and is never invoked when npm ci skips lifecycle scripts. Unlike
-# better-sqlite3 above, that script never throws on failure — it only
-# `console.warn`s and exits 0 — so a rate-limited or offline build would
-# otherwise succeed silently with an empty bin/ and only fail at first request
-# in production (TlsClientUnavailableError, #7802). Run it explicitly here so
-# a broken/rate-limited fetch fails the BUILD loudly instead of shipping a
-# broken image.
-# Pin the tls-client release. Upstream RENAMED its assets: v1.15.1 published both
-# `tls-client-linux-ubuntu-amd64-1.15.1.so` and `tls-client-xgo-1.15.1-linux-amd64.so`,
-# but v1.16.0 ships only the `-xgo-` form. tls-client-node@0.2.0 builds the name as
-# `tls-client-linux-ubuntu-amd64-<ver>.so` and hard-fails when it is absent, so once
-# v1.16.0 became `/releases/latest` every build died on
-#   No release asset found for tls-client-linux-ubuntu-amd64-1.16.0.so
-#
-# That is what broke omniroute deploys from 2026-08-28 on - nine consecutive FAILED
-# builds, while the last good image kept serving so nothing surfaced it. The guard
-# below blamed GitHub rate-limiting; it was an asset rename. Pinning to the last
-# release carrying the expected name is the minimal fix and matches the binary in
-# the last good image. Revisit when tls-client-node learns the `-xgo-` naming.
-ARG TLS_CLIENT_VERSION=1.15.1
 RUN --mount=type=cache,id=s/c1a15bab-c913-4ee7-b676-1a2a1d46967c-/root/.npm,target=/root/.npm \
   npm ci --include=optional --no-audit --no-fund --legacy-peer-deps --ignore-scripts \
   && (cd node_modules/better-sqlite3 \
-      && node /usr/local/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js rebuild) \
+      && if [ -n "${NODE_DIST_URL}" ]; then export NODEJS_ORG_MIRROR="${NODE_DIST_URL}"; fi \
+      && node /usr/local/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js rebuild --force_build=1) \
+  && test -f node_modules/better-sqlite3/build/Release/better_sqlite3.node \
   && node -e "require('better-sqlite3')(':memory:').close()" \
-  && TLS_CLIENT_VERSION="${TLS_CLIENT_VERSION}" node node_modules/tls-client-node/scripts/postinstall.js \
-  && (test -n "$(find node_modules/tls-client-node/bin -mindepth 1 -print -quit 2>/dev/null)" \
-      || (echo "tls-client-node native binary missing after postinstall (TLS_CLIENT_VERSION=${TLS_CLIENT_VERSION}) - see the ARG note above" >&2 && exit 1))
+  && node -e "const wreq=require('wreq-js'); if(typeof wreq.createTransport!=='function') process.exit(1)"
 
-# Build with Turbopack (stable in Next 16, the repo default). The v3.8.27-era
-# TurbopackInternalError panic ("entered unreachable code: there must be a path to a
-# root" in ImportTracer::get_traces) no longer reproduces on Next 16.2.9 — validated
-# 2026-07-05 with clean amd64 (12min14s, image smoke-tested: /api/monitoring/health
-# 200) and arm64 (qemu, exit 0, zero panic strings) builds. Turbopack cut the bare
-# build from 17min to 9min on the same 32-core box. Webpack stays available as the
-# escape hatch: `--build-arg`/-e OMNIROUTE_USE_TURBOPACK=0.
-# See docs/ops/QUALITY_GATE_PLAYBOOK.md Parte 6.
+# Bundler for the image build. The DOCKERFILE default is webpack
+# (OMNIROUTE_USE_TURBOPACK=0), deliberately different from the repo's code
+# default for local dev and non-Docker builds (Turbopack, =1 — read by
+# scripts/dev/run-next.mjs and scripts/build/build-next-isolated.mjs). A bare
+# `docker build .` with no build args is what one-click hosts (Railway and
+# similar) and ad-hoc self-hosters run, usually on memory-capped builders, and
+# Turbopack is the bundler that gets OOM-killed silently there (see the ARG+ENV
+# note below). The official images are unaffected: docker-publish.yml already
+# pins OMNIROUTE_USE_TURBOPACK=0 explicitly. On a big builder, opt back into
+# Turbopack with `--build-arg OMNIROUTE_USE_TURBOPACK=1`: the v3.8.27-era
+# TurbopackInternalError panic ("entered unreachable code: there must be a path
+# to a root" in ImportTracer::get_traces) no longer reproduces on Next 16.2.9 —
+# validated 2026-07-05 with clean amd64 (12min14s, image smoke-tested:
+# /api/monitoring/health 200) and arm64 (qemu, exit 0, zero panic strings)
+# builds, and Turbopack cut the bare build from 17min to 9min on the same
+# 32-core box. See docs/ops/QUALITY_GATE_PLAYBOOK.md Parte 6.
 #
 # Declared as ARG+ENV, not a bare ENV: a bare ENV shadows any same-named ARG for
 # the rest of the stage, so `--build-arg OMNIROUTE_USE_TURBOPACK=0` was silently
-# ignored and the escape hatch above only ever worked via `-e` at runtime, never
-# at build time. Turbopack compiles in native Rust memory that lives outside the
+# ignored and the webpack escape hatch only ever worked via `-e` at runtime,
+# never at build time. Turbopack compiles in native Rust memory that lives outside the
 # V8 heap, so OMNIROUTE_BUILD_MEMORY_MB cannot bound it and a memory-constrained
 # build host gets SIGKILLed by the cgroup OOM killer with no error message.
-ARG OMNIROUTE_USE_TURBOPACK=1
+ARG OMNIROUTE_USE_TURBOPACK=0
 ENV OMNIROUTE_USE_TURBOPACK="${OMNIROUTE_USE_TURBOPACK}"
 
 # Next.js basePath is fixed at build time; pass OMNIROUTE_BASE_PATH here when the
@@ -222,22 +242,40 @@ ENV NODE_OPTIONS="--max-old-space-size=${OMNIROUTE_BUILD_MEMORY_MB}"
 # silently leaving no standalone bundle. Next derives the worker count from
 # CIRCLE_NODE_TOTAL (workers = N-1). (#10060)
 #
-# Lowered 8 → 3 (7 workers → 2). Every page-data worker inherits NODE_OPTIONS
-# above, so the ceiling is per PROCESS, not per build: 7 workers on a 16 GB
-# GitHub runner (ubuntu-24.04 / ubuntu-24.04-arm, 4 vCPU) exhausted the host and
-# buildkit failed the whole step with `ResourceExhausted: ... cannot allocate
-# memory`. The compile phase always finished ("✓ Compiled successfully in
-# 4.2min"); the kernel killed the build right after "Collecting page data using
-# 7 workers". It was intermittent for a while and went 100% on 2026-08-22, which
-# is what a threshold being crossed by ordinary codebase growth looks like.
-# tests/unit/docker-build-memory-budget.test.ts does the arithmetic and fails if
-# either knob is raised past what a 16 GB runner holds. 2 workers also stops
-# oversubscribing the runner's 4 vCPU, which 7 did. Override for a big builder:
-# `--build-arg OMNIROUTE_BUILD_WORKERS=8`.
-ARG OMNIROUTE_BUILD_WORKERS=3
+# Lowered 8 → 3 (7 workers → 2) in #11419, then 3 → 2 (2 workers → 1) in #7518.
+# Every page-data worker inherits NODE_OPTIONS above, so the ceiling is per
+# PROCESS, not per build: 7 workers on a 16 GB GitHub runner (ubuntu-24.04 /
+# ubuntu-24.04-arm, 4 vCPU) exhausted the host and buildkit failed the whole
+# step with `ResourceExhausted: ... cannot allocate memory`. The compile phase
+# always finished ("✓ Compiled successfully in 4.2min"); the kernel killed the
+# build right after "Collecting page data using N workers".
+#
+# #11419's first fix (8 → 3) modeled the per-worker peak as an INFERENCE
+# (2560 MB, guessed from "7 workers didn't fit") and assumed the parent
+# process's RSS tracked the V8 heap ceiling. Both assumptions were wrong: a
+# live VPS reproduction (issue #7518, dmesg OOM-killer report) measured the
+# real per-process RSS directly at ~4.5 GB, independent of the NODE_OPTIONS
+# heap flag (Turbopack itself is native/Rust, outside the V8 heap) — and it
+# applies to the parent process too, not just workers. 2 workers (3 processes
+# × 4.5 GB = 13.5 GB) still didn't fit the 12.288 GB (75%) budget on a 16 GB
+# runner, matching the still-live publish failures after #11419 merged. 1
+# worker (2 processes × 4.5 GB = 9 GB) fits with headroom to spare.
+# tests/unit/docker-build-memory-budget.test.ts does the arithmetic against
+# the measured figure and fails if either knob is raised past what a 16 GB
+# runner holds. Override for a big builder: `--build-arg
+# OMNIROUTE_BUILD_WORKERS=8`.
+ARG OMNIROUTE_BUILD_WORKERS=2
 ENV CIRCLE_NODE_TOTAL=${OMNIROUTE_BUILD_WORKERS}
 
+# Webpack production builds skip the persistent cache unless this is 1 (see
+# next.config.mjs). Declared as ARG+ENV so `--build-arg
+# OMNIROUTE_WEBPACK_BUILD_CACHE=1` reaches `npm run build`.
+ARG OMNIROUTE_WEBPACK_BUILD_CACHE=""
+ENV OMNIROUTE_WEBPACK_BUILD_CACHE=$OMNIROUTE_WEBPACK_BUILD_CACHE
+
 COPY . ./
+# The cache mount keeps .build/next/cache across builds on the same BuildKit host.
+# It holds only the SWC cache unless OMNIROUTE_WEBPACK_BUILD_CACHE=1.
 RUN --mount=type=cache,id=s/c1a15bab-c913-4ee7-b676-1a2a1d46967c-/app/.build/next/cache,target=/app/.build/next/cache \
   mkdir -p /app/data \
   && npm run build \
@@ -249,7 +287,7 @@ FROM base AS runner-base
 LABEL org.opencontainers.image.title="omniroute" \
   org.opencontainers.image.description="Unified AI proxy — route any LLM through one endpoint" \
   org.opencontainers.image.url="https://omniroute.online" \
-  org.opencontainers.image.source="https://github.com/diegosouzapw/OmniRoute" \
+  org.opencontainers.image.source="https://github.com/cheaper-inference/OmniRoute" \
   org.opencontainers.image.licenses="MIT"
 
 ENV NODE_ENV=production
@@ -266,7 +304,19 @@ ENV NODE_OPTIONS="--max-old-space-size=${OMNIROUTE_MEMORY_MB}"
 
 # Data directory inside Docker — must match the volume mount in docker-compose.yml
 ENV DATA_DIR=/app/data
-RUN mkdir -p /app/data
+RUN mkdir -p /app/data && chown node:node /app /app/data
+
+# #13679: default the PUBLISHED image to requiring an API key. A bare
+# `docker run -p 20128:20128 … diegosouzapw/omniroute` (README/QUICK-START
+# one-liners) does not pass `--env-file .env`, so without this default the
+# anonymous /v1 LLM proxy would be both keyless AND world-reachable on the
+# published container. This does NOT change the npm/CLI local-dev default
+# (`REQUIRE_API_KEY` stays `"false"` in featureFlagDefinitions.ts) — only the
+# shipped deployment artifact's posture. docker-compose.yml is unaffected: it
+# loads the operator's own `.env` (env_file:) which overrides this ENV, and
+# already binds loopback-only by default (#12568). Override with
+# `-e REQUIRE_API_KEY=false` for an intentionally keyless deployment.
+ENV REQUIRE_API_KEY=true
 
 # `npm run build` (build-next-isolated → assembleStandalone) bundles ALL runtime
 # files into .build/next/standalone/ — .next, node_modules, migrations, scripts,
@@ -276,18 +326,24 @@ RUN mkdir -p /app/data
 # The old per-module overrides were therefore pure duplication and were removed
 # (build-output-isolation cleanup). See scripts/build/assembleStandalone.mjs
 # (EXTRA_MODULE_ENTRIES) for the single source of truth.
-COPY --from=builder /app/.build/next/standalone ./
+COPY --chown=node:node --from=builder /app/.build/next/standalone ./
 # better-sqlite3 is the one exception still copied explicitly: assembleStandalone
 # only syncs its native build/ dir; the JS wrapper (lib/, package.json) is left to
 # Next.js tracing. bootstrap-env requires SQLite BEFORE the standalone server
 # starts, so guarantee the complete package independent of trace behaviour.
-COPY --from=builder /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
+COPY --chown=node:node --from=builder /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
+RUN test -f /app/node_modules/better-sqlite3/build/Release/better_sqlite3.node
 # migrations land at <standalone>/migrations via assembleStandalone; point the runtime at them.
 ENV OMNIROUTE_MIGRATIONS_DIR=/app/migrations
 
 # Docker healthcheck script — not traced by Next.js standalone output, so copy
 # it explicitly. The HEALTHCHECK CMD references it as `node healthcheck.mjs`.
-COPY --from=builder /app/scripts/dev/healthcheck.mjs ./healthcheck.mjs
+COPY --chown=node:node --from=builder /app/scripts/dev/healthcheck.mjs ./healthcheck.mjs
+
+# Every COPY above hands its files to the baked-in `node` non-root user
+# (UID/GID 1000) at copy time. Do NOT add a `RUN chown -R node:node /app`
+# afterwards: in the overlay filesystem changing ownership rewrites every file
+# into a new layer, which stored the ~2 GB standalone build twice (#13990).
 
 # Pre-bake Playwright Chromium so the container does not re-download it on every start.
 # The Railway service's start command (a Railway setting, not a repo file) keeps a
@@ -296,12 +352,9 @@ COPY --from=builder /app/scripts/dev/healthcheck.mjs ./healthcheck.mjs
 # Where playwright-core lands under /app/node_modules depends on how npm dedupes the
 # lockfile, so do NOT hard-code one path:
 #   - nested:    /app/node_modules/playwright/node_modules/playwright-core
-#                (before #42, a different playwright-core 1.61.1 (hoisted via promptfoo)
-#                 owned the top level, so npm nested playwright's own 1.62.1 here)
 #   - top-level: /app/node_modules/playwright-core
-#                (since #42 declared playwright-core 1.62.1 directly in package.json, the
-#                 single copy is deduped to this path and nothing is nested; the
-#                 assembleStandalone.mjs extra-module copy also always lands here)
+#                (package.json declares playwright-core 1.62.1 directly, so the single copy
+#                 is normally deduped to this path; assembleStandalone.mjs also copies it here)
 # The nested copy wins when present because that is the one `playwright` resolves
 # first; otherwise the top-level copy; otherwise fail the build with a clear message.
 # The version pinned below tracks playwright / playwright-core in package-lock.json
@@ -323,12 +376,8 @@ RUN set -eu; \
     tar -xzf playwright-core-1.62.1.tgz && \
     cp -fv package/browsers.json "${PW_CORE_DIR}/browsers.json" && \
     node package/cli.js install chromium && \
+    chown -R node:node /app/.playwright-browsers && \
     cd / && rm -rf /tmp/pwfetch
-
-# Hand /app over to the baked-in `node` non-root user (UID/GID 1000) so the
-# runtime process never holds root privileges. The chown happens after all
-# COPYs so it covers files originally owned by root in the builder stage.
-RUN chown -R node:node /app
 
 EXPOSE 20128
 

@@ -1,4 +1,4 @@
-import { type JsonRecord } from "@/shared/types/json";
+import type { JsonRecord } from "@/shared/types/json";
 export const GROK_BUILD_ADDITIONAL_CREDITS_URL = "https://grok.com/build?_s=usage";
 
 export interface GrokAutoTopUpStatus {

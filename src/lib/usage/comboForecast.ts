@@ -1,9 +1,9 @@
 import { getComboForecastUsageRows, type ComboForecastUsageRow } from "@/lib/db/comboForecast";
 import { getCombos, getComboById } from "@/lib/db/combos";
 import { getPricingForModel } from "@/lib/db/settings";
-import { getQuotaSnapshots } from "@/lib/db/quotaSnapshots";
+import { getQuotaSnapshots, isUnreportedQuotaSnapshot } from "@/lib/db/quotaSnapshots";
+import { isCreditMeteredProvider } from "@/lib/usage/creditMeteredProviders";
 import { computeCostFromPricing, normalizeModelName } from "@/lib/usage/costCalculator";
-import { isRecord } from "@/lib/usage/providerLimits/quotaNormalize";
 import { resolveNestedComboTargets } from "@omniroute/open-sse/services/combo.ts";
 import type {
   ComboRecord,
@@ -13,10 +13,11 @@ import type {
   ComboForecastResponse,
   ComboForecastRiskLevel,
   ComboForecastTarget,
+  QuotaSnapshotRow,
   UtilizationTimeRange,
-  QuotaSnapshot,
 } from "@/shared/types/utilization";
-import { type JsonRecord } from "@/shared/types/json";
+
+type JsonRecord = Record<string, unknown>;
 
 type ResolvedComboTargetView = {
   stepId: string;
@@ -109,25 +110,34 @@ async function attachCosts(rows: ComboForecastUsageRow[]): Promise<CostedUsageRo
       },
       { provider: row.provider, model: row.model, serviceTier: "standard" }
     );
-    costed.push({ ...row, costUsd, pricingCovered: Boolean(pricing) });
+    // A credit-metered provider is billed by the credits the upstream reports, and
+    // `call_logs` does not carry them: there is no token tariff to forecast from. The
+    // row counts as unpriced, so coverage reports the gap instead of a misleading $0.
+    costed.push({
+      ...row,
+      costUsd,
+      pricingCovered: Boolean(pricing) && !isCreditMeteredProvider(row.provider),
+    });
   }
   return costed;
 }
 
-function latestRemaining(snapshot: QuotaSnapshot): number | null {
+function latestRemaining(snapshot: QuotaSnapshotRow): number | null {
   const view = snapshot as unknown as QuotaSnapshotView;
   return typeof view.remainingPercentage === "number" ? view.remainingPercentage : null;
 }
 
-function snapshotTime(snapshot: QuotaSnapshot): string {
+function snapshotTime(snapshot: QuotaSnapshotRow): string {
   return String((snapshot as unknown as QuotaSnapshotView).createdAt ?? "");
 }
 
 function buildQuotaForecast(
-  snapshots: QuotaSnapshot[],
+  allSnapshots: QuotaSnapshotRow[],
   rangeDays: number,
   horizonDays: number
 ): ComboForecastTarget["quota"] {
+  // #10095: a window the upstream did not report is a 0% placeholder, not a reading.
+  const snapshots = allSnapshots.filter((snapshot) => !isUnreportedQuotaSnapshot(snapshot));
   if (snapshots.length === 0) {
     return {
       scope: "none",
@@ -265,18 +275,7 @@ async function buildComboForecast(
   const comboName = typeof combo.name === "string" ? combo.name : "";
   if (!comboId || !comboName) return null;
 
-  const targets = resolveNestedComboTargets(
-    {
-      ...combo,
-      name: comboName,
-      models: Array.isArray(combo.models) ? combo.models : [],
-      config: isRecord(combo.config) ? combo.config : null,
-      autoConfig: isRecord(combo.autoConfig) ? combo.autoConfig : null,
-    },
-    // `allCombos` rows are structurally compatible with open-sse's
-    // ComboCollectionLike but TS does not infer the relationship.
-    allCombos as never
-  ) as ResolvedComboTargetView[];
+  const targets = resolveNestedComboTargets(combo, allCombos) as ResolvedComboTargetView[];
   const rowsByTarget = groupRowsByExecutionKey(rows);
   const totalRequests = rows.reduce((sum, row) => sum + row.requests, 0);
   const totalCostUsd = rows.reduce((sum, row) => sum + row.costUsd, 0);
@@ -295,7 +294,7 @@ async function buildComboForecast(
     const targetCost = targetRows.reduce((sum, row) => sum + row.costUsd, 0);
     const targetTokens = targetRows.reduce((sum, row) => sum + row.totalTokens, 0);
 
-    let quotaSnapshots: QuotaSnapshot[] = [];
+    let quotaSnapshots: QuotaSnapshotRow[] = [];
     let scope: ComboForecastTarget["quota"]["scope"] = "none";
     if (target.connectionId) {
       quotaSnapshots = getQuotaSnapshots({

@@ -100,7 +100,7 @@ test("model test route requires management auth when login protection is enabled
 
 test("model test route ignores forwarded hosts and works in strict API-key mode", async () => {
   process.env.REQUIRE_API_KEY = "true";
-  (await providersDb.createProviderConnection({
+  await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "openai-model-test",
@@ -108,7 +108,7 @@ test("model test route ignores forwarded hosts and works in strict API-key mode"
     isActive: true,
     testStatus: "active",
     providerSpecificData: {},
-  })) as JsonRecord & { id: string };
+  });
 
   const fetchCalls: string[] = [];
   globalThis.fetch = async (url) => {
@@ -147,4 +147,20 @@ test("model test route ignores forwarded hosts and works in strict API-key mode"
   assert.match(fetchCalls[0], /\/chat\/completions$/);
 });
 
-import type { JsonRecord } from "../../src/shared/types/json.ts";
+test("#17071 model test route forwards the skipped flag for image-only models", async () => {
+  globalThis.fetch = async () => {
+    throw new Error("an image-only model must not be dispatched");
+  };
+
+  const response = await route.POST(
+    await makeManagementSessionRequest("http://localhost/api/models/test", {
+      method: "POST",
+      body: { providerId: "agnes", modelId: "agnes-image-2.5-flash" },
+    })
+  );
+  const body = (await response.json()) as { status: string; skipped?: boolean };
+
+  assert.equal(response.status, 422);
+  assert.equal(body.status, "error");
+  assert.equal(body.skipped, true);
+});

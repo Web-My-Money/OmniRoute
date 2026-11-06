@@ -1,12 +1,26 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Button, Modal } from "@/shared/components";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@omniroute/ui-kit/table";
+import { Button, Checkbox, Modal } from "@/shared/components";
 import type {
   ParsedProviderImportEntry,
   ProviderImportParseError,
 } from "./parseProviderImportFile";
 import { useImportProvidersFromFile } from "./useImportProvidersFromFile";
+import {
+  downloadProviderImportCsvTemplate,
+  formatImportErrorLine,
+  visibleImportErrors,
+  type ImportResult,
+} from "./providerImportFeedback";
 
 interface ImportProvidersFromFileModalProps {
   isOpen: boolean;
@@ -29,9 +43,9 @@ const PARSE_ERROR_REASON_KEYS = [
 function ParseErrorsList({ errors, t }: { errors: ProviderImportParseError[]; t: Translator }) {
   if (errors.length === 0) return null;
   return (
-    <div className="max-h-28 overflow-y-auto rounded border border-red-500/30 bg-red-500/10 p-2">
+    <div className="max-h-28 overflow-y-auto rounded border border-error/30 bg-error/10 p-2">
       {errors.map((err, idx) => (
-        <div key={idx} className="text-xs text-red-400">
+        <div key={idx} className="text-xs text-error">
           {t("importFromFileErrorLine", {
             line: err.line,
             reason: t(
@@ -64,40 +78,37 @@ function EntriesTable({ entries, selected, onToggleRow, onToggleAll, t }: Entrie
       <div className="text-xs text-text-muted">
         {t("importFromFileSelectHint", { count: selected.size, total: entries.length })}
       </div>
-      <div className="overflow-x-auto max-h-64 overflow-y-auto rounded border border-border">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="text-start text-text-muted border-b border-border bg-bg-subtle sticky top-0">
-              <th className="py-1.5 px-2">
-                <input
-                  type="checkbox"
-                  checked={selected.size === entries.length}
-                  onChange={(e) => onToggleAll(e.target.checked)}
-                />
-              </th>
-              <th className="py-1.5 px-2">{t("importFromFileColProvider")}</th>
-              <th className="py-1.5 px-2">{t("importFromFileColName")}</th>
-              <th className="py-1.5 px-2">{t("importFromFileColBaseUrl")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((entry, idx) => (
-              <tr key={idx} className="border-b border-border/40">
-                <td className="py-1 px-2">
-                  <input
-                    type="checkbox"
-                    checked={selected.has(idx)}
-                    onChange={() => onToggleRow(idx)}
-                  />
-                </td>
-                <td className="py-1 px-2 font-mono text-text-muted">{entry.provider}</td>
-                <td className="py-1 px-2 font-medium text-text-main">{entry.name}</td>
-                <td className="py-1 px-2 text-text-muted">{entry.baseUrl || "—"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        className="text-xs"
+        containerClassName="max-h-64 overflow-y-auto"
+        scrollbarLabel={t("importFromFileTitle")}
+      >
+        <TableHeader className="sticky top-0">
+          <TableRow>
+            <TableHead>
+              <Checkbox
+                checked={selected.size === entries.length}
+                onChange={(e) => onToggleAll(e.target.checked)}
+              />
+            </TableHead>
+            <TableHead>{t("importFromFileColProvider")}</TableHead>
+            <TableHead>{t("importFromFileColName")}</TableHead>
+            <TableHead>{t("importFromFileColBaseUrl")}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {entries.map((entry, idx) => (
+            <TableRow key={idx}>
+              <TableCell>
+                <Checkbox checked={selected.has(idx)} onChange={() => onToggleRow(idx)} />
+              </TableCell>
+              <TableCell className="font-mono text-text-muted">{entry.provider}</TableCell>
+              <TableCell className="font-medium text-text-main">{entry.name}</TableCell>
+              <TableCell className="text-text-muted">{entry.baseUrl || "—"}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </>
   );
 }
@@ -113,6 +124,7 @@ interface FilePickerRowProps {
 function FilePickerRow({ fileInputRef, fileName, onFile, t }: FilePickerRowProps) {
   return (
     <div className="flex items-center gap-3">
+      {/* kit-exception: Hidden native file input, opened by the Button below (no visible raw control). */}
       <input
         ref={fileInputRef}
         type="file"
@@ -132,6 +144,30 @@ function FilePickerRow({ fileInputRef, fileName, onFile, t }: FilePickerRowProps
         {t("importFromFileChoose")}
       </Button>
       {fileName && <span className="text-xs text-text-muted font-mono">{fileName}</span>}
+    </div>
+  );
+}
+
+function ImportResultPanel({ result, t }: { result: ImportResult; t: Translator }) {
+  const { shown, extra } = visibleImportErrors(result.errors);
+  const failed = result.failed > 0 || shown.length > 0;
+  return (
+    <div
+      className={`px-3 py-2 rounded border text-sm ${
+        failed
+          ? "border-warning/30 bg-warning/10 text-warning"
+          : "border-success/30 bg-success/10 text-success"
+      }`}
+    >
+      {t("importFromFileResult", { success: result.success, failed: result.failed })}
+      {shown.length > 0 && (
+        <ul className="mt-2 list-disc pl-5 text-xs text-text-muted font-normal space-y-0.5">
+          {shown.map((err, i) => (
+            <li key={i}>{formatImportErrorLine(err)}</li>
+          ))}
+          {extra > 0 && <li>{t("importFromFileMoreErrors", { count: extra })}</li>}
+        </ul>
+      )}
     </div>
   );
 }
@@ -160,6 +196,7 @@ export function ImportProvidersFromFileModal({
     >
       <div className="flex flex-col gap-4">
         <p className="text-sm text-text-muted">{t("importFromFileDescription")}</p>
+        <p className="text-xs text-text-muted">{t("importFromFileSchemaHint")}</p>
 
         <FilePickerRow
           fileInputRef={s.fileInputRef}
@@ -176,13 +213,12 @@ export function ImportProvidersFromFileModal({
           t={t}
         />
 
-        {s.result && (
-          <div className="px-3 py-2 rounded border border-emerald-500/30 bg-emerald-500/10 text-sm text-emerald-400">
-            {t("importFromFileResult", { success: s.result.success, failed: s.result.failed })}
-          </div>
-        )}
+        {s.result && <ImportResultPanel result={s.result} t={t} />}
 
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+          <Button size="sm" variant="ghost" onClick={downloadProviderImportCsvTemplate}>
+            {t("importFromFileDownloadTemplate")}
+          </Button>
           <Button size="sm" variant="secondary" onClick={() => s.handleClose(onClose)}>
             {t("cancel")}
           </Button>

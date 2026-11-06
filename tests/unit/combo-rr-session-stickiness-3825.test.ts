@@ -16,7 +16,6 @@
  *    distribution is preserved — only intra-conversation rotation is removed).
  */
 import test from "node:test";
-import type { LooseDeep } from "../helpers/looseTypes.ts";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -29,13 +28,12 @@ process.env.DATA_DIR = TEST_DATA_DIR;
 const { handleComboChat } = await import("../../open-sse/services/combo.ts");
 const stick = await import("../../open-sse/services/combo/sessionStickiness.ts");
 const dbCore = await import("../../src/lib/db/core.ts");
-import type { ComboLike } from "../../open-sse/services/combo/types.ts";
 
 function makeLog() {
   return { info() {}, warn() {}, debug() {}, error() {} };
 }
 
-function rrCombo(name: string): ComboLike {
+function rrCombo(name: string) {
   return {
     name,
     strategy: "round-robin",
@@ -69,7 +67,10 @@ function rrCombo(name: string): ComboLike {
   };
 }
 
-async function dispatchConnection(combo: ComboLike, firstMessage: string): Promise<string> {
+async function dispatchConnection(
+  combo: Record<string, unknown>,
+  firstMessage: string
+): Promise<string> {
   let conn = "?";
   await handleComboChat({
     body: { model: combo.name, messages: [{ role: "user", content: firstMessage }], stream: false },
@@ -80,7 +81,11 @@ async function dispatchConnection(combo: ComboLike, firstMessage: string): Promi
     signal: undefined,
     settings: {},
     log: makeLog(),
-    handleSingleModel: async (_b: unknown, modelStr: string, target?: LooseDeep) => {
+    handleSingleModel: async (
+      _b: unknown,
+      modelStr: string,
+      target?: { connectionId?: string | null }
+    ) => {
       conn = target?.connectionId ?? "?";
       return Response.json({ choices: [{ message: { role: "assistant", content: modelStr } }] });
     },
