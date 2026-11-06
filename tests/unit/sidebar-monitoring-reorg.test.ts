@@ -105,7 +105,7 @@ test("monitoring logs group contains logs, logs-proxy, logs-console, logs-timeli
   ]);
 });
 
-test("monitoring system group contains health, runtime, and connection resilience", () => {
+test("monitoring system group contains health, runtime, connection resilience and cooldowns", () => {
   const section = findSection("monitoring");
   assert.ok(section, "monitoring section must exist");
 
@@ -115,5 +115,10 @@ test("monitoring system group contains health, runtime, and connection resilienc
   assert.ok(systemGroup, "system group must exist in monitoring");
 
   const itemIds = systemGroup.items.map((i) => i.id);
-  assert.deepEqual(itemIds, ["health", "runtime", "resilience-connections"]);
+  assert.deepEqual(itemIds, [
+    "health",
+    "runtime",
+    "resilience-connections",
+    "resilience-cooldowns",
+  ]);
 });

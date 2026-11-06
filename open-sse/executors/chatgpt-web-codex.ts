@@ -1,8 +1,18 @@
 import { existsSync } from "node:fs";
 
+import {
+  CHATGPT_WEB_CODEX_CONNECTOR_NAME,
+  CHATGPT_WEB_CODEX_RUNTIME_HEADED,
+} from "@/shared/constants/chatgptWebCodex";
+
 import { isVerifiedNativeCodexRequest } from "../config/codexIdentity.ts";
 import { FORMATS } from "../translator/formats.ts";
-import { buildErrorBody, sanitizeErrorMessage } from "../utils/error.ts";
+import {
+  buildErrorBody,
+  errorResponse as canonicalErrorResponse,
+  sanitizeErrorMessage,
+} from "../utils/error.ts";
+import { drainAwareFailureStatus } from "../utils/drainStatus.ts";
 import { createChatGptWebAdapter } from "../vendor/codex-chatgpt-web/adapters/chatgpt-web/index.ts";
 import { ChatGptBrowserWorker } from "../vendor/codex-chatgpt-web/adapters/chatgpt-web/browser-worker.ts";
 import {
@@ -92,9 +102,15 @@ function configuredString(data: Record<string, unknown>, ...keys: string[]): str
   return undefined;
 }
 
+/**
+ * The browser to launch. Only the operator chooses it: the server's own environment
+ * (CHATGPT_WEB_CODEX_CHROME_PATH, CHROME_PATH) or the known install locations. `explicit`
+ * comes from the connection's providerSpecificData — caller input on remote management
+ * requests, stored and read again by health checks and inference — so it may only pick
+ * one of those, never name another program on the host.
+ */
 export function detectChromeExecutable(explicit?: string): string | undefined {
-  const candidates = [
-    explicit,
+  const operatorChoices = [
     process.env.CHATGPT_WEB_CODEX_CHROME_PATH,
     process.env.CHROME_PATH,
     "/usr/bin/google-chrome",
@@ -102,10 +118,13 @@ export function detectChromeExecutable(explicit?: string): string | undefined {
     "/usr/bin/chromium",
     "/usr/bin/chromium-browser",
     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  ];
-  return candidates.find((candidate): candidate is string =>
-    Boolean(candidate && existsSync(candidate))
-  );
+  ].filter((candidate): candidate is string => Boolean(candidate?.trim()));
+  const preferred = explicit?.trim();
+  const candidates =
+    preferred && operatorChoices.includes(preferred)
+      ? [preferred, ...operatorChoices]
+      : operatorChoices;
+  return candidates.find((candidate) => existsSync(candidate));
 }
 
 function responseStateNamespace(connectionId: string, parsed: CodexParsedRequest): string {
@@ -116,21 +135,44 @@ function responseStateNamespace(connectionId: string, parsed: CodexParsedRequest
   return `${connectionId}:${identity.threadId}:${identity.turnId}`;
 }
 
-function previousResponseBelongsToTurn(
+function itemType(value: unknown): string {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return "";
+  const type = (value as Record<string, unknown>).type;
+  return typeof type === "string" ? type : "";
+}
+
+function itemRole(value: unknown): string {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return "";
+  const role = (value as Record<string, unknown>).role;
+  return typeof role === "string" ? role : "";
+}
+
+export function inputHasSelfContainedCodexContinuation(body: Record<string, unknown>): boolean {
+  const input = Array.isArray(body.input) ? body.input : [];
+  let hasUser = false;
+  let hasToolOutput = false;
+  for (const item of input) {
+    if (itemRole(item) === "user" || itemType(item) === "message") hasUser = true;
+    if (itemType(item) === "function_call_output" || itemType(item) === "custom_tool_call_output") {
+      hasToolOutput = true;
+    }
+  }
+  return hasUser && hasToolOutput;
+}
+
+export function resolveChatGptWebCodexPreviousResponse(
   body: Record<string, unknown>,
-  connectionId: string,
-  parsed: CodexParsedRequest
-): boolean {
+  namespace: string
+): { body: Record<string, unknown>; ok: boolean } {
   if (typeof body.previous_response_id !== "string" || !body.previous_response_id.trim()) {
-    return true;
+    return { body, ok: true };
   }
-  try {
-    const namespace = responseStateNamespace(connectionId, parsed);
-    const expanded = expandPreviousResponseInput(body, namespace);
-    return expanded !== body;
-  } catch {
-    return false;
-  }
+  const expanded = expandPreviousResponseInput(body, namespace);
+  if (expanded !== body) return { body: record(expanded), ok: true };
+  if (!inputHasSelfContainedCodexContinuation(body)) return { body, ok: false };
+  const next = { ...body };
+  delete next.previous_response_id;
+  return { body: next, ok: true };
 }
 
 function toolModeRequired(parsed: CodexParsedRequest): boolean {
@@ -156,44 +198,46 @@ function buildProviderConfig(
     throw new Error("No supported Chrome or Chromium executable was found");
   }
 
+  const solAvailable = data.solAvailable !== false;
   const proAvailable = data.proAvailable === true;
+  if (route.sol !== solAvailable) {
+    throw new Error(
+      route.sol
+        ? "ChatGPT Sol models are not available for this Luna-only connection"
+        : "ChatGPT Luna models are only available for Luna-only connections"
+    );
+  }
   if (route.pro && !proAvailable) {
-    throw new Error("ChatGPT Pro is not available for this connection");
+    throw new Error(`${route.id} is not available for this non-Pro connection`);
   }
 
   const hasTools = toolModeRequired(parsed);
-  const requiredChoice =
-    parsed.options.toolChoice === "required" || typeof parsed.options.toolChoice === "object";
-  if (route.pro && requiredChoice) {
-    throw new Error("ChatGPT Web Pro is read-only and cannot satisfy a required tool choice");
-  }
-
   const connector =
     configuredString(data, "connectorName", "appName") ??
-    process.env.CHATGPT_WEB_CODEX_CONNECTOR_NAME?.trim();
-  if (!route.pro && hasTools && !connector) {
-    throw new Error("ChatGPT Web (Codex) tools require a ready tunnel and Custom Connector");
-  }
+    (process.env.CHATGPT_WEB_CODEX_CONNECTOR_NAME?.trim() || CHATGPT_WEB_CODEX_CONNECTOR_NAME);
 
-  parsed.modelId = "gpt-5.6-sol";
+  parsed.modelId = route.backendModel;
   parsed.options.reasoning = route.effort;
 
   return {
     adapter: "chatgpt-web",
     baseUrl: "https://chatgpt.com",
-    defaultModel: "gpt-5.6-sol",
-    models: ["gpt-5.6-sol"],
+    defaultModel: route.backendModel,
+    models: [route.backendModel],
     chatgptWeb: {
-      ...(connector ? { appName: connector } : {}),
+      appName: connector,
       storageStatePath,
       ...(chromeExecutablePath ? { chromeExecutablePath } : {}),
       ...(cdpEndpoint ? { cdpEndpoint } : {}),
       brokerSocketPath: paths.brokerSocketPath,
       threadEnvironmentStatePath: paths.threadEnvironmentStatePath,
-      headed: false,
-      localToolsEnabled: !route.pro && hasTools,
+      lunaCheckpointStatePath: paths.lunaCheckpointStatePath,
+      headed: CHATGPT_WEB_CODEX_RUNTIME_HEADED,
+      localToolsEnabled: hasTools,
+      solAvailable,
       proAvailable,
-      autoApproveToolCalls: !route.pro && hasTools,
+      experimentalBiggerContext: data.experimentalBiggerContext === true,
+      autoApproveToolCalls: hasTools,
     },
   };
 }
@@ -260,7 +304,8 @@ export class ChatGptWebCodexExecutor extends BaseExecutor {
       const initialBody = nativeBody(input.body);
       const initialParsed = parseRequest(initialBody);
       const namespace = responseStateNamespace(connectionId, initialParsed);
-      if (!previousResponseBelongsToTurn(initialBody, connectionId, initialParsed)) {
+      const resolvedPrevious = resolveChatGptWebCodexPreviousResponse(initialBody, namespace);
+      if (!resolvedPrevious.ok) {
         return wrapped(
           errorResponse(
             409,
@@ -270,7 +315,7 @@ export class ChatGptWebCodexExecutor extends BaseExecutor {
           initialBody
         );
       }
-      const expandedBody = expandPreviousResponseInput(initialBody, namespace);
+      const expandedBody = resolvedPrevious.body;
       const parsed = parseRequest(expandedBody);
       responseStateNamespace(connectionId, parsed);
 
@@ -302,17 +347,20 @@ export class ChatGptWebCodexExecutor extends BaseExecutor {
       const runtimePaths = connectionRuntimePaths(connectionId);
       const loginConfig = {
         mode: "browser-only" as const,
-        appName: configuredString(providerData, "connectorName", "appName") ?? "OmniRoute Codex",
+        appName:
+          configuredString(providerData, "connectorName", "appName") ??
+          CHATGPT_WEB_CODEX_CONNECTOR_NAME,
         ...(chromeExecutablePath ? { chromeExecutablePath } : {}),
         ...(cdpEndpoint ? { cdpEndpoint } : {}),
         storageStatePath,
         brokerSocketPath: runtimePaths.brokerSocketPath,
-        headed: false,
+        headed: CHATGPT_WEB_CODEX_RUNTIME_HEADED,
         proAvailable: providerData.proAvailable === true,
         autoApproveToolCalls: false,
       };
       if (!browserLoginStateExists(loginConfig)) {
         const capabilities = await inspectBrowserLoginCapabilities(loginConfig);
+        providerData.solAvailable = capabilities.solAvailable;
         providerData.proAvailable = capabilities.proAvailable;
         providerData.browserVerified = true;
         if (chromeExecutablePath) providerData.chromeExecutablePath = chromeExecutablePath;
@@ -320,6 +368,7 @@ export class ChatGptWebCodexExecutor extends BaseExecutor {
         await input.onCredentialsRefreshed?.({
           providerSpecificData: {
             ...record(input.credentials.providerSpecificData),
+            solAvailable: capabilities.solAvailable,
             proAvailable: capabilities.proAvailable,
             browserVerified: true,
             ...(chromeExecutablePath ? { chromeExecutablePath } : {}),
@@ -327,7 +376,7 @@ export class ChatGptWebCodexExecutor extends BaseExecutor {
           },
         });
       }
-      const routeUsesTools = !route.pro && toolModeRequired(parsed);
+      const routeUsesTools = toolModeRequired(parsed);
       if (routeUsesTools) {
         const tunnelId =
           configuredString(providerData, "tunnelId") ??
@@ -364,12 +413,14 @@ export class ChatGptWebCodexExecutor extends BaseExecutor {
         try {
           await adapter.runTurn(parsed, incoming, (event) => events.push(event));
         } catch (error) {
+          const message = sanitizeErrorMessage(error instanceof Error ? error.message : error);
+          const status = drainAwareFailureStatus(502);
           events.push({
             type: "error",
-            message: sanitizeErrorMessage(error instanceof Error ? error.message : error),
-            status: 502,
-            errorType: "provider_error",
-            code: "chatgpt_web_codex_turn_failed",
+            message,
+            status,
+            errorType: status === 499 ? "client_disconnected" : "provider_error",
+            code: status === 499 ? "client_disconnected" : "chatgpt_web_codex_turn_failed",
           });
         } finally {
           try {
@@ -396,6 +447,18 @@ export class ChatGptWebCodexExecutor extends BaseExecutor {
         const running = run();
         const collected = await events.collect();
         await running;
+        const drainFailure = collected.find(
+          (event) => event.type === "error" && event.status === 499
+        );
+        if (drainFailure?.type === "error") {
+          // Our own shutdown stopped the ChatGPT Web runtime under a request that
+          // was still in flight, so the turn was never really served. Answer 499
+          // (client_disconnected) with the canonical body of the repo's
+          // errorResponse helper, so the runtime does not read our own teardown as
+          // provider ill health. gracefulShutdown.cleanup() stops this runtime via
+          // stopChatGptWebCodexRuntime(); see open-sse/utils/drainStatus.ts.
+          return wrapped(canonicalErrorResponse(499, drainFailure.message), expandedBody);
+        }
         const response = buildResponseJSON(collected, input.model, {
           hideThinkingSummary: parsed.options.hideThinkingSummary,
           toolNsMap: maps.namespace,

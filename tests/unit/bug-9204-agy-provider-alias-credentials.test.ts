@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-9204-agy-alias-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -42,6 +41,6 @@ test("#9204: an Antigravity CLI login is eligible for an agy model request", asy
 
   const credentials = await getProviderCredentials(parsed.provider!, null, null, parsed.model);
   assert.ok(credentials, "the active Antigravity CLI connection must remain selectable");
-  assert.equal((credentials as LooseDeep).connectionId, connection.id);
-  assert.equal((credentials as LooseDeep).accessToken, "fresh-access-token");
+  assert.equal(credentials.connectionId, connection.id);
+  assert.equal(credentials.accessToken, "fresh-access-token");
 });

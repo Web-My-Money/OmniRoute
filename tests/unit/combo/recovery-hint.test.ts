@@ -11,8 +11,8 @@ type JsonBody = { diagnostics?: { recovery?: Record<string, unknown> } };
 
 function emptyDiag(overrides?: Partial<ComboDiagnostics>): ComboDiagnostics {
   return {
-    poolSize: 1,
-    attempted: 1,
+    poolSize: 3,
+    attempted: 2,
     excluded: [],
     attemptOrder: [],
     terminalReason: "max_attempts_exceeded",

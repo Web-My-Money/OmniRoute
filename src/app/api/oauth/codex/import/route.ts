@@ -3,8 +3,9 @@ import { z } from "zod";
 import {
   normalizeCodexImportRecord,
   flattenCodexImportPayload,
+  preserveExistingCodexConnectionState,
 } from "@/lib/oauth/services/codexImport";
-import { createProviderConnection } from "@/models";
+import { createProviderConnection, getProviderConnections } from "@/models";
 import { requireManagementAuth } from "@/lib/api/requireManagementAuth";
 import { sanitizeErrorMessage } from "@omniroute/open-sse/utils/error.ts";
 import {
@@ -85,7 +86,7 @@ async function validateCodexRefreshToken(payload: {
 
 const bodySchema = z.object({
   accounts: z.union([z.record(z.string(), z.unknown()), z.array(z.unknown())], {
-    error: () => "accounts must be an object or an array of objects",
+    errorMap: () => ({ message: "accounts must be an object or an array of objects" }),
   }),
 });
 
@@ -109,13 +110,13 @@ export async function POST(request: Request) {
   const parsed = bodySchema.safeParse(rawBody);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Invalid request body" },
+      { error: parsed.error.errors[0]?.message ?? "Invalid request body" },
       { status: 400 }
     );
   }
 
   const flat = flattenCodexImportPayload(parsed.data.accounts);
-  if ("error" in flat) {
+  if (!flat.ok) {
     return NextResponse.json({ error: flat.error }, { status: 400 });
   }
   if (flat.records.length === 0) {
@@ -131,7 +132,7 @@ export async function POST(request: Request) {
 
   for (let i = 0; i < flat.records.length; i++) {
     const norm = normalizeCodexImportRecord(flat.records[i]);
-    if ("error" in norm) {
+    if (!norm.ok) {
       failed += 1;
       results.push({ index: i, ok: false, error: norm.error });
       continue;
@@ -145,7 +146,18 @@ export async function POST(request: Request) {
     }
 
     try {
-      const conn = await createProviderConnection(norm.payload as Record<string, unknown>);
+      // A record matching an existing connection (same email + workspaceId)
+      // flows into createProviderConnection's upsert, which replaces supplied
+      // columns wholesale — carry the matched row's providerSpecificData and
+      // priority through the payload so a re-import cannot clobber them
+      // (#11954 follow-up). Fetched per record: an earlier record in this
+      // batch may have just created the row a later duplicate must match.
+      const existing = await getProviderConnections({ provider: "codex", authType: "oauth" });
+      const payload = preserveExistingCodexConnectionState(
+        norm.payload,
+        existing as Array<Record<string, unknown>>
+      );
+      const conn = await createProviderConnection(payload as Record<string, unknown>);
       imported += 1;
       results.push({
         index: i,

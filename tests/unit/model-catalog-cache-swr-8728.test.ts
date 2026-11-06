@@ -20,7 +20,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import type { CatalogPayload } from "../../src/app/api/v1/models/catalogCache.ts";
+import { cleanupTempDataDir } from "../_setup/tempDataDir.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-catalog-cache-8728-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -32,7 +32,7 @@ function request() {
   return new Request("http://localhost/v1/models");
 }
 
-function payload(body: string, status = 200): CatalogPayload {
+function payload(body: string, status = 200): catalogCache.CatalogPayload {
   return {
     body,
     headers: { "content-type": "application/json" },
@@ -41,7 +41,7 @@ function payload(body: string, status = 200): CatalogPayload {
   };
 }
 
-async function resolve(build: (request: Request) => Promise<CatalogPayload>) {
+async function resolve(build: (request: Request) => Promise<catalogCache.CatalogPayload>) {
   return catalogCache.resolveCachedCatalogResponse(
     request(),
     { corsHeaders: {}, diagnosticHeaders: {} },
@@ -53,8 +53,8 @@ test.beforeEach(() => {
   catalogCache.__resetCatalogBuilderRunsForTest();
 });
 
-test.after(() => {
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+test.after(async () => {
+  await cleanupTempDataDir(TEST_DATA_DIR);
 });
 
 test("the SWR window is a bounded constant, not an unbounded accessor", () => {

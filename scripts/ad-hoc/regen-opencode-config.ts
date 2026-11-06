@@ -3,8 +3,8 @@
  * OmniRoute /v1/models catalog. Run after a catalog change to refresh
  * the opencode client.
  *
- * Usage:  bun run scripts/regen-opencode-config.ts
- *      or npx tsx scripts/regen-opencode-config.ts
+ * Usage:  bun run scripts/ad-hoc/regen-opencode-config.ts
+ *      or npx tsx scripts/ad-hoc/regen-opencode-config.ts
  */
 import { generateOpencodeConfig } from "../../src/lib/cli-helper/config-generator/opencode.ts";
 

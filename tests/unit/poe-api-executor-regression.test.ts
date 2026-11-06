@@ -14,7 +14,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-poe-api-8969-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -48,17 +47,18 @@ function headerRecord(headers: Record<string, string>): Record<string, string> {
   return out;
 }
 
-test("#8969: getExecutor(poe) selects DefaultExecutor, not PoeWebExecutor", () => {
+test("#8969: getExecutor(poe) selects DefaultExecutor, not PoeWebExecutor", async () => {
   assert.equal(hasSpecializedExecutor("poe"), false);
-  const executor = getExecutor("poe");
+  const executor = await getExecutor("poe");
   assert.ok(executor instanceof DefaultExecutor);
   assert.equal(executor instanceof PoeWebExecutor, false);
   assert.equal(executor.provider, "poe");
 });
 
-test("#8969: getExecutor(poe-web) still selects PoeWebExecutor", () => {
+test("#8969: getExecutor(poe-web) still selects PoeWebExecutor", async () => {
   assert.equal(hasSpecializedExecutor("poe-web"), true);
-  assert.ok(getExecutor("poe-web") instanceof PoeWebExecutor);
+  const executor = await getExecutor("poe-web");
+  assert.ok(executor instanceof PoeWebExecutor);
 });
 
 test("#8969: registry declares API-key executor + all three Poe protocol URLs", () => {
@@ -81,8 +81,8 @@ test("#8969: registry declares API-key executor + all three Poe protocol URLs", 
   assert.notEqual(gpt.targetFormat, "claude");
 });
 
-test("#8969: buildUrl routes chat / responses / messages correctly", () => {
-  const executor = getExecutor("poe") as InstanceType<typeof DefaultExecutor>;
+test("#8969: buildUrl routes chat / responses / messages correctly", async () => {
+  const executor = (await getExecutor("poe")) as DefaultExecutor;
   const creds = { apiKey: "poe-test-key", providerSpecificData: {} };
 
   assert.equal(executor.buildUrl("gemma-4-31b", false, 0, creds), CHAT_URL);
@@ -176,8 +176,8 @@ test("#8969: resolvePoeUpstreamUrl normalizes registry-default / bare-host /v1/ 
   }
 });
 
-test("#8969: buildHeaders uses Bearer auth and never sends Cookie", () => {
-  const executor = getExecutor("poe") as InstanceType<typeof DefaultExecutor>;
+test("#8969: buildHeaders uses Bearer auth and never sends Cookie", async () => {
+  const executor = (await getExecutor("poe")) as DefaultExecutor;
   for (const stream of [false, true]) {
     const headers = headerRecord(
       executor.buildHeaders({ apiKey: "poe-test-key", providerSpecificData: {} }, stream)
@@ -201,7 +201,7 @@ test("#8969: resolveExecutionCredentials forces responses upstream for poe", () 
 });
 
 test("#8969: mocked execute posts Chat Completions with Bearer, no Cookie, stripped model", async () => {
-  const executor = getExecutor("poe") as InstanceType<typeof DefaultExecutor>;
+  const executor = (await getExecutor("poe")) as DefaultExecutor;
   const originalFetch = globalThis.fetch;
   const seen: Array<{
     url: string;
@@ -219,7 +219,7 @@ test("#8969: mocked execute posts Chat Completions with Bearer, no Cookie, strip
       method: (init?.method || "GET").toUpperCase(),
       authorization: headers.get("authorization"),
       cookie: headers.get("cookie"),
-      body: JSON.parse(rawBody) as LooseDeep,
+      body: JSON.parse(rawBody) as Record<string, unknown>,
     });
     return Response.json({
       id: "chatcmpl-test",
@@ -260,7 +260,7 @@ test("#8969: mocked execute posts Chat Completions with Bearer, no Cookie, strip
 });
 
 test("#8969: mocked execute routes Responses + Messages fixtures to the right URLs", async () => {
-  const executor = getExecutor("poe") as InstanceType<typeof DefaultExecutor>;
+  const executor = (await getExecutor("poe")) as DefaultExecutor;
   const originalFetch = globalThis.fetch;
   let lastUrl = "";
 
@@ -327,7 +327,7 @@ test("#8969: mocked execute routes Responses + Messages fixtures to the right UR
 });
 
 test("#8969: mocked upstream 405 is preserved (not swallowed)", async () => {
-  const executor = getExecutor("poe") as InstanceType<typeof DefaultExecutor>;
+  const executor = (await getExecutor("poe")) as DefaultExecutor;
   const originalFetch = globalThis.fetch;
 
   globalThis.fetch = (async () => {

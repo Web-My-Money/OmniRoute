@@ -32,7 +32,6 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { makeManagementSessionRequest } from "../helpers/managementSession.ts";
-import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-codex-edit-6562-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -107,7 +106,7 @@ function buildCodexEditPayload(connection: Record<string, unknown>) {
     healthCheckInterval: connection.healthCheckInterval ?? 60,
     rateLimitOverrides: null,
     providerSpecificData: {
-      ...((connection.providerSpecificData as LooseDeep) || {}),
+      ...((connection.providerSpecificData as Record<string, unknown>) || {}),
       tag: undefined,
       tags: undefined,
       excludedModels: undefined,
@@ -121,7 +120,7 @@ function buildCodexEditPayload(connection: Record<string, unknown>) {
 test("PUT /api/providers/[id] persists a Codex OAuth edit when priority already exceeds the old 100 cap (#6562 RED->GREEN)", async () => {
   // Simulates the Nth connection from a Codex bulk-account-rotation user —
   // auto-incremented priority with no upstream cap.
-  const connection = (await createCodexConnection(142)) as LooseDeep;
+  const connection = (await createCodexConnection(142)) as Record<string, unknown>;
   assert.equal(connection.provider, "codex");
   assert.equal(connection.authType, "oauth");
   assert.equal(connection.priority, 142);
@@ -149,14 +148,11 @@ test("PUT /api/providers/[id] persists a Codex OAuth edit when priority already 
     string,
     unknown
   >;
-  // `updateProviderConnection` renormalizes every same-provider connection's
-  // priority to a dense 1..N sequence whenever `priority` is part of the
-  // update (`_reorderConnections`, src/lib/db/providers.ts) — this is the
-  // connection's first successful edit, so it lands at rank 1 (only Codex
-  // connection in this test). The point of this assertion is that the save
-  // *persisted* at all instead of 400ing before ever reaching that step.
-  assert.equal(persisted.priority, 1);
-  const persistedPsd = persisted.providerSpecificData as LooseDeep;
+  // Saving an unrelated edit must preserve the priority already accepted by
+  // the edit schema, rather than silently collapsing this account to rank 1.
+  assert.equal(body.connection.priority, 142);
+  assert.equal(persisted.priority, 142);
+  const persistedPsd = persisted.providerSpecificData as Record<string, unknown>;
   assert.deepEqual(persistedPsd.requestDefaults, { reasoningEffort: "high" });
 });
 
@@ -164,14 +160,14 @@ test("PUT /api/providers/[id] removes fingerprint mode from Codex API-key connec
   const connection = (await createCodexConnection(5, "apikey", {
     codexFingerprintMode: "full",
     codex_fingerprint_mode: "device",
-  })) as LooseDeep;
-  const existingPsd = connection.providerSpecificData as LooseDeep;
+  })) as Record<string, unknown>;
+  const existingPsd = connection.providerSpecificData as Record<string, unknown>;
   assert.equal(existingPsd.codexFingerprintMode, "full");
   assert.equal(existingPsd.codex_fingerprint_mode, "device");
 
   const payload = buildCodexEditPayload(connection);
-  (payload.providerSpecificData as LooseDeep).codexFingerprintMode = null;
-  (payload.providerSpecificData as LooseDeep).codex_fingerprint_mode = null;
+  payload.providerSpecificData.codexFingerprintMode = null;
+  payload.providerSpecificData.codex_fingerprint_mode = null;
 
   const request = await makeManagementSessionRequest(
     `http://localhost/api/providers/${connection.id}`,
@@ -186,13 +182,13 @@ test("PUT /api/providers/[id] removes fingerprint mode from Codex API-key connec
     string,
     unknown
   >;
-  const persistedPsd = persisted.providerSpecificData as LooseDeep;
+  const persistedPsd = persisted.providerSpecificData as Record<string, unknown>;
   assert.equal(persistedPsd.codexFingerprintMode, undefined);
   assert.equal(persistedPsd.codex_fingerprint_mode, undefined);
 });
 
 test("PUT /api/providers/[id] still rejects a genuinely invalid priority (control)", async () => {
-  const connection = (await createCodexConnection(5)) as LooseDeep;
+  const connection = (await createCodexConnection(5)) as Record<string, unknown>;
 
   const payload = { ...buildCodexEditPayload(connection), priority: 500_000 };
 

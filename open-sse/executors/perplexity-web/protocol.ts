@@ -1,6 +1,8 @@
 // Pure Perplexity wire protocol: consts, types, SSE parsing, request/query building,
 // content extraction. Extracted verbatim from perplexity-web.ts. No host state/fetch/auth.
 import { randomUUID } from "crypto";
+import { buildSessionCookieHeader } from "../../utils/nextAuthCookie.ts";
+import { firefoxUserAgent, newestFirefoxVersion } from "../../utils/browserProfiles.ts";
 
 export const PPLX_SSE_ENDPOINT = "https://www.perplexity.ai/rest/sse/perplexity_ask";
 // Perplexity's current request schema version (sent in params.version). Perplexity rejects
@@ -46,10 +48,38 @@ export const PPLX_SUPPORTED_BLOCK_USE_CASES = [
 // EOF symbol can truncate or hang the Firefox-TLS stream tailer before answer
 // chunks land — which surfaces as "Provider returned empty content".
 export const PPLX_STREAM_EOF_SYMBOL = "event: end_of_stream";
-// Firefox 148 — must match the `firefox_148` TLS profile used by perplexityTlsClient.
+// Must match the Firefox TLS profile perplexityTlsClient resolves from wreq-js.
 // A mismatched UA vs TLS fingerprint is itself a Cloudflare bot signal (issue #2459).
-export const PPLX_USER_AGENT =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:148.0) Gecko/20100101 Firefox/148.0";
+export function pplxUserAgent(): string {
+  return firefoxUserAgent("Macintosh; Intel Mac OS X 10.15", newestFirefoxVersion());
+}
+
+// Headers the web executor and the deep research tool both send. A bearer wins
+// over the session cookie, matching the executor's own choice.
+export function buildPplxHeaders(
+  requestId: string,
+  credentials: { accessToken?: string; apiKey?: string }
+): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Accept: "text/event-stream",
+    Origin: "https://www.perplexity.ai",
+    Referer: "https://www.perplexity.ai/",
+    "User-Agent": pplxUserAgent(),
+    // Current app request headers (replaced the stale X-App-ApiVersion/X-App-ApiClient pair,
+    // which the new endpoint no longer expects and which contributed to HTTP 400).
+    "x-perplexity-request-endpoint": PPLX_SSE_ENDPOINT,
+    "x-perplexity-request-reason": "ask-query-state-provider",
+    "x-perplexity-request-try-number": "1",
+    "x-request-id": requestId,
+  };
+  if (credentials.accessToken) {
+    headers["Authorization"] = `Bearer ${credentials.accessToken}`;
+  } else if (credentials.apiKey) {
+    headers["Cookie"] = buildSessionCookieHeader(credentials.apiKey);
+  }
+  return headers;
+}
 
 // mode / model_preference pairs — every entry posts mode:"copilot", like the live
 // www.perplexity.ai client does when a model is picked from the catalog.
@@ -91,25 +121,46 @@ export const THINKING_MAP: Record<string, string> = {
   "pplx-grok-4.6": "grok46medium",
 };
 
-export const CITATION_RE = /\[\d+\]/g;
+// Eats the space before the marker so "text [1] more" cleans to "text more".
+// Never squash runs of spaces here: the non-streaming path (tool mode always)
+// would flatten code indentation (#13968).
+export const CITATION_RE = / ?\[\d+\]/g;
 export const GROK_TAG_RE = /<grok:[^>]*>.*?<\/grok:[^>]*>/gs;
 export const GROK_SELF_RE = /<grok:[^>]*\/>/g;
 export const XML_DECL_RE = /<[?]xml[^?]*[?]>/g;
 export const RESPONSE_TAG_RE = /<\/?response\b[^>]*>/gi;
-export const MULTI_SPACE = / {2,}/g;
 export const MULTI_NL = /\n{3,}/g;
 
+// A citation marker and a subscript are spelled the same way, so citation
+// cleanup has to skip anything that is code: fenced blocks, <tool> payloads and
+// inline spans. Order matters — closed regions first, then the unterminated
+// tails (a stream cut off mid-answer), and the inline span last so the third
+// backtick of a fence is never taken for an empty `` span.
+export const CODE_SPAN_RE =
+  /(```[\s\S]*?```|<tool>[\s\S]*?<\/tool>|```[\s\S]*$|<tool>[\s\S]*$|`[^`\n]+`)/g;
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
+
+// cleanResponse() runs over the whole answer before tool mode parses <tool>
+// text into tool_calls, so an unguarded CITATION_RE turned `arr[0]` into `arr`
+// in rendered code blocks and in tool-call arguments alike (#14121).
+export function stripCitations(text: string): string {
+  // String.split with a capturing group interleaves the delimiters at odd
+  // indices; those are the protected regions and pass through untouched.
+  return text
+    .split(CODE_SPAN_RE)
+    .map((part, i) => (i % 2 === 1 ? part : part.replace(CITATION_RE, "")))
+    .join("");
+}
 
 export function cleanResponse(text: string, strip = true): string {
   let t = text;
   t = t.replace(XML_DECL_RE, "");
-  t = t.replace(CITATION_RE, "");
+  t = stripCitations(t);
   t = t.replace(GROK_TAG_RE, "");
   t = t.replace(GROK_SELF_RE, "");
   t = t.replace(RESPONSE_TAG_RE, "");
   if (strip) {
-    t = t.replace(MULTI_SPACE, " ");
     t = t.replace(MULTI_NL, "\n\n");
     t = t.trim();
   }
@@ -213,6 +264,19 @@ export async function* readPplxSseEvents(
   const decoder = new TextDecoder();
   let buffer = "";
   let dataLines: string[] = [];
+  let readerFinished = false;
+  let readerCancelRequested = false;
+
+  const cancelReader = (reason: unknown) => {
+    if (readerFinished || readerCancelRequested) return;
+    readerCancelRequested = true;
+    // Cancellation is a client-facing latency boundary. Request upstream cleanup once, but never
+    // await a hostile underlying source whose cancel hook does not settle.
+    void reader.cancel(reason).catch(() => undefined);
+  };
+  const handleAbort = () => cancelReader(signal?.reason ?? "perplexity_stream_aborted");
+  if (signal?.aborted) handleAbort();
+  else signal?.addEventListener("abort", handleAbort, { once: true });
 
   function flush(): PplxStreamEvent | null | "done" {
     if (dataLines.length === 0) return null;
@@ -231,7 +295,10 @@ export async function* readPplxSseEvents(
     while (true) {
       if (signal?.aborted) return;
       const { value, done } = await reader.read();
-      if (done) break;
+      if (done) {
+        readerFinished = true;
+        break;
+      }
       buffer += decoder.decode(value, { stream: true });
 
       while (true) {
@@ -263,7 +330,13 @@ export async function* readPplxSseEvents(
     const tail = flush();
     if (tail && tail !== "done") yield tail;
   } finally {
-    reader.releaseLock();
+    signal?.removeEventListener("abort", handleAbort);
+    cancelReader(signal?.reason ?? "perplexity_stream_reader_closed");
+    try {
+      reader.releaseLock();
+    } catch {
+      // A hostile source may keep its cancel promise pending; the lock can be released later by GC.
+    }
   }
 }
 
@@ -386,7 +459,12 @@ function searchHintEnabled(): boolean {
 }
 
 export function buildQuery(parsed: ParsedMessages, followUpUuid: string | null): string {
-  if (followUpUuid) return parsed.currentMsg;
+  if (followUpUuid) {
+    const sys = parsed.systemMsg.trim();
+    const hint = searchHintEnabled() ? `\n\n${SEARCH_HINT}` : "";
+    const contract = sys ? `${sys}${hint}` : "";
+    return contract ? `${contract}\n\n${parsed.currentMsg}` : parsed.currentMsg;
+  }
 
   const obj: Record<string, unknown> = {};
   if (parsed.systemMsg.trim()) {
@@ -417,9 +495,8 @@ export interface ContentChunk {
   /** Structured error code for quota / rate-limit surfaces (e.g. quota_exhausted). */
   errorCode?: string;
   /**
-   * Suggested client/account cooldown in seconds when the stream failed due to
-   * advanced-model weekly quota (or similar). Downstream marks the connection
-   * rate_limited_until and VibeProxy limit badges parse this + "reset after Xs".
+   * Suggested cooldown when quota is classified before the HTTP stream is committed.
+   * Once SSE 200 starts, a late error cannot retroactively add status or Retry-After metadata.
    */
   resetSeconds?: number;
   done?: boolean;
@@ -775,6 +852,7 @@ export async function* extractContent(
     if (event.error_code || event.error_message) {
       yield {
         error: event.error_message || `Perplexity error: ${event.error_code}`,
+        errorCode: event.error_code,
         done: true,
       };
       return;
@@ -914,6 +992,10 @@ export async function* extractContent(
       break;
     }
   }
+
+  // Cancellation is not a successful terminal event. In particular, do not synthesize the final
+  // `done` chunk: streaming callers use that signal to emit stop/[DONE] and persist the session.
+  if (signal?.aborted) return;
 
   // End-of-stream without a COMPLETED frame still try the last text blob.
   if (!fullAnswer.trim() && lastEventText) {

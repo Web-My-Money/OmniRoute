@@ -25,22 +25,12 @@ export interface ServerStatus {
   remoteUrl?: string;
 }
 
-export type UpdateStatus =
-  | { status: "checking" }
-  | { status: "available" | "not-available" | "downloaded"; version?: string }
-  | { status: "downloading"; percent: number; transferred: number; total: number }
-  | { status: "error"; message?: string };
-
-export interface LoginStatus {
-  providerId?: string;
+/** Payload of the `update-status` channel; electron/main.js emits these fields. */
+export interface UpdateStatus {
   status: string;
-  message?: string;
-}
-
-export interface LoginResult {
-  success: boolean;
-  error?: string;
-  credentials?: Record<string, unknown>;
+  version?: string;
+  percent?: number;
+  [key: string]: unknown;
 }
 
 export interface ElectronAPI {
@@ -51,12 +41,15 @@ export interface ElectronAPI {
   restartServer(): Promise<{ success: boolean }>;
   getAppVersion(): Promise<string>;
 
-  // ── Auto-Update ────────────────────────────────────────
-  checkForUpdates(): Promise<{ success: boolean; error?: string }>;
-  downloadUpdate(): Promise<{ success: boolean; error?: string }>;
+  // ── Auto-update (preload.js: check-for-updates / download-update /
+  //    install-update, plus the update-status receive channel) ────────────
+  checkForUpdates(): Promise<void>;
+  downloadUpdate(): Promise<void>;
   installUpdate(): Promise<void>;
 
-  // ── Autostart ──────────────────────────────────────────
+  // ── Autostart ──────────────────────────────────────────────────────────
+  // main.js returns a plain boolean on every platform branch (true on success,
+  // false on a thrown error), and AppearanceTab branches on it.
   getAutostartStatus(): Promise<boolean>;
   enableAutostart(): Promise<boolean>;
   disableAutostart(): Promise<boolean>;
@@ -70,12 +63,6 @@ export interface ElectronAPI {
   onServerStatus(callback: (data: ServerStatus) => void): () => void;
   onPortChanged(callback: (port: number) => void): () => void;
   onUpdateStatus(callback: (data: UpdateStatus) => void): () => void;
-
-  // ── Web-Cookie Login ───────────────────────────────────
-  startLogin(providerId: string, options?: Record<string, unknown>): Promise<LoginResult>;
-  cancelLogin(): Promise<{ success: boolean }>;
-  getLoginStatus(): Promise<{ active: boolean }>;
-  onLoginStatus(callback: (data: LoginStatus) => void): () => void;
 
   // ── Static Properties ──────────────────────────────────
   isElectron: boolean;

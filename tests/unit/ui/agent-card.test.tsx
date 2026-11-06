@@ -9,10 +9,10 @@ import React from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { AgentBridgeServerState } from "@/app/(dashboard)/dashboard/tools/agent-bridge/AgentBridgePageClient";
 
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) => key,
-  useLocale: () => "en",
 }));
 
 vi.mock("next/link", () => ({
@@ -26,6 +26,17 @@ globalThis.fetch = vi.fn().mockResolvedValue({
 } as unknown as Response);
 
 const cleanupCallbacks: Array<() => void> = [];
+const serverState: AgentBridgeServerState = {
+  running: true,
+  port: 20128,
+  certTrusted: false,
+  upstreamCa: null,
+  lastStartedAt: null,
+  activeConns: 0,
+  interceptedCount: 0,
+  dnsConfigured: false,
+  orphanedStateDetected: false,
+};
 
 function makeContainer(): HTMLElement {
   const container = document.createElement("div");
@@ -53,20 +64,6 @@ const mockTarget = {
   viability: "supported" as const,
 };
 
-// AgentBridgeServerState stub — the prop became required in #8656; AgentCard
-// only reads `certTrusted` for the per-agent cert fallback.
-const mockServerState = {
-  running: false,
-  port: 443,
-  certTrusted: false,
-  upstreamCa: null,
-  lastStartedAt: null,
-  activeConns: 0,
-  interceptedCount: 0,
-  dnsConfigured: false,
-  orphanedStateDetected: false,
-};
-
 describe("AgentCard", { timeout: 30000 }, () => {
   beforeEach(() => {
     (
@@ -87,12 +84,13 @@ describe("AgentCard", { timeout: 30000 }, () => {
     const container = makeContainer();
     await act(async () => {
       const root = createRoot(container);
+      cleanupCallbacks.push(() => act(() => root.unmount()));
       root.render(
         React.createElement(AgentCard, {
           target: mockTarget,
           agentState: undefined,
           serverRunning: false,
-          serverState: mockServerState,
+          serverState: { ...serverState, running: false },
           mappings: [],
           onDnsToggle: vi.fn(),
           onMappingsSave: vi.fn(),
@@ -111,12 +109,13 @@ describe("AgentCard", { timeout: 30000 }, () => {
     const container = makeContainer();
     await act(async () => {
       const root = createRoot(container);
+      cleanupCallbacks.push(() => act(() => root.unmount()));
       root.render(
         React.createElement(AgentCard, {
           target: mockTarget,
           agentState: undefined,
           serverRunning: true,
-          serverState: mockServerState,
+          serverState,
           mappings: [],
           onDnsToggle: vi.fn(),
           onMappingsSave: vi.fn(),
@@ -150,6 +149,7 @@ describe("AgentCard", { timeout: 30000 }, () => {
 
     await act(async () => {
       const root = createRoot(container);
+      cleanupCallbacks.push(() => act(() => root.unmount()));
       root.render(
         React.createElement(AgentCard, {
           target: mockTarget,
@@ -162,7 +162,7 @@ describe("AgentCard", { timeout: 30000 }, () => {
             last_error: null,
           },
           serverRunning: true,
-          serverState: mockServerState,
+          serverState,
           mappings: [],
           onDnsToggle,
           onMappingsSave: vi.fn(),
@@ -196,12 +196,13 @@ describe("AgentCard", { timeout: 30000 }, () => {
     const container = makeContainer();
     await act(async () => {
       const root = createRoot(container);
+      cleanupCallbacks.push(() => act(() => root.unmount()));
       root.render(
         React.createElement(AgentCard, {
           target: mockTarget,
           agentState: undefined,
           serverRunning: true,
-          serverState: mockServerState,
+          serverState,
           mappings: [],
           onDnsToggle: vi.fn(),
           onMappingsSave: vi.fn(),
@@ -219,6 +220,7 @@ describe("AgentCard", { timeout: 30000 }, () => {
     const wizardBtn = Array.from(document.querySelectorAll("button")).find((b) =>
       b.textContent?.includes("setupWizard")
     );
+    expect(wizardBtn).toBeDefined();
 
     await act(async () => {
       wizardBtn?.dispatchEvent(new MouseEvent("click", { bubbles: true }));

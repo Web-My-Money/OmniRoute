@@ -6,6 +6,13 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vites
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
+// The next/dynamic mock below starts each tab's import without awaiting it. A
+// tab module graph (BuildTab → useToolsBuilder → schemas) can still be loading
+// when the synchronous tests finish, and vitest then reports an unhandled
+// EnvironmentTeardownError ("Cannot load … after the environment was torn
+// down"). Every started import is tracked and awaited in afterAll.
+const dynamicImports = vi.hoisted(() => [] as Promise<unknown>[]);
+
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string, params?: Record<string, unknown>) =>
     params ? `${key}(${JSON.stringify(params)})` : key,
@@ -18,12 +25,6 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/dashboard/playground",
 }));
 
-// Track every lazy import the next/dynamic mock kicks off so the suite can
-// await them before the jsdom environment tears down — otherwise a still-
-// resolving import() rejects post-teardown as an unhandled
-// EnvironmentTeardownError.
-const dynamicImportPromises = vi.hoisted(() => [] as Promise<unknown>[]);
-
 vi.mock("next/dynamic", () => ({
   default: (
     fn: () => Promise<{ default: React.ComponentType<Record<string, unknown>> }>,
@@ -31,7 +32,7 @@ vi.mock("next/dynamic", () => ({
   ) => {
     // Eagerly resolve the dynamic import in tests
     let Component: React.ComponentType<Record<string, unknown>> | null = null;
-    dynamicImportPromises.push(
+    dynamicImports.push(
       fn().then((m) => {
         Component = m.default;
       })
@@ -129,6 +130,12 @@ vi.mock("react-markdown", () => ({
 const { PlaygroundStudio } =
   await import("../../../src/app/(dashboard)/dashboard/playground/PlaygroundStudio");
 
+// Let every tab import started by the next/dynamic mock settle while the jsdom
+// environment is still alive (see dynamicImports above).
+afterAll(async () => {
+  await Promise.all(dynamicImports);
+});
+
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 const containers: Array<{ root: ReturnType<typeof createRoot>; el: HTMLDivElement }> = [];
@@ -160,10 +167,6 @@ describe("PlaygroundStudio", () => {
     }
     document.body.innerHTML = "";
     vi.clearAllMocks();
-  });
-
-  afterAll(async () => {
-    await Promise.allSettled(dynamicImportPromises);
   });
 
   it("renders without crashing (smoke test)", () => {
@@ -274,8 +277,9 @@ describe("PlaygroundStudio", () => {
       exportBtn?.click();
     });
 
-    // mock returns i18n key as text — assert on the key
-    expect(el.textContent).toContain("exportCode");
+    // mock returns i18n key as text — assert on the key. KEA-7886: the modal is the kit Dialog,
+    // portaled to document.body.
+    expect(document.querySelector("[role='dialog']")?.textContent).toContain("exportCode");
   });
 });
 

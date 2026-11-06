@@ -1,13 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createChatPipelineHarness } from "./_chatPipelineHarness.ts";
-import type { MockRequestInit } from "../helpers/mockFetch.ts";
-type FetchCall = {
-  url: string;
-  method?: string;
-  headers: Record<string, string>;
-  body: Record<string, unknown> | null;
-};
+import { CALL_LOG_SETTLE_TIMEOUT_MS } from "../helpers/callLogSettle.ts";
 
 const harness = await createChatPipelineHarness("reasoning-routing-pipeline");
 // Imported only AFTER the harness has set DATA_DIR and opened the DB: a static
@@ -68,7 +62,7 @@ test("chat pipeline applies a reasoning model/effort rule once and records route
     enabled: true,
   });
   const fetchCalls: FetchCall[] = [];
-  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
+  globalThis.fetch = async (url, init: RequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       method: init.method || "GET",
@@ -90,7 +84,12 @@ test("chat pipeline applies a reasoning model/effort rule once and records route
     })
   );
   await response.json();
-  const callLog = await waitFor(() => getLatestCallLog());
+  // #15608: the call-log row is visible as detail_state = 'pending' before its artifact (which
+  // carries pipelinePayloads) is written; wait for the published detail, not just the row.
+  const callLog = await waitFor(async () => {
+    const log = await getLatestCallLog();
+    return log?.detailState === "ready" ? log : null;
+  }, CALL_LOG_SETTLE_TIMEOUT_MS);
 
   assert.equal(response.status, 200);
   assert.equal(fetchCalls.length, 1);
@@ -106,7 +105,7 @@ test("chat pipeline applies a reasoning model/effort rule once and records route
 test("chat pipeline stays unchanged when the reasoning rule table is empty", async () => {
   await seedConnection("openai", { apiKey: "sk-openai-no-reasoning-rule" });
   const fetchCalls: FetchCall[] = [];
-  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
+  globalThis.fetch = async (url, init: RequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       method: init.method || "GET",
@@ -159,7 +158,7 @@ test("reasoning routing works through Responses and Anthropic Messages transport
     enabled: true,
   });
   const fetchCalls: FetchCall[] = [];
-  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
+  globalThis.fetch = async (url, init: RequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       method: init.method || "GET",
@@ -329,7 +328,7 @@ test("reasoning routing filters incompatible combo targets and rejects an empty 
     enabled: true,
   });
   const fetchCalls: FetchCall[] = [];
-  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
+  globalThis.fetch = async (url, init: RequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),
@@ -434,7 +433,7 @@ test("connection reasoning rules apply only after selecting their connection", a
     enabled: true,
   });
   const fetchCalls: FetchCall[] = [];
-  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
+  globalThis.fetch = async (url, init: RequestInit = {}) => {
     fetchCalls.push({
       url: String(url),
       headers: toPlainHeaders(init.headers),

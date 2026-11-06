@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getCachedProviderConnectionById } from "@/lib/localDb";
+import * as passive from "@omniroute/open-sse/services/tokenRefresh/passiveCodex.ts";
+import { getCachedProviderConnectionById } from "@/lib/db/readCache";
 import { updateProviderConnection } from "@/lib/db/providers";
 import {
   getAccessToken,
@@ -11,9 +12,15 @@ import { rotationGroupFor } from "@omniroute/open-sse/services/refreshSerializer
 
 type RefreshResult = {
   accessToken?: string;
-  expiresAt?: string | null;
   expiresIn?: number;
+  /** Absolute expiry, preferred over expiresIn when the provider returns one. */
+  expiresAt?: string;
   error?: string;
+  /**
+   * Set when the provider has been retired upstream. The caller surfaces a
+   * migration hint instead of asking the operator to re-authenticate in a loop
+   * against something that no longer exists.
+   */
   code?: string;
   reason?: string;
   migrateTo?: string;
@@ -55,6 +62,12 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     }
 
     const provider = connection.provider;
+    if (passive.isPassiveCodex(provider)) {
+      return NextResponse.json(
+        { error: passive.PASSIVE_REFRESH_MESSAGE, code: "refresh_disabled" },
+        { status: 409 }
+      );
+    }
 
     // Codex/OpenAI multi-account family-revocation cascade guard.
     // These two providers share the same Auth0 client_id and can revoke sibling
@@ -103,7 +116,6 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
     if (
       (provider === "github" || provider === "ghe-copilot") &&
       !connection.refreshToken &&
-      typeof connection.accessToken === "string" &&
       connection.accessToken
     ) {
       const copilotResult = await refreshCopilotToken(
@@ -119,7 +131,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       }
 
       const refreshedProviderSpecificData = {
-        ...((connection.providerSpecificData || {}) as Record<string, unknown>),
+        ...(connection.providerSpecificData || {}),
         copilotToken: copilotResult.token,
         copilotTokenExpiresAt: copilotResult.expiresAt,
       };

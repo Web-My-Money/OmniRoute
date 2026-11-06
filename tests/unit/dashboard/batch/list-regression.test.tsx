@@ -19,6 +19,13 @@ import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
+// The kit Table measures itself with ResizeObserver (persistent scrollbar); jsdom lacks it.
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+} as unknown as typeof ResizeObserver;
+
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
 vi.mock("next-intl", () => ({
@@ -147,7 +154,6 @@ beforeEach(() => {
     "fetch",
     vi.fn().mockResolvedValue({ ok: true, json: async () => ({}), text: async () => "" })
   );
-  vi.stubGlobal("confirm", vi.fn().mockReturnValue(false)); // don't confirm dialogs
 });
 
 afterEach(() => {
@@ -255,15 +261,15 @@ describe("BatchListTab — rendering", () => {
 
   it("6. shows loading spinner when loading=true and no batches", () => {
     const el = render(<BatchListTab batches={[]} files={[]} loading={true} />);
-    // Loading state renders a spinner (animate-spin class)
-    const spinner = el.querySelector(".animate-spin");
+    // Loading state renders the kit Spinner
+    const spinner = el.querySelector('[data-slot="spinner"]');
     expect(spinner).not.toBeNull();
   });
 
   it("7. shows empty state when no batches and not loading", () => {
     const el = render(<BatchListTab batches={[]} files={[]} loading={false} />);
     // Should show some empty-state indicator (no spinner)
-    expect(el.querySelector(".animate-spin")).toBeNull();
+    expect(el.querySelector('[data-slot="spinner"]')).toBeNull();
   });
 
   it("8. sanitization: rendered content contains no stack traces or file paths", () => {
@@ -352,6 +358,41 @@ describe("BatchListTab — rendering", () => {
     expect(text).toContain("batchListProviderOther");
     expect(text).toContain("batchListProviderUnknown");
   });
+
+  it("21. 'Remove completed' button drains multi-chunk sweeps via hasMore", async () => {
+    let fetchCallCount = 0;
+    const fetchMock = vi.fn().mockImplementation(async (url, options) => {
+      if (url === "/api/v1/batches/delete-completed" && options?.method === "DELETE") {
+        fetchCallCount++;
+        // First call hasMore: true, second call hasMore: false
+        return { ok: true, json: async () => ({ hasMore: fetchCallCount < 2 }) };
+      }
+      return { ok: true, json: async () => ({}) };
+    });
+
+    vi.stubGlobal("fetch", fetchMock);
+
+    const onRefresh = vi.fn();
+    const batches = [makeBatch({ id: "batch-multi", status: "completed" })];
+
+    const el = render(
+      <BatchListTab batches={batches} files={[]} loading={false} onRefresh={onRefresh} />
+    );
+
+    const btn = Array.from(el.querySelectorAll("button")).find((b) =>
+      b.textContent?.includes("batchListRemoveCompleted")
+    );
+    expect(btn).not.toBeNull();
+
+    await act(async () => {
+      btn!.click();
+      // Allow the while loop's microtasks to resolve
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(onRefresh).toHaveBeenCalled();
+  });
 });
 
 // ── FilesListTab ──────────────────────────────────────────────────────────────
@@ -439,7 +480,7 @@ describe("FilesListTab — rendering", () => {
 
   it("14. loading state shows spinner", () => {
     const el = render(<FilesListTab files={[]} loading={true} />);
-    const spinner = el.querySelector(".animate-spin");
+    const spinner = el.querySelector('[data-slot="spinner"]');
     expect(spinner).not.toBeNull();
   });
 

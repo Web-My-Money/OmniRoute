@@ -19,7 +19,14 @@ function strings(value: unknown): string[] {
     : [];
 }
 
-function modelFamily(model: string): string | null {
+/**
+ * Detect the model "family" (gpt/claude/gemini/...) from a bare or
+ * provider-prefixed model id. Exported for callers that need to know
+ * whether a candidate step would actually violate an existing
+ * `allowedModelFamilies` restriction (#13951) rather than only the
+ * `validateComboInvariant` throw path below.
+ */
+export function modelFamily(model: string): string | null {
   const bare = model.slice(model.lastIndexOf("/") + 1);
   return FAMILY_PATTERNS.find(([, pattern]) => pattern.test(bare))?.[0] ?? null;
 }

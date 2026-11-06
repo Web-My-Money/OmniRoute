@@ -16,7 +16,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { JsonRecord } from "../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-chaos-executor-"));
 const ORIGINAL_DATA_DIR = process.env.DATA_DIR;
@@ -66,13 +65,13 @@ test("executeChaosRun throws when no active provider connections exist", async (
 });
 
 test("executeChaosRun dispatches in-process (no fetch/network call) and returns per-provider results", async () => {
-  (await providersDb.createProviderConnection({
+  await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Test OpenAI",
     apiKey: "sk-test-openai",
     defaultModel: "gpt-4o-mini",
-  })) as JsonRecord & { id: string };
+  });
 
   let capturedRequest: Request | null = null;
   mock.method(chaosExecutor.chatDispatch, "postChatCompletion", async (req: Request) => {
@@ -96,13 +95,13 @@ test("executeChaosRun dispatches in-process (no fetch/network call) and returns 
 });
 
 test("executeChaosRun forwards the caller's apiKey as a Bearer Authorization header", async () => {
-  (await providersDb.createProviderConnection({
+  await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "apikey",
     name: "Test Anthropic",
     apiKey: "sk-test-anthropic",
     defaultModel: "claude-3-5-sonnet",
-  })) as JsonRecord & { id: string };
+  });
 
   let capturedAuth: string | null = null;
   mock.method(chaosExecutor.chatDispatch, "postChatCompletion", async (req: Request) => {
@@ -115,14 +114,14 @@ test("executeChaosRun forwards the caller's apiKey as a Bearer Authorization hea
   assert.equal(capturedAuth, "Bearer sk-caller-key");
 });
 
-test("executeChaosRun omits Authorization header when no apiKey is provided (dashboard/local mode)", async () => {
-  (await providersDb.createProviderConnection({
+test("executeChaosRun authenticates internally when no apiKey is provided (dashboard mode)", async () => {
+  await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Test OpenAI",
     apiKey: "sk-test-openai-2",
     defaultModel: "gpt-4o-mini",
-  })) as JsonRecord & { id: string };
+  });
 
   let capturedAuth: string | null | undefined;
   mock.method(chaosExecutor.chatDispatch, "postChatCompletion", async (req: Request) => {
@@ -132,17 +131,17 @@ test("executeChaosRun omits Authorization header when no apiKey is provided (das
 
   await chaosExecutor.executeChaosRun({ task: "task" });
 
-  assert.equal(capturedAuth, null);
+  assert.equal(capturedAuth?.startsWith("Bearer "), true);
 });
 
 test("executeChaosRun surfaces upstream errors per-model instead of throwing", async () => {
-  (await providersDb.createProviderConnection({
+  await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Failing OpenAI",
     apiKey: "sk-test-failing",
     defaultModel: "gpt-4o-mini",
-  })) as JsonRecord & { id: string };
+  });
 
   mock.method(chaosExecutor.chatDispatch, "postChatCompletion", async () =>
     jsonResponse({ error: "upstream exploded" }, 502)
@@ -155,20 +154,20 @@ test("executeChaosRun surfaces upstream errors per-model instead of throwing", a
 });
 
 test("executeChaosRun collaborative mode chains context between sequential model calls", async () => {
-  (await providersDb.createProviderConnection({
+  await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Model A",
     apiKey: "sk-test-a",
     defaultModel: "gpt-4o-mini",
-  })) as JsonRecord & { id: string };
-  (await providersDb.createProviderConnection({
+  });
+  await providersDb.createProviderConnection({
     provider: "anthropic",
     authType: "apikey",
     name: "Model B",
     apiKey: "sk-test-b",
     defaultModel: "claude-3-5-sonnet",
-  })) as JsonRecord & { id: string };
+  });
 
   const seenUserMessages: string[] = [];
   mock.method(chaosExecutor.chatDispatch, "postChatCompletion", async (req: Request) => {
@@ -193,13 +192,13 @@ test("executeChaosRun collaborative mode chains context between sequential model
 });
 
 test("executeChaosRun respects an explicit providers filter and errors when none match", async () => {
-  (await providersDb.createProviderConnection({
+  await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Only OpenAI",
     apiKey: "sk-test-only-openai",
     defaultModel: "gpt-4o-mini",
-  })) as JsonRecord & { id: string };
+  });
 
   mock.method(chaosExecutor.chatDispatch, "postChatCompletion", async () =>
     jsonResponse({ choices: [{ message: { content: "ok" } }] })
@@ -215,13 +214,13 @@ test("executeChaosRun respects an explicit providers filter and errors when none
 });
 
 test("executeChaosRun applies global config provider overrides for model resolution", async () => {
-  (await providersDb.createProviderConnection({
+  await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "Override target",
     apiKey: "sk-test-override",
     defaultModel: "gpt-4o-mini",
-  })) as JsonRecord & { id: string };
+  });
 
   await chaosConfig.setChaosConfig({
     enabled: true,

@@ -149,7 +149,9 @@ export function planBuildToolSpawn({
  * @param {string} binName Key in that package's `bin` map, e.g. `"esbuild"`.
  * @param {readonly string[]} args Arguments for the tool.
  * @param {import("node:child_process").ExecFileSyncOptions} [options] Passed to `execFileSync`.
- * @returns {void}
+ * @returns {string | Buffer} Whatever `execFileSync` returns (stdout; a string when
+ *   `options.encoding` is set). On a non-zero exit it throws like `execFileSync`,
+ *   with the captured `stdout` on the error.
  */
 export function runBuildTool(packageName, binName, args, options = {}) {
   const entryPath = resolveLocalBinEntry(packageName, binName);
@@ -159,7 +161,7 @@ export function runBuildTool(packageName, binName, args, options = {}) {
     entryPath,
     entryIsNative: entryPath ? isNativeExecutable(entryPath) : false,
   });
-  execFileSync(plan.file, plan.args, plan.shell ? { ...options, shell: true } : options);
+  return execFileSync(plan.file, plan.args, plan.shell ? { ...options, shell: true } : options);
 }
 
 /**

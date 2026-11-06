@@ -16,7 +16,6 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import Database from "better-sqlite3";
 import { resetDbInstance } from "../../src/lib/db/core.ts";
-import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 // Regression guard for #9934 — init asymmetry breaks a fresh install.
 //
@@ -52,7 +51,7 @@ function withNonTestEnvironment<R>(fn: () => R): R {
   const originalArgv = [...process.argv];
   const originalExecArgv = [...process.execArgv];
 
-  delete (process.env as Record<string, string | undefined>).NODE_ENV;
+  delete process.env.NODE_ENV;
   delete process.env.VITEST;
   delete process.env.DISABLE_SQLITE_AUTO_BACKUP;
   process.argv = process.argv.filter((arg) => !arg.includes("test"));
@@ -63,9 +62,8 @@ function withNonTestEnvironment<R>(fn: () => R): R {
   } finally {
     process.argv = originalArgv;
     process.execArgv = originalExecArgv;
-    if (originalNodeEnv === undefined)
-      delete (process.env as Record<string, string | undefined>).NODE_ENV;
-    else (process.env as Record<string, string | undefined>).NODE_ENV = originalNodeEnv;
+    if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = originalNodeEnv;
     if (originalVitest === undefined) delete process.env.VITEST;
     else process.env.VITEST = originalVitest;
     if (originalDisableAutoBackup === undefined) delete process.env.DISABLE_SQLITE_AUTO_BACKUP;
@@ -75,12 +73,12 @@ function withNonTestEnvironment<R>(fn: () => R): R {
 
 function cleanupGlobalDb() {
   try {
-    const g = globalThis as unknown as Record<string, { open?: boolean; close?: () => void }>;
+    const g = globalThis as Record<string, { open?: boolean; close?: () => void }>;
     if (g.__omnirouteDb?.open) g.__omnirouteDb.close?.();
   } catch {
     /* ignore */
   }
-  delete (globalThis as LooseDeep).__omnirouteDb;
+  delete (globalThis as Record<string, unknown>).__omnirouteDb;
 }
 
 test.after(() => {
@@ -95,7 +93,6 @@ test(
     const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-9934-"));
     const originalDataDir = process.env.DATA_DIR;
     process.env.DATA_DIR = dataDir;
-    let core: Awaited<ReturnType<typeof importFresh>> | undefined;
 
     try {
       // Step 1 — mimic `omniroute setup`: the CLI opens the DB, writes the
@@ -104,6 +101,13 @@ test(
       const cli = await importFresh("bin/cli/sqlite.mjs");
       const setup = await cli.openOmniRouteDb();
       assert.ok(fs.existsSync(setup.dbPath), "setup created storage.sqlite");
+      setup.db
+        .prepare(
+          `INSERT INTO provider_connections
+            (id, provider, created_at, updated_at)
+           VALUES (?, ?, ?, ?)`
+        )
+        .run("setup-provider", "openai", "2026-09-02T00:00:00.000Z", "2026-09-02T00:00:00.000Z");
       setup.db.close();
 
       const onDisk = new Database(setup.dbPath, { readonly: true });
@@ -123,7 +127,7 @@ test(
       // Step 2 — mimic the first `omniroute serve`: the real server opens the
       // same DB, auto-seeds only the 001 marker and runs migrations. Under a
       // live (non-test) safety gate this must NOT throw.
-      core = await importFresh("src/lib/db/core.ts");
+      const core = await importFresh("src/lib/db/core.ts");
       cleanupGlobalDb();
       resetDbInstance();
 
@@ -142,10 +146,30 @@ test(
         (maxRow?.maxV ?? 0) > 1,
         `expected migrations beyond 001 to run, got max=${maxRow?.maxV}`
       );
+
+      const backupDir = path.join(dataDir, "db_backups");
+      const snapshots = fs
+        .readdirSync(backupDir)
+        .filter((name) => /^db_state-[a-f0-9]{64}_pre-migration\.sqlite$/.test(name));
+      assert.equal(
+        snapshots.length,
+        1,
+        "a setup-created file is logically fresh for the mass guard but physically existing for snapshot safety"
+      );
+
+      const snapshot = new Database(path.join(backupDir, snapshots[0]!), { readonly: true });
+      try {
+        assert.deepEqual(
+          snapshot.prepare("SELECT id, provider FROM provider_connections").get(),
+          { id: "setup-provider", provider: "openai" },
+          "the mandatory snapshot must preserve setup-created provider state"
+        );
+      } finally {
+        snapshot.close();
+      }
     } finally {
       if (originalDataDir === undefined) delete process.env.DATA_DIR;
       else process.env.DATA_DIR = originalDataDir;
-      (core as LooseDeep)?.resetDbInstance?.();
       fs.rmSync(dataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     }
   }

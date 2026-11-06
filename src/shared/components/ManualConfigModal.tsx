@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import Icon from "./Icon";
 import Modal from "./Modal";
 import Button from "./Button";
 import { useCopyToClipboard } from "@/shared/hooks/useCopyToClipboard";
@@ -30,13 +31,15 @@ export default function ManualConfigModal({ isOpen, onClose, title, configs = []
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-text-main">{config.filename}</span>
               <Button variant="ghost" size="sm" onClick={() => copyConfig(config.content, index)}>
-                <span className="material-symbols-outlined text-[14px] me-1">
-                  {copiedIndex === index ? "check" : "content_copy"}
-                </span>
+                <Icon
+                  name={copiedIndex === index ? "check" : "content_copy"}
+                  size={14}
+                  className="mr-1"
+                />
                 {copiedIndex === index ? t("copied") : t("copy")}
               </Button>
             </div>
-            <pre className="px-3 py-2 bg-black/5 dark:bg-white/5 rounded font-mono text-xs overflow-x-auto whitespace-pre-wrap break-all max-h-60 overflow-y-auto border border-border">
+            <pre className="px-3 py-2 bg-bg-subtle rounded font-mono text-xs overflow-x-auto whitespace-pre-wrap break-all max-h-60 overflow-y-auto border border-border">
               {config.content}
             </pre>
           </div>

@@ -5,7 +5,6 @@ import type { BrowserBackedChatRequest } from "../../open-sse/services/browserBa
 
 const mod = await import("../../open-sse/executors/zai-web.ts");
 const browserChat = await import("../../open-sse/services/browserBackedChat.ts");
-import type { LooseDeep } from "../helpers/looseTypes.ts";
 
 const ZAI_HOME_URL = "https://chat.z.ai/";
 const ZAI_NEW_CHAT_URL = "https://chat.z.ai/api/v1/chats/new";
@@ -31,7 +30,7 @@ function installZaiFetch(
     const value = String(url);
     if (value === ZAI_HOME_URL) {
       return new Response(
-        '<script src="https://z-cdn.chatglm.cn/z-ai/frontend/prod-fe-1.1.79/assets/index.js"></script>'
+        '<script src="https://z-cdn.chatglm.cn/z-ai/frontend/prod-fe-1.1.92/assets/index.js"></script>'
       );
     }
     if (value === ZAI_NEW_CHAT_URL) {
@@ -91,13 +90,18 @@ describe("ZaiWebExecutor", () => {
       "Z.ai browser transport failed (502; capture 30001ms, total 33412ms): " +
         "browserBackedChat failed: response.body unavailable"
     );
-    assert.match(
+    assert.equal(
       mod.describeZaiBrowserFailure({
         status: 0,
         body: Buffer.alloc(0),
+        observedPostUrls: ["https://chat.z.ai/api/v1/chats/new"],
+        observedPostResponses: [{ url: "https://chat.z.ai/api/v1/chats/new", status: 200 }],
         timing: { captureResponseMs: 30_000, totalMs: 33_000 },
       }),
-      /no matching response.*did not issue the expected authenticated chat completion request/
+      "Z.ai browser transport failed (no matching response; capture 30000ms, total 33000ms): " +
+        "The page did not issue the expected authenticated chat completion request. " +
+        "Observed POST targets: https://chat.z.ai/api/v1/chats/new. " +
+        "Observed POST responses: https://chat.z.ai/api/v1/chats/new [200]."
     );
   });
 
@@ -129,9 +133,9 @@ describe("ZaiWebExecutor", () => {
   it("parses the deployed frontend version from the homepage asset path", () => {
     assert.equal(
       mod.parseZaiFrontendVersion(
-        "https://z-cdn.chatglm.cn/z-ai/frontend/prod-fe-1.1.79/assets/index.js"
+        "https://z-cdn.chatglm.cn/z-ai/frontend/prod-fe-1.1.92/assets/index.js"
       ),
-      "prod-fe-1.1.79"
+      "prod-fe-1.1.92"
     );
     assert.equal(mod.parseZaiFrontendVersion("<html></html>"), null);
   });
@@ -212,86 +216,87 @@ describe("ZaiWebExecutor", () => {
     ]);
   });
 
-  it("enables Deep Think for every public model and limits effort to GLM-5.2", () => {
-    assert.deepEqual(mod.resolveZaiThinkingConfig("glm-5.2", {}), {
+  it("maps the three public models to their current Deep Think effort vocabularies", () => {
+    assert.deepEqual(mod.resolveZaiThinkingConfig("glm-5.3-flash", { reasoning_effort: "low" }), {
       supported: true,
       enabled: true,
-      effort: "max",
+      effort: "low",
       effortSupported: true,
     });
-    assert.deepEqual(mod.resolveZaiThinkingConfig("zw/glm-5.2", { reasoning_effort: "medium" }), {
-      supported: true,
-      enabled: true,
-      effort: "high",
-      effortSupported: true,
-    });
-    assert.deepEqual(mod.resolveZaiThinkingConfig("glm-5.2", { reasoning: { effort: "high" } }), {
+    assert.deepEqual(mod.resolveZaiThinkingConfig("zw/glm-5.3", { reasoning_effort: "medium" }), {
       supported: true,
       enabled: true,
       effort: "high",
       effortSupported: true,
     });
-    assert.deepEqual(mod.resolveZaiThinkingConfig("glm-5.2", { reasoning_effort: "off" }), {
+    assert.deepEqual(mod.resolveZaiThinkingConfig("glm-5.3", { reasoning: { effort: "high" } }), {
       supported: true,
-      enabled: false,
-      effort: "max",
+      enabled: true,
+      effort: "high",
       effortSupported: true,
     });
-    assert.deepEqual(mod.resolveZaiThinkingConfig("GLM-5.1", { reasoning_effort: "max" }), {
+    assert.deepEqual(mod.resolveZaiThinkingConfig("glm-5.3", { reasoning_effort: "off" }), {
       supported: true,
       enabled: true,
       effort: "max",
-      effortSupported: false,
+      effortSupported: true,
+    });
+    assert.deepEqual(mod.resolveZaiThinkingConfig("glm-5.3", { enable_thinking: false }), {
+      supported: true,
+      enabled: true,
+      effort: "max",
+      effortSupported: true,
+    });
+    assert.deepEqual(mod.resolveZaiThinkingConfig("glm-5.2", { reasoning_effort: "low" }), {
+      supported: true,
+      enabled: true,
+      effort: "high",
+      effortSupported: true,
     });
   });
 
-  it("maps GLM-5V-Turbo vision and internal VLM controls from live capabilities", () => {
-    assert.deepEqual(mod.getZaiModelCapabilities("zw/GLM-5v-Turbo"), {
+  it("maps GLM-5.3-Flash vision and web controls from live capabilities", () => {
+    assert.deepEqual(mod.getZaiModelCapabilities("zw/glm-5.3-flash"), {
       mcp: false,
-      reasoningEffort: false,
+      reasoningEffort: true,
       returnFc: true,
       thinking: true,
       vision: true,
-      vlmTools: true,
-      vlmWebSearch: true,
-      vlmWebsiteMode: true,
+      vlmTools: false,
+      vlmWebSearch: false,
+      vlmWebsiteMode: false,
       webSearch: true,
     });
-    assert.deepEqual(mod.resolveZaiVlmConfig("GLM-5v-Turbo", {}), {
-      toolsEnabled: true,
-      webSearchEnabled: true,
-      websiteModeEnabled: true,
+    assert.deepEqual(mod.getZaiModelCapabilities("x-preview-l"), {
+      mcp: false,
+      reasoningEffort: true,
+      returnFc: true,
+      thinking: true,
+      vision: true,
+      vlmTools: false,
+      vlmWebSearch: false,
+      vlmWebsiteMode: false,
+      webSearch: true,
     });
-    assert.deepEqual(
-      mod.resolveZaiVlmConfig("GLM-5v-Turbo", {
-        features: {
-          vlm_tools_enable: false,
-          vlm_web_search_enable: false,
-          vlm_website_mode: false,
-        },
-      }),
-      {
-        toolsEnabled: false,
-        webSearchEnabled: false,
-        websiteModeEnabled: true,
-      }
-    );
-    assert.deepEqual(mod.resolveZaiVlmConfig("GLM-5.1", {}), {
+    assert.deepEqual(mod.resolveZaiVlmConfig("glm-5.3-flash", { web_search: true }), {
+      toolsEnabled: false,
+      webSearchEnabled: true,
+      websiteModeEnabled: false,
+    });
+    assert.deepEqual(mod.resolveZaiVlmConfig("glm-5.3", {}), {
       toolsEnabled: false,
       webSearchEnabled: false,
       websiteModeEnabled: false,
     });
-    assert.deepEqual(mod.resolveZaiVlmConfig("GLM-5.1", { web_search: true }), {
-      toolsEnabled: false,
-      webSearchEnabled: true,
-      websiteModeEnabled: false,
-    });
+    assert.equal(mod.zaiUpstreamModelId("zai-web/glm-5.3-flash"), "x-preview-l");
+    assert.equal(mod.zaiUpstreamModelId("zai-web/glm-5.3"), "glm-5.3");
+    assert.equal(mod.getZaiModelCapabilities("GLM-5.1").thinking, false);
   });
 
   it("returns a credential error when no session credential is provided", async () => {
     const executor = new mod.ZaiWebExecutor();
-    const result: LooseDeep = await executor.execute({
-      model: "GLM-5.1",
+    const result = await executor.execute({
+      model: "glm-5.3",
       body: { messages: [{ role: "user", content: "hi" }] },
       stream: false,
       credentials: { apiKey: "" },
@@ -313,8 +318,7 @@ describe("ZaiWebExecutor", () => {
 
     try {
       const executor = new mod.ZaiWebExecutor();
-      const result: LooseDeep = await executor.execute({
-        model: "glm-5.2",
+      const result = await executor.execute({
         body: { messages: [{ role: "user", content: "hi" }] },
         stream: false,
         credentials: { apiKey: TEST_TOKEN },
@@ -323,8 +327,10 @@ describe("ZaiWebExecutor", () => {
 
       const completion = await result.response.json();
       assert.equal(completion.choices[0].message.content, "Browser");
+      assert.equal(completion.model, "glm-5.3");
       assert.equal(capturedRequest?.localStorage?.token, TEST_TOKEN);
       assert.equal(capturedRequest?.localStorageOrigin, "https://chat.z.ai");
+      assert.equal(capturedRequest?.headless, false);
       assert.equal(capturedRequest?.inputSelector, "#chat-input");
       assert.equal(
         capturedRequest?.submitButtonSelector,
@@ -332,7 +338,7 @@ describe("ZaiWebExecutor", () => {
       );
       assert.equal(capturedRequest?.submitButtonMode, "dom");
       assert.equal(capturedRequest?.userMessage, "hi");
-      assert.match(capturedRequest?.chatPageUrl ?? "", /model=GLM-5\.2/);
+      assert.match(capturedRequest?.chatPageUrl ?? "", /model=GLM-5\.3/);
       assert.equal(typeof capturedRequest?.beforeSubmit, "function");
       assert.equal(result.headers["X-OmniRoute-Transport"], "browser");
       assert.equal(result.transformedBody.browser_backed, true);
@@ -343,7 +349,7 @@ describe("ZaiWebExecutor", () => {
     }
   });
 
-  it("configures GLM-5V-Turbo controls on the browser transport", async () => {
+  it("configures GLM-5.3-Flash on the browser transport", async () => {
     let capturedRequest: BrowserBackedChatRequest | null = null;
     browserChat.__setBrowserBackedChatOverrideForTesting(async (request) => {
       capturedRequest = request;
@@ -352,9 +358,9 @@ describe("ZaiWebExecutor", () => {
 
     try {
       const executor = new mod.ZaiWebExecutor();
-      const result: LooseDeep = await executor.execute({
-        model: "GLM-5v-Turbo",
-        body: { messages: [{ role: "user", content: "use the model tools" }] },
+      const result = await executor.execute({
+        model: "glm-5.3-flash",
+        body: { messages: [{ role: "user", content: "use flash" }] },
         stream: false,
         credentials: { apiKey: TEST_TOKEN },
         signal: null,
@@ -362,19 +368,19 @@ describe("ZaiWebExecutor", () => {
 
       const completion = await result.response.json();
       assert.equal(completion.choices[0].message.content, "VLM");
-      assert.match(capturedRequest?.chatPageUrl ?? "", /model=GLM-5V-Turbo/);
+      assert.match(capturedRequest?.chatPageUrl ?? "", /model=GLM-5\.3-Flash/);
       assert.equal(typeof capturedRequest?.beforeSubmit, "function");
       assert.equal(result.transformedBody.enable_thinking, true);
-      assert.equal(result.transformedBody.vlm_tools_enable, true);
-      assert.equal(result.transformedBody.vlm_web_search_enable, true);
-      assert.equal(result.transformedBody.vlm_website_mode, true);
-      assert.equal("reasoning_effort" in result.transformedBody, false);
+      assert.equal(result.transformedBody.reasoning_effort, "max");
+      assert.equal(result.transformedBody.vlm_tools_enable, false);
+      assert.equal(result.transformedBody.vlm_web_search_enable, false);
+      assert.equal(result.transformedBody.vlm_website_mode, false);
     } finally {
       browserChat.__resetBrowserBackedChatOverrideForTesting();
     }
   });
 
-  it("uploads GLM-5V-Turbo image input through the authenticated browser page", async () => {
+  it("uploads GLM-5.3-Flash image input through the authenticated browser page", async () => {
     let capturedRequest: BrowserBackedChatRequest | null = null;
     browserChat.__setBrowserBackedChatOverrideForTesting(async (request) => {
       capturedRequest = request;
@@ -383,8 +389,8 @@ describe("ZaiWebExecutor", () => {
 
     try {
       const executor = new mod.ZaiWebExecutor();
-      const result: LooseDeep = await executor.execute({
-        model: "GLM-5v-Turbo",
+      const result = await executor.execute({
+        model: "glm-5.3-flash",
         body: {
           messages: [
             {
@@ -423,7 +429,7 @@ describe("ZaiWebExecutor", () => {
 
   it("rejects image input on Z.ai text-only models", async () => {
     const executor = new mod.ZaiWebExecutor();
-    const result: LooseDeep = await executor.execute({
+    const result = await executor.execute({
       model: "glm-5.2",
       body: {
         messages: [
@@ -446,7 +452,7 @@ describe("ZaiWebExecutor", () => {
 
     assert.equal(result.response.status, 400);
     const parsed = await result.response.json();
-    assert.match(parsed.error.message, /use GLM-5V-Turbo/);
+    assert.match(parsed.error.message, /use GLM-5\.3-Flash/);
   });
 
   it("creates a chat, signs the v2 request, and forwards the CAPTCHA proof", async () => {
@@ -461,10 +467,10 @@ describe("ZaiWebExecutor", () => {
 
     try {
       const executor = new mod.ZaiWebExecutor();
-      const result: LooseDeep = await executor.execute({
-        model: "GLM-5.1",
+      const result = await executor.execute({
+        model: "glm-5.3",
         body: {
-          model: "GLM-5.1",
+          model: "glm-5.3",
           messages: [{ role: "user", content: "hello" }],
           temperature: 0.4,
           web_search: true,
@@ -478,7 +484,7 @@ describe("ZaiWebExecutor", () => {
       const newChatHeaders = capture.newChatInit?.headers as Record<string, string>;
       assert.equal(newChatHeaders.Authorization, `Bearer ${TEST_TOKEN}`);
       const newChatBody = JSON.parse(String(capture.newChatInit?.body));
-      assert.deepEqual(newChatBody.chat.models, ["GLM-5.1"]);
+      assert.deepEqual(newChatBody.chat.models, ["glm-5.3"]);
       assert.equal(newChatBody.chat.history.currentId.length, 36);
       assert.equal(newChatBody.chat.enable_thinking, true);
       assert.equal(newChatBody.chat.auto_web_search, true);
@@ -495,11 +501,11 @@ describe("ZaiWebExecutor", () => {
 
       const headers = capture.completionInit?.headers as Record<string, string>;
       assert.equal(headers.Authorization, `Bearer ${TEST_TOKEN}`);
-      assert.equal(headers["X-FE-Version"], "prod-fe-1.1.79");
+      assert.equal(headers["X-FE-Version"], "prod-fe-1.1.92");
       assert.match(headers["X-Signature"], /^[a-f0-9]{64}$/);
 
       const parsedBody = JSON.parse(String(capture.completionInit?.body));
-      assert.equal(parsedBody.model, "GLM-5.1");
+      assert.equal(parsedBody.model, "glm-5.3");
       assert.equal(parsedBody.stream, true);
       assert.deepEqual(parsedBody.messages, [{ role: "user", content: "hello" }]);
       assert.equal(parsedBody.signature_prompt, "hello");
@@ -509,7 +515,7 @@ describe("ZaiWebExecutor", () => {
       assert.equal(parsedBody.features.web_search, false);
       assert.equal(parsedBody.features.auto_web_search, true);
       assert.equal(parsedBody.features.enable_thinking, true);
-      assert.equal("reasoning_effort" in parsedBody.features, false);
+      assert.equal(parsedBody.features.reasoning_effort, "max");
       assert.equal(result.headers.Authorization, "Bearer [REDACTED]");
       assert.equal(result.transformedBody.captcha_verify_param, "[REDACTED]");
     } finally {
@@ -517,7 +523,7 @@ describe("ZaiWebExecutor", () => {
     }
   });
 
-  it("sends GLM-5.2 Deep Think High through the direct request path", async () => {
+  it("sends GLM-5.3 Deep Think Low through the direct request path", async () => {
     const capture: ZaiFetchCapture = {};
     const originalFetch = installZaiFetch(
       () =>
@@ -530,36 +536,36 @@ describe("ZaiWebExecutor", () => {
     try {
       const executor = new mod.ZaiWebExecutor();
       await executor.execute({
-        model: "glm-5.2",
+        model: "glm-5.3",
         body: {
-          model: "glm-5.2",
+          model: "glm-5.3",
           messages: [{ role: "user", content: "think carefully" }],
-          reasoning_effort: "high",
+          reasoning_effort: "low",
         },
         stream: false,
         credentials: { apiKey: TEST_CREDENTIAL },
         signal: null,
       });
 
-      // #8014: completions must target the versioned v2 path. The query string
+      // The query string
       // carries the per-request signature payload, so match the endpoint prefix.
       assert.ok(
         String(capture.completionUrl).startsWith("https://chat.z.ai/api/v2/chat/completions?"),
-        `expected the v2 completions endpoint, got ${capture.completionUrl}`
+        `expected the current completions endpoint, got ${capture.completionUrl}`
       );
       const newChatBody = JSON.parse(String(capture.newChatInit?.body));
       assert.equal(newChatBody.chat.enable_thinking, true);
-      assert.equal(newChatBody.chat.reasoning_effort, "high");
+      assert.equal(newChatBody.chat.reasoning_effort, "low");
 
       const completionBody = JSON.parse(String(capture.completionInit?.body));
       assert.equal(completionBody.features.enable_thinking, true);
-      assert.equal(completionBody.features.reasoning_effort, "high");
+      assert.equal(completionBody.features.reasoning_effort, "low");
     } finally {
       globalThis.fetch = originalFetch;
     }
   });
 
-  it("sends GLM-5V-Turbo VLM tools and web-search flags through the direct path", async () => {
+  it("maps GLM-5.3-Flash to its opaque wire id on the direct path", async () => {
     const capture: ZaiFetchCapture = {};
     const originalFetch = installZaiFetch(
       () =>
@@ -572,10 +578,11 @@ describe("ZaiWebExecutor", () => {
     try {
       const executor = new mod.ZaiWebExecutor();
       await executor.execute({
-        model: "GLM-5v-Turbo",
+        model: "glm-5.3-flash",
         body: {
-          model: "GLM-5v-Turbo",
-          messages: [{ role: "user", content: "inspect this image" }],
+          model: "glm-5.3-flash",
+          messages: [{ role: "user", content: "answer quickly" }],
+          web_search: true,
         },
         stream: false,
         credentials: { apiKey: TEST_CREDENTIAL },
@@ -583,19 +590,26 @@ describe("ZaiWebExecutor", () => {
       });
 
       const newChatBody = JSON.parse(String(capture.newChatInit?.body));
+      assert.deepEqual(newChatBody.chat.models, ["x-preview-l"]);
+      assert.deepEqual(
+        newChatBody.chat.history.messages[newChatBody.chat.history.currentId].models,
+        ["x-preview-l"]
+      );
       assert.equal(newChatBody.chat.enable_thinking, true);
       assert.equal(newChatBody.chat.auto_web_search, true);
-      assert.equal(newChatBody.chat.extra.vlm_tools_enable, true);
-      assert.equal(newChatBody.chat.extra.vlm_web_search_enable, true);
-      assert.equal(newChatBody.chat.extra.vlm_website_mode, true);
+      assert.equal(newChatBody.chat.reasoning_effort, "max");
+      assert.equal(newChatBody.chat.extra.vlm_tools_enable, false);
+      assert.equal(newChatBody.chat.extra.vlm_web_search_enable, false);
+      assert.equal(newChatBody.chat.extra.vlm_website_mode, false);
 
       const completionBody = JSON.parse(String(capture.completionInit?.body));
+      assert.equal(completionBody.model, "x-preview-l");
       assert.equal(completionBody.features.enable_thinking, true);
-      assert.equal(completionBody.features.auto_web_search, false);
-      assert.equal(completionBody.features.vlm_tools_enable, true);
-      assert.equal(completionBody.features.vlm_web_search_enable, true);
-      assert.equal(completionBody.features.vlm_website_mode, true);
-      assert.equal("reasoning_effort" in completionBody.features, false);
+      assert.equal(completionBody.features.reasoning_effort, "max");
+      assert.equal(completionBody.features.auto_web_search, true);
+      assert.equal(completionBody.features.vlm_tools_enable, false);
+      assert.equal(completionBody.features.vlm_web_search_enable, false);
+      assert.equal(completionBody.features.vlm_website_mode, false);
     } finally {
       globalThis.fetch = originalFetch;
     }
@@ -619,8 +633,8 @@ describe("ZaiWebExecutor", () => {
 
     try {
       const executor = new mod.ZaiWebExecutor();
-      const result: LooseDeep = await executor.execute({
-        model: "GLM-5.1",
+      const result = await executor.execute({
+        model: "glm-5.3",
         body: { messages: [{ role: "user", content: "hi" }] },
         stream: false,
         credentials: { apiKey: TEST_CREDENTIAL },
@@ -651,8 +665,8 @@ describe("ZaiWebExecutor", () => {
 
     try {
       const executor = new mod.ZaiWebExecutor();
-      const result: LooseDeep = await executor.execute({
-        model: "GLM-5.1",
+      const result = await executor.execute({
+        model: "glm-5.3",
         body: { messages: [{ role: "user", content: "hi" }] },
         stream: true,
         credentials: { apiKey: TEST_CREDENTIAL },
@@ -673,8 +687,8 @@ describe("ZaiWebExecutor", () => {
 
     try {
       const executor = new mod.ZaiWebExecutor();
-      const result: LooseDeep = await executor.execute({
-        model: "GLM-5.1",
+      const result = await executor.execute({
+        model: "glm-5.3",
         body: { messages: [{ role: "user", content: "hi" }] },
         stream: false,
         credentials: { apiKey: TEST_CREDENTIAL },

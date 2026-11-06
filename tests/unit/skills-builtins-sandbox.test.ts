@@ -1,6 +1,5 @@
 ﻿import test from "node:test";
 import assert from "node:assert/strict";
-import type { LooseDeep } from "../helpers/looseTypes.ts";
 import { EventEmitter } from "node:events";
 import { createRequire } from "node:module";
 import fs from "node:fs";
@@ -17,13 +16,7 @@ function makeTempDir(prefix) {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 }
 
-async function removePath(targetPath) {
-  try {
-    const { closeDbInstance } = await import("../../src/lib/db/core.ts");
-    closeDbInstance();
-  } catch {
-    // DB module not loaded or already closed — nothing to release.
-  }
+function removePath(targetPath) {
   fs.rmSync(targetPath, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 }
 
@@ -49,15 +42,8 @@ test.afterEach(() => {
   globalThis.fetch = originalFetch;
 });
 
-function createFakeProcess({
-  onKill,
-}: { onKill?: (proc: LooseDeep, signal?: string) => void } = {}) {
-  const proc = new EventEmitter() as EventEmitter & {
-    stdout: EventEmitter;
-    stderr: EventEmitter;
-    killedSignal?: string;
-    kill(signal?: string): boolean;
-  };
+function createFakeProcess({ onKill } = {}) {
+  const proc = new EventEmitter();
   proc.stdout = new EventEmitter();
   proc.stderr = new EventEmitter();
   proc.kill = (signal) => {
@@ -92,7 +78,7 @@ async function withSandboxModule(fakeSpawn, fn) {
   }
 }
 
-test("builtin skill handlers validate required fields and perform real sandboxed work", async () => {
+test("builtin skill handlers validate required fields and perform real sandboxed work", async (t) => {
   const dataDir = makeTempDir("omniroute-skills-builtins-");
   const context = { apiKeyId: "key-123", sessionId: "session-123" };
 
@@ -153,6 +139,27 @@ test("builtin skill handlers validate required fields and perform real sandboxed
         /restricted segment/
       );
 
+      // #15064: http_request resolves the host and pins the connection to the checked address, so
+      // the request no longer goes through globalThis.fetch. Answer the lookup with a public
+      // address and stand in for the pinned connection.
+      const dns = await import("node:dns");
+      const originalPromisesLookup = dns.promises.lookup;
+      dns.promises.lookup = async (hostname, options) =>
+        hostname === "example.com"
+          ? [{ address: "93.184.216.34", family: 4 }]
+          : originalPromisesLookup(hostname, options);
+      const { setSafeOutboundPinnedFetchTestOverride } =
+        await import("../../src/shared/network/safeOutboundFetch.ts");
+      const pinnedTo = [];
+      setSafeOutboundPinnedFetchTestOverride((address) => {
+        pinnedTo.push(address);
+        return (url, init) => globalThis.fetch(url, init);
+      });
+      t.after(() => {
+        dns.promises.lookup = originalPromisesLookup;
+        setSafeOutboundPinnedFetchTestOverride(undefined);
+      });
+
       globalThis.fetch = async (url, init) => {
         assert.equal(String(url), "https://example.com/api");
         assert.equal(init.method, "POST");
@@ -180,6 +187,7 @@ test("builtin skill handlers validate required fields and perform real sandboxed
       assert.equal(httpResult.status, 201);
       assert.equal(httpResult.body, "created");
       assert.equal(httpResult.headers["content-type"], "text/plain");
+      assert.deepEqual(pinnedTo, ["93.184.216.34"]);
 
       await assert.rejects(
         () => builtinSkills.http_request({ url: "http://127.0.0.1:9000" }, context),
@@ -187,7 +195,7 @@ test("builtin skill handlers validate required fields and perform real sandboxed
       );
     });
   } finally {
-    await removePath(dataDir);
+    removePath(dataDir);
   }
 });
 
@@ -300,7 +308,7 @@ test("sandboxRunner handles success, spawn errors, timeouts, and killAll cleanup
       if (mode === "timeout") {
         return createFakeProcess({
           onKill: (instance) => {
-            setImmediate(() => (instance as unknown as LooseDeep).emit("close", null));
+            setImmediate(() => instance.emit("close", null));
           },
         });
       }

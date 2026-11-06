@@ -10,7 +10,7 @@ import { findModelById, handleGetModelById } from "@/app/api/v1/models/modelById
 
 const CATALOG = [
   { id: "claude/claude-sonnet-4-6", object: "model", owned_by: "claude" },
-  { id: "cgpt-web/gpt-5.5", object: "model", owned_by: "chatgpt-web" },
+  { id: "openai/gpt-5.4", object: "model", owned_by: "openai" },
   { id: "gpt-5", object: "model", owned_by: "openai" },
 ];
 
@@ -26,9 +26,9 @@ test("findModelById returns the exact-id match", () => {
 });
 
 test("findModelById handles provider-prefixed ids containing a slash", () => {
-  const found = findModelById(CATALOG, "cgpt-web/gpt-5.5");
+  const found = findModelById(CATALOG, "openai/gpt-5.4");
   assert.ok(found);
-  assert.equal(found.id, "cgpt-web/gpt-5.5");
+  assert.equal(found.id, "openai/gpt-5.4");
 });
 
 test("findModelById returns null for an unknown model", () => {

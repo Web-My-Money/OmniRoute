@@ -1,5 +1,3 @@
-type ExecFileMock = Parameters<typeof autoUpdate.detectComposeCommand>[0];
-type LaunchOptions = Parameters<typeof autoUpdate.launchAutoUpdate>[0];
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -32,26 +30,26 @@ test("auto update config normalizes env values and local source installs to sour
 });
 
 test("detectComposeCommand prefers docker compose and falls back to docker-compose", async () => {
-  const dockerCompose = await autoUpdate.detectComposeCommand((async (command, args) => {
+  const dockerCompose = await autoUpdate.detectComposeCommand(async (command, args) => {
     if (command === "docker" && args[0] === "compose") {
       return { stdout: "Docker Compose version v2", stderr: "" };
     }
     throw new Error("unexpected");
-  }) as unknown as ExecFileMock);
+  });
   assert.equal(dockerCompose, "docker compose");
 
-  const dockerComposeLegacy = await autoUpdate.detectComposeCommand((async (command, args) => {
+  const dockerComposeLegacy = await autoUpdate.detectComposeCommand(async (command, args) => {
     if (command === "docker") throw new Error("missing");
     if (command === "docker-compose" && args[0] === "version") {
       return { stdout: "docker-compose 1.29", stderr: "" };
     }
     throw new Error("unexpected");
-  }) as unknown as ExecFileMock);
+  });
   assert.equal(dockerComposeLegacy, "docker-compose");
 
-  const none = await autoUpdate.detectComposeCommand((async () => {
+  const none = await autoUpdate.detectComposeCommand(async () => {
     throw new Error("missing");
-  }) as unknown as ExecFileMock);
+  });
   assert.equal(none, null);
 });
 
@@ -67,12 +65,12 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
       patchCommits: [],
       logPath: "/tmp/log",
     },
-    (async (command, args) => {
+    async (command, args) => {
       if (command === "git" && args[0] === "--version") {
         return { stdout: "git version 2.0", stderr: "" };
       }
       throw new Error(`unexpected: ${command}`);
-    }) as unknown as ExecFileMock,
+    },
     async () => true
   );
 
@@ -93,7 +91,7 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
       patchCommits: [],
       logPath: "/tmp/log",
     },
-    (async () => ({ stdout: "git version 2.0", stderr: "" })) as unknown as ExecFileMock,
+    async () => ({ stdout: "git version 2.0", stderr: "" }),
     async () => false
   );
   assert.equal(sourceMissingGitRepo.supported, false);
@@ -110,9 +108,9 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
       patchCommits: [],
       logPath: "/tmp/log",
     },
-    (async () => {
+    async () => {
       throw new Error("git missing");
-    }) as unknown as ExecFileMock,
+    },
     async () => true
   );
   assert.equal(sourceMissingGit.supported, false);
@@ -129,7 +127,7 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
       patchCommits: [],
       logPath: "/tmp/log",
     },
-    (async () => ({ stdout: "", stderr: "" })) as unknown as ExecFileMock,
+    async () => ({ stdout: "", stderr: "" }),
     async (targetPath) => targetPath !== "/repo"
   );
   assert.equal(missingRepo.supported, false);
@@ -146,7 +144,7 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
       patchCommits: [],
       logPath: "/tmp/log",
     },
-    (async () => ({ stdout: "", stderr: "" })) as unknown as ExecFileMock,
+    async () => ({ stdout: "", stderr: "" }),
     async (targetPath) => targetPath === "/repo"
   );
   assert.equal(missingComposeFile.supported, false);
@@ -163,10 +161,10 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
       patchCommits: [],
       logPath: "/tmp/log",
     },
-    (async (command) => {
+    async (command) => {
       if (command === "git") throw new Error("git missing");
       return { stdout: "", stderr: "" };
-    }) as unknown as ExecFileMock,
+    },
     async () => true
   );
   assert.equal(missingGit.supported, false);
@@ -183,10 +181,10 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
       patchCommits: [],
       logPath: "/tmp/log",
     },
-    (async (command) => {
+    async (command) => {
       if (command === "git") return { stdout: "git version 2", stderr: "" };
       throw new Error("compose missing");
-    }) as unknown as ExecFileMock,
+    },
     async () => true
   );
   assert.equal(missingComposeCommand.supported, false);
@@ -203,7 +201,7 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
       patchCommits: [],
       logPath: "/tmp/log",
     },
-    (async (command, args) => {
+    async (command, args) => {
       if (command === "git" && args[0] === "--version") {
         return { stdout: "git version 2.0", stderr: "" };
       }
@@ -211,7 +209,7 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
         return { stdout: "Docker Compose version v2", stderr: "" };
       }
       throw new Error(`unexpected: ${command}`);
-    }) as unknown as ExecFileMock,
+    },
     async () => true
   );
   assert.deepEqual(supported, {
@@ -223,10 +221,10 @@ test("validateAutoUpdateRuntime covers source, docker preconditions and successf
 
 test("ensureGitTagExists verifies refs/tags paths and throws a clear error when missing", async () => {
   const calls = [];
-  await autoUpdate.ensureGitTagExists("v3.6.0", (async (command, args, options) => {
+  await autoUpdate.ensureGitTagExists("v3.6.0", async (command, args, options) => {
     calls.push({ command, args, options });
     return { stdout: "deadbeef", stderr: "" };
-  }) as unknown as ExecFileMock);
+  });
 
   assert.deepEqual(calls, [
     {
@@ -240,9 +238,9 @@ test("ensureGitTagExists verifies refs/tags paths and throws a clear error when 
   ]);
 
   await assert.rejects(
-    autoUpdate.ensureGitTagExists("v9.9.9", (async () => {
+    autoUpdate.ensureGitTagExists("v9.9.9", async () => {
       throw new Error("missing tag");
-    }) as unknown as ExecFileMock),
+    }),
     /Git tag not found: v9\.9\.9/
   );
 });
@@ -286,96 +284,104 @@ test("auto update script builders generate npm, source, and docker-compose scrip
 });
 
 test("launchAutoUpdate returns validation failures and starts detached update scripts when runtime is supported", async () => {
-  const unsupported = await autoUpdate.launchAutoUpdate({
-    latest: "3.6.0",
-    env: {
-      AUTO_UPDATE_MODE: "source",
-      AUTO_UPDATE_LOG_PATH: "/tmp/auto-update-source.log",
-    },
-    existsImpl: async () => false,
-  } as unknown as LaunchOptions);
-
-  assert.equal(unsupported.started, false);
-  assert.equal(unsupported.channel, "source");
-  assert.match(unsupported.error, /Not a git repository/);
-
-  const sourceSpawnCalls = [];
-  const sourceStarted = await autoUpdate.launchAutoUpdate({
-    latest: "3.6.0",
-    env: {
-      AUTO_UPDATE_MODE: "source",
-      AUTO_UPDATE_GIT_REMOTE: "upstream",
-      AUTO_UPDATE_LOG_PATH: "/tmp/auto-update-source.log",
-    },
-    execFileImpl: async (command, args) => {
-      if (command === "git" && args[0] === "--version") {
-        return { stdout: "git version 2.0", stderr: "" };
-      }
-      throw new Error(`unexpected exec: ${command}`);
-    },
-    existsImpl: async () => true,
-    spawnImpl: (command, args, options) => {
-      sourceSpawnCalls.push({ command, args, options, unrefCalled: false });
-      return {
-        unref() {
-          sourceSpawnCalls[0].unrefCalled = true;
-        },
-      };
-    },
-  } as unknown as LaunchOptions);
-
-  assert.equal(sourceStarted.started, true);
-  assert.equal(sourceStarted.channel, "source");
-  assert.equal(sourceStarted.composeCommand, null);
-  assert.equal(sourceSpawnCalls.length, 1);
-  assert.match(sourceSpawnCalls[0].args[1], /git fetch --tags 'upstream'/);
-  assert.match(sourceSpawnCalls[0].args[1], /npm run build/);
-  assert.equal(sourceSpawnCalls[0].unrefCalled, true);
-
+  // Never point AUTO_UPDATE_LOG_PATH at a fixed, world-shared /tmp file: on a
+  // multi-user runner (.113 runs the suite as `root` AND as `runner`) the file
+  // outlives the run owned by whoever created it first and the next
+  // `openSync(logPath, "a")` fails with EACCES for the other user.
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-autoupdate-"));
-  const repoDir = path.join(tempRoot, "repo");
-  const composeFile = path.join(repoDir, "docker-compose.yml");
-  const logPath = path.join(tempRoot, "logs", "auto-update.log");
-  fs.mkdirSync(repoDir, { recursive: true });
-  fs.writeFileSync(composeFile, "services: {}\n");
-
-  const execCalls = [];
-  const spawnCalls = [];
-  const started = await autoUpdate.launchAutoUpdate({
-    latest: "3.6.0",
-    env: {
-      AUTO_UPDATE_MODE: "docker-compose",
-      AUTO_UPDATE_REPO_DIR: repoDir,
-      AUTO_UPDATE_COMPOSE_FILE: composeFile,
-      AUTO_UPDATE_COMPOSE_PROFILE: "cli",
-      AUTO_UPDATE_SERVICE: "omniroute-cli",
-      AUTO_UPDATE_GIT_REMOTE: "origin",
-      AUTO_UPDATE_PATCH_COMMITS: "abc123",
-      AUTO_UPDATE_LOG_PATH: logPath,
-    },
-    execFileImpl: async (command, args) => {
-      execCalls.push([command, args]);
-      if (command === "git" && args[0] === "--version") {
-        return { stdout: "git version 2.0", stderr: "" };
-      }
-      if (command === "docker" && args[0] === "compose") {
-        return { stdout: "Docker Compose version v2", stderr: "" };
-      }
-      throw new Error(`unexpected exec: ${command}`);
-    },
-    spawnImpl: (command, args, options) => {
-      spawnCalls.push({ command, args, options, unrefCalled: false });
-      return {
-        unref() {
-          spawnCalls[0].unrefCalled = true;
-        },
-      };
-    },
-    existsImpl: async (targetPath) =>
-      targetPath === repoDir || targetPath === composeFile || targetPath === "/var/run/docker.sock",
-  } as unknown as LaunchOptions);
+  const sourceLogPath = path.join(tempRoot, "auto-update-source.log");
 
   try {
+    const unsupported = await autoUpdate.launchAutoUpdate({
+      latest: "3.6.0",
+      env: {
+        AUTO_UPDATE_MODE: "source",
+        AUTO_UPDATE_LOG_PATH: sourceLogPath,
+      },
+      existsImpl: async () => false,
+    });
+
+    assert.equal(unsupported.started, false);
+    assert.equal(unsupported.channel, "source");
+    assert.match(unsupported.error, /Not a git repository/);
+
+    const sourceSpawnCalls = [];
+    const sourceStarted = await autoUpdate.launchAutoUpdate({
+      latest: "3.6.0",
+      env: {
+        AUTO_UPDATE_MODE: "source",
+        AUTO_UPDATE_GIT_REMOTE: "upstream",
+        AUTO_UPDATE_LOG_PATH: sourceLogPath,
+      },
+      execFileImpl: async (command, args) => {
+        if (command === "git" && args[0] === "--version") {
+          return { stdout: "git version 2.0", stderr: "" };
+        }
+        throw new Error(`unexpected exec: ${command}`);
+      },
+      existsImpl: async () => true,
+      spawnImpl: (command, args, options) => {
+        sourceSpawnCalls.push({ command, args, options, unrefCalled: false });
+        return {
+          unref() {
+            sourceSpawnCalls[0].unrefCalled = true;
+          },
+        };
+      },
+    });
+
+    assert.equal(sourceStarted.started, true);
+    assert.equal(sourceStarted.channel, "source");
+    assert.equal(sourceStarted.composeCommand, null);
+    assert.equal(sourceSpawnCalls.length, 1);
+    assert.match(sourceSpawnCalls[0].args[1], /git fetch --tags 'upstream'/);
+    assert.match(sourceSpawnCalls[0].args[1], /npm run build/);
+    assert.equal(sourceSpawnCalls[0].unrefCalled, true);
+
+    const repoDir = path.join(tempRoot, "repo");
+    const composeFile = path.join(repoDir, "docker-compose.yml");
+    const logPath = path.join(tempRoot, "logs", "auto-update.log");
+    fs.mkdirSync(repoDir, { recursive: true });
+    fs.writeFileSync(composeFile, "services: {}\n");
+
+    const execCalls = [];
+    const spawnCalls = [];
+    const started = await autoUpdate.launchAutoUpdate({
+      latest: "3.6.0",
+      env: {
+        AUTO_UPDATE_MODE: "docker-compose",
+        AUTO_UPDATE_REPO_DIR: repoDir,
+        AUTO_UPDATE_COMPOSE_FILE: composeFile,
+        AUTO_UPDATE_COMPOSE_PROFILE: "cli",
+        AUTO_UPDATE_SERVICE: "omniroute-cli",
+        AUTO_UPDATE_GIT_REMOTE: "origin",
+        AUTO_UPDATE_PATCH_COMMITS: "abc123",
+        AUTO_UPDATE_LOG_PATH: logPath,
+      },
+      execFileImpl: async (command, args) => {
+        execCalls.push([command, args]);
+        if (command === "git" && args[0] === "--version") {
+          return { stdout: "git version 2.0", stderr: "" };
+        }
+        if (command === "docker" && args[0] === "compose") {
+          return { stdout: "Docker Compose version v2", stderr: "" };
+        }
+        throw new Error(`unexpected exec: ${command}`);
+      },
+      spawnImpl: (command, args, options) => {
+        spawnCalls.push({ command, args, options, unrefCalled: false });
+        return {
+          unref() {
+            spawnCalls[0].unrefCalled = true;
+          },
+        };
+      },
+      existsImpl: async (targetPath) =>
+        targetPath === repoDir ||
+        targetPath === composeFile ||
+        targetPath === "/var/run/docker.sock",
+    });
+
     assert.equal(started.started, true);
     assert.equal(started.channel, "docker-compose");
     assert.equal(started.composeCommand, "docker compose");

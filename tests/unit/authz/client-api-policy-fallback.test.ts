@@ -11,7 +11,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import Module from "node:module";
-import type { LooseDeep } from "../../helpers/looseTypes.ts";
+import { cleanupTempDataDir } from "../../_setup/tempDataDir.ts";
 
 // ─── Mock validateApiKey via require interception (so the dynamic import in
 // the policy module returns our stub instead of hitting the real DB module) ─
@@ -19,27 +19,25 @@ import type { LooseDeep } from "../../helpers/looseTypes.ts";
 type ValidateFn = (key: string) => boolean | Promise<boolean>;
 let mockValidateApiKey: ValidateFn = () => false;
 
-const originalResolve = (Module as LooseDeep)._resolveFilename;
+const originalResolve = (Module as unknown as { _resolveFilename: typeof Module._resolveFilename })
+  ._resolveFilename;
 
 // Intercept require() / import() resolution for the apiKeys DB module and
 // substitute it for our stub. This runs only for the exact path the policy
 // imports — production code paths are unaffected.
 const POLICY_IMPORT_TARGET = "src/lib/db/apiKeys";
 
-(Module as LooseDeep)._resolveFilename = function patched(
-  this: unknown,
-  request: string,
-  ...rest: unknown[]
-) {
-  if (request.includes(POLICY_IMPORT_TARGET)) {
-    // Resolve to a stub file we create below
-    const stubPath = new URL("./__stub_apiKeys.mjs", import.meta.url).pathname;
-    //
-    return originalResolve.call(this, stubPath, ...rest);
-  }
-  //
-  return originalResolve.call(this, request, ...rest);
-};
+(Module as unknown as { _resolveFilename: typeof Module._resolveFilename })._resolveFilename =
+  function patched(this: unknown, request: string, ...rest: unknown[]) {
+    if (request.includes(POLICY_IMPORT_TARGET)) {
+      // Resolve to a stub file we create below
+      const stubPath = new URL("./__stub_apiKeys.mjs", import.meta.url).pathname;
+      // @ts-expect-error - rest spread to original
+      return originalResolve.call(this, stubPath, ...rest);
+    }
+    // @ts-expect-error - rest spread to original
+    return originalResolve.call(this, request, ...rest);
+  };
 
 // Write the stub file ad-hoc (Node's loader needs a real file)
 import fs from "node:fs";
@@ -62,13 +60,13 @@ fs.writeFileSync(
 (globalThis as unknown as { __mockValidateApiKey: ValidateFn }).__mockValidateApiKey = (key) =>
   mockValidateApiKey(key);
 
-test.after(() => {
+test.after(async () => {
   try {
     fs.unlinkSync(STUB_PATH);
   } catch {
     /* ignore */
   }
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  await cleanupTempDataDir(TEST_DATA_DIR);
   if (ORIGINAL_DATA_DIR === undefined) delete process.env.DATA_DIR;
   else process.env.DATA_DIR = ORIGINAL_DATA_DIR;
 });

@@ -25,6 +25,7 @@ import {
   type PooledContext,
 } from "./browserPool.ts";
 import tlsClient from "../utils/tlsClient.ts";
+import { discardResponseBody } from "../executors/opencodeResponseBody.ts";
 import { sanitizeErrorMessage } from "../utils/error.ts";
 import { resolveHttpBackedChatFingerprint } from "./httpBackedChatFingerprint.ts";
 import type {
@@ -236,6 +237,7 @@ export async function browserBackedChat(
     userAgent,
     locale,
     timezone,
+    headless,
     inputSelector,
     submitButtonSelector,
     submitButtonMode = "playwright",
@@ -257,11 +259,13 @@ export async function browserBackedChat(
     userAgent,
     locale,
     timezone,
+    headless,
   });
   const acquireContextMs = Date.now() - tAcquireStart;
 
   const page = await openPage(pooled);
   const observedPostUrls: string[] = [];
+  const observedPostResponses: Array<{ url: string; status: number }> = [];
   page.on("request", (request) => {
     if (request.method() !== "POST") return;
     try {
@@ -271,6 +275,19 @@ export async function browserBackedChat(
       if (!observedPostUrls.includes(sanitized)) observedPostUrls.push(sanitized);
     } catch {
       // Ignore malformed/non-HTTP request URLs.
+    }
+  });
+  page.on("response", (response) => {
+    if (response.request().method() !== "POST") return;
+    try {
+      const url = new URL(response.url());
+      if (!url.hostname.endsWith(chatUrlMatchDomain)) return;
+      observedPostResponses.push({
+        url: `${url.origin}${url.pathname}`,
+        status: response.status(),
+      });
+    } catch {
+      // Ignore malformed/non-HTTP response URLs.
     }
   });
   try {
@@ -379,6 +396,7 @@ export async function browserBackedChat(
       body,
       isStealth: pooled.isStealth,
       observedPostUrls,
+      observedPostResponses,
       timing: {
         acquireContextMs,
         navigateMs,
@@ -404,6 +422,7 @@ export async function browserBackedChat(
       body,
       isStealth: pooled.isStealth,
       observedPostUrls,
+      observedPostResponses,
       timing: {
         acquireContextMs,
         navigateMs: 0,
@@ -429,8 +448,8 @@ export async function browserBackedChat(
 /**
  * httpBackedChat — Lightweight HTTP-backed alternative to browserBackedChat.
  *
- * Same interface, zero browser overhead. Uses tlsClient (Chrome 124 TLS
- * fingerprint) to make direct HTTP POST requests to the provider's chat
+ * Same interface, zero browser overhead. Uses tlsClient (newest chrome
+ * profile from the installed wreq-js catalog) to make direct HTTP POST requests to the provider's chat
  * endpoint with browser-emulated headers.
  *
  * ~0.5-2s per request vs 10-25s for Playwright. The trade-off: the HTTP
@@ -534,6 +553,7 @@ export async function httpBackedChat(
     if (contentLengthHeader) {
       const contentLength = parseInt(contentLengthHeader, 10);
       if (contentLength > MAX_RESPONSE_BYTES) {
+        discardResponseBody(response);
         throw new Error("Response too large");
       }
     }

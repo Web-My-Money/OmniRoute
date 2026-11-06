@@ -5,6 +5,17 @@ import os from "node:os";
 import path from "node:path";
 import { proxyConfigToUrl } from "../../open-sse/utils/proxyDispatcher.ts";
 
+// ──────────────── Integration: family survives the resolveProxyForConnection cascade ──
+const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-resolve-family-"));
+process.env.DATA_DIR = TEST_DATA_DIR;
+process.env.API_KEY_SECRET = "test-secret";
+
+const core = await import("../../src/lib/db/core.ts");
+const providersDb = await import("../../src/lib/db/providers.ts");
+const proxiesDb = await import("../../src/lib/db/proxies.ts");
+const settingsDb = await import("../../src/lib/db/settings.ts");
+const apiKeysDb = await import("../../src/lib/db/apiKeys.ts");
+
 describe("resolved proxy config → URL family encoding", () => {
   it("encodes ipv6 family resolved from a connection's proxy", () => {
     const resolved = { type: "socks5", host: "proxy.example.com", port: 1080, family: "ipv6" };
@@ -22,17 +33,6 @@ describe("resolved proxy config → URL family encoding", () => {
   });
 });
 
-// ──────────────── Integration: family survives the resolveProxyForConnection cascade ──
-const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-resolve-family-"));
-process.env.DATA_DIR = TEST_DATA_DIR;
-process.env.API_KEY_SECRET = "test-secret";
-
-const core = await import("../../src/lib/db/core.ts");
-const providersDb = await import("../../src/lib/db/providers.ts");
-const proxiesDb = await import("../../src/lib/db/proxies.ts");
-const settingsDb = await import("../../src/lib/db/settings.ts");
-const apiKeysDb = await import("../../src/lib/db/apiKeys.ts");
-
 async function resetStorage() {
   delete process.env.INITIAL_PASSWORD;
   core.resetDbInstance();
@@ -48,12 +48,12 @@ test.after(async () => {
 
 test("account-level registry proxy carries family=ipv6 through resolveProxyForConnection", async () => {
   await resetStorage();
-  const conn = (await providersDb.createProviderConnection({
+  const conn = await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "acct-ipv6",
     apiKey: "sk-acct-ipv6",
-  })) as JsonRecord & { id: string };
+  });
   const proxy = await proxiesDb.createProxy({
     name: "IPv6 Account Proxy",
     type: "socks5",
@@ -70,12 +70,12 @@ test("account-level registry proxy carries family=ipv6 through resolveProxyForCo
 
 test("provider-level registry proxy carries family=ipv6", async () => {
   await resetStorage();
-  const conn = (await providersDb.createProviderConnection({
+  const conn = await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "prov-ipv6",
     apiKey: "sk-prov-ipv6",
-  })) as JsonRecord & { id: string };
+  });
   const proxy = await proxiesDb.createProxy({
     name: "IPv6 Provider Proxy",
     type: "http",
@@ -92,12 +92,12 @@ test("provider-level registry proxy carries family=ipv6", async () => {
 
 test("global registry proxy carries family=ipv6", async () => {
   await resetStorage();
-  const conn = (await providersDb.createProviderConnection({
+  const conn = await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "glob-ipv6",
     apiKey: "sk-glob-ipv6",
-  })) as JsonRecord & { id: string };
+  });
   const proxy = await proxiesDb.createProxy({
     name: "IPv6 Global Proxy",
     type: "http",
@@ -114,12 +114,12 @@ test("global registry proxy carries family=ipv6", async () => {
 
 test("api-key-level proxy carries family=ipv6 (Step 2 object literal)", async () => {
   await resetStorage();
-  const conn = (await providersDb.createProviderConnection({
+  const conn = await providersDb.createProviderConnection({
     provider: "openai",
     authType: "apikey",
     name: "key-ipv6",
     apiKey: "sk-key-ipv6",
-  })) as JsonRecord & { id: string };
+  });
   const connId = (conn as any).id;
   core
     .getDbInstance()
@@ -145,5 +145,3 @@ test("api-key-level proxy carries family=ipv6 (Step 2 object literal)", async ()
   assert.equal((resolved as any).level, "apiKey");
   assert.equal((resolved as any).proxy.family, "ipv6");
 });
-
-import type { JsonRecord } from "../../src/shared/types/json.ts";

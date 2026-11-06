@@ -45,7 +45,6 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import Database from "better-sqlite3";
-import { looseCreds } from "../helpers/looseTypes.ts";
 
 // NOTE: every module that transitively touches src/lib/db/core.ts (which
 // resolves DATA_DIR at MODULE-LOAD time, not lazily) must be imported
@@ -63,7 +62,6 @@ const settingsDb = await import("../../src/lib/db/settings.ts");
 const apiKeysDb = await import("../../src/lib/db/apiKeys.ts");
 const affinityDb = await import("../../src/lib/db/sessionAccountAffinity.ts");
 const auth = await import("../../src/sse/services/auth.ts");
-const getCreds = looseCreds(auth.getProviderCredentials);
 const { resolveSessionAffinityTtlMs } =
   await import("../../src/sse/services/sessionAffinityPin.ts");
 const { DefaultExecutor } = await import("../../open-sse/executors/default.ts");
@@ -76,7 +74,7 @@ async function resetStorage() {
 }
 
 async function seedConnection(provider: string, overrides: Record<string, unknown> = {}) {
-  return (await providersDb.createProviderConnection({
+  return providersDb.createProviderConnection({
     provider,
     authType: (overrides.authType as string) || "api_key",
     name: (overrides.name as string) || `${provider}-${Math.random().toString(16).slice(2, 8)}`,
@@ -85,7 +83,7 @@ async function seedConnection(provider: string, overrides: Record<string, unknow
     isActive: (overrides.isActive as boolean) ?? true,
     testStatus: (overrides.testStatus as string) || "active",
     providerSpecificData: (overrides.providerSpecificData as Record<string, unknown>) || {},
-  })) as JsonRecord & { id: string };
+  });
 }
 
 test.beforeEach(async () => {
@@ -106,7 +104,7 @@ test("#7274 a non-Codex provider with sessionAffinityTtlMs > 0 persists and reus
   const connectionA = await seedConnection("glm", { name: "glm-affinity-a" });
   const connectionB = await seedConnection("glm", { name: "glm-affinity-b" });
 
-  const request1 = await getCreds("glm", null, null, "glm-4.6", {
+  const request1 = await auth.getProviderCredentials("glm", null, null, "glm-4.6", {
     sessionKey: "session-generic",
     forcedConnectionId: connectionA.id,
   });
@@ -124,7 +122,7 @@ test("#7274 a non-Codex provider with sessionAffinityTtlMs > 0 persists and reus
   // Same session, a different forcedConnectionId (as combo re-scoring would
   // produce) — the existing pin must win, exactly like the Codex-only #5903
   // behavior, but now for a generic provider.
-  const request2 = await getCreds("glm", null, null, "glm-4.6", {
+  const request2 = await auth.getProviderCredentials("glm", null, null, "glm-4.6", {
     sessionKey: "session-generic",
     forcedConnectionId: connectionB.id,
   });
@@ -141,13 +139,13 @@ test("#7274 a non-Codex provider stays unpinned when sessionAffinityTtlMs is 0 (
   const connectionA = await seedConnection("anthropic", { name: "anthropic-no-affinity-a" });
   const connectionB = await seedConnection("anthropic", { name: "anthropic-no-affinity-b" });
 
-  const request1 = await getCreds("anthropic", null, null, "claude-opus-4-8", {
+  const request1 = await auth.getProviderCredentials("anthropic", null, null, "claude-opus-4-8", {
     sessionKey: "session-disabled",
     forcedConnectionId: connectionA.id,
   });
   assert.equal(request1?.connectionId, connectionA.id);
 
-  const request2 = await getCreds("anthropic", null, null, "claude-opus-4-8", {
+  const request2 = await auth.getProviderCredentials("anthropic", null, null, "claude-opus-4-8", {
     sessionKey: "session-disabled",
     forcedConnectionId: connectionB.id,
   });
@@ -307,5 +305,3 @@ test("#7274 CHARACTERIZATION: x-session-id IS forwarded upstream by DefaultExecu
     "documents current behavior: x-session-id is forwarded, unlike the other two session headers"
   );
 });
-
-import type { JsonRecord } from "../../src/shared/types/json.ts";

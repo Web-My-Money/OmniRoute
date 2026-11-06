@@ -3,13 +3,13 @@ import test from "node:test";
 
 import { DefaultExecutor } from "../../open-sse/executors/default.ts";
 import { getClaudeCodeUserAgent } from "../../src/shared/constants/claudeCodeClient.ts";
-import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { DEFAULT_CODEX_CLIENT_VERSION } from "../../src/shared/constants/codexClient.ts";
 
 test("AgentRouter default dispatch uses the Claude Code wire image and x-api-key auth", async () => {
   const originalFetch = globalThis.fetch;
   let captured: { url: string; headers: Headers; body: string } | null = null;
 
-  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
+  globalThis.fetch = async (url, init = {}) => {
     captured = {
       url: String(url),
       headers: new Headers(init.headers),
@@ -50,7 +50,7 @@ test("AgentRouter OpenAI Chat dispatch uses Codex identity without Claude-only b
   const originalFetch = globalThis.fetch;
   let captured: { url: string; headers: Headers; body: Record<string, unknown> } | null = null;
 
-  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
+  globalThis.fetch = async (url, init = {}) => {
     captured = {
       url: String(url),
       headers: new Headers(init.headers),
@@ -85,7 +85,7 @@ test("AgentRouter OpenAI Chat dispatch uses Codex identity without Claude-only b
   assert.equal(captured.url, "https://agentrouter.org/v1/chat/completions");
   assert.equal(captured.headers.get("authorization"), "Bearer test-agentrouter-key");
   assert.equal(captured.headers.get("x-api-key"), null);
-  assert.equal(captured.headers.get("user-agent"), "codex_cli_rs/0.149.0");
+  assert.equal(captured.headers.get("user-agent"), `codex_cli_rs/${DEFAULT_CODEX_CLIENT_VERSION}`);
   assert.equal(captured.headers.get("originator"), "codex_cli_rs");
   assert.equal(captured.headers.get("x-app"), null);
   assert.equal(captured.headers.get("anthropic-version"), null);
@@ -97,7 +97,7 @@ test("AgentRouter OpenAI Responses dispatch uses the Responses endpoint and Code
   const originalFetch = globalThis.fetch;
   let captured: { url: string; headers: Headers; body: Record<string, unknown> } | null = null;
 
-  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
+  globalThis.fetch = async (url, init = {}) => {
     captured = {
       url: String(url),
       headers: new Headers(init.headers),
@@ -131,7 +131,7 @@ test("AgentRouter OpenAI Responses dispatch uses the Responses endpoint and Code
   assert.ok(captured);
   assert.equal(captured.url, "https://agentrouter.org/v1/responses");
   assert.equal(captured.headers.get("authorization"), "Bearer test-agentrouter-key");
-  assert.equal(captured.headers.get("user-agent"), "codex_cli_rs/0.149.0");
+  assert.equal(captured.headers.get("user-agent"), `codex_cli_rs/${DEFAULT_CODEX_CLIENT_VERSION}`);
   assert.equal(captured.headers.get("originator"), "codex_cli_rs");
   assert.equal(captured.headers.get("x-app"), null);
   assert.equal(captured.headers.get("anthropic-beta"), null);

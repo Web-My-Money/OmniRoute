@@ -3,6 +3,7 @@
 import type { ReactElement } from "react";
 import { useTranslations } from "next-intl";
 import { Card } from "@/shared/components";
+import type { JSX } from "react";
 
 export function OmniSandboxTab(): ReactElement {
   const t = useTranslations("skills");

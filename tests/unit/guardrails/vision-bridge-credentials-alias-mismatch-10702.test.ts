@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { JsonRecord } from "../../../src/shared/types/json.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-visionbridge-cred-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -20,12 +19,12 @@ test.after(() => {
 });
 
 test("issue #10702: hasUsableCredentialsForModel resolves alias-prefixed model to the raw provider id (command-code / alias cmd)", async () => {
-  (await providersDb.createProviderConnection({
+  await providersDb.createProviderConnection({
     provider: "command-code",
     authType: "apikey",
     apiKey: "sk-test-command-code-key",
     isActive: true,
-  })) as JsonRecord & { id: string };
+  });
 
   const result = await hasUsableCredentialsForModel("cmd/some-vision-model");
   assert.equal(
@@ -35,18 +34,18 @@ test("issue #10702: hasUsableCredentialsForModel resolves alias-prefixed model t
   );
 });
 
-test("issue #10702: hasUsableCredentialsForModel resolves alias-prefixed model to the raw provider id (opencode / alias oc)", async () => {
-  (await providersDb.createProviderConnection({
-    provider: "opencode",
+test("issue #10702: hasUsableCredentialsForModel resolves alias-prefixed model to the raw provider id (uncloseai / alias unc)", async () => {
+  await providersDb.createProviderConnection({
+    provider: "uncloseai",
     authType: "apikey",
-    apiKey: "sk-test-opencode-key",
+    apiKey: "sk-test-uncloseai-key",
     isActive: true,
-  })) as JsonRecord & { id: string };
+  });
 
-  const result = await hasUsableCredentialsForModel("oc/some-vision-model");
+  const result = await hasUsableCredentialsForModel("unc/some-vision-model");
   assert.equal(
     result,
     true,
-    "the credentialed opencode connection must be found via its public alias 'oc'"
+    "the credentialed uncloseai connection must be found via its public alias 'unc'"
   );
 });

@@ -21,6 +21,9 @@ async function resetStorage(): Promise<void> {
       fs.rmSync(TEST_DATA_DIR, {
         recursive: true,
         force: true,
+
+        maxRetries: 5,
+        retryDelay: 100,
       });
       break;
     } catch (error: unknown) {
@@ -83,6 +86,9 @@ test.after(() => {
   fs.rmSync(TEST_DATA_DIR, {
     recursive: true,
     force: true,
+
+    maxRetries: 5,
+    retryDelay: 100,
   });
 });
 

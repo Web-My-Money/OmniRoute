@@ -5,6 +5,7 @@ import {
   shapeForClientFormat,
   createSseHeartbeatTransform,
   HEARTBEAT_SHAPES,
+  isResponsesTransportKeepaliveEnabled,
 } from "../../open-sse/utils/sseHeartbeat.ts";
 
 function withEnv(value: string | undefined, fn: () => void) {
@@ -79,6 +80,9 @@ test("shapeForClientFormat maps known client formats", () => {
 });
 
 test("comment opt-out suppresses only COMMENT heartbeats, not data-event heartbeats", async () => {
+  // The Responses shape reads its feature flag when the transform is built. The first read in a
+  // process opens the settings store, which can outlast the 35 ms input window below, so warm it.
+  isResponsesTransportKeepaliveEnabled();
   await withEnvAsync("off", async () => {
     const comment = await collectHeartbeatOutput(HEARTBEAT_SHAPES.COMMENT);
     assert.doesNotMatch(comment, /: keepalive/, "comment heartbeat should be suppressed");
@@ -91,6 +95,10 @@ test("comment opt-out suppresses only COMMENT heartbeats, not data-event heartbe
     assert.match(anthropic, /event: ping\ndata: \{"type":"ping"\}/);
 
     const responses = await collectHeartbeatOutput(HEARTBEAT_SHAPES.OPENAI_RESPONSES_IN_PROGRESS);
-    assert.match(responses, /data: \{"type":"response\.in_progress"\}/);
+    // #14330: the frame now carries a required `sequence_number` and `response` object.
+    assert.match(
+      responses,
+      /data: \{"type":"response\.in_progress","sequence_number":1,"response":/
+    );
   });
 });

@@ -149,3 +149,25 @@ test("settings defaults include customSystemPromptEnabled=false and customSystem
     resetDbInstance();
   });
 });
+
+test("injectCustomSystemPrompt: claude-shaped body keeps prompt out of messages[0] (#12584)", () => {
+  const body = {
+    system: "You are Claude Code.",
+    messages: [{ role: "user", content: "Hello" }],
+  };
+  const result = injectCustomSystemPrompt(body, "Always respond formally.");
+  assert.equal(result.messages.length, 1);
+  assert.equal(result.messages[0].role, "user");
+  assert.ok(String(result.system).includes("Always respond formally."));
+});
+
+test("injectCustomSystemPrompt: malformed null system still receives the prompt (#12584)", () => {
+  const body = {
+    system: null,
+    messages: [{ role: "user", content: "Hello" }],
+  };
+  const result = injectCustomSystemPrompt(body, "Always respond formally.");
+  assert.equal(result.system, "Always respond formally.", "prompt is not silently dropped");
+  assert.equal(result.messages.length, 1, "prompt does not leak into messages");
+  assert.equal(result.messages[0].role, "user");
+});

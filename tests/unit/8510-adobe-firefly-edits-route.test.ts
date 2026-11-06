@@ -1,3 +1,4 @@
+import "../_setup/disableAdobeBrowser.ts";
 // #8510 (artickc, feat/adobe-firefly-reference-images): route-level coverage for the Adobe
 // Firefly branch that /v1/images/edits gained in this PR. Exercises the actual
 // POST(request) handler (not the inner handleAdobeFireflyImageGeneration helper directly,
@@ -9,7 +10,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { MockRequestInit } from "../helpers/mockFetch.ts";
+import { cleanupTempDataDir } from "../_setup/tempDataDir.ts";
 
 const TEST_DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "omniroute-adobe-firefly-edits-"));
 process.env.DATA_DIR = TEST_DATA_DIR;
@@ -37,7 +38,7 @@ async function resetStorage() {
   globalThis.fetch = originalFetch;
   apiKeysDb.resetApiKeyState();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  await cleanupTempDataDir(TEST_DATA_DIR);
   fs.mkdirSync(TEST_DATA_DIR, { recursive: true });
   v1ModelsCatalog.__resetCatalogBuilderRunsForTest();
 }
@@ -45,7 +46,7 @@ async function resetStorage() {
 async function seedAdobeFireflyConnection(
   overrides: { apiKey?: string; rateLimitedUntil?: string | null } = {}
 ) {
-  return (await providersDb.createProviderConnection({
+  return providersDb.createProviderConnection({
     provider: "adobe-firefly",
     authType: "apikey",
     name: "adobe-firefly-test",
@@ -53,7 +54,7 @@ async function seedAdobeFireflyConnection(
     isActive: true,
     testStatus: "active",
     rateLimitedUntil: overrides.rateLimitedUntil ?? null,
-  })) as JsonRecord & { id: string };
+  });
 }
 
 // Mirrors tests/unit/adobe-firefly.test.ts's userImsJwt() helper — a synthetic,
@@ -81,11 +82,11 @@ test.beforeEach(async () => {
   await resetStorage();
 });
 
-test.after(() => {
+test.after(async () => {
   globalThis.fetch = originalFetch;
   apiKeysDb.resetApiKeyState();
   core.resetDbInstance();
-  fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  await cleanupTempDataDir(TEST_DATA_DIR);
 });
 
 test("#8510 v1 image edit POST uploads Adobe Firefly reference images and dispatches referenceBlobs", async () => {
@@ -94,7 +95,7 @@ test("#8510 v1 image edit POST uploads Adobe Firefly reference images and dispat
   const uploadedIds: string[] = [];
   let submitBody: Record<string, unknown> | null = null;
 
-  globalThis.fetch = async (url, init: MockRequestInit = {}) => {
+  globalThis.fetch = async (url, init: RequestInit = {}) => {
     const stringUrl = String(url);
     if (stringUrl === ADOBE_FIREFLY_IMAGE_UPLOAD_URL) {
       const id = `blob-${uploadedIds.length + 1}`;
@@ -226,5 +227,3 @@ test("#8510 v1 image edit POST surfaces Adobe Firefly rate-limit sentinel", asyn
   assert.match(body.error.message, /All accounts rate limited/);
   assert.ok(!body.error.message.includes("at /"));
 });
-
-import type { JsonRecord } from "../../src/shared/types/json.ts";

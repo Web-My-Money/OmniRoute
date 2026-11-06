@@ -17,6 +17,14 @@ const OVH_422_BODY = JSON.stringify({
   },
 });
 
+// #13452/#13798: an `openai-compatible-*` connection must carry its own baseUrl, or
+// buildUrl() refuses to run rather than defaulting to the real OpenAI API. These cases
+// exercise reasoning_effort clamping, not URL resolution, so hydrate the connection the
+// way a configured one is.
+const OVH_CREDENTIALS = {
+  providerSpecificData: { baseUrl: "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1" },
+};
+
 // Passthrough executor: returns the body unchanged so we assert on exactly what
 // base.ts sends upstream.
 class SimpleExecutor extends BaseExecutor {
@@ -63,7 +71,7 @@ test("422 'unknown variant xhigh, expected one of ...' clamps reasoning_effort a
       model: "qwen3-coder-30b-a3b-instruct",
       body: { reasoning_effort: "xhigh" },
       stream: false,
-      credentials: {},
+      credentials: OVH_CREDENTIALS,
     });
     assert.equal(capturedBodies.length, 2);
     assert.equal(capturedBodies[0].reasoning_effort, "xhigh");
@@ -106,7 +114,7 @@ test("a second request for the same provider+model sends the learned value on th
       model: "qwen3-coder-30b-a3b-instruct",
       body: { reasoning_effort: "xhigh" },
       stream: false,
-      credentials: {},
+      credentials: OVH_CREDENTIALS,
     });
     assert.equal(capturedBodies.length, 1);
     assert.equal(capturedBodies[0].reasoning_effort, "high");
@@ -146,7 +154,7 @@ test("400 please use low, high, or max clamps and retries once (nearest-tier: me
       model: "x-preview-f-free",
       body: { reasoning_effort: "medium" },
       stream: false,
-      credentials: {},
+      credentials: OVH_CREDENTIALS,
     });
     assert.equal(capturedBodies.length, 2);
     assert.equal(capturedBodies[0].reasoning_effort, "medium");
@@ -195,7 +203,7 @@ test("400 please use low, medium with ultra retries to medium", async () => {
       model: "x-preview-f-free-2",
       body: { reasoning_effort: "ultra" },
       stream: false,
-      credentials: {},
+      credentials: OVH_CREDENTIALS,
     });
     assert.equal(capturedBodies.length, 2);
     assert.equal(capturedBodies[0].reasoning_effort, "ultra");
@@ -238,7 +246,7 @@ test("sub-floor clamp now retries: learned {high,max} with low request clamps up
       model: "x-preview-f-free-3",
       body: { reasoning_effort: "low" },
       stream: false,
-      credentials: {},
+      credentials: OVH_CREDENTIALS,
     });
     assert.equal(capturedBodies.length, 2);
     assert.equal(capturedBodies[0].reasoning_effort, "low");

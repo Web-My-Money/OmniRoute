@@ -24,7 +24,6 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { spawnHostTool } from "../build/buildToolRunner.mjs";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -64,13 +63,25 @@ function probeLoad(binaryPath) {
   process.dlopen({ exports: {} }, binaryPath);
 }
 
+/**
+ * How to spawn `npm rebuild better-sqlite3`. On Windows npm is `npm.cmd`, which Node
+ * refuses to spawn without a shell (EINVAL since the CVE-2024-27980 hardening), so
+ * the rebuild silently "failed" there. The command line is a fixed literal, so it is
+ * handed to the shell as one string (no args array, so no DEP0190 warning).
+ *
+ * @param {string} [platform]
+ * @returns {{ file: string, args: string[], shell: boolean }}
+ */
+export function rebuildInvocation(platform = process.platform) {
+  return platform === "win32"
+    ? { file: "npm.cmd rebuild better-sqlite3", args: [], shell: true }
+    : { file: "npm", args: ["rebuild", "better-sqlite3"], shell: false };
+}
+
 /** Default rebuild: `npm rebuild better-sqlite3` at the repo root (no shell interpolation). */
 function defaultRebuild() {
-  // spawnHostTool: npm is a .cmd shim on Windows — needs shell routing (EINVAL otherwise).
-  const result = spawnHostTool("npm", ["rebuild", "better-sqlite3"], {
-    cwd: ROOT,
-    stdio: "inherit",
-  });
+  const { file, args, shell } = rebuildInvocation();
+  const result = spawnSync(file, args, { cwd: ROOT, stdio: "inherit", shell });
   return result.status === 0;
 }
 

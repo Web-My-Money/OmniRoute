@@ -43,7 +43,7 @@ test.after(() => {
 
 test("GET /mappings: returns empty array for new agent", async () => {
   const res = await mappingsRoute.GET(new Request("http://localhost/"), {
-    params: Promise.resolve({ id: "copilot" }),
+    params: { id: "copilot" },
   });
   assert.equal(res.status, 200);
   const body = (await res.json()) as { mappings: unknown[] };
@@ -65,7 +65,7 @@ test("PUT → GET round-trip: stores and retrieves mappings", async () => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ mappings }),
     }),
-    { params: Promise.resolve({ id: "copilot" }) }
+    { params: { id: "copilot" } }
   );
   assert.equal(putRes.status, 200);
   const putBody = (await putRes.json()) as {
@@ -77,7 +77,7 @@ test("PUT → GET round-trip: stores and retrieves mappings", async () => {
 
   // GET reads back the same data
   const getRes = await mappingsRoute.GET(new Request("http://localhost/"), {
-    params: Promise.resolve({ id: "copilot" }),
+    params: { id: "copilot" },
   });
   assert.equal(getRes.status, 200);
   const getBody = (await getRes.json()) as {
@@ -100,7 +100,7 @@ test("PUT: replaces all previous mappings", async () => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ mappings: [{ source: "old-model", target: "old-target" }] }),
     }),
-    { params: Promise.resolve({ id: "cursor" }) }
+    { params: { id: "cursor" } }
   );
 
   // Second PUT — replaces
@@ -110,12 +110,12 @@ test("PUT: replaces all previous mappings", async () => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ mappings: [{ source: "new-model", target: "new-target" }] }),
     }),
-    { params: Promise.resolve({ id: "cursor" }) }
+    { params: { id: "cursor" } }
   );
   assert.equal(putRes.status, 200);
 
   const getRes = await mappingsRoute.GET(new Request("http://localhost/"), {
-    params: Promise.resolve({ id: "cursor" }),
+    params: { id: "cursor" },
   });
   const body = (await getRes.json()) as { mappings: Array<{ source_model: string }> };
   assert.equal(body.mappings.length, 1);
@@ -130,7 +130,7 @@ test("PUT: empty mappings array clears all mappings", async () => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ mappings: [{ source: "x", target: "y" }] }),
     }),
-    { params: Promise.resolve({ id: "zed" }) }
+    { params: { id: "zed" } }
   );
   const putRes = await mappingsRoute.PUT(
     new Request("http://localhost/", {
@@ -138,7 +138,7 @@ test("PUT: empty mappings array clears all mappings", async () => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ mappings: [] }),
     }),
-    { params: Promise.resolve({ id: "zed" }) }
+    { params: { id: "zed" } }
   );
   assert.equal(putRes.status, 200);
   const body = (await putRes.json()) as { mappings: unknown[] };
@@ -154,7 +154,7 @@ test("PUT: invalid body (missing mappings) returns 400", async () => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ wrong_key: [] }),
     }),
-    { params: Promise.resolve({ id: "antigravity" }) }
+    { params: { id: "antigravity" } }
   );
   assert.equal(res.status, 400);
   const body = (await res.json()) as Record<string, unknown>;
@@ -169,7 +169,7 @@ test("PUT: invalid JSON returns 400", async () => {
       headers: { "content-type": "application/json" },
       body: "not-json",
     }),
-    { params: Promise.resolve({ id: "antigravity" }) }
+    { params: { id: "antigravity" } }
   );
   assert.equal(res.status, 400);
 });
@@ -181,7 +181,7 @@ test("PUT: error responses do not leak stack traces", async () => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ mappings: "not-an-array" }),
     }),
-    { params: Promise.resolve({ id: "codex" }) }
+    { params: { id: "codex" } }
   );
   const text = await res.text();
   assert.ok(!text.includes("at /"), "stack trace leaked in PUT /mappings error");
@@ -189,7 +189,7 @@ test("PUT: error responses do not leak stack traces", async () => {
 
 test("GET: error responses do not leak stack traces", async () => {
   const res = await mappingsRoute.GET(new Request("http://localhost/"), {
-    params: Promise.resolve({ id: "antigravity" }),
+    params: { id: "antigravity" },
   });
   const text = await res.text();
   assert.ok(!text.includes("at /"), "stack trace leaked in GET /mappings response");
