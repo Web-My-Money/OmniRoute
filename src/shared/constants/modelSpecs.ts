@@ -21,10 +21,11 @@ export interface ModelSpec {
   // (upstream returns 400). Used to normalize the request when a combo/route substitutes
   // this model after the client already chose `disabled`. See issue #3554.
   rejectsThinkingDisabled?: boolean;
-  // Model rejects `thinking.type:"disabled"` but has a supported way to turn thinking off:
-  // send `thinking:{type:<this value>}` instead (Claude Sonnet 5.5: "between_tools").
-  // Unlike `rejectsThinkingDisabled`, which drops the field, this keeps the caller's intent.
-  thinkingDisabledAs?: "between_tools";
+  // Model rejects `thinking.type:"disabled"` but names a replacement: send
+  // `thinking:{type:<this value>}` instead (Claude Sonnet 5.5: "between_tools"; Claude
+  // Opus 5.5: "adaptive"). Unlike `rejectsThinkingDisabled`, which drops the field, this
+  // rewrites it in place. budget_tokens is dropped along with the old type.
+  thinkingDisabledAs?: "between_tools" | "adaptive";
   // Model ONLY supports adaptive thinking: manual extended thinking was removed. Sending
   // `thinking.type:"enabled"` or any `thinking.budget_tokens` returns HTTP 400; reasoning
   // is steered exclusively by `output_config.effort` (low/medium/high/xhigh/max). True for
@@ -404,6 +405,29 @@ export const MODEL_SPECS: Record<string, ModelSpec> = {
     // …and, like Opus 4.7+, rejects manual budgets/`type:"enabled"` (adaptive-only).
     adaptiveThinkingOnly: true,
     aliases: BEDROCK_CLAUDE_ALIASES("claude-fable-5"),
+  },
+
+  // ── Claude Opus 5.5 ─────────────────────────────────────────────
+  // Declared BEFORE "claude-opus-5" on purpose: prefix matching is first-match-wins in
+  // insertion order, so "claude-opus-5-5…" (incl. dated ids) must meet this entry first.
+  // Limits mirror claude-opus-5, which this id resolved to before it had its own spec.
+  "claude-opus-5-5": {
+    maxOutputTokens: 128000,
+    contextWindow: 1000000,
+    defaultThinkingBudget: 32000,
+    thinkingBudgetCap: 120000,
+    supportsThinking: true,
+    supportsTools: true,
+    supportsVision: true,
+    adaptiveThinkingOnly: true,
+    // Mirrored from claude-opus-5. Inert here: `disabled` is rewritten to adaptive (below)
+    // before normalizeClaudeDisabledThinkingEffort can see it.
+    maxEffortWhenThinkingDisabled: "high",
+    // Anthropic 400: '"thinking.type.disabled" is not supported for this model. Use
+    // "adaptive"' (observed 2026-11-04 via the gateway thinking budget custom/0). Only
+    // requests that explicitly send `disabled` are rewritten; no other field is touched.
+    thinkingDisabledAs: "adaptive",
+    aliases: BEDROCK_CLAUDE_ALIASES("claude-opus-5-5"),
   },
 
   // ── Claude Opus 5 ───────────────────────────────────────────────
@@ -831,8 +855,8 @@ export function normalizeThinkingForModel<T extends Record<string, unknown>>(
   const thinking = body?.thinking as Record<string, unknown> | undefined;
   if (!thinking || typeof thinking !== "object" || thinking.type !== "disabled") return body;
   const spec = getModelSpec(modelId);
-  // Models with a documented replacement for `disabled` (Sonnet 5.5) keep the intent: thinking
-  // stays off, spelled the way the model accepts. budget_tokens is dropped with the old type.
+  // Models with a documented replacement for `disabled` (Sonnet 5.5 -> "between_tools",
+  // Opus 5.5 -> "adaptive") get the replacement type. budget_tokens is dropped with the old type.
   if (spec?.thinkingDisabledAs) {
     return { ...body, thinking: { type: spec.thinkingDisabledAs } };
   }
