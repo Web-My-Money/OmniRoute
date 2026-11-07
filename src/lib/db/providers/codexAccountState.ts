@@ -39,7 +39,41 @@ export function stripCodexChildCooldownFields(psd: JsonRecord): JsonRecord {
   return next;
 }
 
-/** PUT/CAS payload that clears the parent column must also drop nested maps. */
+/**
+ * Drop only the nested Codex child cooldowns whose deadline has passed (or is unparseable);
+ * an active cooldown, a `quota_reset` one above all, survives with its source entry.
+ * WMM fork patch: the 60 s connection recovery job cleared the parent column after a
+ * transient 5xx and, through the unconditional strip, took the multi-hour quota cooldown with
+ * it (~95 wasted 429s in four minutes on 2026-11-07).
+ */
+export function stripExpiredCodexChildCooldownFields(
+  psd: JsonRecord,
+  now: number = Date.now()
+): JsonRecord {
+  if (!connectionHasCodexChildCooldown(psd)) return psd;
+  const cooldowns = { ...toRecord(psd.codexScopeRateLimitedUntil) };
+  const sources = { ...toRecord(psd.codexScopeRateLimitSource) };
+  for (const scope of Object.keys(cooldowns)) {
+    const until = cooldowns[scope];
+    const untilMs = typeof until === "string" ? Date.parse(until) : Number.NaN;
+    if (Number.isFinite(untilMs) && untilMs > now) continue;
+    delete cooldowns[scope];
+    delete sources[scope];
+  }
+  const next = { ...psd };
+  const nextCooldowns = omitEmptyRecord(cooldowns);
+  // A source entry without a cooldown is meaningless; keep it only next to a live deadline.
+  const nextSources = omitEmptyRecord(
+    Object.fromEntries(Object.entries(sources).filter(([scope]) => scope in cooldowns))
+  );
+  if (nextCooldowns) next.codexScopeRateLimitedUntil = nextCooldowns;
+  else delete next.codexScopeRateLimitedUntil;
+  if (nextSources) next.codexScopeRateLimitSource = nextSources;
+  else delete next.codexScopeRateLimitSource;
+  return next;
+}
+
+/** PUT/CAS payload that clears the parent column drops the nested maps' EXPIRED entries only. */
 export function applyCodexChildCooldownClearOnUpdate<T extends JsonRecord | undefined>(
   data: JsonRecord,
   psd: T
@@ -47,7 +81,7 @@ export function applyCodexChildCooldownClearOnUpdate<T extends JsonRecord | unde
   if (psd == null) return psd;
   if (!Object.hasOwn(data, "rateLimitedUntil")) return psd;
   if (data.rateLimitedUntil != null && data.rateLimitedUntil !== "") return psd;
-  return stripCodexChildCooldownFields(psd) as T;
+  return stripExpiredCodexChildCooldownFields(psd) as T;
 }
 
 function connectionHasCodexChildCooldown(psd: JsonRecord): boolean {

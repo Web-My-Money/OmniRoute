@@ -14,6 +14,8 @@ It carries these load-bearing WMM changes. After every merge, confirm each one s
 | `auto/*` virtual combos cannot bypass `allowedCombos` | upstream fixed it in v3.8.53 (`isVirtualComboModel` in `src/shared/utils/apiKeyPolicy.ts`); the fork copy of the fix was dropped | `tests/unit/` api-key policy tests |
 | Claude Sonnet 5.5 `thinking:disabled` -> `between_tools`, Opus 5.5 -> `adaptive` (`thinkingDisabledAs`) | `src/shared/constants/modelSpecs.ts` | `tests/unit/claude-sonnet-5-5-thinking-between-tools.test.ts`, `tests/unit/claude-opus-5-5-thinking-adaptive.test.ts` |
 | Bounded raw provider-connection cache fill (10,000 rows) | `src/lib/db/readCache.ts` | — |
+| Codex per-conversation session fallback: a client that presents no session (Hermes) gets a server-derived, HMAC-keyed `x-session-id` so the request keeps its cached prefix (upstream #18274, v3.8.53, dropped the old always-on `session_id` header: Hermes cache-read 84.5% -> 14.9%). Kill switch: env `WMM_CODEX_DERIVED_SESSION=0` | `open-sse/config/codexDerivedSession.ts`, call in `CodexExecutor.execute` (`open-sse/executors/codex.ts`) | `tests/unit/codex-derived-session.test.ts` |
+| Codex scope cooldowns survive connection recovery: clearing the parent `rateLimitedUntil` drops only EXPIRED nested entries (`stripExpiredCodexChildCooldownFields`), and `getCodexChildCooldown` returns only an ACTIVE cooldown | `src/lib/db/providers/codexAccountState.ts`, `open-sse/services/codexAccount/index.ts` | `tests/unit/codex-scope-cooldown-survives-recovery.test.ts`, `tests/unit/codex-scope-cooldown-clear-12817.test.ts` |
 | CI runs on `wmm-production`; upstream-drift guard step | `.github/workflows/ci.yml`, `quality.yml` | `npm run check:upstream-drift` |
 
 ## Merge procedure

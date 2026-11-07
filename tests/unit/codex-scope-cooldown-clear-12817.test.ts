@@ -104,18 +104,27 @@ test.after(() => {
   fs.rmSync(TEST_DATA_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 });
 
-test("#12817 PUT rateLimitedUntil:null also drops nested Codex child cooldowns", async () => {
+// WMM fork: clearing the parent column drops only EXPIRED nested cooldowns; an active one now
+// survives (tests/unit/codex-scope-cooldown-survives-recovery.test.ts). These two cases seed
+// already-elapsed child cooldowns so the original #12817 contract (no leftovers) still holds.
+async function persistExpiredChildCooldowns(id: string): Promise<{ sparkUntil: string }> {
+  const sparkUntil = futureIso(-30_000);
+  await providersDb.updateProviderConnection(id, {
+    providerSpecificData: {
+      codexScopeRateLimitedUntil: { codex: futureIso(-60_000), spark: sparkUntil },
+      codexScopeRateLimitSource: { codex: "fallback", spark: "fallback" },
+      unrelated: { retained: true },
+    },
+  });
+  return { sparkUntil };
+}
+
+test("#12817 PUT rateLimitedUntil:null also drops expired nested Codex child cooldowns", async () => {
   const connection = await seedCodexConnection();
-  const { sparkUntil } = await persistBothChildCooldowns(connection.id);
+  await persistExpiredChildCooldowns(connection.id);
   await providersDb.updateProviderConnection(connection.id, {
     rateLimitedUntil: futureIso(90_000),
   });
-
-  const before = await readConnection(connection.id);
-  assert.equal(
-    codexAccount.getCodexChildCooldown(before as never, "gpt-5.3-codex-spark"),
-    sparkUntil
-  );
 
   await providersDb.updateProviderConnection(connection.id, { rateLimitedUntil: null });
 
@@ -130,9 +139,9 @@ test("#12817 PUT rateLimitedUntil:null also drops nested Codex child cooldowns",
   assert.equal(codexAccount.isCodexChildUnavailable(after as never, "gpt-5.5"), false);
 });
 
-test("#12817 PUT rateLimitedUntil:\"\" also drops nested Codex child cooldowns", async () => {
+test('#12817 PUT rateLimitedUntil:"" also drops expired nested Codex child cooldowns', async () => {
   const connection = await seedCodexConnection();
-  await persistBothChildCooldowns(connection.id);
+  await persistExpiredChildCooldowns(connection.id);
   await providersDb.updateProviderConnection(connection.id, {
     rateLimitedUntil: futureIso(90_000),
   });

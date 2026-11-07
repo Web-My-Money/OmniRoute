@@ -37,6 +37,7 @@ import {
   resolveCodexThreadScopedPromptCacheKey,
   withCodexFingerprintCredentials,
 } from "../config/codexIdentity.ts";
+import { withDerivedCodexSessionHeader } from "../config/codexDerivedSession.ts";
 import { getAccessToken } from "../services/tokenRefresh.ts";
 import { isUnrecoverableRefreshError } from "../services/tokenRefresh/shared.ts";
 import { sanitizeCodexResponsesInput } from "../services/responsesInputSanitizer.ts";
@@ -837,7 +838,18 @@ export class CodexExecutor extends BaseExecutor {
       input.clientHeaders,
       input.model
     );
-    const requestInput = requestBody === input.body ? input : { ...input, body: requestBody };
+    // WMM: a client that presents no session (Hermes) gets a derived per-conversation one, so the
+    // request reaches its cached prefix (upstream #18274 dropped the session_id such clients had).
+    const clientHeaders = withDerivedCodexSessionHeader(
+      input.clientHeaders,
+      requestBody,
+      input.credentials?.providerSpecificData,
+      input.credentials?.connectionId
+    );
+    const requestInput =
+      requestBody === input.body && clientHeaders === input.clientHeaders
+        ? input
+        : { ...input, body: requestBody, clientHeaders };
     const credentials = withCodexFingerprintCredentials(
       requestInput.credentials,
       requestInput.clientHeaders,
