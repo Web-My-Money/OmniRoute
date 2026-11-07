@@ -175,7 +175,10 @@ export function getCodexChildCooldown(
   model: string | null | undefined,
   now = Date.now()
 ): string | null {
-  return inspectResolvedCodexChild(connection, model, now)?.rateLimitedUntil ?? null;
+  // WMM: only an ACTIVE cooldown; a stale past timestamp used to come back here and made
+  // markAccountUnavailable persist a zero-length cooldown for a fresh 429.
+  const state = inspectResolvedCodexChild(connection, model, now);
+  return state?.unavailable ? state.rateLimitedUntil : null;
 }
 
 export {

@@ -152,9 +152,9 @@
     },
     "SYNC_UPSTREAM.md": {
       "sentinels": [
-        "| Chat admission false-positive fix: structure caps depth 40 / 50,000 nodes, non-ASCII weight 0.5 (messages) / 0.25 (tool schemas + keys), heavy lease default 4 | `src/shared/middleware/chatBodyAdmission.ts`, `src/shared/middleware/chatAdmissionStructureEstimate.ts` | `tests/unit/chat-admission-structure-false-positives.test.ts` |",
-        "| Claude Sonnet 5.5 `thinking:disabled` -> `between_tools`, Opus 5.5 -> `adaptive` (`thinkingDisabledAs`) | `src/shared/constants/modelSpecs.ts` | `tests/unit/claude-sonnet-5-5-thinking-between-tools.test.ts`, `tests/unit/claude-opus-5-5-thinking-adaptive.test.ts` |",
-        "| `auto/*` virtual combos cannot bypass `allowedCombos` | upstream fixed it in v3.8.53 (`isVirtualComboModel` in `src/shared/utils/apiKeyPolicy.ts`); the fork copy of the fix was dropped | `tests/unit/` api-key policy tests |"
+        "| Codex per-conversation session fallback: a client that presents no session (Hermes) gets a server-derived, HMAC-keyed `x-session-id` so the request keeps its cached prefix (upstream #18274, v3.8.53, dropped the old always-on `session_id` header: Hermes cache-read 84.5% -> 14.9%). Kill switch: env `WMM_CODEX_DERIVED_SESSION=0` | `open-sse/config/codexDerivedSession.ts`, call in `CodexExecutor.execute` (`open-sse/executors/codex.ts`) | `tests/unit/codex-derived-session.test.ts` |",
+        "| Codex scope cooldowns survive connection recovery: clearing the parent `rateLimitedUntil` drops only EXPIRED nested entries (`stripExpiredCodexChildCooldownFields`), and `getCodexChildCooldown` returns only an ACTIVE cooldown | `src/lib/db/providers/codexAccountState.ts`, `open-sse/services/codexAccount/index.ts` | `tests/unit/codex-scope-cooldown-survives-recovery.test.ts`, `tests/unit/codex-scope-cooldown-clear-12817.test.ts` |",
+        "| Chat admission false-positive fix: structure caps depth 40 / 50,000 nodes, non-ASCII weight 0.5 (messages) / 0.25 (tool schemas + keys), heavy lease default 4 | `src/shared/middleware/chatBodyAdmission.ts`, `src/shared/middleware/chatAdmissionStructureEstimate.ts` | `tests/unit/chat-admission-structure-false-positives.test.ts` |"
       ]
     },
     "bin/cli/api.mjs": {
@@ -237,6 +237,13 @@
         "import { BaseExecutor, type ExecuteInput } from \"./base.ts\";"
       ]
     },
+    "open-sse/executors/codex.ts": {
+      "sentinels": [
+        "// request reaches its cached prefix (upstream #18274 dropped the session_id such clients had).",
+        "// WMM: a client that presents no session (Hermes) gets a derived per-conversation one, so the",
+        "import { withDerivedCodexSessionHeader } from \"../config/codexDerivedSession.ts\";"
+      ]
+    },
     "open-sse/executors/copilot-m365-connection.ts": {
       "sentinels": [
         "tid?: string,"
@@ -267,6 +274,13 @@
       "sentinels": [
         "return_documents = undefined,",
         "top_n = undefined,"
+      ]
+    },
+    "open-sse/services/codexAccount/index.ts": {
+      "sentinels": [
+        "// WMM: only an ACTIVE cooldown; a stale past timestamp used to come back here and made",
+        "// markAccountUnavailable persist a zero-length cooldown for a fresh 429.",
+        "const state = inspectResolvedCodexChild(connection, model, now);"
       ]
     },
     "open-sse/services/combo.ts": {
@@ -1370,7 +1384,9 @@
     },
     "src/lib/db/providers/codexAccountState.ts": {
       "sentinels": [
-        "import type { JsonRecord } from \"@/shared/types/json\";"
+        "/** PUT/CAS payload that clears the parent column drops the nested maps' EXPIRED entries only. */",
+        "* transient 5xx and, through the unconditional strip, took the multi-hour quota cooldown with",
+        "* Drop only the nested Codex child cooldowns whose deadline has passed (or is unparseable);"
       ]
     },
     "src/lib/db/providers/usageIdentityReconciliation.ts": {
@@ -3551,6 +3567,13 @@
         "import type { JsonRecord } from \"../../src/shared/types/json.ts\";",
         "const getCreds = looseCreds(auth.getProviderCredentials);",
         "import { looseCreds } from \"../helpers/looseTypes.ts\";"
+      ]
+    },
+    "tests/unit/codex-scope-cooldown-clear-12817.test.ts": {
+      "sentinels": [
+        "test(\"#12817 PUT rateLimitedUntil:null also drops expired nested Codex child cooldowns\", async () => {",
+        "test('#12817 PUT rateLimitedUntil:\"\" also drops expired nested Codex child cooldowns', async () => {",
+        "// WMM fork: clearing the parent column drops only EXPIRED nested cooldowns; an active one now"
       ]
     },
     "tests/unit/codex-session-affinity-reset-aware-5903.test.ts": {
