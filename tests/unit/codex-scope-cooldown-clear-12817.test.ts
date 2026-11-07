@@ -113,6 +113,7 @@ async function persistExpiredChildCooldowns(id: string): Promise<{ sparkUntil: s
     providerSpecificData: {
       codexScopeRateLimitedUntil: { codex: futureIso(-60_000), spark: sparkUntil },
       codexScopeRateLimitSource: { codex: "fallback", spark: "fallback" },
+      unrelated: { retained: true },
     },
   });
   return { sparkUntil };
